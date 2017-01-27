@@ -1,0 +1,274 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>PDE_DomainVisu.hh</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="PDE_DomainVisu.hh_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="PDEpack-tree.html"><span>Tree</span></a>
+    <a href="PDE_DomainVisu.html"><span>Class</span></a>
+    <span class=selected>Header</span>
+    <a href="PDE_DomainVisu.cc.html"><span>Implementation</span></a>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="PDEpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#ifndef</font><font class="text"> PDE_DOMAIN_VISU_HH
+</font><font class="kw2">#define</font><font class="text"> PDE_DOMAIN_VISU_HH
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Application</font><font class="text">.hh&gt;
+
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> ;
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">boolVector</font><font class="text"> ;
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">size_t_vector</font><font class="text"> ;
+
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">GE_SetOfPoints</font><font class="text"> ;
+
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">PDE_CursorFEside</font><font class="text"> ;
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">PDE_LocalFE</font><font class="text"> ;
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">PDE_LocalFEcell</font><font class="text"> ;
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">PDE_LocalFEbound</font><font class="text"> ;
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">PDE_ResultSaver</font><font class="text"> ;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;iosfwd&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;fstream&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw2">set</font><font class="text">&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw2">string</font><font class="text">&gt;
+
+</font><font class="comment">/*
+Application that creates an instance of `::PDE_DomainAndFields'
+and saves, for subsequent post-processing:
+   1. the meshing and the fields, as requested in the MODULE PDE_ResultSaver
+      of the associated `::PDE_DomainAndFields' instance creational process ;
+   2. a GMV file called &quot;cells.gmv&quot; that makes possible the visualization
+      of the colors of the cells.
+   3. a GMV file called &quot;faces.gmv&quot; that makes possible the visualization
+      of the colors of the sides and of the bounds.
+   4. a GMV file called &quot;bounds.gmv&quot; that makes possible the visualization
+      of the colors of the bounds.
+</font><font class="text">
+</font><font class="comment">Example
+</font><font class="text">
+</font><font class="comment">   Consider the following data deck (only the relevant parts are shown):
+</font><font class="text">
+</font><font class="comment">   MODULE PEL_Application
+      concrete_name = &quot;PDE_DomainVisu&quot;
+      MODULE PDE_DomainAndFields
+         ...
+         MODULE GE_Meshing
+            concrete_name = &quot;GE_MefistoMeshing&quot;
+            mesh_polyhedron = &lt; &quot;GE_Triangle&quot; &quot;GE_Tetrahedron&quot; &gt;
+            filename = &quot;xyznpef.COQUE&quot;
+         END MODULE GE_Meshing
+         MODULE interior_fields
+            ...
+         END MODULE interior_fields
+         MODULE PDE_ResultSaver      
+            writers = &lt; &quot;PEL_TICwriter&quot; &gt;
+            files_basename = &quot;save&quot;
+            ...
+         END MODULE PDE_ResultSaver
+      END MODULE PDE_DomainAndFields
+   END MODULE PEL_Application
+      
+   Three files will be created:
+      * &quot;save.gene&quot; for visualization of the fields initialization
+      * &quot;cells.gmv&quot; for visualization of the colors of the cells
+      * &quot;faces.gmv&quot; for visualization of the colors 
+                    of the sides and of the bounds
+      * &quot;bound.gmv&quot; for visualization of the colors of the bounds
+                              
+   In &quot;faces.gmv&quot;, a surface (GMV notion) is created that contains 
+   all the faces (either sides or bounds). Moreover, for each face color, a 
+   surface field (GMV notion) is created, whose value is the identifier
+   of that color (given by GE_Color::identifier) on the faces of that 
+   color and -1 on all other faces. Finally, a surface field called
+   all?colors (where ? is the number of face colors) is created, whose
+   value is, on each face, the identifier of the color of that face.
+   
+   Typical steps to visualize faces of a given color, say &quot;ma_jolie_couleur:
+      1. Execute PDE_DomainVisu to produce the file &quot;faces.gmv&quot;.
+      2. Open the file &quot;faces.gmv&quot; with GMV.
+      3. In the Display menu, choose Surfaces .
+      4. In the Surfaces menu, choose Faces and Color by the Surf Field
+         called ma_jolie_couleur. The faces whose color is &quot;ma_jolie_couleur&quot;
+         will be displayed with the field value equal to the identifier of
+         &quot;ma_jolie_couleur&quot;, and the other faces with the field value -1.
+         
+   The file &quot;bounds.gmv&quot; is similar to &quot;faces.gmv&quot; except that it contains
+   only informations relatives to the bounds (and is thus much smaller).
+</font><font class="text">
+</font><font class="comment">   In &quot;cells.gmv&quot;,  for each cell color, a cell field (GMV notion) is created,
+   whose value is the identifier of that color (given by GE_Color::identifier)
+   on the cells of that color and -1 on all other cells. Finally, a cell field
+   called all?colors (where ? is the number of cell colors) is created, whose
+   value is, on each cell, the identifier of the color of that cell.
+   
+   Typical steps to visualize cells of a given color, say &quot;ma_jolie_couleur:
+      1. Execute PDE_DomainVisu to produce the file &quot;cells.gmv&quot;.
+      2. Open the file &quot;cells.gmv&quot; with GMV.
+      3. In the Display menu, choose Cells .
+      4. In the Cells menu, choose Color By: , then Cell Field
+         and select ma_jolie_couleur. The cells whose color is 
+         &quot;ma_jolie_couleur&quot; will be displayed with the field value equal to 
+         the identifier of &quot;ma_jolie_couleur&quot;, and the other cells with the 
+         field value -1.
+</font><font class="text">
+</font><font class="comment">PUBLISHED
+*/
+</font><font class="text">
+</font><font class="kw1">class</font><font class="text"> PEL_EXPORT </font><font class="kw3">PDE_DomainVisu</font><font class="text"> : </font><font class="kw1">public</font><font class="text"> </font><font class="kw3">PEL_Application
+</font><font class="text">{
+   
+   </font><font class="kw1">public</font><font class="text">: </font><font class="comment">//-----------------------------------------------------------
+</font><font class="text">
+   </font><font class="comment">//-- Instance delivery and initialization
+</font><font class="text">
+      </font><font class="kw1">static</font><font class="text"> </font><font class="kw3">PDE_DomainVisu</font><font class="text">* create( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                     </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp ) ;
+
+   </font><font class="comment">//-- Program core execution
+</font><font class="text">
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> run( </font><font class="kw1">void</font><font class="text"> ) ;
+
+   </font><font class="kw1">protected</font><font class="text">: </font><font class="comment">//--------------------------------------------------------
+</font><font class="text">
+   </font><font class="kw1">private</font><font class="text">: </font><font class="comment">//----------------------------------------------------------
+</font><font class="text">
+     ~</font><font class="kw3">PDE_DomainVisu</font><font class="text">( </font><font class="kw1">void</font><font class="text"> ) ;
+      </font><font class="kw3">PDE_DomainVisu</font><font class="text">( </font><font class="kw3">PDE_DomainVisu</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; other ) ;
+      </font><font class="kw3">PDE_DomainVisu</font><font class="text">&amp; </font><font class="kw1">operator</font><font class="text">=( </font><font class="kw3">PDE_DomainVisu</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; other ) ;
+
+      </font><font class="kw3">PDE_DomainVisu</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner, 
+		      </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp ) ;
+
+    </font><font class="comment">//-- Plug in
+</font><font class="text">
+      </font><font class="kw3">PDE_DomainVisu</font><font class="text">( </font><font class="kw1">void</font><font class="text"> ) ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw3">PDE_DomainVisu</font><font class="text">* create_replica( 
+	                         </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+	                         </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp ) </font><font class="kw1">const</font><font class="text"> ;
+
+    </font><font class="comment">//-- Internals
+</font><font class="text">
+      </font><font class="kw1">void</font><font class="text"> build_file_with_bounds( </font><font class="kw1">void</font><font class="text"> ) ;
+      </font><font class="kw1">void</font><font class="text"> build_file_with_faces( </font><font class="kw1">void</font><font class="text"> ) ;
+      </font><font class="kw1">void</font><font class="text"> build_file_with_cells( </font><font class="kw1">void</font><font class="text"> ) ;
+      
+      </font><font class="kw1">void</font><font class="text"> build_skin( </font><font class="kw3">GE_SetOfPoints</font><font class="text">* skin_vertices,
+                       </font><font class="kw2">size_t</font><font class="text">&amp; nb_skin_cells,
+                       </font><font class="kw3">size_t_vector</font><font class="text">&amp; glob_cell_2_skin_cell ) ;
+
+      </font><font class="kw1">void</font><font class="text"> write_gmv_nodev( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostream</font><font class="text">&amp; ofile,
+                            </font><font class="kw3">GE_SetOfPoints</font><font class="text"> </font><font class="kw1">const</font><font class="text">* verts ) </font><font class="kw1">const</font><font class="text"> ;
+      </font><font class="kw1">void</font><font class="text"> write_gmv_faces( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostream</font><font class="text">&amp; ofile ) ;
+      </font><font class="kw1">void</font><font class="text"> write_gmv_faces( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostream</font><font class="text">&amp; ofile, 
+                            </font><font class="kw3">GE_SetOfPoints</font><font class="text"> </font><font class="kw1">const</font><font class="text">* skin_vertices,
+                            </font><font class="kw2">size_t</font><font class="text"> nb_skin_cells,
+                            </font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; glob_cell_2_skin_cell ) ;
+      </font><font class="kw1">void</font><font class="text"> write_gmv_cells( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostream</font><font class="text">&amp; ofile ) ;
+      </font><font class="kw1">void</font><font class="text"> write_gmv_surface( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostream</font><font class="text">&amp; ofile,
+                              </font><font class="kw3">GE_SetOfPoints</font><font class="text"> </font><font class="kw1">const</font><font class="text">* verts,
+                              </font><font class="kw1">bool</font><font class="text"> with_sides ) </font><font class="kw1">const</font><font class="text"> ;
+      </font><font class="kw1">void</font><font class="text"> write_gmv_surfvars( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostream</font><font class="text">&amp; ofile, </font><font class="kw1">bool</font><font class="text"> with_sides ) </font><font class="kw1">const</font><font class="text"> ;
+      </font><font class="kw1">void</font><font class="text"> write_gmv_variable( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostream</font><font class="text">&amp; ofile ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">void</font><font class="text"> display_color_info( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; col_name,
+                               </font><font class="kw2">size_t</font><font class="text"> nb_s, </font><font class="kw2">size_t</font><font class="text"> nb_b ) </font><font class="kw1">const</font><font class="text"> ;
+      </font><font class="kw1">void</font><font class="text"> display_color_info( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; col_name,
+                               </font><font class="kw2">size_t</font><font class="text"> nb_c ) </font><font class="kw1">const</font><font class="text"> ;
+      
+      </font><font class="kw1">void</font><font class="text"> append_matching_color_names( 
+                                 </font><font class="kw3">PDE_LocalFE</font><font class="text">* fe,
+                                 </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">set</font><font class="text">&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> &gt;&amp; colors ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">void</font><font class="text"> append_matching_color_names( 
+                                 </font><font class="kw3">PDE_CursorFEside</font><font class="text">* fe,
+                                 </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">set</font><font class="text">&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> &gt;&amp; colors ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">void</font><font class="text"> check_connexity( </font><font class="kw1">void</font><font class="text"> ) ;
+
+      </font><font class="kw1">void</font><font class="text"> append_neigh( </font><font class="kw2">size_t</font><font class="text"> icell, </font><font class="kw3">boolVector</font><font class="text">&amp; ok_cell ) ;
+
+    </font><font class="comment">//-- Class attributes
+</font><font class="text">
+      </font><font class="kw1">static</font><font class="text"> </font><font class="kw3">PDE_DomainVisu</font><font class="text"> </font><font class="kw1">const</font><font class="text">* PROTOTYPE ;
+  
+    </font><font class="comment">//-- Attributes
+</font><font class="text">
+      </font><font class="kw2">std</font><font class="text">::ofstream OFS ;
+      </font><font class="kw1">bool</font><font class="text"> TRACE_CELLS ;
+      </font><font class="kw1">bool</font><font class="text"> TRACE_SIDES ;
+      </font><font class="kw1">bool</font><font class="text"> TRACE_BOUNDS ;
+      </font><font class="kw1">bool</font><font class="text"> CHECK_CONN ;
+      </font><font class="kw2">size_t</font><font class="text"> NB_DIMS ;
+      </font><font class="kw3">GE_SetOfPoints</font><font class="text"> </font><font class="kw1">const</font><font class="text">* VERTICES ;
+      </font><font class="kw3">PDE_LocalFEbound</font><font class="text">* bFE ;
+      </font><font class="kw3">PDE_LocalFEcell</font><font class="text">* cFE ;
+      </font><font class="kw3">PDE_CursorFEside</font><font class="text">* sFE ;
+      </font><font class="kw3">PDE_ResultSaver</font><font class="text">* SAVER ;
+      </font><font class="kw2">size_t</font><font class="text"> NBS ;
+      </font><font class="kw1">bool</font><font class="text"> GMV_FILES ;
+} ;
+
+</font><font class="kw2">#endif
+</font><font class="text">
+</font>
+</pre>
+</body>
+</html>

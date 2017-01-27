@@ -1,0 +1,326 @@
+<html>
+<head>
+<title>CH_BulkEnergy_TEST.cc</title>
+<link rel=stylesheet type="text/css" href="stylesheet.css">
+</head>
+<body>
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated
+ *  reusable components, whose purpose is to simplify the task of developing
+ *  softwares of numerical mathematics and scientific computing.
+ *
+ *  This software is governed by the CeCILL-C license under French law and
+ *  abiding by the rules of distribution of free software. You can use, modify
+ *  and/or redistribute the software under the terms of the CeCILL-C license
+ *  as circulated by CEA, CNRS and INRIA at the following URL
+ *  &quot;http://www.cecill.info&quot;.
+ *
+ *  As a counterpart to the access to the source code and rights to copy,
+ *  modify and redistribute granted by the license, users are provided only
+ *  with a limited warranty and the software's author, the holder of the
+ *  economic rights, and the successive licensors have only limited liability.
+ *
+ *  In this respect, the user's attention is drawn to the risks associated
+ *  with loading, using, modifying and/or developing or reproducing the
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also
+ *  therefore means that it is reserved for developers and experienced
+ *  professionals having in-depth computer knowledge. Users are therefore
+ *  encouraged to load and test the software's suitability as regards their
+ *  requirements in conditions enabling the security of their systems and/or
+ *  data to be ensured and, more generally, to use and operate it in the same
+ *  conditions as regards security.
+ *
+ *  The fact that you are presently reading this means that you have had
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;CH_BulkEnergy_TEST.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_DiscreteField</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_DomainAndFields</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_SetOfDomains</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_LocalFEcell</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE_OneStepIteration</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE_SetOfParameters</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE_TimeIterator</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">GE_QRprovider</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;CH_BulkEnergy.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;ios&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;iomanip&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;iostream&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;sstream&gt;
+
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">cout</font><font class="text"> ; </font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ios_base</font><font class="text"> ;
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> ; </font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> ;
+
+CH_BulkEnergy_TEST </font><font class="kw1">const</font><font class="text">* 
+CH_BulkEnergy_TEST::PROTOTYPE = </font><font class="kw1">new</font><font class="text"> CH_BulkEnergy_TEST() ;
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">CH_BulkEnergy_TEST:: CH_BulkEnergy_TEST( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_ObjectTest</font><font class="text">( </font><font class="string">&quot;CH_BulkEnergy&quot;</font><font class="text">, 
+                     </font><font class="string">&quot;CH_BulkEnergy_TEST&quot;</font><font class="text"> )
+{
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">CH_BulkEnergy_TEST:: ~CH_BulkEnergy_TEST( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">void</font><font class="text"> 
+CH_BulkEnergy_TEST:: process_one_test( </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp ) 
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;CH_BulkEnergy_TEST:: process_one_test&quot;</font><font class="text"> ) ;
+   
+   out() &lt;&lt; </font><font class="string">&quot;| ... &quot;</font><font class="text"> &lt;&lt; exp-&gt;name() &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+
+   D_EPS = exp-&gt;double_data( </font><font class="string">&quot;dbl_epsilon&quot;</font><font class="text"> ) ;
+   D_MIN = exp-&gt;double_data( </font><font class="string">&quot;dbl_minimum&quot;</font><font class="text"> ) ;
+
+   THICKNESS = exp-&gt;double_data( </font><font class="string">&quot;thickness&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* e = exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;CH_BulkEnergy&quot;</font><font class="text"> ) ;
+   S1 = exp-&gt;double_data( </font><font class="string">&quot;coef_Sigma_1&quot;</font><font class="text"> ) ;
+   S2 = exp-&gt;double_data( </font><font class="string">&quot;coef_Sigma_2&quot;</font><font class="text"> ) ;
+   S3 = exp-&gt;double_data( </font><font class="string">&quot;coef_Sigma_3&quot;</font><font class="text"> ) ;
+   CH_BulkEnergy </font><font class="kw1">const</font><font class="text">* energy = CH_BulkEnergy::make( </font><font class="kw1">this</font><font class="text">, S1, S2, S3, e ) ;
+   e-&gt;destroy() ; e = 0 ;
+   
+   ST = energy-&gt;SigmaT() ;
+   
+   </font><font class="kw1">bool</font><font class="text"> has_dj_ddiF = exp-&gt;bool_data( </font><font class="string">&quot;has_dj_ddiF&quot;</font><font class="text"> ) ;
+
+   HH = exp-&gt;double_data( </font><font class="string">&quot;hh&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">bool</font><font class="text"> ok_diF = </font><font class="kw1">true</font><font class="text"> ;
+   </font><font class="kw1">bool</font><font class="text"> ok_DDiF = </font><font class="kw1">true</font><font class="text"> ;
+   </font><font class="kw1">bool</font><font class="text"> ok_dj_DDiF = </font><font class="kw1">true</font><font class="text"> ;
+   </font><font class="kw1">bool</font><font class="text"> ok_dj_ddiF = </font><font class="kw1">true</font><font class="text"> ;
+
+   </font><font class="kw2">size_t</font><font class="text"> nb_pts = 100 ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i!=nb_pts ; ++i )
+   {
+      </font><font class="kw1">double</font><font class="text"> c1 = (</font><font class="kw1">double</font><font class="text">) i/(nb_pts-1) ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; j!=nb_pts ; ++j )
+      {
+         </font><font class="kw1">double</font><font class="text"> c2 = (</font><font class="kw1">double</font><font class="text">) j/(nb_pts-1) ;
+         
+         </font><font class="kw1">if</font><font class="text">( has_dj_ddiF ) check_dj_ddiF( energy, c1, c2, ok_dj_ddiF ) ;
+         
+         check_F_DDiF( energy, c1, c2, ok_DDiF ) ;
+         check_dj_DDiF( energy, c1, c2, ok_dj_DDiF ) ;
+
+         </font><font class="kw1">double</font><font class="text"> c3 = 1.0 - c1 - c2 ;
+         check_diF( energy, c1, c2, c3, ok_diF ) ;
+         c3 += </font><font class="kw3">PEL</font><font class="text">::pi() ; </font><font class="comment">// why not ?    
+</font><font class="text">         check_diF( energy, c1, c2, c3, ok_diF ) ;
+      }
+   }
+   notify_one_test_result( energy-&gt;type_name() + </font><font class="string">&quot;  diF/F&quot;</font><font class="text">, ok_diF ) ;
+   notify_one_test_result( energy-&gt;type_name() + </font><font class="string">&quot;  DDiF/F&quot;</font><font class="text">, ok_DDiF) ;
+   notify_one_test_result( energy-&gt;type_name() + </font><font class="string">&quot;  dj_DDiF/DDiF&quot;</font><font class="text">, ok_dj_DDiF) ;
+   </font><font class="kw1">if</font><font class="text">( has_dj_ddiF ) 
+      notify_one_test_result( energy-&gt;type_name() + </font><font class="string">&quot; dj_ddiF/diF&quot;</font><font class="text">, 
+                              ok_dj_ddiF) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">CH_BulkEnergy_TEST:: check_diF( CH_BulkEnergy </font><font class="kw1">const</font><font class="text">* energy,
+                                   </font><font class="kw1">double</font><font class="text"> c1, </font><font class="kw1">double</font><font class="text"> c2, </font><font class="kw1">double</font><font class="text"> c3,
+                                   </font><font class="kw1">bool</font><font class="text">&amp; ok ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;CH_BulkEnergy_TEST:: check_diF&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">double</font><font class="text"> FF = energy-&gt;F( c1, c2, c3 ) ;
+   </font><font class="kw1">double</font><font class="text"> d1F = ( energy-&gt;F( c1+HH, c2, c3 ) - FF ) / HH ;
+   </font><font class="kw1">double</font><font class="text"> d2F = ( energy-&gt;F( c1, c2+HH, c3 ) - FF ) / HH ;
+   </font><font class="kw1">double</font><font class="text"> d3F = ( energy-&gt;F( c1, c2, c3+HH ) - FF ) / HH ;
+
+   </font><font class="kw1">double</font><font class="text"> d1F_theo = energy-&gt;diF( c1, c2, c3, c1, c2, c3, 1 ) ;
+   </font><font class="kw1">double</font><font class="text"> d2F_theo = energy-&gt;diF( c1, c2, c3, c1, c2, c3, 2 ) ;
+   </font><font class="kw1">double</font><font class="text"> d3F_theo = energy-&gt;diF( c1, c2, c3, c1, c2, c3, 3 ) ;
+
+   </font><font class="kw1">bool</font><font class="text"> eq = </font><font class="kw3">PEL</font><font class="text">::double_equality( d1F_theo, d1F, D_EPS, D_MIN ) ;
+   </font><font class="kw1">if</font><font class="text">( !eq ) display_error( </font><font class="string">&quot;d1F&quot;</font><font class="text">, d1F_theo, d1F ) ;
+   ok = ok &amp;&amp; eq ;
+   eq = </font><font class="kw3">PEL</font><font class="text">::double_equality( d2F_theo, d2F, D_EPS, D_MIN ) ;
+   </font><font class="kw1">if</font><font class="text">( !eq ) display_error( </font><font class="string">&quot;d2F&quot;</font><font class="text">, d2F_theo, d2F ) ;
+   ok = ok &amp;&amp; eq ;
+   eq = </font><font class="kw3">PEL</font><font class="text">::double_equality( d3F_theo, d3F, D_EPS, D_MIN ) ;
+   </font><font class="kw1">if</font><font class="text">( !eq ) display_error( </font><font class="string">&quot;d3F&quot;</font><font class="text">, d3F_theo, d3F ) ;
+   ok = ok &amp;&amp; eq ;
+}
+ 
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">CH_BulkEnergy_TEST:: check_F_DDiF( CH_BulkEnergy </font><font class="kw1">const</font><font class="text">* energy,
+                                      </font><font class="kw1">double</font><font class="text"> c1, </font><font class="kw1">double</font><font class="text"> c2, </font><font class="kw1">bool</font><font class="text">&amp; ok ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;CH_BulkEnergy_TEST:: check_F_DDiF&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">double</font><font class="text"> c3 = 1.0 - c1 - c2 ;
+
+   </font><font class="kw1">double</font><font class="text"> d1F = energy-&gt;diF( c1, c2, c3, c1, c2, c3, 1 ) ; 
+   </font><font class="kw1">double</font><font class="text"> d2F = energy-&gt;diF( c1, c2, c3, c1, c2, c3, 2 ) ; 
+   </font><font class="kw1">double</font><font class="text"> d3F = energy-&gt;diF( c1, c2, c3, c1, c2, c3, 3 ) ; 
+
+   </font><font class="kw1">double</font><font class="text"> f1_diff = 4.0 * ST * ( (d1F-d2F)/S2 + (d1F-d3F)/S3 ) / THICKNESS ;
+   </font><font class="kw1">double</font><font class="text"> f1_theo = energy-&gt;DDiF( c1, c2, c1, c2, 1, THICKNESS ) ;
+
+   </font><font class="kw1">bool</font><font class="text"> eq = </font><font class="kw3">PEL</font><font class="text">::double_equality( f1_theo, f1_diff, D_EPS, D_MIN ) ;
+   </font><font class="kw1">if</font><font class="text">( !eq ) display_error( </font><font class="string">&quot;DDiF(i=1)/F&quot;</font><font class="text">, f1_theo, f1_diff ) ;
+   ok = ok &amp;&amp; eq ;
+
+   </font><font class="kw1">double</font><font class="text"> f2_diff = 4.0 * ST * ( (d2F-d1F)/S1 + (d2F-d3F)/S3 ) / THICKNESS ;
+   </font><font class="kw1">double</font><font class="text"> f2_theo = energy-&gt;DDiF( c1, c2, c1, c2, 2, THICKNESS ) ;
+
+   eq = </font><font class="kw3">PEL</font><font class="text">::double_equality( f2_theo, f2_diff, D_EPS, D_MIN ) ;
+   </font><font class="kw1">if</font><font class="text">( !eq ) display_error( </font><font class="string">&quot;DDiF(i=2)/F&quot;</font><font class="text">, f2_theo, f2_diff ) ;
+   ok = ok &amp;&amp; eq ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">CH_BulkEnergy_TEST:: check_dj_DDiF( CH_BulkEnergy </font><font class="kw1">const</font><font class="text">* energy, 
+                                       </font><font class="kw1">double</font><font class="text"> c1, </font><font class="kw1">double</font><font class="text"> c2, </font><font class="kw1">bool</font><font class="text">&amp; ok ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;CH_BulkEnergy_TEST:: check_dj_DDiF&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">double</font><font class="text"> c1_exp = 2.*c1 ;
+   </font><font class="kw1">double</font><font class="text"> c2_exp = 2.*c2 ;
+
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=1 ; i!=3 ; ++i )
+   {
+      </font><font class="kw2">size_t</font><font class="text"> j = 1 ;
+      </font><font class="kw1">double</font><font class="text"> d1_DiF_theo = energy-&gt;dj_DDiF( c1, c2, 
+                                            c1_exp, c2_exp, i, j, THICKNESS ) ;
+      </font><font class="kw1">double</font><font class="text"> d1_DiF_diff = ( energy-&gt;DDiF( c1+HH, c2, 
+                                           c1_exp, c2_exp, i, THICKNESS ) - 
+                             energy-&gt;DDiF( c1, c2, 
+                                           c1_exp, c2_exp, i, THICKNESS )  
+                           ) / HH ;
+
+      </font><font class="kw1">bool</font><font class="text"> eq = </font><font class="kw3">PEL</font><font class="text">::double_equality( d1_DiF_theo, d1_DiF_diff, D_EPS, D_MIN ) ;
+      </font><font class="kw1">if</font><font class="text">( !eq )
+      {
+         </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> mesg ;
+         mesg &lt;&lt;  </font><font class="string">&quot;d1_DD&quot;</font><font class="text"> &lt;&lt; i &lt;&lt; </font><font class="string">&quot;F&quot;</font><font class="text"> ;
+         display_error( mesg.str(), d1_DiF_theo, d1_DiF_diff) ;
+      }
+      ok = ok &amp;&amp; eq ;
+
+      j = 2 ;
+      </font><font class="kw1">double</font><font class="text"> d2_DiF_theo = energy-&gt;dj_DDiF( c1, c2, 
+                                            c1_exp, c2_exp, i, j, THICKNESS ) ;
+      </font><font class="kw1">double</font><font class="text"> d2_DiF_diff = ( energy-&gt;DDiF( c1, c2+HH, 
+                                           c1_exp, c2_exp, i, THICKNESS ) -
+                             energy-&gt;DDiF( c1, c2, 
+                                           c1_exp, c2_exp, i, THICKNESS ) 
+                           ) / HH ;
+      eq = </font><font class="kw3">PEL</font><font class="text">::double_equality( d2_DiF_theo , d2_DiF_diff , D_EPS, D_MIN ) ;
+      </font><font class="kw1">if</font><font class="text">( !eq )
+      {
+         </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> mesg ;
+         mesg &lt;&lt; </font><font class="string">&quot;d2_DD&quot;</font><font class="text"> &lt;&lt; i &lt;&lt; </font><font class="string">&quot;F&quot;</font><font class="text"> ;
+         display_error( mesg.str(), d2_DiF_theo, d2_DiF_diff ) ;
+      }
+      ok = ok &amp;&amp; eq ;
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">CH_BulkEnergy_TEST:: check_dj_ddiF( CH_BulkEnergy </font><font class="kw1">const</font><font class="text">* energy,
+                                       </font><font class="kw1">double</font><font class="text"> c1, </font><font class="kw1">double</font><font class="text"> c2, </font><font class="kw1">bool</font><font class="text">&amp; ok ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;CH_BulkEnergy_TEST:: check_dj_ddiF&quot;</font><font class="text"> ) ;
+   </font><font class="kw1">double</font><font class="text"> c1_exp = 2.*c1 ;
+   </font><font class="kw1">double</font><font class="text"> c2_exp = 2.*c2 ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=1 ; i!=4 ; i++)
+   {
+      </font><font class="kw1">double</font><font class="text"> c3 = 1.0 - c1 - c2 ;
+      </font><font class="kw1">double</font><font class="text"> c3_exp = 1.0 - c1_exp - c2_exp ;
+      </font><font class="kw1">double</font><font class="text"> diF= energy-&gt;diF( c1, c2, c3, c1_exp, c2_exp, c3_exp, i ) ;
+      
+      </font><font class="kw1">double</font><font class="text"> c1HH = c1+HH ;
+      </font><font class="kw1">double</font><font class="text"> c3HH = 1.0 - c1HH - c2 ;
+      </font><font class="kw1">double</font><font class="text"> d1_ddiF = 
+         ( energy-&gt;diF( c1HH, c2, c3HH, c1_exp, c2_exp, c3_exp, i ) - diF ) 
+         / HH ;
+      
+      </font><font class="kw1">double</font><font class="text"> c2HH = c2+HH ;
+      c3HH = 1.0 - c1 - c2HH ;
+      </font><font class="kw1">double</font><font class="text"> d2_ddiF =
+         ( energy-&gt;diF( c1, c2HH, c3HH, c1_exp, c2_exp, c3_exp, i ) - diF ) 
+         / HH ;
+      
+      </font><font class="kw1">double</font><font class="text"> d1_ddiF_theo = energy-&gt;dj_ddiF( c1, c2, 
+                                                  c1_exp, c2_exp, i, 1 ) ;
+      </font><font class="kw1">double</font><font class="text"> d2_ddiF_theo = energy-&gt;dj_ddiF( c1, c2, 
+                                                  c1_exp, c2_exp, i, 2 ) ;
+      </font><font class="kw1">bool</font><font class="text"> eq = </font><font class="kw3">PEL</font><font class="text">::double_equality(  d1_ddiF, d1_ddiF_theo, D_EPS, D_MIN ) ;
+      </font><font class="kw1">if</font><font class="text">( !eq )
+      {
+         </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> mesg ;
+         mesg &lt;&lt;  </font><font class="string">&quot;d1_dd&quot;</font><font class="text"> &lt;&lt; i &lt;&lt; </font><font class="string">&quot;F&quot;</font><font class="text"> ;
+         display_error( mesg.str(), d1_ddiF, d1_ddiF_theo ) ;
+      }
+      ok = ok &amp;&amp; eq ;
+      eq = </font><font class="kw3">PEL</font><font class="text">::double_equality( d2_ddiF, d2_ddiF_theo, D_EPS, D_MIN ) ;
+      </font><font class="kw1">if</font><font class="text">( !eq ) 
+      {
+         </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> mesg ;
+         mesg &lt;&lt;  </font><font class="string">&quot;d2_dd&quot;</font><font class="text"> &lt;&lt; i &lt;&lt; </font><font class="string">&quot;F&quot;</font><font class="text"> ;
+         display_error( mesg.str(), d2_ddiF, d2_ddiF_theo ) ;
+      }
+      ok = ok &amp;&amp; eq ;
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">CH_BulkEnergy_TEST:: display_error( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; mesg,
+                                       </font><font class="kw1">double</font><font class="text"> xx_1, 
+                                       </font><font class="kw1">double</font><font class="text"> xx_2 ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">ios_base</font><font class="text">::</font><font class="kw2">fmtflags</font><font class="text"> original_flags = </font><font class="kw2">cout</font><font class="text">.</font><font class="kw2">flags</font><font class="text">() ;
+   </font><font class="kw2">cout</font><font class="text">.setf( </font><font class="kw2">ios_base</font><font class="text">::</font><font class="kw2">uppercase</font><font class="text"> | </font><font class="kw2">ios_base</font><font class="text">::</font><font class="kw2">scientific</font><font class="text"> ) ;
+
+   </font><font class="kw2">cout</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">setw</font><font class="text">( 20 ) &lt;&lt; mesg &lt;&lt; </font><font class="string">&quot; &quot;
+</font><font class="text">        &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">setprecision</font><font class="text">( 10 ) &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">setw</font><font class="text">( 20 ) &lt;&lt; xx_1
+        &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">setprecision</font><font class="text">( 10 ) &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">setw</font><font class="text">( 20 ) &lt;&lt; xx_2
+        &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+
+   </font><font class="kw2">cout</font><font class="text">.</font><font class="kw2">flags</font><font class="text">( original_flags ) ;
+}
+
+</font>
+</pre>
+</body>
+</html>

@@ -1,0 +1,393 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>PDE_2D_Q2_8nodes.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="PDE_2D_Q2_8nodes.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="PDEpack-tree.html"><span>Tree</span></a>
+    <a href="PDE_2D_Q2_8nodes.html"><span>Class</span></a>
+    <a href="PDE_2D_Q2_8nodes.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="PDEpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_2D_Q2_8nodes</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">GE_Point</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">GE_ReferenceSquare</font><font class="text">.hh&gt;
+
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> ;
+
+</font><font class="kw3">PDE_2D_Q2_8nodes</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">PDE_2D_Q2_8nodes</font><font class="text">::REGISTRATOR = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PDE_2D_Q2_8nodes</font><font class="text">() ;
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PDE_2D_Q2_8nodes</font><font class="text">:: ~</font><font class="kw3">PDE_2D_Q2_8nodes</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   REGISTRATOR = 0 ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PDE_2D_Q2_8nodes</font><font class="text">:: </font><font class="kw3">PDE_2D_Q2_8nodes</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PDE_ReferenceElement</font><font class="text">( </font><font class="string">&quot;PDE_2D_Q2_8nodes&quot;</font><font class="text">, </font><font class="kw3">GE_ReferenceSquare</font><font class="text">::object() )
+{   
+   append_node( </font><font class="kw3">GE_Point</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, 0.0, 0.0 ) ) ;
+   append_node( </font><font class="kw3">GE_Point</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, 0.5, 0.0 ) ) ;
+   append_node( </font><font class="kw3">GE_Point</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, 1.0, 0.0 ) ) ;   
+   append_node( </font><font class="kw3">GE_Point</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, 1.0, 0.5 ) ) ;
+   append_node( </font><font class="kw3">GE_Point</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, 1.0, 1.0 ) ) ;
+   append_node( </font><font class="kw3">GE_Point</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, 0.5, 1.0 ) ) ;
+   append_node( </font><font class="kw3">GE_Point</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, 0.0, 1.0 ) ) ;
+   append_node( </font><font class="kw3">GE_Point</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, 0.0, 0.5 ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">double
+</font><font class="kw3">PDE_2D_Q2_8nodes</font><font class="text">:: N_local( </font><font class="kw2">size_t</font><font class="text"> node,
+			    </font><font class="kw3">GE_Point</font><font class="text"> </font><font class="kw1">const</font><font class="text">* pt_ref ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_2D_Q2_8nodes:: N_local&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( N_local_PRE( node, pt_ref ) ) ;
+
+   </font><font class="kw1">double</font><font class="text"> result = </font><font class="kw3">PEL</font><font class="text">::bad_double() ;
+
+   </font><font class="kw1">double</font><font class="text"> x = pt_ref-&gt;coordinate( 0 ) ;
+   </font><font class="kw1">double</font><font class="text"> y = pt_ref-&gt;coordinate( 1 ) ;
+
+   </font><font class="kw1">switch</font><font class="text">( node )
+   {
+      </font><font class="kw1">case</font><font class="text"> 0 :
+         result = (1.0-x) * (1.0-y) * (1.0-2.0*x-2.0*y) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> 1 :
+         result = 4.0 * x * (1.0-x) * (1.0-y) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> 2 :
+         result = x * (y-1.0) * (1.0-2.0*x+2.0*y) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> 3 :
+         result = 4.0 * x * y * (1.0-y) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> 4 :
+         result = x * y * (2.0*x+2.0*y-3.0) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> 5 :
+         result = 4.0 * x * y * (1.0-x) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> 6 :
+         result = y * (x-1.0) * (1.0+2.0*x-2.0*y) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> 7 :
+         result = 4.0 * y * (1.0-x) * (1.0-y) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+   }
+
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">double
+</font><font class="kw3">PDE_2D_Q2_8nodes</font><font class="text">:: dN_local( </font><font class="kw2">size_t</font><font class="text"> node,
+			     </font><font class="kw2">size_t</font><font class="text"> a,
+			     </font><font class="kw3">GE_Point</font><font class="text"> </font><font class="kw1">const</font><font class="text">* pt_ref ) </font><font class="kw1">const</font><font class="text"> 
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_2D_Q2_8nodes:: dN_local&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( dN_local_PRE( node, a, pt_ref ) ) ;
+
+   </font><font class="kw1">double</font><font class="text"> result = </font><font class="kw3">PEL</font><font class="text">::bad_double() ;
+
+   </font><font class="kw1">double</font><font class="text"> x = pt_ref-&gt;coordinate( 0 ) ;
+   </font><font class="kw1">double</font><font class="text"> y = pt_ref-&gt;coordinate( 1 ) ;
+
+   </font><font class="kw1">switch</font><font class="text">( node )
+   {
+      </font><font class="kw1">case</font><font class="text"> 0 : </font><font class="comment">// bf = (1.0-x) * (1.0-y) * (1.0-2.0*x-2.0*y) ;
+</font><font class="text">         </font><font class="kw1">switch</font><font class="text">( a )
+         {
+            </font><font class="kw1">case</font><font class="text"> 0 :
+               result = (1.0-y) * (4.0*x+2.0*y-3.0) ;
+               </font><font class="kw1">break</font><font class="text"> ;
+            </font><font class="kw1">case</font><font class="text"> 1 :
+               result = (1.0-x) * (4.0*y+2.0*x-3.0) ;
+               </font><font class="kw1">break</font><font class="text"> ;
+         }
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> 1 : </font><font class="comment">// bf = 4.0 * x * (1.0-x) * (1.0-y) ;
+</font><font class="text">         </font><font class="kw1">switch</font><font class="text">( a )
+         {
+            </font><font class="kw1">case</font><font class="text"> 0 :
+               result = 4.0 * (1.0-2.0*x) * (1.0-y) ;
+               </font><font class="kw1">break</font><font class="text"> ;
+            </font><font class="kw1">case</font><font class="text"> 1 :
+               result = 4.0 * x * (x-1.0) ;
+               </font><font class="kw1">break</font><font class="text"> ;
+         }
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> 2 : </font><font class="comment">// x * (y-1.0) * (1.0-2.0*x+2.0*y) ;
+</font><font class="text">         </font><font class="kw1">switch</font><font class="text">( a )
+         {
+            </font><font class="kw1">case</font><font class="text"> 0 :
+               result = (y-1.0) * (1.0-4.0*x+2.0*y) ;
+               </font><font class="kw1">break</font><font class="text"> ;
+            </font><font class="kw1">case</font><font class="text"> 1 :
+               result = x * (4.0*y-2.0*x-1.0) ;
+               </font><font class="kw1">break</font><font class="text"> ;
+         }
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> 3 : </font><font class="comment">// bf = 4.0 * x * y * (1.0-y) ;
+</font><font class="text">         </font><font class="kw1">switch</font><font class="text">( a )
+         {
+            </font><font class="kw1">case</font><font class="text"> 0 :
+               result = 4.0 * y * (1.0-y) ;
+               </font><font class="kw1">break</font><font class="text"> ;
+            </font><font class="kw1">case</font><font class="text"> 1 :
+               result = 4.0 * x * (1-2.0*y) ;
+               </font><font class="kw1">break</font><font class="text"> ;
+         }
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> 4 : </font><font class="comment">// bf = x * y * (2.0*x+2.0*y-3.0) ;
+</font><font class="text">         </font><font class="kw1">switch</font><font class="text">( a )
+         {
+            </font><font class="kw1">case</font><font class="text"> 0 :
+               result = y * (4.0*x+2.0*y-3.0) ;
+               </font><font class="kw1">break</font><font class="text"> ;
+            </font><font class="kw1">case</font><font class="text"> 1 :
+               result = x * (4.0*y+2.0*x-3.0) ;
+               </font><font class="kw1">break</font><font class="text"> ;
+         }
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> 5 : </font><font class="comment">// bf = 4.0 * x * y * (1.0-x) ;
+</font><font class="text">         </font><font class="kw1">switch</font><font class="text">( a )
+         {
+            </font><font class="kw1">case</font><font class="text"> 0 :
+               result = 4.0 * y * (1.0-2.0*x) ;
+               </font><font class="kw1">break</font><font class="text"> ;
+            </font><font class="kw1">case</font><font class="text"> 1 :
+               result = 4.0 * x * (1.0-x) ;
+               </font><font class="kw1">break</font><font class="text"> ;
+         }
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> 6 : </font><font class="comment">// bf = y * (x-1.0) * (1.0+2.0*x-2.0*y) ;
+</font><font class="text">         </font><font class="kw1">switch</font><font class="text">( a )
+         {
+            </font><font class="kw1">case</font><font class="text"> 0 :
+               result =  y * (4.0*x-2.0*y-1.0) ;
+               </font><font class="kw1">break</font><font class="text"> ;
+            </font><font class="kw1">case</font><font class="text"> 1 :
+               result = (x-1.0) * (1.0-4.0*y+2.0*x) ;
+               </font><font class="kw1">break</font><font class="text"> ;
+         }
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> 7 : </font><font class="comment">// bf = 4.0 * y * (1.0-x) * (1.0-y) ;
+</font><font class="text">         </font><font class="kw1">switch</font><font class="text">( a )
+         {
+            </font><font class="kw1">case</font><font class="text"> 0 :
+               result = 4.0 * y * (y-1.0) ;
+               </font><font class="kw1">break</font><font class="text"> ;
+            </font><font class="kw1">case</font><font class="text"> 1 :
+               result = 4.0 * (1.0-x) * (1.0-2.0*y) ;
+               </font><font class="kw1">break</font><font class="text"> ;
+         }
+         </font><font class="kw1">break</font><font class="text"> ;
+   }
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">double
+</font><font class="kw3">PDE_2D_Q2_8nodes</font><font class="text">:: d2N_local( </font><font class="kw2">size_t</font><font class="text"> node,
+			      </font><font class="kw2">size_t</font><font class="text"> a, </font><font class="kw2">size_t</font><font class="text"> b,
+			      </font><font class="kw3">GE_Point</font><font class="text"> </font><font class="kw1">const</font><font class="text">* pt_ref ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_2D_Q2_8nodes:: d2N_local&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( d2N_local_PRE( node, a, b, pt_ref ) ) ;
+
+   </font><font class="kw1">double</font><font class="text"> result = </font><font class="kw3">PEL</font><font class="text">::bad_double() ;
+
+   </font><font class="kw1">double</font><font class="text"> x = pt_ref-&gt;coordinate( 0 ) ;
+   </font><font class="kw1">double</font><font class="text"> y = pt_ref-&gt;coordinate( 1 ) ;
+
+   </font><font class="kw1">if</font><font class="text">( b&gt;a )
+   {
+      </font><font class="kw2">size_t</font><font class="text"> c = b ;
+      b = a ;
+      a = c ;
+   }
+   
+   </font><font class="kw1">switch</font><font class="text">( node )
+   {
+      </font><font class="kw1">case</font><font class="text"> 0 : </font><font class="comment">// bf = (1.0-x) * (1.0-y) * (1.0-2.0*x-2.0*y) ;
+</font><font class="text">         </font><font class="kw1">switch</font><font class="text">( a )
+         {
+            </font><font class="kw1">case</font><font class="text"> 0 :
+               result = (1.0-y) * 4.0 ;
+               </font><font class="kw1">break</font><font class="text"> ;
+            </font><font class="kw1">case</font><font class="text"> 1 :
+               result = ( b==0 ? 2.0*(1.0-x) - (4.0*y+2.0*x-3.0) 
+                               : (1.0-x) * 4.0 ) ;
+               </font><font class="kw1">break</font><font class="text"> ;
+         }
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> 1 : </font><font class="comment">// bf = 4.0 * x * (1.0-x) * (1.0-y) ;
+</font><font class="text">         </font><font class="kw1">switch</font><font class="text">( a )
+         {
+            </font><font class="kw1">case</font><font class="text"> 0 :
+               result = 4.0 * -2.0 * (1.0-y) ;
+               </font><font class="kw1">break</font><font class="text"> ;
+            </font><font class="kw1">case</font><font class="text"> 1 :
+               result = ( b==0 ? 4.0*(x-1.0) + 4.0 * x  : 0.0 ) ;
+               </font><font class="kw1">break</font><font class="text"> ;
+         }
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> 2 : </font><font class="comment">// x * (y-1.0) * (1.0-2.0*x+2.0*y) ;
+</font><font class="text">         </font><font class="kw1">switch</font><font class="text">( a )
+         {
+            </font><font class="kw1">case</font><font class="text"> 0 :
+               result = (y-1.0) * -4.0  ;
+               </font><font class="kw1">break</font><font class="text"> ;
+            </font><font class="kw1">case</font><font class="text"> 1 :
+               result = ( b==0 ? -2.0*x + (4.0*y-2.0*x-1.0) : x * 4.0 ) ;
+               </font><font class="kw1">break</font><font class="text"> ;
+         }
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> 3 : </font><font class="comment">// bf = 4.0 * x * y * (1.0-y) ;
+</font><font class="text">         </font><font class="kw1">switch</font><font class="text">( a )
+         {
+            </font><font class="kw1">case</font><font class="text"> 0 :
+               result =  0.0 ;
+               </font><font class="kw1">break</font><font class="text"> ;
+            </font><font class="kw1">case</font><font class="text"> 1 :
+               result = ( b==0 ? 4.0 * (1-2.0*y) : 4.0 * x * -2.0 ) ;
+               </font><font class="kw1">break</font><font class="text"> ;
+         }
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> 4 : </font><font class="comment">// bf = x * y * (2.0*x+2.0*y-3.0) ;
+</font><font class="text">         </font><font class="kw1">switch</font><font class="text">( a )
+         {
+            </font><font class="kw1">case</font><font class="text"> 0 :
+               result =  y * 4.0  ;
+               </font><font class="kw1">break</font><font class="text"> ;
+            </font><font class="kw1">case</font><font class="text"> 1 :
+               result = ( b==0 ? 2.0*x + (4.0*y+2.0*x-3.0) : x * 4.0 ) ;
+               </font><font class="kw1">break</font><font class="text"> ;
+         }
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> 5 : </font><font class="comment">// bf = 4.0 * x * y * (1.0-x) ;
+</font><font class="text">         </font><font class="kw1">switch</font><font class="text">( a )
+         {
+            </font><font class="kw1">case</font><font class="text"> 0 :
+               result = 4.0 * y * -2.0 ;
+               </font><font class="kw1">break</font><font class="text"> ;
+            </font><font class="kw1">case</font><font class="text"> 1 :
+               result = ( b==0 ? 4.0 *  (1.0-2.0*x) : 0.0 ) ;
+               </font><font class="kw1">break</font><font class="text"> ;
+         }
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> 6 : </font><font class="comment">// bf = y * (x-1.0) * (1.0+2.0*x-2.0*y) ;
+</font><font class="text">         </font><font class="kw1">switch</font><font class="text">( a )
+         {
+            </font><font class="kw1">case</font><font class="text"> 0 :
+               result =  y * 4.0 ;
+               </font><font class="kw1">break</font><font class="text"> ;
+            </font><font class="kw1">case</font><font class="text"> 1 :
+               result = ( b==0 ? 2.0*(x-1.0) + (1.0-4.0*y+2.0*x) 
+                               : (x-1.0) * -4.0 ) ;
+               </font><font class="kw1">break</font><font class="text"> ;
+         }
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> 7 : </font><font class="comment">// bf = 4.0 * y * (1.0-x) * (1.0-y) ;
+</font><font class="text">         </font><font class="kw1">switch</font><font class="text">( a )
+         {
+            </font><font class="kw1">case</font><font class="text"> 0 :
+               result =  0.0 ;
+               </font><font class="kw1">break</font><font class="text"> ;
+            </font><font class="kw1">case</font><font class="text"> 1 :
+               result = ( b==0 ? 4.0 * (-1.0) * (1.0-2.0*y) 
+                               : 4.0 * (1.0-x) * -2.0 ) ;
+               </font><font class="kw1">break</font><font class="text"> ;
+         }
+         </font><font class="kw1">break</font><font class="text"> ;
+   }
+
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">PDE_2D_Q2_8nodes</font><font class="text">:: reference_polyhedron_POST(
+                               </font><font class="kw3">GE_ReferencePolyhedron</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result ) </font><font class="kw1">const</font><font class="text"> 
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( </font><font class="kw3">PDE_ReferenceElement</font><font class="text">::reference_polyhedron_POST( result ) ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( result == </font><font class="kw3">GE_ReferenceSquare</font><font class="text">::object() ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font>
+</pre>
+</body>
+</html>

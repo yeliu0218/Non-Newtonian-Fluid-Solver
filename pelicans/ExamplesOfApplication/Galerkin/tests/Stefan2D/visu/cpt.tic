@@ -1,0 +1,47 @@
+BATCH
+ECHO 0 STAT PS
+
+FRAME WHITE 29. 21.
+
+FILE 'save.gene' FORM END
+
+CYCL 11
+
+CALL "build_meshing.tic"
+
+PHYS TIME TABL TIME 
+PHYS 0 TT TABL sfield
+ 
+CREA coorCut 
+   0. 0. 1. 0. 
+TERM
+CREA epsCut 1.E-4 TERM
+
+CALL "cut_scalar_field.tic"
+
+LIST TABL absc 0
+LIST TABL fc 0
+
+CURV absc fc 'computed'
+
+ANAL TIME
+   t=TIME:1
+   X0=(SQRT (0.81-t))
+   (XC=SR1) (TC=SR1)
+   np=20
+   dX=(1.0-X0)/(FLOAT np)
+   theta=0.
+   DO 'i' 0 np
+      R = X0 + (FLOAT i)*dX
+      XC 0 <- R
+      TC 0 <- (1.0-R*R/X0/X0)
+   ENDDO
+END-ANAL XC TC
+
+CURV XC TC 'theo'
+
+VMIN  0.5  VMAX 1.0  SCUT 1 CUTT 5  AXIS X1
+VMIN -3.0  VMAX 1.0  SCUT 1 CUTT 4  AXIS Y1
+
+PSFN "doc/cpt.ps"
+DRAW CURV

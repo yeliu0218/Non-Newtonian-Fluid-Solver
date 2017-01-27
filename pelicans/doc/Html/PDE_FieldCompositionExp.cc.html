@@ -1,0 +1,343 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>PDE_FieldCompositionExp.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="PDE_FieldCompositionExp.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="PDEpack-tree.html"><span>Tree</span></a>
+    <a href="PDE_FieldCompositionExp.html"><span>Class</span></a>
+    <a href="PDE_FieldCompositionExp.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="PDEpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_FieldCompositionExp</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_DiscreteField</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_SetOfDiscreteFields</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_SetOfFieldCompositions</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ContextSimple</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Data</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Double</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_DoubleVector</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_List</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Variable</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Vector</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_assertions</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;iostream&gt;
+
+</font><font class="kw1">struct</font><font class="text"> PDE_FieldCompositionExp_ERROR {
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> n0( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; name, </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; var_name ) ;
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> n1( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; name, </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; law_name ) ;
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> n2( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; name ) ;
+} ;
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PDE_FieldCompositionExp</font><font class="text">*
+</font><font class="kw3">PDE_FieldCompositionExp</font><font class="text">:: create( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                  </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_name,
+                                  </font><font class="kw3">PEL_Data</font><font class="text">* expression,
+                                  </font><font class="kw3">PDE_SetOfDiscreteFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dfs )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_FieldCompositionExp:: create&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( expression != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( expression-&gt;owner()==0 ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( dfs != 0 ) ;
+   
+   </font><font class="kw3">PDE_FieldCompositionExp</font><font class="text">* result = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PDE_FieldCompositionExp</font><font class="text">( a_owner, 
+                                                                  a_name, 
+                                                                  expression,
+                                                                  dfs ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result!=0 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;owner() == a_owner ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;name() == a_name ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( expression-&gt;is_under_ownership_of( result ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PDE_FieldComposition</font><font class="text">*
+</font><font class="kw3">PDE_FieldCompositionExp</font><font class="text">:: create_replica(
+                             </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                             </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp,
+                             </font><font class="kw2">size_t</font><font class="text"> nb_sp_dims,
+                             </font><font class="kw3">PDE_SetOfDiscreteFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dfs ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+    </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_FieldCompositionExp:: create_replica&quot;</font><font class="text"> ) ;
+    </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_PRE( a_owner, exp, nb_sp_dims, dfs ) ) ;
+    
+    </font><font class="kw3">PDE_FieldComposition</font><font class="text">* result = 0 ;
+    </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_internal(
+                </font><font class="string">&quot;Class \&quot;</font><font class="kw3">PDE_FieldCompositionExp</font><font class="text">\</font><font class="string">&quot; is not pluggable&quot;</font><font class="text"> ) ;
+    
+    </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_POST( result, a_owner, exp, nb_sp_dims, dfs ) ) ;
+    </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PDE_FieldCompositionExp</font><font class="text">:: </font><font class="kw3">PDE_FieldCompositionExp</font><font class="text">(
+                                       </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                       </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_name,
+                                       </font><font class="kw3">PEL_Data</font><font class="text">* expression,
+                                       </font><font class="kw3">PDE_SetOfDiscreteFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dfs )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PDE_FieldComposition</font><font class="text">( a_owner, a_name )
+   , IS_CSTE( </font><font class="kw1">false</font><font class="text"> )
+   , EXPR( expression )
+   , CONTEXT( </font><font class="kw3">PEL_ContextSimple</font><font class="text">::create( </font><font class="kw1">this</font><font class="text"> ) )
+   , FIELDS( </font><font class="kw3">PEL_Vector</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, 0 ) )
+   , VAL( 1 )
+   , INNER_LAW_NAMES( 0 )
+   , INNER_LAWS( </font><font class="kw3">PEL_Vector</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, 0 ) )
+{
+   expression-&gt;set_owner( </font><font class="kw1">this</font><font class="text"> ) ;
+   </font><font class="kw1">if</font><font class="text">( expression-&gt;data_type() != </font><font class="kw3">PEL_Data</font><font class="text">::DoubleVector )
+   {
+      PDE_FieldCompositionExp_ERROR:: n2( name() ) ;
+   }
+   </font><font class="kw3">PEL_List</font><font class="text">* lst = </font><font class="kw3">PEL_List</font><font class="text">::create( 0 ) ;
+   EXPR-&gt;declare( lst ) ;
+   </font><font class="kw1">if</font><font class="text">( lst-&gt;count() == 0 )
+   {
+      VAL = EXPR-&gt;to_double_vector() ;
+      IS_CSTE = </font><font class="kw1">true</font><font class="text"> ;
+      compute() ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;lst-&gt;count() ; i++ )
+      {
+         </font><font class="kw3">PEL_Variable</font><font class="text"> </font><font class="kw1">const</font><font class="text">* var = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">PEL_Variable</font><font class="text">*&gt;( lst-&gt;at( i ) ) ;
+         </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> var_name = var-&gt;name().substr( 3, var-&gt;name().length()-3 ) ;
+         </font><font class="kw1">if</font><font class="text">( var-&gt;name().substr(0,3) != </font><font class="string">&quot;DV_&quot;</font><font class="text"> )
+         {
+            PDE_FieldCompositionExp_ERROR:: n0( name(), var-&gt;name() ) ;
+         }
+         </font><font class="kw1">if</font><font class="text">( dfs-&gt;has( var_name ) )
+         {
+            </font><font class="kw3">PDE_DiscreteField</font><font class="text"> </font><font class="kw1">const</font><font class="text">* field = dfs-&gt;item( var_name ) ;
+            add_one_variable( field ) ;
+            FIELDS-&gt;append( </font><font class="kw1">const_cast</font><font class="text">&lt;</font><font class="kw3">PDE_DiscreteField</font><font class="text">*&gt;( field ) ) ;
+            </font><font class="kw3">doubleVector</font><font class="text"> v( field-&gt;nb_components() ) ;
+            v.</font><font class="kw2">set</font><font class="text">( </font><font class="kw3">PEL</font><font class="text">::bad_double() ) ;
+            </font><font class="kw3">PEL_DoubleVector</font><font class="text">* val = </font><font class="kw3">PEL_DoubleVector</font><font class="text">::create( CONTEXT, v ) ;
+            CONTEXT-&gt;extend( var, val ) ;
+         }
+         </font><font class="kw1">else
+</font><font class="text">         {
+            INNER_LAW_NAMES.append( var_name ) ;
+         }
+      }
+   }
+   lst-&gt;destroy() ; lst = 0 ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PDE_FieldCompositionExp</font><font class="text">:: ~</font><font class="kw3">PDE_FieldCompositionExp</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_FieldCompositionExp:: ~PDE_FieldCompositionExp&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void</font><font class="text"> 
+</font><font class="kw3">PDE_FieldCompositionExp</font><font class="text">:: do_the_links( </font><font class="kw3">PDE_SetOfFieldCompositions</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fcs )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+    </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_FieldCompositionExp:: do_the_links&quot;</font><font class="text"> ) ;
+    </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( do_the_links_PRE( fcs )  ) ;
+
+    </font><font class="kw1">if</font><font class="text">( !IS_CSTE )
+    {
+       </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; j&lt;INNER_LAW_NAMES.size() ; j++ )
+       {
+          </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> var_name = INNER_LAW_NAMES(j) ;
+          </font><font class="kw1">if</font><font class="text">( !fcs-&gt;has( var_name ) )
+          {
+             PDE_FieldCompositionExp_ERROR::n1( name(), var_name ) ;
+          }
+          </font><font class="kw3">PDE_FieldComposition</font><font class="text">* compo = fcs-&gt;item( var_name ) ;
+          INNER_LAWS-&gt;append( compo ) ;
+          add_one_composition( compo ) ;
+          </font><font class="kw3">doubleVector</font><font class="text"> v( compo-&gt;nb_components() ) ;
+          v.</font><font class="kw2">set</font><font class="text">( </font><font class="kw3">PEL</font><font class="text">::bad_double() ) ;
+          </font><font class="kw3">PEL_DoubleVector</font><font class="text">* val = </font><font class="kw3">PEL_DoubleVector</font><font class="text">::create( CONTEXT, v ) ;
+       
+          CONTEXT-&gt;extend( </font><font class="kw3">PEL_Variable</font><font class="text">::object( </font><font class="string">&quot;DV_&quot;</font><font class="text">+var_name ), val ) ;
+       }
+    }
+  
+    </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( do_the_links_POST( fcs )  ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw2">size_t
+</font><font class="kw3">PDE_FieldCompositionExp</font><font class="text">:: nb_components( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_FieldCompositionExp:: nb_components&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw1">return</font><font class="text">( VAL.size() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void</font><font class="text"> 
+</font><font class="kw3">PDE_FieldCompositionExp</font><font class="text">:: compute_self( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_FieldCompositionExp:: compute_self&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">if</font><font class="text">( !IS_CSTE )
+   {
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;FIELDS-&gt;index_limit() ; i++ )
+      {
+         </font><font class="kw3">PDE_DiscreteField</font><font class="text"> </font><font class="kw1">const</font><font class="text">* f = 
+            </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">PDE_DiscreteField</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;( FIELDS-&gt;at(i) ) ;
+         </font><font class="kw3">doubleVector</font><font class="text"> v( f-&gt;nb_components() ) ;
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; j&lt;f-&gt;nb_components() ; j++ )
+         {
+            v( j ) = variable_value( f, j ) ;
+         }
+         </font><font class="kw3">PEL_Variable</font><font class="text"> </font><font class="kw1">const</font><font class="text">* var = </font><font class="kw3">PEL_Variable</font><font class="text">::object( </font><font class="string">&quot;DV_&quot;</font><font class="text">+f-&gt;name() ) ;
+         </font><font class="kw3">PEL_DoubleVector</font><font class="text">* vec =
+            </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">PEL_DoubleVector</font><font class="text">*&gt;( CONTEXT-&gt;value( var ) ) ;
+         vec-&gt;</font><font class="kw2">set</font><font class="text">( v ) ;
+      }
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;INNER_LAWS-&gt;index_limit() ; i++ )
+      {
+         </font><font class="kw3">PDE_FieldComposition</font><font class="text"> </font><font class="kw1">const</font><font class="text">* l = 
+            </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">PDE_FieldComposition</font><font class="text">*&gt;( INNER_LAWS-&gt;at( i ) ) ;
+         </font><font class="kw3">doubleVector</font><font class="text"> v( l-&gt;nb_components() ) ;
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; j&lt;l-&gt;nb_components() ; j++ )
+         {
+            v( j ) = l-&gt;value( j ) ;
+         }
+         </font><font class="kw3">PEL_Variable</font><font class="text"> </font><font class="kw1">const</font><font class="text">* var =
+                          </font><font class="kw3">PEL_Variable</font><font class="text">::object( </font><font class="string">&quot;DV_&quot;</font><font class="text">+INNER_LAW_NAMES(i) ) ;
+         </font><font class="kw3">PEL_DoubleVector</font><font class="text">* vec =
+            </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">PEL_DoubleVector</font><font class="text">*&gt;( CONTEXT-&gt;value( var ) ) ;
+         vec-&gt;</font><font class="kw2">set</font><font class="text">( v ) ;
+      }
+      VAL = EXPR-&gt;to_double_vector( CONTEXT ) ;
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">double</font><font class="text"> 
+</font><font class="kw3">PDE_FieldCompositionExp</font><font class="text">:: value( </font><font class="kw2">size_t</font><font class="text"> ic ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+    </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_FieldCompositionExp:: value&quot;</font><font class="text"> ) ;
+    </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( value_PRE( ic ) ) ;
+    
+    </font><font class="kw1">return</font><font class="text">( VAL( ic ) ) ;
+}
+
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">PDE_FieldCompositionExp_ERROR:: n0( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; name,
+                                    </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; var_name )
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> mesg ;
+   mesg += </font><font class="string">&quot;*** field composition of name : \&quot;&quot;+name+&quot;</font><font class="text">\</font><font class="string">&quot;\n&quot;</font><font class="text"> ;
+   mesg += </font><font class="string">&quot;    invalid variable name : \&quot;</font><font class="text">$</font><font class="string">&quot;+var_name+&quot;</font><font class="text">\</font><font class="string">&quot;\n&quot;</font><font class="text"> ;
+   mesg += </font><font class="string">&quot;    Rem : discrete field or field composition variable\n&quot;</font><font class="text"> ;
+   mesg += </font><font class="string">&quot;          should start with \&quot;</font><font class="text">$DV_\</font><font class="string">&quot;&quot;</font><font class="text"> ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( mesg ) ;
+}
+
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">PDE_FieldCompositionExp_ERROR:: n1( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; name,
+                                    </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; law_name )
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> mesg ;
+   mesg += </font><font class="string">&quot;*** field composition of name : \&quot;&quot;+name+&quot;</font><font class="text">\</font><font class="string">&quot;\n&quot;</font><font class="text"> ;
+   mesg += </font><font class="string">&quot;    variable $DV_&quot;</font><font class="text">+law_name+</font><font class="string">&quot; can not be evaluated :\n&quot;</font><font class="text"> ;
+   mesg += </font><font class="string">&quot;       - unknown discrete field of name \&quot;&quot; + law_name + &quot;</font><font class="text">\</font><font class="string">&quot;\n&quot;</font><font class="text"> ;
+   mesg += </font><font class="string">&quot;       - unknown field composition of name \&quot;&quot; + law_name + &quot;</font><font class="text">\</font><font class="string">&quot;&quot;</font><font class="text"> ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( mesg ) ;
+}
+
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">PDE_FieldCompositionExp_ERROR:: n2( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; name )
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> mesg ;
+   mesg += </font><font class="string">&quot;*** field composition of name : \&quot;&quot;+name+&quot;</font><font class="text">\</font><font class="string">&quot;\n&quot;</font><font class="text"> ;
+   mesg += </font><font class="string">&quot;    a doubleVector expression is expected&quot;</font><font class="text"> ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( mesg ) ;
+}
+
+</font>
+</pre>
+</body>
+</html>

@@ -1,0 +1,139 @@
+MODULE PEL_Application
+   
+   concrete_name = "FE_StepByStepProgression"
+   
+   MODULE PDE_DomainAndFields
+      type = "finite_element"
+      verbose_level = 2
+      nb_space_dimensions = 1
+      
+      MODULE GE_Meshing
+         concrete_name = "GE_SplitMeshing"
+         security_bandwidth = 0
+         MODULE splitting_strategy
+            concrete_name = "GE_CoordinateSplitting"
+            $DS_X = component( $DV_X, 0 )
+            coordinate_splitting_formula = 
+               unit_sort( $DS_X, 0., 1., nb_ranks() )
+         END MODULE splitting_strategy
+         MODULE GE_Meshing   
+            concrete_name = "GE_BoxWithBoxes"
+            mesh_polyhedron = < "GE_Mpoint" "GE_Segment" >
+            vertices_coordinate_0 = regular_vector( 0., 40, 1. )
+         END MODULE GE_Meshing   
+      END MODULE GE_Meshing
+      
+      MODULE interior_fields         
+         
+         MODULE temperature
+            name = "temperature"
+            nb_components = 1
+            element_name = "PDE_1D_P1_2nodes"
+            storage_depth = 2
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = < 0.0 >
+            END MODULE DOFs_values
+            MODULE DOFs_imposed_value
+               MODULE temperatureleft
+                  location = "on_bounds"
+                  color ="left"
+                  type = "uniformly_defined"
+                  value = < 0.0 >
+               END MODULE temperatureleft
+            END MODULE DOFs_imposed_value
+         END MODULE temperature
+         
+      END MODULE interior_fields
+
+      MODULE PDE_ResultSaver
+         writing_mode = "text"
+         files_basename = "save"
+         MODULE temperature
+            where_to_save = "at_vertices"
+            entry_name = "T"
+            field = "temperature"
+         END MODULE temperature
+      END MODULE PDE_ResultSaver
+
+      if( nb_ranks()=1 )
+      MODULE PDE_ResultSaver
+         writers = < "PEL_TICwriter" >
+      END MODULE PDE_ResultSaver
+
+      if( nb_ranks()>1 )
+      MODULE PDE_ResultSaver
+         writers = < "PEL_CrossProcessWriter" >
+         sub_writers = < "PEL_TICwriter" >
+      END MODULE PDE_ResultSaver
+      
+      MODULE boundary_conditions
+         
+         MODULE temperatureright
+            color ="right"
+            type = "convection"
+            field = "temperature"
+            convection_coefficient = 1.E8
+            far_field_temperature = 5.
+         END MODULE temperatureright
+         
+      END MODULE boundary_conditions
+      
+   END MODULE PDE_DomainAndFields
+   
+   MODULE FE_TimeIterator
+      time_initial = 0.
+      time_end = 0.
+      time_step = 1.E8
+   END MODULE FE_TimeIterator
+
+   MODULE FE_SetOfParameters
+      density = < 0. >
+      conductivity = < 1. >
+      specific_heat = < 1. >
+      volumic_power = < 50. >
+   END MODULE FE_SetOfParameters
+
+   MODULE FE_OneStepIteration
+      concrete_name ="AP_DiffusionCG"
+      
+      level_to_update = 0
+      level_of_explicit = 1
+      
+      param_density = "density"
+      param_conductivity = "conductivity"
+      param_specific_heat = "specific_heat"
+      param_volumic_power = "volumic_power"
+      
+      quadrature_rule_provider = "GE_QRprovider_5"
+
+      if( nb_ranks()=1 )
+      MODULE LA_Matrix
+         concrete_name = "LA_PelMatrix"
+      END MODULE LA_Matrix
+      if( nb_ranks()>1 )
+      MODULE LA_Matrix
+         concrete_name = "LA_DistMatrix"
+      END MODULE LA_Matrix
+
+      MODULE LA_Solver
+         concrete_name = "LA_PreconditionedSolver"
+         MODULE LA_IterativeSolver
+            concrete_name = "LA_CG_IS"
+            verbose = false
+            nb_iterations_max = 2000
+            MODULE LA_ConvergenceTest
+               concrete_name = "LA_DefaultConvergenceTest"
+               relative_tolerance = 1.0e-10
+               absolute_tolerance = 1.0e-50
+            END MODULE LA_ConvergenceTest
+         END MODULE LA_IterativeSolver
+         MODULE LA_Preconditioner
+            concrete_name = "LA_Jacobi_PC"
+            smallest_inverted_item = 1.0e-20
+         END MODULE LA_Preconditioner
+      END MODULE LA_Solver
+      
+   END MODULE FE_OneStepIteration
+   
+END MODULE PEL_Application

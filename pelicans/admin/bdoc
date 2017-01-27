@@ -1,0 +1,29 @@
+#!/bin/perl -w
+
+BEGIN {
+   my $PEL=$ENV{PELICANSHOME} ;
+   push (@INC, "$PEL/admin" ) ;
+}
+
+use strict ;
+use Cwd ;
+use File::Basename ;
+use File::Spec ;
+use BuildDoc ;
+
+my $subject = $ARGV[0] ;
+
+my $curdir = File::Spec->curdir() ;
+my $abscurdir = File::Spec->rel2abs($curdir) ;
+my @dirs=File::Spec->splitdir( $abscurdir ) ;
+
+if( $dirs[$#dirs] ne "doc" ) {
+   die "$curdir : invalid directory\n" ;
+}
+my $dir  = File::Spec->join( @dirs[0..($#dirs-1)] ) ;
+my $name = $dirs[$#dirs-1] ;
+
+print STDOUT "$dir\n" ;
+print STDOUT "$name\n" ;
+
+BuildDoc::do( $name, $dir, $subject ) ;

@@ -1,0 +1,63 @@
+BATCH
+ECHO 0 STAT PS
+
+FRAME WHITE 29. 21.
+
+FILE 'save.gene' FORM END
+
+CYCL 1
+
+CALL "build_meshing.tic"
+
+CYCL 2
+
+PHYS 0 UU TABL sfield
+ 
+CREA coorCut 
+   0. 0. 10. 0. 
+TERM
+CREA epsCut  1.E-4 TERM
+
+CALL "cut_scalar_field.tic"
+
+CURV absc fc 'computed'
+
+$ ----------------------------------------------------------------------
+$  Benchmark Solution of the reference
+$     Smith & Hutton, Numerical Heat Transfer, vol. 5, pp. 439-461, 1982
+$ ----------------------------------------------------------------------
+CREA X1
+   0. STEP 0.1 1.
+TERM
+
+$ --- Pe = 10
+CREA Y1
+   1.989 1.402 1.146 0.946 0.775 0.621 0.480 0.349 0.227 0.111 0.000
+TERM
+
+$ --- Pe = 100
+CREA Y2
+   2.000 1.940 1.836 1.627 1.288 0.869 0.480 0.209 0.070 0.017 0.000
+TERM
+
+$ --- Pe = 500
+CREA Y3
+   2.000 2.000 1.998 1.965 1.702 0.947 0.242 0.023 0.001 0.000 0.000
+TERM
+
+$ -- Pe = 1.E+3
+CREA Y4
+   2.000 1.999 1.9997 1.985 1.841 0.951 0.154 0.001 0.000 0.000 0.000
+TERM
+
+$ --- Pe = 1.E+6
+CREA Y5
+   2.000 2.000 2.000 1.999 1.964 1.000 0.036 0.001 0.000 0.000 0.000
+TERM
+COLOR BLACK DASH 0 0 0 NUME SMOO POIN MARK '*' 0
+SMOO POIN
+CURV X1 Y5 'reference'
+$-----------------------------------------------------------------------
+
+PSFN "doc/outlet.ps"
+DRAW CURV

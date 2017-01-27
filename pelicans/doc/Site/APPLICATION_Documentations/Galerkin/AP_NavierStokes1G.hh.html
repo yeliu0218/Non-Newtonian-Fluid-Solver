@@ -1,0 +1,202 @@
+<html>
+<head>
+<title>AP_NavierStokes1G.hh</title>
+<link rel=stylesheet type="text/css" href="stylesheet.css">
+</head>
+<body>
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#ifndef</font><font class="text"> AP_NAVIER_STOKES_1_G_HH
+</font><font class="kw2">#define</font><font class="text"> AP_NAVIER_STOKES_1_G_HH
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE_OneStepIteration</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw2">vector</font><font class="text">&gt;
+
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">doubleVector</font><font class="text"> ;
+
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">LA_Matrix</font><font class="text"> ;
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">LA_SeqVector</font><font class="text"> ;
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">LA_TwoBlocksMethod</font><font class="text"> ;
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">LA_Vector</font><font class="text"> ;
+
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">GE_QRprovider</font><font class="text"> ;
+
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">PDE_DiscreteField</font><font class="text"> ;
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">PDE_DomainAndFields</font><font class="text"> ;
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">PDE_LocalEquation</font><font class="text"> ;
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">PDE_LocalFEbound</font><font class="text"> ;
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">PDE_LocalFEcell</font><font class="text"> ;
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">PDE_SetOfBCs</font><font class="text"> ;
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">PDE_SystemNumbering</font><font class="text"> ;
+
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">FE_LocalBCsBuilder</font><font class="text"> ;
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">FE_Parameter</font><font class="text"> ;
+
+</font><font class="comment">/*
+PUBLISHED
+*/
+</font><font class="text">
+</font><font class="kw1">class</font><font class="text"> AP_NavierStokes1G : </font><font class="kw1">public</font><font class="text"> </font><font class="kw3">FE_OneStepIteration
+</font><font class="text">{
+   </font><font class="kw1">public</font><font class="text">: </font><font class="comment">//-----------------------------------------------------------------
+</font><font class="text">
+   </font><font class="comment">//-- Substeps of the step by step progression
+</font><font class="text">
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> do_one_inner_iteration( </font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* t_it ) ;
+
+   </font><font class="comment">//-- Elapsed times
+</font><font class="text">
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> print_additional_times( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostream</font><font class="text">&amp; os,
+                                           </font><font class="kw2">size_t</font><font class="text"> indent_width ) </font><font class="kw1">const</font><font class="text"> ;
+
+   </font><font class="comment">//-- Input - Output
+</font><font class="text">
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> print( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostream</font><font class="text">&amp; os, </font><font class="kw2">size_t</font><font class="text"> indent_width ) </font><font class="kw1">const</font><font class="text"> ;
+            
+   </font><font class="kw1">protected</font><font class="text">: </font><font class="comment">//--------------------------------------------------------------
+</font><font class="text">
+   </font><font class="kw1">private</font><font class="text">: </font><font class="comment">//----------------------------------------------------------------
+</font><font class="text">
+     ~AP_NavierStokes1G( </font><font class="kw1">void</font><font class="text"> ) ;
+      AP_NavierStokes1G( AP_NavierStokes1G </font><font class="kw1">const</font><font class="text">&amp; other ) ;
+      AP_NavierStokes1G&amp; </font><font class="kw1">operator</font><font class="text">=( AP_NavierStokes1G </font><font class="kw1">const</font><font class="text">&amp; other ) ;
+
+      AP_NavierStokes1G( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner, 
+                         </font><font class="kw3">PDE_DomainAndFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dom,
+                         </font><font class="kw3">FE_SetOfParameters</font><font class="text"> </font><font class="kw1">const</font><font class="text">* prms,
+                         </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp ) ;
+
+   </font><font class="comment">//-- Plug in
+</font><font class="text">
+      AP_NavierStokes1G( </font><font class="kw1">void</font><font class="text"> ) ;
+
+      </font><font class="kw1">virtual</font><font class="text"> AP_NavierStokes1G* create_replica( 
+                                        </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                        </font><font class="kw3">PDE_DomainAndFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dom,
+                                        </font><font class="kw3">FE_SetOfParameters</font><font class="text"> </font><font class="kw1">const</font><font class="text">* prms,
+                                        </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* exp ) </font><font class="kw1">const</font><font class="text"> ;
+
+   </font><font class="comment">//-- Internals
+</font><font class="text">
+      </font><font class="kw1">enum</font><font class="text"> TimeDisc{ Euler, BDF2, NoTime } ;
+      
+      </font><font class="kw1">void</font><font class="text"> loop_on_cells( </font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* t_it ) ;
+
+      </font><font class="kw1">void</font><font class="text"> loop_on_bounds( </font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* t_it ) ;
+      
+      </font><font class="kw1">void</font><font class="text"> reset_discrete_problem( </font><font class="kw1">void</font><font class="text"> ) ;
+
+      </font><font class="kw1">void</font><font class="text"> compute_coefs_at_IP( </font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* t_it,
+                                </font><font class="kw1">double</font><font class="text">&amp; m_xx,
+                                </font><font class="kw3">doubleVector</font><font class="text">&amp; aa,
+                                </font><font class="kw1">double</font><font class="text">&amp; mu,
+                                </font><font class="kw3">doubleVector</font><font class="text">&amp; rhs ) </font><font class="kw1">const</font><font class="text"> ;
+                                
+   </font><font class="comment">//-- Class attributes
+</font><font class="text">
+      </font><font class="kw1">static</font><font class="text"> AP_NavierStokes1G </font><font class="kw1">const</font><font class="text">* PROTOTYPE ;
+
+   </font><font class="comment">//-- Attributes
+</font><font class="text">
+      </font><font class="kw2">size_t</font><font class="text"> NB_DIMS ;
+      
+      </font><font class="kw3">PDE_DiscreteField</font><font class="text">* UU ;
+      </font><font class="kw2">size_t</font><font class="text"> L_UU ;
+      
+      </font><font class="kw3">PDE_DiscreteField</font><font class="text">* UU_EXP ;
+      </font><font class="kw2">size_t</font><font class="text"> L_UU_EXP ;
+      
+      </font><font class="kw3">PDE_DiscreteField</font><font class="text">* UU_EXP_EXP ;
+      </font><font class="kw2">size_t</font><font class="text"> L_UU_EXP_EXP ;
+
+      </font><font class="kw3">PDE_DiscreteField</font><font class="text">* PP ;
+      </font><font class="kw2">size_t</font><font class="text"> L_PP ;
+      
+      </font><font class="kw3">PDE_DiscreteField</font><font class="text">* PP_EXP ;
+      </font><font class="kw2">size_t</font><font class="text"> L_PP_EXP ;
+      
+      TimeDisc TDISC ;
+      
+      </font><font class="kw1">bool</font><font class="text"> L2_STAB ;
+
+      </font><font class="kw3">FE_Parameter</font><font class="text">* AA ;
+      </font><font class="kw3">FE_Parameter</font><font class="text">* ALPHA ;
+      </font><font class="kw3">FE_Parameter</font><font class="text">* ALPHA_EXP ;
+      </font><font class="kw3">FE_Parameter</font><font class="text">* MU ;
+      </font><font class="kw3">FE_Parameter</font><font class="text">* RHSU ;
+      </font><font class="kw1">bool</font><font class="text"> LAPL_UU ;
+
+      </font><font class="kw3">PDE_SetOfBCs</font><font class="text"> </font><font class="kw1">const</font><font class="text">* BCs ;
+
+      </font><font class="kw3">FE_LocalBCsBuilder</font><font class="text">* LOCAL_BC ;
+
+      </font><font class="kw3">PDE_LocalEquation</font><font class="text">* ELEMENT_EQ ;
+
+      </font><font class="kw3">GE_QRprovider</font><font class="text"> </font><font class="kw1">const</font><font class="text">* QRP ;
+      </font><font class="kw3">PDE_LocalFEcell</font><font class="text">* cFE ;
+      </font><font class="kw3">PDE_LocalFEbound</font><font class="text">* bFE ;
+
+      </font><font class="kw3">PDE_SystemNumbering</font><font class="text">* NMB_U ;
+      </font><font class="kw3">PDE_SystemNumbering</font><font class="text">* NMB_P ;
+      
+      </font><font class="kw3">LA_Matrix</font><font class="text">* A ;
+      </font><font class="kw3">LA_Matrix</font><font class="text">* B ;
+      </font><font class="kw3">LA_Matrix</font><font class="text">* L ;
+      </font><font class="kw3">LA_Matrix</font><font class="text">* M ;
+      
+      </font><font class="kw3">LA_Vector</font><font class="text">* F ; 
+      </font><font class="kw3">LA_Vector</font><font class="text">* G ;
+      </font><font class="kw3">LA_Vector</font><font class="text">* S ;
+      </font><font class="kw3">LA_Vector</font><font class="text">* K ;
+      
+      </font><font class="kw3">LA_Vector</font><font class="text">* U ;
+      </font><font class="kw3">LA_Vector</font><font class="text">* P ;
+      
+      </font><font class="kw3">LA_SeqVector</font><font class="text">* U_LOC ;
+      </font><font class="kw3">LA_SeqVector</font><font class="text">* P_LOC ;
+      
+      </font><font class="kw1">bool</font><font class="text"> INIT_DISCRETE_P ;
+      </font><font class="kw1">bool</font><font class="text"> INIT_DISCRETE_V ;
+      
+      </font><font class="kw3">LA_TwoBlocksMethod</font><font class="text">* SOLVER ;
+} ;
+
+</font><font class="kw2">#endif
+</font><font class="text">
+</font>
+</pre>
+</body>
+</html>

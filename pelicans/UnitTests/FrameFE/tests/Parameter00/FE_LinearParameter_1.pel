@@ -1,0 +1,104 @@
+MODULE PEL_ObjectTest#FE_Parameter_TEST
+   
+   MODULE FE_LinearParameter#1
+      
+      $DS_x = component( $DV_X, 0 )
+      $DS_y = component( $DV_X, 1 )
+      $DS_SLOPE = 3.
+      $DS_VAL0 = -10.
+      $DS_F0 = 3.*$DS_x*$DS_y+2.*$DS_y*$DS_y+3.
+      $DS_dF0dx = d( $DS_F0, "DS_x" )
+      $DS_dF0dy = d( $DS_F0, "DS_y" )
+      $DS_F1 = 3.*$DS_x*$DS_y
+      $DS_dF1dx = d( $DS_F1, "DS_x" )
+      $DS_dF1dy = d( $DS_F1, "DS_y" )
+      $DV_VAL_FIELD = vector( $DS_F0, $DS_F1 )
+      $DV_VAL = vector( $DS_SLOPE*($DS_F0-$DS_VAL0),
+                        $DS_SLOPE*($DS_F1-$DS_VAL0) )
+      $DA_GRAD = array( vector( $DS_SLOPE*$DS_dF0dx, $DS_SLOPE*$DS_dF0dy ),
+                        vector( $DS_SLOPE*$DS_dF1dx, $DS_SLOPE*$DS_dF1dy ) )
+      $IS_NB_COMPS = 2
+
+      MODULE PDE_DomainAndFields
+         type = "finite_element"
+         verbose_level = 0
+         nb_space_dimensions = 2
+         MODULE GE_Meshing
+            concrete_name = "GE_BoxWithBoxes"
+            vertices_coordinate_0 = < 0. 0.5 1. >
+            vertices_coordinate_1 = < 0. 0.5 1. >
+            mesh_polyhedron = < "GE_Segment" "GE_Rectangle" >
+         END MODULE GE_Meshing
+         MODULE interior_fields
+            MODULE my_field
+               name = "my_field"
+               nb_components = $IS_NB_COMPS
+               element_name = "PDE_2D_Q2_8nodes"
+               storage_depth = 1
+               MODULE DOFs_values
+                  type = "uniformly_defined"
+                  value = $DV_VAL_FIELD
+               END MODULE DOFs_values
+            END MODULE my_field
+         END MODULE interior_fields
+      END MODULE PDE_DomainAndFields
+      MODULE FE_TimeIterator
+         time_step = 1.
+         time_end = 0.
+         time_initial = 0.
+      END MODULE FE_TimeIterator
+      MODULE FE_SetOfParameters
+         MODULE FE_Parameter#toto
+            concrete_name = "FE_LinearParameter"
+            name = "toto"
+            field_level = 0
+            field_name = "my_field"
+            slope = $DS_SLOPE
+            reference_field_value = $DS_VAL0
+         END MODULE FE_Parameter#toto
+      END MODULE FE_SetOfParameters
+      MODULE tests
+         MODULE cell_value_at_centers
+            type = "cell_value_at_centers"
+            parameter_name = "toto"
+            parameter_nb_components = $IS_NB_COMPS
+            dbl_epsilon = 1.E-8
+            dbl_minimum = 1.E-8
+            value = $DV_VAL
+            gradient = $DA_GRAD
+         END MODULE cell_value_at_centers
+         MODULE cell_value_at_IPs
+            type = "cell_value_at_IPs"
+            parameter_name = "toto"
+            parameter_nb_components = $IS_NB_COMPS
+            QRprovider_name = "GE_QRprovider_3"
+            dbl_epsilon = 1.E-8
+            dbl_minimum = 1.E-8
+            value = $DV_VAL
+            gradient = $DA_GRAD
+         END MODULE cell_value_at_IPs
+         MODULE bound_value_at_centers
+            type = "bound_value_at_centers"
+            parameter_name = "toto"
+            parameter_nb_components = $IS_NB_COMPS
+            dbl_epsilon = 1.E-8
+            dbl_minimum = 1.E-8
+            value = $DV_VAL
+            gradient = $DA_GRAD
+         END MODULE bound_value_at_centers
+         MODULE bound_value_at_IPs
+            type = "bound_value_at_IPs"
+            parameter_name = "toto"
+            parameter_nb_components = $IS_NB_COMPS
+            QRprovider_name = "GE_QRprovider_3"
+            dbl_epsilon = 1.E-8
+            dbl_minimum = 1.E-8
+            value = $DV_VAL
+            gradient = $DA_GRAD
+         END MODULE bound_value_at_IPs
+         
+      END MODULE tests
+      
+   END MODULE FE_LinearParameter#1
+   
+END MODULE PEL_ObjectTest#FE_Parameter_TEST

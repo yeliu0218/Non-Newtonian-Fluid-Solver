@@ -1,0 +1,204 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>FE_PressureStressBC.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="FE_PressureStressBC.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="FEpack-tree.html"><span>Tree</span></a>
+    <a href="FE_PressureStressBC.html"><span>Class</span></a>
+    <a href="FE_PressureStressBC.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="FEpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE_PressureStressBC</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">GE_Color</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">GE_QRprovider</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">GE_Vector</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_DiscreteField</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_DomainAndFields</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_LocalEquation</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_LocalFEbound</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE_TimeIterator</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE_Parameter</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE_SetOfParameters</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;iostream&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;sstream&gt;
+
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> ;
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> ;
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">map</font><font class="text"> ; </font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">vector</font><font class="text"> ;
+
+</font><font class="kw3">FE_PressureStressBC</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">FE_PressureStressBC</font><font class="text">:: PROTOTYPE = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">FE_PressureStressBC</font><font class="text">() ;
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw3">FE_PressureStressBC</font><font class="text">:: </font><font class="kw3">FE_PressureStressBC</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">FE_OneBCbuilder</font><font class="text">( </font><font class="string">&quot;FE_PressureStressBC&quot;</font><font class="text"> )
+{
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw3">FE_PressureStressBC</font><font class="text">*
+</font><font class="kw3">FE_PressureStressBC</font><font class="text">:: create_replica( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+     			              </font><font class="kw3">PDE_DiscreteField</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ff,
+			              </font><font class="kw3">GE_Color</font><font class="text"> </font><font class="kw1">const</font><font class="text">* color ) </font><font class="kw1">const
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_PressureStressBC:: create_replica&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_PRE( a_owner, ff, color ) ) ;
+
+   </font><font class="kw3">FE_PressureStressBC</font><font class="text">* result = 
+                              </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">FE_PressureStressBC</font><font class="text">( a_owner, ff, color ) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_POST( result, a_owner, ff, color ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw3">FE_PressureStressBC</font><font class="text">:: </font><font class="kw3">FE_PressureStressBC</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+				           </font><font class="kw3">PDE_DiscreteField</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ff,
+                                           </font><font class="kw3">GE_Color</font><font class="text"> </font><font class="kw1">const</font><font class="text">* color )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">FE_OneBCbuilder</font><font class="text">( a_owner, ff, color )
+{
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw3">FE_PressureStressBC</font><font class="text">:: ~</font><font class="kw3">FE_PressureStressBC</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_PressureStressBC</font><font class="text">:: read_boundary_condition( </font><font class="kw2">size_t</font><font class="text"> idx,
+                                               </font><font class="kw3">PDE_DomainAndFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dom,
+					       </font><font class="kw3">FE_SetOfParameters</font><font class="text"> </font><font class="kw1">const</font><font class="text">* prms,
+					       </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_PressureStressBC:: read_boundary_condition&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( read_boundary_condition_PRE( idx, dom, prms, exp ) ) ;
+
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( idx == PIMP.size() ) ;
+
+   PIMP.push_back( 
+        prms-&gt;item( exp-&gt;string_data( </font><font class="string">&quot;param_imposed_pressure&quot;</font><font class="text"> ) ) ) ;
+}
+   
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_PressureStressBC</font><font class="text">:: transfer_calculation_requirements( 
+                                                 </font><font class="kw3">PDE_LocalFEbound</font><font class="text">* fe ) </font><font class="kw1">const
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_PressureStressBC:: transfer_calculation_requirements&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( transfer_calculation_requirements_PRE( fe ) ) ;
+
+   </font><font class="kw2">vector</font><font class="text">&lt; </font><font class="kw3">FE_Parameter</font><font class="text">* &gt;::const_iterator it ;
+   </font><font class="kw1">for</font><font class="text">( it = PIMP.begin() ; it != PIMP.end() ; ++it )
+   {
+      (*it)-&gt;transfer_bound_calculation_requirements( fe, </font><font class="kw3">FE_Parameter</font><font class="text">::Val ) ;
+   }
+   fe-&gt;require_field_calculation( field(), </font><font class="kw3">PDE_LocalFE</font><font class="text">::N ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_PressureStressBC</font><font class="text">:: build( </font><font class="kw3">PDE_LocalEquation</font><font class="text">* leq, 
+                             </font><font class="kw3">PDE_LocalFEbound</font><font class="text">* fe, 
+   	          	     </font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* t_it,
+                             </font><font class="kw3">GE_QRprovider</font><font class="text"> </font><font class="kw1">const</font><font class="text">* qrp ) </font><font class="kw1">const
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_PressureStressBC:: build&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( build_PRE( leq, fe, t_it, qrp ) ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> i = index_of_color( fe-&gt;color() ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> nb_dims = fe-&gt;nb_space_dimensions() ;
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw3">doubleVector</font><font class="text"> stress( nb_dims ) ;
+
+   </font><font class="kw1">for</font><font class="text">( fe-&gt;start_IP_iterator( qrp ) ; fe-&gt;valid_IP() ; fe-&gt;go_next_IP() )
+   {
+      </font><font class="kw1">double</font><font class="text"> pn = PIMP[i]-&gt;bound_value_at_IP( t_it, fe ) ;
+
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> d=0 ; d&lt;nb_dims ; ++d )
+            stress( d ) = - pn * fe-&gt;outward_normal()-&gt;component( d ) ;
+
+      </font><font class="kw3">FE</font><font class="text">::add_row( leq, fe, stress ) ;
+   }
+}
+
+
+</font>
+</pre>
+</body>
+</html>

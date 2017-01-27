@@ -1,0 +1,80 @@
+MODULE PEL_ObjectTest#PDE_DomainIteration_TEST
+   
+   MODULE PDE_DomainIteration_2
+      
+      MODULE calculations_consistency
+         dbl_epsilon = 1.e-10
+         dbl_minimum = 1.e-12
+         quadrature_rule_provider = "GE_QRprovider_3"
+      END MODULE calculations_consistency
+
+      MODULE iterations_trace
+         output_file = "dom_2.trace"
+      END MODULE iterations_trace
+            
+      $DS_X = component( $DV_X, 0 )
+      $DS_Y = component( $DV_X, 1 )
+            
+      MODULE PDE_DomainAndFields
+         
+         verbose_level = 1
+         nb_space_dimensions = 2
+         type = "finite_element"
+         
+         MODULE GE_Meshing
+            concrete_name = "GE_BoxWithBoxes"
+            vertices_coordinate_0 = regular_vector( 0.0, 3, 3.0 )
+            vertices_coordinate_1 = regular_vector( 0.0, 2, 2.0 )
+            mesh_polyhedron = < "GE_Segment" "GE_Rectangle" >
+         END MODULE GE_Meshing
+         
+         MODULE interior_fields
+            
+            MODULE uu_0
+               name = "uu_0"
+               nb_components = 4
+               element_name = "PDE_2D_Q2_9nodes"
+               storage_depth = 1
+               MODULE DOFs_values
+                  type = "uniformly_defined"
+                  value = vector( 3.0*$DS_X*(1.0-$DS_Y),
+                                  $DS_X*$DS_X,
+                                  (3.0-$DS_Y),
+                                  sin( $DS_X + 2.0*$DS_Y ) )
+               END MODULE DOFs_values
+            END MODULE uu_0
+            
+         END MODULE interior_fields
+         
+         MODULE boundary_fields
+            
+            MODULE lambda
+               name = "lambda"
+               nb_components = 2
+               element_name = "PDE_1D_P1_2nodes"
+               storage_depth = 1
+               MODULE DOFs_values
+                  type = "uniformly_defined"
+                  value = vector( $DS_X/($DS_Y-800.0), $DS_Y/($DS_X+100.) )
+               END MODULE DOFs_values
+            END MODULE lambda
+            
+            MODULE uu_0_bd
+               name = "uu_0_bd"
+               nb_components = 1
+               element_name = "PDE_1D_P1_2nodes"
+               storage_depth = 1
+               MODULE DOFs_values
+                  type = "uniformly_defined"
+                  value = vector( cos($DS_Y+2.0*$DS_X) )
+               END MODULE DOFs_values
+            END MODULE uu_0_bd
+            
+         END MODULE boundary_fields
+         
+      END MODULE PDE_DomainAndFields
+      
+   END MODULE PDE_DomainIteration_2
+   
+END MODULE PEL_ObjectTest#PDE_DomainIteration_TEST
+

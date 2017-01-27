@@ -1,0 +1,108 @@
+MODULE PEL_Application
+
+   //*** Geometry
+   
+   geometry = "cartesian"
+
+   $SS_phase_1 = "liquid_down"
+   $SS_phase_2 = "liquid_up"
+
+   $DS_radius = 0.00425
+   $DS_xc  = 0.0
+   $DS_yc  = 0.0
+   
+   $DS_yup = 1000. // higher than the top of the domain => no phase_2
+
+   $DS_xmin = 0.0
+   $DS_xmax = 0.008
+   $IS_nb_cells_0 = 8
+   
+   $DS_ymin =  0.0
+   $DS_ymax =  0.008
+   $IS_nb_cells_1 = 8
+   
+   $DV_vertices_coordinate_0 =
+                regular_vector( $DS_xmin, $IS_nb_cells_0, $DS_xmax )   
+   $DV_vertices_coordinate_1 =
+                regular_vector( $DS_ymin, $IS_nb_cells_1, $DS_ymax )
+                
+   //*** Domain distribution
+
+   $SS_splitting_strategy  = "CoordinateSplitting"
+   $IS_coordinate_splitting_formula = 
+                  unit_sort( $DS_x, $DS_xmin , $DS_xmax, nb_ranks() ) 
+
+   //*** Properties
+
+   $DS_sigma_12 = 256.
+   $DS_sigma_13 = 0.001
+   $DS_sigma_23 = 1.e-6
+   
+   $DS_dens_1 = 31.25
+   $DS_dens_2 = 31.25
+   $DS_dens_3 = 31.25
+   
+   $DS_visc_1 = 1.e-3
+   $DS_visc_2 = 1.e-3
+   $DS_visc_3 = 1.e-3
+
+   //*** Cahn-Hilliard
+   
+   $SS_bulk_energy_F0 = "CH_F0Implicit"
+   
+   $DS_e = 1.3e-3
+   
+   $DS_theta = 1.0
+
+   $BS_explicit_mobility = true
+   $DS_mobility_deg = 1.e-5
+   $DS_mobility_cst = 0.0
+   
+   $SS_CH_solver = "LA_GMRES_IS"
+   
+   $BS_SaveChemicalPotential = true
+   $BS_SaveCutlines = false
+
+   //*** Navier-Stokes
+   
+   $BS_NavierStokes = true
+   $BS_StreamFunction = true
+
+   $SV_Dirichlet = < "right" "bottom" "top" >
+   $SV_symmetry_0 = < "left" >
+
+   $SS_NS_method = "augmented_Lagrangian"
+   $DS_augmentation_parameter = 0.5
+   $DS_tolerance_on_divergence = 5.e-4
+   $DS_tolerance_on_velocity_increment = 5.e-4
+
+   $SS_NS_A_solver = "LA_GMRES_IS"
+
+   //*** Refinement
+   
+   $BS_refinement = true
+
+   $SS_one_level_difference_rule = "supports"
+
+   $DS_h_for_interface = 1.1e-3
+   $DS_refinement_limit   = 0.9
+   $DS_unrefinement_limit = 0.95
+   
+   //*** Time stepping
+   
+   $DS_time_end  = 0.0009
+   $DS_time_step = 0.001
+   $IS_nb_saves  = 20
+   
+   $SV_writers = < "PEL_TICwriter" >
+   $SS_writing_mode = "text"
+   
+END MODULE PEL_Application
+
+#include ( join( getenv( "PELICANSHOME" ),
+                 "ExamplesOfApplication",
+                 "CahnHilliardNavierStokes",
+                 "tests",
+                 "CHNS_BubbleCross",
+                 "data_0.pel" ) )
+

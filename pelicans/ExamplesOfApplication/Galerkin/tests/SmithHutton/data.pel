@@ -1,0 +1,155 @@
+MODULE PEL_Application
+   
+   concrete_name = "FE_StepByStepProgression"
+      
+   MODULE FE_TimeIterator
+      time_initial = 0.
+      time_end = 1.
+      time_step = 1.E+8
+   END MODULE FE_TimeIterator
+
+   MODULE PDE_DomainAndFields 
+      
+      nb_space_dimensions = 2
+      type = "finite_element"
+      verbose_level = 1
+      
+      MODULE GE_Meshing
+         concrete_name = "GE_EMC2Meshing"
+         format = "ftq"
+         cell_polyhedron = < "GE_Rectangle" >
+         filename = join( this_file_dir(), "meshing.ftq" )
+         roundoff = default_roundoff( $DS_x, 5, 1.e-6 )
+      END MODULE GE_Meshing
+      
+      MODULE macro_colors
+         inlet  = < "r1" >
+         rest   = < "r2" "r1r2" >
+         outlet = < "r3" "r1r3" "r2r3" >
+      END MODULE macro_colors
+      
+      MODULE interior_fields
+         
+         MODULE uu
+            name="uu"
+            nb_components = 1
+            element_name = "PDE_2D_Q1_4nodes"
+            storage_depth = 1
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = < 0. >
+            END MODULE DOFs_values
+            MODULE DOFs_imposed_value
+               MODULE inlet
+                  location = "on_bounds"
+                  color = "inlet"
+                  type = "uniformly_defined"
+                  value = vector( 1.+tanh(20.*component($DV_X,0)+10.) )
+               END MODULE inlet
+               MODULE rest
+                  location = "on_bounds"
+                  color = "rest"
+                  type = "uniformly_defined"
+                  value = vector( 1. - tanh(10.) )
+               END MODULE rest
+            END MODULE DOFs_imposed_value
+         END MODULE uu
+         
+         MODULE velocity
+            name="velocity"
+            nb_components = 2
+            element_name = "PDE_2D_Q2_9nodes"
+            storage_depth = 1
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = vector(
+                     2.*component($DV_X,1)*(1.-sqr(component($DV_X,0))),
+                    -2.*component($DV_X,0)*(1.-sqr(component($DV_X,1))) )
+            END MODULE DOFs_values
+         END MODULE velocity
+         
+      END MODULE interior_fields
+
+      MODULE PDE_ResultSaver
+         writers = < "PEL_TICwriter" >
+         writing_mode = "text"
+         files_basename = "save"
+         
+         MODULE uu
+            where_to_save = "at_vertices"
+            entry_name = "UU"
+            field="uu"
+         END MODULE uu
+         
+      END MODULE PDE_ResultSaver
+      
+   END MODULE PDE_DomainAndFields
+
+   MODULE FE_SetOfParameters
+      $DS_alpha = 1.0
+      alpha = vector( $DS_alpha )
+      kappa = < 1.E-6 >
+      MODULE FE_Parameter#adv
+         concrete_name = "FE_FieldParameter"
+         name = "advective_velocity"
+         field_name  = "velocity"
+         field_level = 0
+         coefficient = $DS_alpha
+      END MODULE FE_Parameter#adv
+   END MODULE FE_SetOfParameters
+   
+   MODULE FE_OneStepIteration
+      
+      concrete_name = "AP_AdvectionDiffusion1G"
+      
+      field = "uu"
+      level_of_field = 0
+
+      MODULE time_discretization
+         type = "Euler"
+         field_explicit = "uu"
+         level_of_field_explicit = 0 
+         param_unsteady  = "alpha"
+      END MODULE time_discretization
+      
+      param_diffusion = "kappa"
+      
+      MODULE advection
+         param_advective_velocity = "advective_velocity"
+         MODULE stabilization
+            type = "SUPG"
+            MODULE MI_TauStab
+               concrete_name = "FE_OptimalTauSUPG"
+               upwind_factor = 1.
+            END MODULE MI_TauStab  
+         END MODULE stabilization  
+      END MODULE advection
+      
+      quadrature_rule_provider = "GE_QRprovider_5"
+
+      MODULE LA_Matrix
+         concrete_name = "LA_PelMatrix"
+      END MODULE LA_Matrix
+
+      MODULE LA_Solver
+         concrete_name = "LA_PreconditionedSolver"
+         MODULE LA_IterativeSolver
+            concrete_name = "LA_GMRES_IS"
+            restart = 50
+            MODULE LA_ConvergenceTest
+               concrete_name = "LA_DefaultConvergenceTest"
+               relative_tolerance = 1.e-8
+               absolute_tolerance = 1.e-15
+            END MODULE LA_ConvergenceTest
+            nb_iterations_max = 2000
+            verbose = false
+         END MODULE LA_IterativeSolver
+         MODULE LA_Preconditioner
+            concrete_name = "LA_Jacobi_PC"
+            smallest_inverted_item = 1.0e-20
+         END MODULE LA_Preconditioner
+      END MODULE LA_Solver
+      
+   END MODULE FE_OneStepIteration
+   
+END MODULE PEL_Application

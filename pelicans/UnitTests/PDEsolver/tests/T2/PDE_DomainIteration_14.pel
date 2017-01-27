@@ -1,0 +1,55 @@
+MODULE PEL_ObjectTest#PDE_DomainIteration_TEST
+   
+   MODULE PDE_DomainIteration_14
+      
+      MODULE calculations_consistency
+         dbl_epsilon = 1.e-10
+         dbl_minimum = 1.e-12
+         quadrature_rule_provider = "GE_QRprovider_3"
+         do_print_IPs = false
+      END MODULE calculations_consistency
+      
+      $DS_x = component( $DV_X, 0 )
+      $DS_y = component( $DV_X, 1 )
+   
+      MODULE iterations_trace
+         output_file = "dom_14.trace"
+      END MODULE iterations_trace
+      
+      MODULE PDE_DomainAndFields
+         
+         verbose_level = 1
+         nb_space_dimensions = 2
+         type = "finite_element"
+         
+         MODULE GE_Meshing   
+            concrete_name = "GE_GmshMeshing"
+            filename = join( this_file_dir(), "voronoi6.msh" ) 
+            mesh_polyhedron = < "GE_Segment" "GE_Triangle" >
+            roundoff = default_roundoff( $DS_x, 5, 1.e-6 )
+            format = "1.0"
+         END MODULE GE_Meshing
+      
+         MODULE decohesion
+            type = "inter_cell_aggregates"
+            aggregate_colors = < "r24" "r26" "r30" >
+         END MODULE decohesion
+         
+         MODULE interior_fields
+            MODULE temperature
+               name = "temperature"
+               nb_components = 1
+               element_name = "PDE_2D_P1_3nodes"
+               storage_depth = 1
+               MODULE DOFs_values
+                  type = "uniformly_defined"
+                  value = vector( ($DS_x-8.0)*($DS_y+5.0) )
+               END MODULE DOFs_values
+            END MODULE temperature
+         END MODULE interior_fields
+         
+      END MODULE PDE_DomainAndFields
+      
+   END MODULE PDE_DomainIteration_14
+   
+END MODULE PEL_ObjectTest#PDE_DomainIteration_TEST

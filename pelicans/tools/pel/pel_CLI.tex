@@ -1,0 +1,1977 @@
+\documentclass{article}
+
+%%  Latex generated from POD in document /home/semar/pelican/CURRENT/tools/pel/pel.pl
+%%  Using the perl module Pod::LaTeX
+%%  Converted on Wed Mar 17 19:34:48 2010
+
+
+\usepackage{makeidx}
+\makeindex
+
+
+\begin{document}
+
+\tableofcontents
+
+\clearpage
+\section{pel\label{pel}\index{pel}}
+
+
+Management of PELICANS-based applications
+
+\subsection*{SYNOPSIS\label{pel_SYNOPSIS}\index{pel!SYNOPSIS}}
+
+
+pel [-help$|$-man]
+
+
+
+pel [options...] command [command-options-and-arguments]
+
+
+
+command is either :
+
+\begin{verbatim}
+  depend         generation of makefiles
+  build          generation of executables, objects and libraries
+  run            execution of an application
+  test           comparison between runs (for regression testing)
+  time           management of a CPU time database
+  arch           display of the available compiler architecture
+  predoc         possible preparation before using "peldoc"
+  newclass       text files creation for a new class
+  cmp            requests forward to the PELICANS-based application "pelcmp"
+  cvgce          extraction of error norms from "save_*.gene" files
+\end{verbatim}
+
+
+[command-options-and-arguments] : depends on the chosen command.
+
+\subsection*{DESCRIPTION\label{pel_DESCRIPTION}\index{pel!DESCRIPTION}}
+
+
+\texttt{pel} is a collection of utilities devoted to the management
+of PELICANS-based applications.
+
+\subsection*{OPTIONS\label{pel_OPTIONS}\index{pel!OPTIONS}}
+
+
+The following options are those of \texttt{pel} itself. See the
+manpages of the various commands for their specific options.
+
+\begin{description}
+
+\item[\textbf{-h, -help}] \mbox{}
+
+Print a brief help message and exit.
+
+
+\item[\textbf{-m, -man}] \mbox{}
+
+Print the manual page and exit.
+
+
+\item[\textbf{-v, -verbose}] \mbox{}
+
+Execute verbosely.
+
+\end{description}
+\clearpage
+\section{depend\label{depend}\index{depend}}
+
+
+Generation of makefiles for PELICANS-based applications
+
+\subsection*{SYNOPSIS\label{depend_SYNOPSIS}\index{depend!SYNOPSIS}}
+
+
+pel depend [-help$|$-man]
+
+
+
+pel depend [options...] arguments...
+
+
+
+pel depend [-l lib$|$dir] opt \emph{bindir} \emph{sources} [-precomp directory]
+
+
+
+pel depend -vcproj $<$project.vcproj$>$ \emph{sources} [-precomp directory]
+
+\subsection*{DESCRIPTION\label{depend_DESCRIPTION}\index{depend!DESCRIPTION}}
+
+
+The task of compiling a PELICANS-based application is highly
+simplified by using the GNU \texttt{make} utility. The aim
+of \texttt{pel depend} is to write a suitable makefile
+that describes the relationships among
+files in the considered application and provides
+commands for compiling each file and linking with the appropriate
+PELICANS library. Once this makefile exists, \texttt{pel build}
+can be used to build the desired executable file.
+
+
+
+\texttt{pel depend} has been specially designed to handle
+sources located in multiple directories, and to handle
+multiple compilers on the same file system. Moreover
+the generated makefile includes special targets and commands
+to determine or re-determine the dependencies between the files if necessary.
+
+
+
+The object oriented methodology of PELICANS strongly relies on
+built-in assertions : preconditions, postconditions, invariants and
+checks which are implemented using respectively the four
+macros : \texttt{PEL\_CHECK\_PRE}, \texttt{PEL\_CHECK\_POST}, \texttt{PEL\_CHECK\_INV}
+and \texttt{PEL\_CHECK}.
+These assertions can be enabled/desabled at translation time and by
+using command-line switches. Some options and
+arguments of \texttt{pel depend} and \texttt{pel run} are specially devoted to
+this task.
+
+\subsection*{OPTIONS\label{depend_OPTIONS}\index{depend!OPTIONS}}
+\begin{description}
+
+\item[\textbf{-h, -help}] \mbox{}
+
+Print a brief help message and exit.
+
+
+\item[\textbf{-m, -man}] \mbox{}
+
+Print the manual page and exit.
+
+
+\item[\textbf{-v, -verbose}] \mbox{}
+
+Execute verbosely.
+
+
+\item[\textbf{-D} name] \mbox{}
+
+In the generated makefile, predefine \texttt{name} as a macro,
+with definition 1.
+This option may be used any number of times.
+
+
+\item[\textbf{-D} name=value] \mbox{}
+
+In the generated makefile, predefine \texttt{name} as a macro,
+with definition \texttt{value}.
+This option may be used any number of times.
+
+
+\item[\textbf{-compiler} comp] \mbox{}
+
+In the generated makefile, use the
+the compiler denoted by \texttt{comp} for all
+tasks of preprocessing, compilation, assembly
+and linking. Default is: \texttt{gcc}.
+
+
+\item[\textbf{-makefile} makefile] \mbox{}
+
+Set the name of generated makefile used for all
+tasks of compilation, assembly and linking.
+Default is: \emph{bindir}/Makefile.
+
+
+\item[\textbf{-l} \emph{lib$|$dir}] \mbox{}
+
+Add archive file \emph{lib} to the list of files to link.
+The commands of the generated makefile will invoke
+the linker with "-l\emph{lib}" on the command line.
+
+
+
+When the argument is a directory, add all objects files found in the \emph{dir} directory
+to the list of files to link.
+
+
+
+This option may be used any number of times.
+
+
+\item[\textbf{-precomp} \emph{dir}] \mbox{}
+
+Examine directory to use precompiled objects if any.
+
+
+\item[\textbf{-path} \emph{searchdir}] \mbox{}
+
+Add directory \emph{searchdir} to the list of paths that the linker
+will search for archive libraries when invoked by the 
+commands of the generated makefile. 
+This option may be used any number of times.
+
+
+\item[\textbf{-I} \emph{searchdir}] \mbox{}
+
+Add directory \emph{searchdir} to the list of paths that the compiler will search
+for header files when invoked by the commands of the generated
+makefile. Note that any subdirectory of $<$sources$>$ that contains a header
+file is automatically added to that list of paths.
+This option may be used any number of times.
+
+
+\item[\textbf{-profile}] \mbox{}
+
+In the generated makefile, activate the profiling option
+when invoking the compiler and linker.
+This allows the profiling analysis of the application 
+with tools such as gprof.
+
+
+\item[\textbf{-coverage}] \mbox{}
+
+In the generated makefile, activate the basic block coverage analysis option
+when invoking the compiler and linker.
+This allows the structural analysis of the application 
+with tools such as tcov.
+
+
+\item[\textbf{-inline $|$ -include}] \mbox{}
+
+Decide how external makefiles (eg \emph{extra-Linux.mak}) taken from the PELICANS
+repository are accounted for in the generated makefile.
+If \texttt{-inline}, they are copied line by line  (default
+behaviour). If \texttt{-include}, the \texttt{include} directive of gmake is used.
+
+
+\item[\textbf{-mSTD}] \mbox{}
+
+Add the directories of the PELICANS library "ExamplesOfApplication"
+to the list of paths to be searched for sources.
+
+
+\item[\textbf{-mPELICANS}] \mbox{}
+
+Add the directories of the PELICANS repository (except
+those of the library "ExamplesOfApplication") to the list
+of paths to be searched for sources. This option is
+reserved to the internal administration of PELICANS.
+
+
+\item[\textbf{-vcproj project.vcproj}] \mbox{}
+
+Update Visual C++ project by updating list of include directories
+and list of files.
+
+\end{description}
+\subsection*{ARGUMENTS\label{depend_ARGUMENTS}\index{depend!ARGUMENTS}}
+\begin{description}
+
+\item[\textbf{opt}] \mbox{}
+
+Decide the compilation level that will be set in the
+generated makefile. This option influences on the one
+hand the optimization used by the compiler when generating
+the binary code and on the other hand the assertions that
+will be evaluated. Allowed values for \texttt{opt}
+are: \texttt{dbg}, \texttt{opt2}, \texttt{opt1}, \texttt{opt0}, \texttt{optpg} or \texttt{optcov}.
+
+\begin{description}
+
+\item[\textbf{dbg}] \mbox{}
+
+The commands of the generated makefile will ask the compiling system
+to generate a binary code prepared for debugging.
+
+
+\item[\textbf{opt2},\textbf{opt1},\textbf{opt0}] \mbox{}
+
+The commands of the generated makefile will ask the compiling system
+to use an extensive set of optimization techniques
+when generating the binary code.
+
+
+\item[\textbf{dbg},\textbf{opt2}] \mbox{}
+
+In the generated makefile, the commands invoking the compiler
+will define the preprocessor name \texttt{LEVEL} as \texttt{2}. Thus,
+when running the application,
+the preconditions will be evaluated, and the postconditions, invariants
+and checks will be possibly evaluated (depending on command-line switches,
+see \texttt{pel run}).
+
+
+\item[\textbf{opt1}] \mbox{}
+
+In the generated makefile, the commands invoking the compiler
+will define the preprocessor name \texttt{LEVEL} as \texttt{1}. Thus
+the preconditions will be evaluated when running the application,
+but the statement associated to
+postconditions, invariants and checks will be removed during
+preprocessing stage.
+
+
+\item[\textbf{opt0}] \mbox{}
+
+In the generated makefile, the commands invoking the compiler
+will define the preprocessor name \texttt{LEVEL} as \texttt{0}. Thus
+any statement associated to a precondition, a postcondition, an
+invariant or a check will be removed during the
+preprocessing stage.
+
+
+\item[\textbf{optpg}] \mbox{}
+
+Same as \textbf{opt0} combined with \textbf{-profile}. Sets the most agressive optimisation level and sets the profiling option.
+
+
+\item[\textbf{optcov}] \mbox{}
+
+Same as \textbf{-coverage}. Neither optimisation options nor debug information are generated by the compiling system.
+
+\end{description}
+
+\item[\textbf{ \emph{bindir} }] \mbox{}
+
+Any file produced (objects, libraries, executables, dependency files ...)
+will be located in \emph{bindir}. By default, the generated makefile,
+called \emph{Makefile}, is created in the directory \emph{bindir}.
+
+
+\item[\textbf{ \emph{sources} }] \mbox{}
+
+A list of directories and source files.
+\texttt{pel depend} will add the given source files and will add the source files found in the given directories.
+Any header file or source file found in
+a subdirectory of \emph{sources} is considered to be part of the application.
+Header files are those having a \emph{.h} or \emph{.hh} extension whereas source
+files are those having a \emph{.cpp}, \emph{.cc}, \emph{.c}, \emph{.F} or \emph{.f} extension.
+
+\end{description}
+\subsection*{EXAMPLES\label{depend_EXAMPLES}\index{depend!EXAMPLES}}
+\begin{description}
+
+\item[\texttt{pel depend -l pel1 dbg lib .}] \mbox{}
+
+The current application is made of all the header and source files
+located in any subdirectory of the working directory. 
+The generated \emph{Makefile} will be created
+in the directory \emph{lib}. Further compilations will be performed with the
+\emph{dbg} compilation level, and linking will be performed with the library
+\emph{libpel1.so}.
+
+
+\item[\texttt{pel depend -l pel0 -I hea -compiler gcc opt1 bin src}] \mbox{}
+
+The current application is made of all the header and source files
+located in any subdirectory of \emph{src} . The generated \emph{Makefile} will be
+created in the directory \emph{bin}. Further compilations will be performed
+by \texttt{gcc} with the \texttt{opt1} compilation level, and linking will be performed
+with the library \emph{libpel0.so}. The current application probably uses header
+files that are not in the directory \emph{src} and that are not PELICANS header
+files since the options \texttt{-I hea} is used.
+
+
+\item[\texttt{pel depend opt1 bin src pelsrc /home/users/algo.cc -precomp lib}] \mbox{}
+
+Compile the single source file /home/users/algo.cc and the source directories src and pelsrc using precompiled objects in lib.
+
+\end{description}
+\subsection*{ENVIRONMENT\label{depend_ENVIRONMENT}\index{depend!ENVIRONMENT}}
+
+
+It is possible to store arguments and options, overwritable by the command
+line arguments, in the environment variable PELDEPEND.
+
+\clearpage
+\section{build\label{build}\index{build}}
+
+
+Generation of executables, objects and libraries related to PELICANS-based applications
+
+\subsection*{SYNOPSIS\label{build_SYNOPSIS}\index{build!SYNOPSIS}}
+
+
+pel build [-help$|$-man]
+
+
+
+pel build [options...] -exe \emph{bindir}
+
+
+
+pel build [options...] -object \emph{filename.o} \emph{bindir}
+
+
+
+pel build [options...] -archive \emph{archname.so} \emph{bindir}
+
+\subsection*{DESCRIPTION\label{build_DESCRIPTION}\index{build!DESCRIPTION}}
+
+
+The generation of executables, objects and libraries associated to
+a particular PELICANS-based application can be simply performed by using
+the GNU \texttt{make} utility. The first step consists in building
+a suitable makefile with the \texttt{pel depend} utility. The second
+step consists in running GNU \texttt{make}  with suitable arguments,
+a task whose responsiblity is assigned to \texttt{pel build}.
+
+
+
+Essentially, GNU \texttt{make} is invoked with the
+following instructions:
+
+\begin{enumerate}
+
+\item 1.
+
+read the makefile called \emph{Makefile}, located in the directory \emph{bindir}
+(unless otherwise specified with the \texttt{-makefile} options);
+
+
+\item 2.
+
+update the target determined by the mutually exclusive instructions
+\texttt{-exe,-object,-archive};
+
+
+\item 3.
+
+use a specific set of make options that are determined by
+the calling options of \texttt{pel build}.
+
+\end{enumerate}
+\subsection*{OPTIONS\label{build_OPTIONS}\index{build!OPTIONS}}
+\begin{description}
+
+\item[\textbf{-h, -help}] \mbox{}
+
+Print a brief help message and exit.
+
+
+\item[\textbf{-m, -man}] \mbox{}
+
+Print the manual page and exit.
+
+
+\item[\textbf{-v, -verbose}] \mbox{}
+
+Execute verbosely.
+
+
+\item[\textbf{-e, -E, -exe}] \mbox{}
+
+Ask \texttt{make} to
+update the target defined by 
+the executable of the PELICANS-based application.
+
+
+\item[\textbf{-o, -O, -object} \emph{filename.o}] \mbox{}
+
+Ask \texttt{make} to update the target
+defined by the module object \emph{filename.o}
+(typically, \texttt{filename} is the name of one of
+the classes making up
+the considered application).
+
+
+\item[\textbf{-a, -A, -archive} \emph{archname.ext}] \mbox{}
+
+Ask \texttt{make} to update the target
+defined by the archive \emph{archname.ext}
+(the associated command depends on
+the extension \emph{.ext}).
+
+
+\item[\textbf{-link\_mode} link\_mode] \mbox{}
+
+Set the linker:
+    link\_mode=cc : use the c++ linker (default)
+    link\_mode=c  : use the c linker
+    link\_mode=f  : use the fortran linker
+
+
+\item[\textbf{-make} makename] \mbox{}
+
+Use the command of name \texttt{makename} as 
+the make command (default: \texttt{make}).
+This option is typically used for systems
+on which the GNU \texttt{make} utility is
+called \texttt{gmake}.
+
+
+\item[\textbf{-makefile} makefile] \mbox{}
+
+Set the makefile used for all tasks of compilation,
+assembly and linking. Default is: \emph{bindir}/Makefile.
+
+
+\item[\textbf{-with} EXTlist] \mbox{}
+
+Notify that the current application DOES require the
+packages of \texttt{EXTlist} so that the archives
+associated to those packages
+should be added to the list of files to link.
+\texttt{EXTlist} is a comma separated list denoting external APIs
+that might be used by some components of PELICANS.
+This option is meaningful only for the targets
+of the options \texttt{-exe} and \texttt{-archive}.
+Note that \texttt{pel depend} defines some defaults in the
+generated makefile for all possible external libraries.
+
+
+\item[\textbf{-without} EXTlist] \mbox{}
+
+Notify that the current application DOES NOT require the
+packages of \texttt{EXTlist} so that the archives
+associated to those packages
+should NOT be added to the list of files to link.
+\texttt{EXTlist} is a comma separated list denoting external APIs
+that might be used by some components of PELICANS.
+This option is meaningful only for the targets
+of the options \texttt{-exe} and \texttt{-archive}.
+Note that \texttt{pel depend} defines some defaults in the
+generated makefile for all possible external libraries.
+
+\end{description}
+\subsection*{ARGUMENT\label{build_ARGUMENT}\index{build!ARGUMENT}}
+\begin{description}
+
+\item[\textbf{ \emph{bindir} }] \mbox{}
+
+Directory containing the makefile generated by \texttt{pel depend},
+called \emph{Makefile}. Any file produced by the execution
+of \texttt{pel build} (that is: when updating a target of \emph{Makefile})
+will be created in that directory (objects, libraries, executable,
+dependency files ...). The executable will be called \emph{exe}.
+
+\end{description}
+\subsection*{EXAMPLES\label{build_EXAMPLES}\index{build!EXAMPLES}}
+\begin{description}
+
+\item[\texttt{pel depend -l pel1 dbg bin/dbg .}] \mbox{}
+\item[\texttt{pel build -exe bin/dbg}] \mbox{}
+
+The current application is made of all the header and source files
+located in any subdirectory of the working directory. The
+generated \emph{Makefile}, the executable \emph{exe} and all the files
+created during the compiling process will be located in the
+subdirectory \emph{bin/dbg} of the working directory.
+
+
+\item[\texttt{pel build -without petsc,opengl -exe lib}] \mbox{}
+
+All the files generated for and during the compilation process
+are located in the subdirectory lib of the working directory
+(and possibly in the working directory itself).
+Linking will be performed without the archives associated
+to the PETSc and OpenGL libraries.
+
+
+\item[\texttt{pel build -object myclass.o /usr/smith/appli/bin}] \mbox{}
+
+Update the target \emph{myclass.o} of the makefile \emph{Makefile}
+located in the directory \emph{/usr/smith/appli/bin}, that
+is: build object file \emph{myclass.o} in that directory.
+
+\end{description}
+\subsection*{ENVIRONMENT\label{build_ENVIRONMENT}\index{build!ENVIRONMENT}}
+
+
+It is possible to store arguments and options, overwritable by the command
+line arguments, in the environment variable PELBUILD.
+
+\clearpage
+\section{run\label{run}\index{run}}
+
+
+Execution of a PELICANS-based application
+
+\subsection*{SYNOPSIS\label{run_SYNOPSIS}\index{run!SYNOPSIS}}
+
+
+pel run [-help$|$-man]
+
+
+
+pel run [options...] \emph{exe} \emph{data} \emph{resu}
+
+
+
+pel run -build\_pattern \emph{filename} -R \emph{dir} \emph{exe} \emph{data} \emph{resu}
+
+
+
+pel run -check\_pattern \emph{filename} \emph{exe} \emph{data} \emph{resu}
+
+\subsection*{DESCRIPTION\label{run_DESCRIPTION}\index{run!DESCRIPTION}}
+
+
+\texttt{pel run} executes a given PELICANS-based application with a
+given data file, and copy all the output messages in a given file
+(or set of files in parallel mode).
+
+
+
+Execution is performed in the current directory unless the option
+\texttt{-R} is specified. Other options are devoted to the customization
+of the execution.
+
+\subsection*{ARGUMENTS\label{run_ARGUMENTS}\index{run!ARGUMENTS}}
+\begin{description}
+
+\item[\textbf{ \emph{exe} }] \mbox{}
+
+Name of the executable of the PELICANS-based application to run
+(this executable has usually been built with a \texttt{pel build}
+command).
+
+
+\item[\textbf{ \emph{data} }] \mbox{}
+
+Name of the file storing the PELICANS Hierarchical Data Structure
+used as a data file for the PELICANS-based application to run.
+
+
+\item[\textbf{ \emph{resu} }] \mbox{}
+
+In sequential mode :
+name of a file into which any message directed to the standard
+error or to the standard output will be copied (this file will
+be created or truncated).
+In parallel mode : basename of the files into which any message
+directed to the streams \texttt{PEL::out()} and \texttt{PEL::err()} will
+be copied (these files will be created or truncated). The extension
+of these files is the rank of their associated process.
+
+\end{description}
+\subsection*{OPTIONS\label{run_OPTIONS}\index{run!OPTIONS}}
+\begin{description}
+
+\item[\textbf{-h, -help}] \mbox{}
+
+Print a brief help message and exit.
+
+
+\item[\textbf{-m, -man}] \mbox{}
+
+Print the manual page and exit.
+
+
+\item[\textbf{-noverb}] \mbox{}
+
+Deactivate the verbose option of the PELICANS-based application
+(which is activated by default).
+
+
+\item[\textbf{-R} \emph{dir}] \mbox{}
+
+Instead of running in the current directory, run recursively in
+all the subdirectories of \emph{dir} (including \emph{dir} itself)
+that contain a file of name \emph{data}.
+
+
+\item[\textbf{-Cpost}] \mbox{}
+
+Activate the evaluation of the postconditions (only effective
+for sources compiled with the '\texttt{opt2}' or '\texttt{dbg}' compilation level, 
+see \texttt{pel depend} ).
+
+
+\item[\textbf{-Call}] \mbox{}
+
+Activate the evaluation of the postconditions, invariants and
+checks (only effective
+for sources compiled with the '\texttt{opt2}' or '\texttt{dbg}' compilation level,
+see \texttt{pel depend} ).
+
+
+\item[\textbf{-Xpetsc} \emph{option}] \mbox{}
+
+Transfer \emph{option} to the PETSc external API.
+
+
+\item[\textbf{-X} \emph{option}] \mbox{}
+
+Transfer \emph{option} to external APIs.
+
+\end{description}
+
+
+To execute a PELICANS-based application in parallel on
+multiple processors, \texttt{pel run} forwards its request
+to \texttt{mpirun}.
+
+\begin{description}
+
+\item[\textbf{-np} n] \mbox{}
+
+Specify the number of processors to run on
+(call \texttt{mpirun} with \textbf{-np} n as an option).
+
+
+\item[\textbf{-machinefile} \emph{file}] \mbox{}
+
+Take the list of possible machines to run on from
+the file \emph{file} (call \texttt{mpirun} with
+\textbf{-machinefile} \emph{file} as an option).
+
+
+\item[\textbf{-nolocal}] \mbox{}
+
+Call \texttt{mpirun} with \textbf{-nolocal} as an option.
+
+\end{description}
+
+
+During the final stage of the execution of a PELICANS-based application,
+the object to which \texttt{PEL\_Root::object()} refers is destroyed
+(internally in the PELICANS framework), leading to
+the destruction of all remaining instances of subclasses of \texttt{PEL\_Object}
+whose owner is not the \texttt{NULL} object. But it is the reponsibility of
+the developer of the PELICANS-based application to call the \texttt{destroy()}
+method on behalf of any objects that he may have created with \texttt{NULL}
+as owner. If such is not the case, some dynamically allocated memory
+might not be released when the execution terminates, and an ad-hoc
+message is printed by PELICANS. The following two options
+help identifying the functions in which non-destroyed objects
+have been created. They should be used during two successive runs:
+the first run, with the \texttt{-Cobject} option identifies a non-destroyed
+object whereas the second run, with the \texttt{-catch} option locates
+the function in which it had been created.
+
+\begin{description}
+
+\item[\textbf{-Cobjects}] \mbox{}
+
+Assign an identification number to each object that
+has not been destroyed when the execution terminates,
+and display all available information about them
+(the identification number is an integer appearing
+between brackets on top of each printed block).
+
+
+\item[\textbf{-catch} nb] \mbox{}
+
+Display a warning message at runtime when the
+object whose identification number is \texttt{nb}
+is created (necessarily with the \texttt{NULL} owner).
+
+\end{description}
+
+
+A PELICANS-based application that can be executed by \texttt{pel run}
+requires a data file (whose name is the argument \emph{data}).
+That file stores a Hierarchical Data System whose structure
+is implicitely defined by the application itself (through
+calls to the various member functions of \texttt{PEL\_ModuleExplorer}).
+PELICANS offers the possibility to "learn" that structure
+during an execution and to record this infered knowledge
+in a called "pattern" file (option \texttt{-build\_pattern}).
+This pattern file can be used in turn to check
+the conformity of other data file with this structure
+(option \texttt{-check\_pattern}).
+
+
+
+These two options are mutually exclusive. The activation of
+one of them inhibits the autocheck feature (see below).
+
+\begin{description}
+
+\item[\textbf{-build\_pattern} \emph{filename}] \mbox{}
+
+During the run, extract the pattern of the hierarchical
+data structure associated to \emph{data}, and add it to the
+file called \emph{filename}
+(which is created if it did not existed before, or extended otherwise).
+
+
+\item[\textbf{-check\_pattern} \emph{filename}] \mbox{}
+
+Prior to execution, check the conformity of \emph{data}
+with the pattern file \emph{filename}.
+
+\end{description}
+
+
+Let us consider an execution associated to a given data file \emph{data}. If
+there is no available pattern file against which the conformity
+of \emph{data} can be checked, \texttt{pel run} offers an "autocheck"
+mode which splits the execution in two steps: a run is first performed
+and a pattern is extracted from \emph{data} (in a temporary file), then, after
+completion of that run, \emph{data} is checked against the extracted
+pattern. This mode allows finding unread parts in the data
+file which may be caused by typing errors.
+
+\begin{description}
+
+\item[\textbf{-autocheck}] \mbox{}
+
+Perform the run in the "autocheck" mode. This option is activated by default,
+unless the options \textbf{-build\_pattern} or \textbf{-check\_pattern} are present.
+
+
+\item[\textbf{-noautocheck}] \mbox{}
+
+Deactivate the "autocheck" mode.
+
+\end{description}
+\subsection*{EXAMPLES\label{run_EXAMPLES}\index{run!EXAMPLES}}
+\begin{description}
+
+\item[\texttt{pel run  ../bin/exe data.pel resu}] \mbox{}
+
+Run executable \emph{exe} located in the directory \emph{../bin/}
+with the data file \emph{data.pel}, store
+all outputs in the file \emph{resu} and perform an autocheck on \emph{data.pel}.
+
+
+\item[\texttt{pel run -Cpost ../bin/exe data.pel resu}] \mbox{}
+
+Same as before, with in addition the evaluation of all postconditions
+of the member functions compiled with the '\texttt{dbg}' or '\texttt{opt2}'
+compilation level.
+
+
+\item[\texttt{pel run -np 3 -machinefile ms \$EXE0 data.pel resu}] \mbox{}
+
+Launch the executable whose name is stored in the \texttt{EXEO} environment
+variable on 3 processors, with the data file \emph{data.pel}.
+The first process will be on the current machine, whereas the other ones will
+be on the machines defined in the file \emph{ms}).
+Outputs directed to \texttt{PEL::out()}
+and \texttt{PEL::err()} will be copied in the files \emph{resu.0}, \emph{resu.1}
+and \emph{resu.2} (first, second and third process).
+
+
+\item[\texttt{pel run -np 3 -machinefile ms -nolocal \$EXE0 data.pel resu}] \mbox{}
+
+Same as before, but the 3 processes will be launched on the machines defined
+in the file \emph{ms}.
+
+
+\item[\texttt{pel run -np 3 -machinefile ms -nolocal -Xpetsc -trace \$EXE0 data.pel resu}] \mbox{}
+
+Same as before, with a transfer of the \emph{-trace} option to PETSc.
+
+
+\item[\texttt{pel run -R Test bin/exe data.pel resu}] \mbox{}
+
+If \texttt{EXE} denotes the file \emph{exe} located in the subdirectory
+\emph{bin} of the working directory, this command is equivalent as
+executing: $\:$\texttt{pel$\:$run$\:$EXE$\:$data.pel$\:$resu}$\:$
+in all the subdirectories of \emph{Test} containing
+a file \emph{data.pel}.
+
+
+\item[\texttt{pel run -R -build\_pattern etc/pattern.pel bin/exe data.pel resu}] \mbox{}
+
+Same as before, with in addition the learning and storage of the
+requested structure of the data files in \emph{etc/pattern.pel}. 
+No autocheck is performed.
+
+
+\item[\texttt{pel run -check\_pattern ../etc/pattern.pel ../bin/exe data.pel resu}] \mbox{}
+
+Check the conformance of \emph{data.pel} with \emph{../etc/pattern.pel}
+and, if successful, run subsequently \emph{../bin/exe} with data file
+\emph{data.pel} and store all outputs in the file \emph{resu}. No autocheck is
+performed.
+
+\end{description}
+\clearpage
+\section{test\label{test}\index{test}}
+
+
+Comparison between runs of a PELICANS-based application (for regression testing)
+
+\subsection*{SYNOPSIS\label{test_SYNOPSIS}\index{test!SYNOPSIS}}
+
+
+pel test [-help$|$-man]
+
+
+
+pel test [options...] \emph{exe} \emph{dirs}
+
+
+
+pel test -build\_pattern \emph{filename} \emph{exe} \emph{dirs}
+
+
+
+pel test -verify\_pattern \emph{filename} \emph{exe} \emph{dirs}
+
+
+
+pel test -build\_then\_verify\_pattern \emph{filename} \emph{exe} \emph{dirs}
+
+\subsection*{DESCRIPTION\label{test_DESCRIPTION}\index{test!DESCRIPTION}}
+
+
+Comparing in details two runs of an application is important for
+the sake of non regression or installation testing.
+
+
+
+Given a hierarchy of directories containing reference runs
+of a given application, \texttt{pel test} will perform the following actions:
+
+\begin{enumerate}
+
+\item 1.
+
+create, in the
+working directory, a subdirectory
+in which that hierarchy is duplicated;
+
+
+\item 2.
+
+in all subdirectories of the duplicate hierarchy, run the application
+with the associated reference data file (called \emph{data.pel});
+
+
+\item 3.
+
+compare the results of this run with the reference results.
+
+\end{enumerate}
+
+
+On completion, the conclusions of all these comparisons are recorded
+in a report file located in the current directory.
+
+
+
+The essentials of \texttt{pel test} tasks are forwarded to the PELICANS-based
+application "peltest" (contained in the executable specified by the
+\textbf{-peltest\_exe} option if any, or by the argument \emph{exe}).
+
+
+
+Further details are given below.
+
+\begin{description}
+
+\item[.] \mbox{}
+
+If a test failure is pronounced, the character sequence
+"Test failed" will appear in the report file.
+
+
+\item[.] \mbox{}
+
+Runs are performed with the commands like:
+
+
+
+sequential: \emph{exe} \emph{data.pel} -v [opts...] $>$ \emph{resu}
+
+
+
+parallel:   \emph{mpirun} [mpi\_opts...] \emph{exe} \emph{data.pel} -v -o \emph{resu} [opts...]
+
+
+
+where the options \texttt{opts...} and \texttt{mpi\_opts...} are determined
+for all runs by the calling options of \texttt{pel test} (see below)
+and for one specific run by a possible file \emph{config.pel} in
+the reference directory of that run.
+
+
+
+A file \emph{config.pel} containing:
+
+\begin{verbatim}
+  MODULE test_config
+    run_options = vector( "...", "..." )
+  END MODULE test_config
+\end{verbatim}
+
+
+leads to the addition in \texttt{opts...} of all items in the StringVector
+(only for the run associated to the directory
+containing the considered file \emph{config.pel}).
+
+
+
+A file \emph{config.pel} containing:
+
+\begin{verbatim}
+  MODULE test_config
+    mpi_options = vector( "...", "..." )
+  END MODULE test_config
+\end{verbatim}
+
+
+switches to parallel execution and leads to the addition in \texttt{mpi\_opts...} of
+all items in the StringVector (only for the run associated to the directory
+containing the considered file \emph{config.pel}).
+An additional optional StringVector data of keyword \texttt{mpi\_machinefile}
+can be used to specify the list of possible machines to run on
+(this data is written on a temporary machine file transmitted to \emph{mpirun}
+via the option \texttt{-machinefile}).
+
+
+\item[.] \mbox{}
+
+The exit code is tested. The test failure is pronounced
+if it is non zero, unless it exists a file \emph{config.pel}, stored in
+the reference directory, containing:
+
+\begin{verbatim}
+  MODULE test_config
+    failure_expected = true
+  END MODULE test_config
+\end{verbatim}
+
+
+in which case success might be pronounced if exit code is non zero and
+one or more produced files called \emph{expected.err*} are identical
+(same name and same content) to those present in the reference directory.
+
+
+\item[.] \mbox{}
+
+The test failure is pronounced if the \emph{resu} file has not been produced.
+
+
+\item[.] \mbox{}
+
+All files that have been produced during the run (other than \emph{resu}) 
+are compared (as described below) with the reference ones (that must exist).
+This comparison might be avoided from some particular file of a particular
+run if the associated reference directory stores a file \emph{config.pel}
+containing:
+
+\begin{verbatim}
+  MODULE test_config
+    files_to_ignore = vector( "...", "..." )
+  END MODULE test_config
+\end{verbatim}
+
+
+The items of the StringVector correspond to files produced during the run for
+which no comparison will be performed.
+
+
+\item[.] \mbox{}
+
+The comparison method between the reference and produced files
+depends on the format of these files.
+
+
+
+There are three "native" formats understood by PELICANS:
+the format called GENE, for \texttt{TIC} postprocessing; the
+format called PEL, for Hierarchical Data Structures with the PELICANS format;
+the format called CSV, for comma separated values.
+
+
+
+The files with format GENE, PEL or CSV are compared to the reference ones
+with the PELICANS-based application "pelcmp" (contained in the
+executable specified by the \textbf{-peltest\_exe} option if any, or by the
+argument \emph{exe}). If they are not identical, the comparison results
+are recorded in the report file (the test failure is not pronounced since
+differences may be acceptable, depending on the use case).
+
+
+
+The other files are compared line by line with the reference ones.
+If they are not the same, the test failure is pronounced.
+
+
+\item[.] \mbox{}
+
+The format of a file, say \emph{save.zzz}, is determined as follows.
+It can be specified via a configuration file \emph{config.pel} stored
+in the reference directory:
+
+\begin{verbatim}
+  MODULE test_config
+    MODULE PEL_Comparator
+      MODULE xxx               // xxx is a non significant name
+        filename = "save.zzz"
+        format = "CSV"         // either "GENE", "PEL" of "CSV"
+      END MODULE xxx
+    END MODULE PEL_Comparator
+  END MODULE test_config
+\end{verbatim}
+
+
+If such a specification is absent, the format is identified on the
+basis of a motif appearing in the file name: \emph{.gene} gives the GENE
+format, \emph{.pel} gives the PEL format, \emph{.csv} gives the CSV format.
+
+
+\item[.] \mbox{}
+
+The files with format GENE or PEL contain data identified by keywords.
+The comparison might ignore some of these data if the associated
+reference directory stores a file \emph{config.pel}
+containing:
+
+\begin{verbatim}
+  MODULE test_config
+    MODULE PEL_Comparator
+      MODULE xxx               // xxx is a non significant name
+        filename = "save.zzz"  // file with format GENE or PEL
+        ignore_data = vector( "...", "..." )
+      END MODULE xxx
+    END MODULE PEL_Comparator
+  END MODULE test_config
+\end{verbatim}
+
+
+The items of the StringVector correspond to keywords of data that
+should be ignored during the comparison.
+
+
+\item[.] \mbox{}
+
+The floating point values contained in the reference and produced files
+(with format GENE, PEL or CSV) are compared with PEL::double\_equality.
+The last two arguments of
+this member function are respectively called a\_dbl\_eps (a
+kind of tolerance on relative errors) and a\_dbl\_min (a lower bound under which
+values are undistinguishable from zero).
+
+
+
+By default, a\_dbl\_eps and a\_dbl\_min are equal to zero (which means that
+comparisons without any tolerance are performed).
+They can be given other values either globally (for all runs)
+using the \texttt{-dbl\_eps} and \texttt{-dbl\_min} options, or for a specific
+run via a file \emph{config.pel} in the reference directory of that
+run.
+
+
+
+For instance, a file \emph{config.pel} containing:
+
+\begin{verbatim}
+  MODULE test_config
+     MODULE PEL_Comparator
+        MODULE xxx                       // xxx is a non significant name
+           filename = "save.csv"
+           MODULE double_comparison
+              dbl_min = 1.e-10
+              dbl_eps = 1.e-8
+           END MODULE double_comparison
+        END MODULE xxx
+     END MODULE PEL_Comparator
+  END MODULE test_config
+\end{verbatim}
+
+
+will set a\_dbl\_min=1.e-10 and a\_dbl\_eps=1.e-8 for comparisons between
+the floating point values of the files \emph{save.csv}.
+
+
+
+Note that the command line options \texttt{-dbl\_eps} and \texttt{-dbl\_min}
+always overread the options stated in the files \emph{config.pel}.
+Moreover the line option \texttt{-exact} can be used to ignore any
+setting of a\_dbl\_min and a\_dbl\_max in the \emph{config.pel} files.
+
+\end{description}
+
+
+When the \texttt{-verify\_pattern} option is activated, the behavior
+of \texttt{pel test} is slightly different: the only test performed
+is the conformance of the reference data file \emph{data.pel} with
+the given pattern file.
+
+\subsection*{ARGUMENTS\label{test_ARGUMENTS}\index{test!ARGUMENTS}}
+\begin{description}
+
+\item[\textbf{exe}] \mbox{}
+
+Name of the executable of the PELICANS-based application to run.
+
+
+\item[\textbf{dirs}] \mbox{}
+
+List of the directories defining the reference runs. Any subdirectory
+of an item of \emph{dirs} containing a file \emph{data.pel} is considered
+by \texttt{pel test} as a definition of a reference run whose data file
+is \emph{data.pel}. This subdirectory must contain the reference
+version of all the files produced when calling \emph{exe} with that
+data file. It might also contain (see above) a file called \emph{config.pel}
+and, more rarely, files called \emph{expected.err*}.
+
+\end{description}
+\subsection*{OPTIONS\label{test_OPTIONS}\index{test!OPTIONS}}
+\begin{description}
+
+\item[\textbf{-h, -help}] \mbox{}
+
+Print a brief help message and exit.
+
+
+\item[\textbf{-m, -man}] \mbox{}
+
+Print the manual page and exit.
+
+
+\item[\textbf{-v, -verbose}] \mbox{}
+
+Execute verbosely.
+
+
+\item[\textbf{-Cpost}] \mbox{}
+
+Call \texttt{pel run} with this option for all runs.
+
+
+\item[\textbf{-Call}] \mbox{}
+
+Call \texttt{pel run} with this option for all runs.
+
+
+\item[\textbf{-build\_pattern} \emph{filename}] \mbox{}
+
+Call \texttt{pel run} with this option for all runs.
+
+
+\item[\textbf{-verify\_pattern} \emph{filename}] \mbox{}
+
+Do not perform the runs, but instead use the PELICANS-based application
+"check" (contained in the argument \emph{exe}) to check the conformity
+of all reference data file \emph{data.pel} with the pattern file \emph{filename}.
+
+
+\item[\textbf{-build\_then\_verify\_pattern} \emph{filename}] \mbox{}
+
+Call \texttt{pel run} with the option \textbf{-build\_pattern} \emph{filename} 
+for all runs and then check the conformity
+of all reference data file \emph{data.pel} with the created pattern file
+\emph{filename} (equivalent to two calls of \texttt{pel test}
+with successively the \textbf{-build\_pattern} and the \textbf{-verify\_pattern} options).
+
+
+\item[\textbf{-test\_directory} \emph{dirname}] \mbox{}
+
+Duplicate the hierarchy of directories containing the reference runs
+in the subdirectory \emph{dirname} of the working directory,
+and run the application in the subdirectories of \emph{dirname} for further
+result comparison with the reference runs (default: \emph{PELICANS\_TEST}).
+
+
+\item[\textbf{-peltest\_exe} \emph{texe}] \mbox{}
+
+Specify the executable containing the "peltest" and "pelcmp" applications.
+Default is the argument \emph{exe} itself.
+
+
+\item[\textbf{-dbl\_eps} \emph{eps}] \mbox{}
+
+Specify the a\_dbl\_eps argument in calls to PEL::double\_equality
+when comparing floating point values. This option is only
+significant for files with format PEL, CSV or GENE.
+
+
+\item[\textbf{-dbl\_min} \emph{min}] \mbox{}
+
+Specify the a\_dbl\_min argument in calls to PEL::double\_equality
+when comparing floating point values. This option is only
+significant for files with format PEL, CSV or GENE.
+
+
+\item[\textbf{-exact}] \mbox{}
+
+Always perform comparisons between floating point values
+without any tolerance, whatever settings of a\_dbl\_eps
+and a\_dbl\_eps in files \emph{config.pel}.
+
+\end{description}
+\subsection*{EXAMPLES\label{test_EXAMPLES}\index{test!EXAMPLES}}
+\begin{description}
+
+\item[\texttt{pel test ../bin/exe ../RegressionTests}] \mbox{}
+
+Run executable \emph{exe} located in the directory \emph{../bin}
+with all data files \emph{data.pel} contained in the subdirectories
+of \emph{../RegressionTests} and compare the results with the reference ones.
+Create a report file in the current directory recording the conclusions
+of all comparisons.
+
+
+\item[\texttt{pel test -build\_pattern pat.pel ../bin/exe ../Tests}] \mbox{}
+
+Same as before, with in addition the learning and storage of the requested
+structure of the data files in \emph{pat.pel}.
+
+
+\item[\texttt{pel test -verify\_pattern pat.pel ../bin/exe ../Appli}] \mbox{}
+
+Check the conformance with \emph{pat.pel} of all files \emph{data.pel} contained 
+in a subdirectory of \emph{../Appli}, and record the conclusions in a report 
+file in the current directory.
+
+\end{description}
+\clearpage
+\section{time\label{time}\index{time}}
+
+
+Management of a CPU time database for PELICANS-based applications
+
+\subsection*{SYNOPSIS\label{time_SYNOPSIS}\index{time!SYNOPSIS}}
+
+
+pel time [-help$|$-man]
+
+
+
+pel time [-verbose] -build\_and\_add \emph{file.db}
+
+
+
+pel time [-verbose] -merge \emph{target.db} \emph{source.db}
+
+
+
+pel time [-verbose] -compare \emph{file1.db} \emph{file2.db}
+
+
+
+pel time [-verbose] -print \emph{file.db}
+
+\subsection*{DESCRIPTION\label{time_DESCRIPTION}\index{time!DESCRIPTION}}
+
+
+\texttt{pel time} is devoted to the management of
+data bases collecting the execution time of PELICANS-based applications.
+This tool is used to manage execution timing database.
+These databases are built from result files produced by PELICANS-based applications.
+
+\subsection*{OPTIONS\label{time_OPTIONS}\index{time!OPTIONS}}
+\begin{description}
+
+\item[\textbf{-h, -help}] \mbox{}
+
+Print a brief help message and exit.
+
+
+\item[\textbf{-m, -man}] \mbox{}
+
+Print the manual page and exit.
+
+
+\item[\textbf{-v, -verbose}] \mbox{}
+
+Execute verbosely.
+
+
+\item[\textbf{-build\_and\_add} \emph{file.db}] \mbox{}
+
+Search recursively from the current directory all
+files called \emph{resu}, which are supposed to contain the messages
+associated to the run of a PELICANS-based application (collected
+with the \texttt{pel -run} utility). For each file \emph{resu}, the execution time
+is read and added into \emph{file.db} with the directory name as key (entries
+that already existed are replaced).
+
+
+\item[\textbf{-merge} \emph{target.db} \emph{source.db}] \mbox{}
+
+Add all entries of \emph{source.db} into \emph{target.db}
+(the entries that already exist in \emph{target.db} are replaced).
+
+
+\item[\textbf{-compare} \emph{file1.db} \emph{file2.db}] \mbox{}
+
+Compare \emph{file1.db} and \emph{file2.db}two database and print 
+the differences.
+
+
+\item[\textbf{-print} \emph{file.db}] \mbox{}
+
+Display the content of \emph{file.db}.
+
+\end{description}
+\subsection*{EXAMPLES\label{time_EXAMPLES}\index{time!EXAMPLES}}
+\begin{description}
+
+\item[\texttt{pel time -build\_and\_add cpu.db}] \mbox{}
+
+Build the database \emph{cpu.db} from all the \emph{resu} files of the
+subdirectories of the current directory.
+
+
+\item[\texttt{pel time -print cpu.db}] \mbox{}
+
+Display the content of \emph{cpu.db}
+
+
+\item[\texttt{pel time -compare cur.db ref.db}] \mbox{}
+
+Compare \emph{cur.db} and \emph{ref.db}
+
+\end{description}
+\clearpage
+\section{arch\label{arch}\index{arch}}
+
+
+Discover and name the compiler architecture.
+
+\subsection*{SYNOPSIS\label{arch_SYNOPSIS}\index{arch!SYNOPSIS}}
+
+
+pel arch [-help$|$-man]
+
+
+
+pel arch [-verbose] compiler
+
+
+
+pel arch -getvariable $<$var$>$ compiler
+
+
+
+pel arch -getvariable\_extra $<$var$>$ compiler
+
+\subsection*{DESCRIPTION\label{arch_DESCRIPTION}\index{arch!DESCRIPTION}}
+
+
+\texttt{pel arch} discovers the compiler architecture by selecting the
+architecture-makefile and the extra-makefile that are the more closely
+related to the current machine, the chosen compiler and external APIs, and
+returns a string caracterizing the matching compiler architecture (its name).
+
+
+
+\texttt{pel arch} searches successively two files:
+
+\begin{itemize}
+
+\item 
+
+the architecture-makefile, called:  \emph{xxx.mak},  which essentially formalizes
+the usage of the current compiler on the current machine;
+
+
+\item 
+
+the extra-makefile, called \emph{extra-xxx.mak}, which essentially describes the
+linkage of the enabled external APIs with PELICANS on the current machine.
+
+\end{itemize}
+
+
+In both cases, \emph{xxx} denotes symbolically a character sequence which matches
+one of the following patterns tried out in sequence:
+
+\begin{enumerate}
+
+\item 1.
+
+$<$hostname$>$-$<$compiler$>$
+
+
+\item 2.
+
+$<$hostname$>$
+
+
+\item 3.
+
+$<$sysname$>$-$<$release$>$-$<$compiler$>$
+
+
+\item 4.
+
+$<$sysname$>$-$<$compiler$>$
+
+
+\item 5.
+
+$<$compiler$>$
+
+
+\item 6.
+
+$<$sysname$>$-$<$release$>$
+
+
+\item 7.
+
+$<$sysname$>$
+
+\end{enumerate}
+
+
+Where :
+
+\begin{description}
+
+\item[hostname] \mbox{}
+
+is the name of the current host. It may be substitued if a file named
+'arch\_file.cfg' exists in the searched paths.
+
+
+\item[sysname] \mbox{}
+
+is the name of the curent operating system name given by uname(1).
+
+
+\item[release] \mbox{}
+
+is the release of the curent operating system name given by uname(1).
+
+\end{description}
+\subsubsection*{The Searched Paths\label{arch_The_Searched_Paths}\index{arch!The Searched Paths}}
+
+
+First, \texttt{pel arch} searches in the directory given by the environment
+variable \emph{PELARCHDIR} (if defined), then in the \emph{\$PELICANSHOME/etc}
+directory (if it is not defined, the subdirectory
+\texttt{etc} of the current directory is searched instead).
+
+\subsubsection*{Hostname Substitution\label{arch_Hostname_Substitution}\index{arch!Hostname Substitution}}
+
+
+When a file named 'arch\_file.cfg' is encountered in the searched paths,
+\texttt{pel arch} tries to substitute the current hostname by an alias name found
+in this file. The first match found returns. When no match is found, the
+current hostname is used.
+
+
+
+This file is a two columns file. Comments starts with '\#' (sharp).
+
+\begin{description}
+
+\item[Column 1 :] \mbox{}
+
+contains a perl (perlre(1)) regular expression matching hostnames.
+
+
+\item[Column 2 :] \mbox{}
+
+contains the alias for the regular expression.
+
+\end{description}
+
+
+'arch\_file.cfg' file example:
+ sinux1 pinux    \# sinux1 vers pinux
+ sinux$\backslash$d+ sinux  \# les autres noeuds sinux vers sinux
+ pinux$\backslash$d+ pinux  \# les noeuds pinux vers pinux
+
+\subsection*{OPTIONS\label{arch_OPTIONS}\index{arch!OPTIONS}}
+\begin{description}
+
+\item[\textbf{-h, -help}] \mbox{}
+
+Print a brief help message and exit.
+
+
+\item[\textbf{-m, -man}] \mbox{}
+
+Print the manual page and exit.
+
+
+\item[\textbf{-v, -verbose}] \mbox{}
+
+Execute verbosely.
+
+
+\item[\textbf{-getvariable} var] \mbox{}
+
+Return the value of the variable var
+defined in the achitecture-makefile of the current
+compiler architecture.
+
+
+\item[\textbf{-getvariable\_extra} var] \mbox{}
+
+Return the value of the variable var
+defined in the extra-makefile of the current
+compiler architecture.
+
+\end{description}
+\subsection*{ARGUMENTS\label{arch_ARGUMENTS}\index{arch!ARGUMENTS}}
+\begin{description}
+
+\item[\textbf{compiler}] \mbox{}
+
+Name of the compiler for which a compiler architecture
+for the current hardware platform
+will be searched.
+
+\end{description}
+\subsection*{EXAMPLE\label{arch_EXAMPLE}\index{arch!EXAMPLE}}
+\begin{description}
+
+\item[\texttt{pel arch -verbose CC}] \mbox{}
+
+Find the available compiler architecture for compiler CC
+and return a string caracterizing it.
+
+
+\item[\texttt{pel arch -getvariable DYNAMIC\_LIB\_EXT CC}] \mbox{}
+
+Find the available compiler architecture for compiler CC
+and return the value of the variable DYNAMIC\_LIB\_EXT that it defines
+in the achitecture-makefile.
+
+\end{description}
+\subsection*{ENVIRONMENT\label{arch_ENVIRONMENT}\index{arch!ENVIRONMENT}}
+\begin{description}
+
+\item[PELICANSHOME] \mbox{}
+
+The PELICANS root directory.
+
+
+\item[PELARCHDIR] \mbox{}
+
+A user directory where user's architecture GNU Makefiles are stored.
+
+\end{description}
+\clearpage
+\section{predoc\label{predoc}\index{predoc}}
+
+
+Possible preparation before using "peldoc"
+
+\subsection*{SYNOPSIS\label{predoc_SYNOPSIS}\index{predoc!SYNOPSIS}}
+
+
+pel predoc [-help$|$-man]
+
+
+
+pel predoc [options...] \emph{descfile} \emph{datfile} appli \emph{dirs}
+
+\subsection*{DESCRIPTION\label{predoc_DESCRIPTION}\index{predoc!DESCRIPTION}}
+
+
+\texttt{pel predoc} will traverse a list of directory hierarchies
+from which it will infer a particular
+packaging and create a data file, both
+preparing a subsequent use of the PELICANS-based application \texttt{peldoc}.
+
+\subsection*{ARGUMENTS\label{predoc_ARGUMENTS}\index{predoc!ARGUMENTS}}
+\begin{description}
+
+\item[\textbf{ \emph{descfile} }] \mbox{}
+
+Name of the description file to be produced.
+
+
+\item[\textbf{ \emph{datfile} }] \mbox{}
+
+Name of the \texttt{peldoc} data file to be produced.
+
+
+\item[\textbf{appli}] \mbox{}
+
+Name given by \texttt{peldoc} for the application to be documented.
+
+
+\item[\textbf{ \emph{dirs} }] \mbox{}
+
+List of the directories from which the packaging of the
+classes will be inferred.
+
+\end{description}
+\subsection*{OPTIONS\label{predoc_OPTIONS}\index{predoc!OPTIONS}}
+\begin{description}
+
+\item[\textbf{-h, -help}] \mbox{}
+
+Print a brief help message and exit.
+
+
+\item[\textbf{-m, -man}] \mbox{}
+
+Print the manual page and exit.
+
+
+\item[\textbf{-v, -verbose}] \mbox{}
+
+Execute verbosely.
+
+
+\item[\textbf{-Wno\_unresolved}] \mbox{}
+
+Add options to the data file of \texttt{peldoc} so that it will inhibit
+warning messages for assertions expressed with functions that are
+implemented outside the current application.
+
+\end{description}
+\subsection*{EXAMPLE\label{predoc_EXAMPLE}\index{predoc!EXAMPLE}}
+\begin{description}
+
+\item[\texttt{pel predoc doc/description.txt doc/data.pel beauty .}] \mbox{}
+
+A description file \emph{description.txt} and a \texttt{peldoc} data file
+\emph{data.pel} will be produced  in the subdirectory
+\emph{doc} of the current directory, for an application that will be
+called "beauty", by recursively scanning all subdirectories
+of the current directory.
+
+\end{description}
+\clearpage
+\section{newclass\label{newclass}\index{newclass}}
+
+
+Text files creation for a new class
+
+\subsection*{SYNOPSIS\label{newclass_SYNOPSIS}\index{newclass!SYNOPSIS}}
+
+
+pel newclass [-help$|$-man]
+
+
+
+pel newclass [-path \emph{searchdir}] model newclass
+
+
+
+pel newclass [-pelicans] model newclass
+
+\subsection*{DESCRIPTION\label{newclass_DESCRIPTION}\index{newclass!DESCRIPTION}}
+
+
+\texttt{pel newclass} creates the text files associated to
+a new class by copying those of a model class
+and replacing the name of the model class by the name
+of the new class.
+
+
+
+The text files associated to the model class are assumed
+to have one of the following extensions : ".hh", ".icc" or ".cc" .
+They are searched in a set of paths defined by the calling
+options, or in the current directory if none.
+
+\subsection*{OPTIONS\label{newclass_OPTIONS}\index{newclass!OPTIONS}}
+\begin{description}
+
+\item[\textbf{-h, -help}] \mbox{}
+
+Print a brief help message and exit.
+
+
+\item[\textbf{-m, -man}] \mbox{}
+
+Print the manual page and exit.
+
+
+\item[\textbf{-v, -verbose}] \mbox{}
+
+Execute verbosely.
+
+
+\item[\textbf{-path} \emph{searchdir}] \mbox{}
+
+Add directory \emph{searchdir} to the list of paths that
+\texttt{pel newclass} will search for files
+\emph{model.hh}, \emph{model.cc} or \emph{model.icc} .
+This option may be used any number of times.
+
+
+\item[\textbf{-pelicans}] \mbox{}
+
+Add all directories of the PELICANS repository
+defined by the environment variable \texttt{PELICANSHOME}
+to the list of paths that \texttt{pel newclass} will search for files
+\emph{model.hh}, \emph{model.cc} or \emph{model.icc} .
+
+\end{description}
+\subsection*{ARGUMENTS\label{newclass_ARGUMENTS}\index{newclass!ARGUMENTS}}
+\begin{description}
+
+\item[\textbf{model}] \mbox{}
+
+Name of the model class. The files \emph{model.hh}, \emph{model.cc} and \emph{model.icc}
+will be searched, copied in the current directory if found,
+and any occurence of \texttt{model} will be replaced by \texttt{newclass}.
+
+
+\item[\textbf{newclass}] \mbox{}
+
+Name of the new class. The produced files will be \emph{newclass.hh},
+\emph{newclass.icc} and \emph{newclass.cc}, prodived that related files
+for the model class were found.
+
+\end{description}
+\subsection*{EXAMPLES\label{newclass_EXAMPLES}\index{newclass!EXAMPLES}}
+\begin{verbatim}
+ pel newclass -pelicans GE_QuadratureRule_TEST MY_Class_TEST>
+\end{verbatim}
+\begin{verbatim}
+ pel   newclass -path ../src Model NewClass>
+\end{verbatim}
+\clearpage
+\section{cmp\label{cmp}\index{cmp}}
+
+
+Requests forward to the PELICANS-based application "pelcmp"
+
+\subsection*{SYNOPSIS\label{cmp_SYNOPSIS}\index{cmp!SYNOPSIS}}
+
+
+pel cmp [-help$|$-man]
+
+
+
+pel cmp [options...] \emph{file1} \emph{file2}
+
+\subsection*{DESCRIPTION\label{cmp_DESCRIPTION}\index{cmp!DESCRIPTION}}
+
+
+The PELICANS-based application "pelcmp" is called with the given
+options and arguments.
+
+\subsection*{OPTIONS\label{cmp_OPTIONS}\index{cmp!OPTIONS}}
+\begin{description}
+
+\item[\textbf{-h, -help}] \mbox{}
+
+Print a brief help message and exit.
+
+
+\item[\textbf{-m, -man}] \mbox{}
+
+Print the manual page and exit.
+
+
+\item[\textbf{-v, -verbose}] \mbox{}
+
+Execute verbosely.
+
+
+\item[\textbf{-m, -modules} \texttt{mod}] \mbox{}
+
+Limit the comparison to \texttt{mod}.
+
+
+\item[\textbf{-d, -data} \texttt{datum}] \mbox{}
+
+Limit the comparison to \texttt{datum}
+
+\end{description}
+\subsection*{ARGUMENTS\label{cmp_ARGUMENTS}\index{cmp!ARGUMENTS}}
+\begin{description}
+
+\item[\emph{file1}, \emph{file2}] \mbox{}
+
+Name of the files containing containing the 
+data to be compared.
+
+\end{description}
+\subsection*{EXAMPLE\label{cmp_EXAMPLE}\index{cmp!EXAMPLE}}
+\begin{description}
+
+\item[\texttt{pel cmp file\_ref.pel file.pel}] \mbox{}
+
+Compare the data of the files \emph{file\_ref.pel} and \emph{file.pel}.
+
+\end{description}
+\clearpage
+\section{cvgce\label{cvgce}\index{cvgce}}
+
+
+Extraction of error norms from \emph{save\_*.gene} text files
+
+\subsection*{SYNOPSIS\label{cvgce_SYNOPSIS}\index{cvgce!SYNOPSIS}}
+
+
+pel cvgce [-help$|$-man]
+
+
+
+pel cvgce [-v] $<$norm\_saving\_names$>$
+
+\subsection*{DESCRIPTION\label{cvgce_DESCRIPTION}\index{cvgce!DESCRIPTION}}
+
+
+The convergence properties of numerical schemes when refining
+the time step and the mesh size may be tested using the classes
+\emph{FE\_Launcher} and \emph{FE\_ComparatorWithAnalytic}. In this context and
+when the calculation
+results are saved with \emph{PEL\_TICwriter} (in the "text" mode), a sequence
+of \emph{save\_*.gene} files are generated.
+Each \emph{save\_*.gene} corresponds to a given
+time step, to a given mesh size (specified on creation of \emph{FE\_Launcher}),
+and stores at all cycles the error norms that where requested
+from \emph{FE\_ComparatorWithAnalytic}.
+
+
+
+Given such a sequence of \emph{save\_*.gene} files, \texttt{pel cvgce} extracts
+all the values of the error norms, reorganizes these data to stress the
+dependencies with the time step and the mesh size (for a given mesh size,
+dependence with the time step ; for a given time step, dependence with
+the mesh size), and finally produces multicolumn ascii files that may be
+used for graphic postprocessing by usual tools (eg gnuplot or xmgrace).
+
+\subsection*{OPTIONS\label{cvgce_OPTIONS}\index{cvgce!OPTIONS}}
+\begin{description}
+
+\item[\textbf{-h, -help}] \mbox{}
+
+Print a brief help message and exit.
+
+
+\item[\textbf{-m, -man}] \mbox{}
+
+Print the manual page and exit.
+
+
+\item[\textbf{-v, -verbose}] \mbox{}
+
+Execute verbosely (\textbf{recommended}).
+
+\end{description}
+\subsection*{ARGUMENTS\label{cvgce_ARGUMENTS}\index{cvgce!ARGUMENTS}}
+\begin{description}
+
+\item[\textbf{norm\_saving\_names}] \mbox{}
+
+Items occuring in the entry of keyword \texttt{norm\_saving\_names}
+in the Hierarchical Data Structure used to create the
+\emph{FE\_ComparatorWithAnalytic} object.
+
+\end{description}
+\subsection*{EXAMPLE\label{cvgce_EXAMPLE}\index{cvgce!EXAMPLE}}
+\begin{description}
+
+\item[\texttt{pel cvgce -v XLDU XHDU}] \mbox{}
+
+Extract from all the \emph{save\_*.gene} ascii files of the current directory
+the entries \texttt{XLDU} and \texttt{XHDU}, and produce the following files:
+
+
+
+\emph{XLDU\_h.txt} : for all time steps, XLDU as a function of the mesh size
+
+
+
+\emph{XLDU\_dt.txt} : for all mesh sizes, XLDU as a function of the time step
+
+
+
+\emph{XHDU\_h.txt} : for all time steps, XHDU as a function of the mesh size
+
+
+
+\emph{XHDU\_dt.txt} : for all mesh sizes, XHDU as a function of the time step
+
+
+
+The \emph{save\_*.gene} files have been produced with an application using
+a \emph{FE\_ComparatorWithAnalytic} which has been created using a PELICANS
+Hierarchical Data Structure. This latter must be such that \texttt{"XLDU"}
+and \texttt{"XLDU"} occur in its entry of keyword \texttt{norm\_saving\_names}.
+
+\end{description}
+\printindex
+
+\end{document}

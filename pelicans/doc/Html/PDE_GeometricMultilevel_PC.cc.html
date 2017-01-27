@@ -1,0 +1,1032 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>PDE_GeometricMultilevel_PC.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="PDE_GeometricMultilevel_PC.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="PDEpack-tree.html"><span>Tree</span></a>
+    <a href="PDE_GeometricMultilevel_PC.html"><span>Class</span></a>
+    <a href="PDE_GeometricMultilevel_PC.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="PDEpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated
+ *  reusable components, whose purpose is to simplify the task of developing
+ *  softwares of numerical mathematics and scientific computing.
+ *
+ *  This software is governed by the CeCILL-C license under French law and
+ *  abiding by the rules of distribution of free software. You can use, modify
+ *  and/or redistribute the software under the terms of the CeCILL-C license
+ *  as circulated by CEA, CNRS and INRIA at the following URL
+ *  &quot;http://www.cecill.info&quot;.
+ *
+ *  As a counterpart to the access to the source code and rights to copy,
+ *  modify and redistribute granted by the license, users are provided only
+ *  with a limited warranty and the software's author, the holder of the
+ *  economic rights, and the successive licensors have only limited liability.
+ *
+ *  In this respect, the user's attention is drawn to the risks associated
+ *  with loading, using, modifying and/or developing or reproducing the
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also
+ *  therefore means that it is reserved for developers and experienced
+ *  professionals having in-depth computer knowledge. Users are therefore
+ *  encouraged to load and test the software's suitability as regards their
+ *  requirements in conditions enabling the security of their systems and/or
+ *  data to be ensured and, more generally, to use and operate it in the same
+ *  conditions as regards security.
+ *
+ *  The fact that you are presently reading this means that you have had
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_GeometricMultilevel_PC</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Communicator</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Exec</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Vector</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_assertions</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_AlgebraicCoarsener</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_AdapterCHARMS</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_SetOfDiscreteFields</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_SystemNumbering</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_MatrixIterator</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_Matrix</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_DistMatrix</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_DistScatter</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_Vector</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">size_t_vector</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">intVector</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;iostream&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;iomanip&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw2">set</font><font class="text">&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;sstream&gt;
+
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">cout</font><font class="text"> ; </font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ios_base</font><font class="text"> ;
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">setprecision</font><font class="text"> ; </font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">setw</font><font class="text"> ;
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">set</font><font class="text"> ;
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> ; </font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> ;
+
+</font><font class="kw1">struct</font><font class="text"> PDE_GeometricMultilevel_PC_ERROR
+{
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> n0( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_name ) ;
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> n1( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_name ) ;
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> n2( </font><font class="kw1">void</font><font class="text"> ) ;
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> n3( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; tname ) ;
+} ;
+
+</font><font class="kw2">std</font><font class="text">::</font><font class="kw2">map</font><font class="text">&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text">, </font><font class="kw3">PDE_GeometricMultilevel_PC</font><font class="text">* &gt;
+</font><font class="kw3">PDE_GeometricMultilevel_PC</font><font class="text">::OBJS ;
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PDE_GeometricMultilevel_PC</font><font class="text">:: </font><font class="kw3">PDE_GeometricMultilevel_PC</font><font class="text">(
+                                               </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; class_name )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">LA_Preconditioner</font><font class="text">( class_name )
+{
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PDE_GeometricMultilevel_PC</font><font class="text">:: </font><font class="kw3">PDE_GeometricMultilevel_PC</font><font class="text">(
+                                           </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                           </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">LA_Preconditioner</font><font class="text">( a_owner )
+   , NAME( exp-&gt;has_entry( </font><font class="string">&quot;name&quot;</font><font class="text">) ? exp-&gt;string_data( </font><font class="string">&quot;name&quot;</font><font class="text"> ) : </font><font class="string">&quot;unknown&quot;</font><font class="text"> )
+   , NMB( 0 )
+   , COAR( 0 )
+   , MAT_PROTO( 0 )
+   , AA( </font><font class="kw3">PEL_Vector</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, 0 ) )
+   , FINEST_A( 0 )
+   , B( </font><font class="kw3">PEL_Vector</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, 0 ) )
+   , X( </font><font class="kw3">PEL_Vector</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, 0 ) )
+   , RES( </font><font class="kw3">PEL_Vector</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, 0 ) )
+   , COARSE_TO_FINE( </font><font class="kw3">PEL_Vector</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, 0 ) )
+   , SMOO_LINE( </font><font class="kw3">PEL_Vector</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, 0 ) )
+   , UNKNOWNS_LEVEL( </font><font class="kw3">PEL_Vector</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, 0 ) )
+   , NB_LEVELS( 1 )
+   , BUILD_OK( </font><font class="kw1">false</font><font class="text"> )
+{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_GeometricMultilevel_PC:: PDE_GeometricMultilevel_PC&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* se = exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;LA_Matrix&quot;</font><font class="text"> ) ;
+   MAT_PROTO = </font><font class="kw3">LA_Matrix</font><font class="text">::make( </font><font class="kw1">this</font><font class="text">, se ) ;
+   se-&gt;destroy() ;
+
+   </font><font class="kw1">if</font><font class="text">( OBJS.count( NAME ) != 0 ) PDE_GeometricMultilevel_PC_ERROR::n0( NAME ) ;
+   OBJS[ NAME ] = </font><font class="kw1">this</font><font class="text"> ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PDE_GeometricMultilevel_PC</font><font class="text">:: ~</font><font class="kw3">PDE_GeometricMultilevel_PC</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   OBJS.erase( NAME ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PDE_GeometricMultilevel_PC</font><font class="text">:: </font><font class="kw3">PDE_GeometricMultilevel_PC</font><font class="text">(
+                                 </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                 </font><font class="kw3">PDE_GeometricMultilevel_PC</font><font class="text"> </font><font class="kw1">const</font><font class="text">* other )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">LA_Preconditioner</font><font class="text">( a_owner )
+{
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PDE_GeometricMultilevel_PC</font><font class="text">*
+</font><font class="kw3">PDE_GeometricMultilevel_PC</font><font class="text">:: object( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_name )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_GeometricMultilevel_PC:: object&quot;</font><font class="text"> ) ;
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">map</font><font class="text">&lt;</font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text">,</font><font class="kw3">PDE_GeometricMultilevel_PC</font><font class="text">*&gt;::const_iterator it =
+                                                         OBJS.find( a_name ) ;
+   </font><font class="kw1">if</font><font class="text">( it == OBJS.end() ) PDE_GeometricMultilevel_PC_ERROR::n1( a_name ) ;
+
+   </font><font class="kw3">PDE_GeometricMultilevel_PC</font><font class="text">* result = (*it).second ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;name() == a_name ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp;
+</font><font class="kw3">PDE_GeometricMultilevel_PC</font><font class="text">:: name( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_GeometricMultilevel_PC:: name&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">return</font><font class="text">( NAME ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">PDE_GeometricMultilevel_PC</font><font class="text">:: is_valid( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_GeometricMultilevel_PC:: is_valid&quot;</font><font class="text"> ) ;
+   </font><font class="kw1">return</font><font class="text">( BUILD_OK ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw2">size_t
+</font><font class="kw3">PDE_GeometricMultilevel_PC</font><font class="text">:: dimension( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_GeometricMultilevel_PC:: dimension&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( dimension_PRE() ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> result = FINEST_A-&gt;nb_rows() ;
+
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PDE_GeometricMultilevel_PC</font><font class="text">:: set_discretization_scene(
+                                 </font><font class="kw3">PDE_DomainAndFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dom,
+                                 </font><font class="kw3">PDE_SystemNumbering</font><font class="text"> </font><font class="kw1">const</font><font class="text">* nmb )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_GeometricMultilevel_PC:: set_discretization_scene&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( dom != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( nmb != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">(
+    </font><font class="kw3">FORALL</font><font class="text">( ( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;nmb-&gt;nb_links() ; ++i ),
+            nmb-&gt;link(i) !=0  &amp;&amp;
+            dom-&gt;set_of_discrete_fields()-&gt;has( nmb-&gt;link(i)-&gt;field()-&gt;name() ) ) ) ;
+
+   COAR = dom-&gt;adapter_CHARMS()-&gt;algebraic_coarsener() ;
+   NMB = nmb ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( algebraic_coarsener() ==
+                   dom-&gt;adapter_CHARMS()-&gt;algebraic_coarsener() ) ;
+}
+
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PDE_GeometricMultilevel_PC</font><font class="text">:: build( </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* mat )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_GeometricMultilevel_PC:: build&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( build_PRE( mat ) ) ;
+
+   </font><font class="kw1">if</font><font class="text">( algebraic_coarsener() == 0 || mat-&gt;nb_rows() != nb_fine_unknowns() )
+      PDE_GeometricMultilevel_PC_ERROR::n3( type_name() ) ;
+
+   </font><font class="comment">//??? ne le faire que si le discretization_adapter n'a pas chang&#xE9;
+</font><font class="text">   get_prolongation_matrices( algebraic_coarsener() ) ;
+
+   FINEST_A = mat ;
+
+   </font><font class="kw3">LA_Matrix</font><font class="text">* dummy_0 = MAT_PROTO-&gt;create_matrix( 0 ) ;
+   </font><font class="kw3">LA_Matrix</font><font class="text">* dummy_1 = MAT_PROTO-&gt;create_matrix( 0 ) ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> level=NB_LEVELS-1 ; level!=0 ; --level )
+   {
+      </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fine_A =
+         ( level==(NB_LEVELS-1) ? FINEST_A :
+           </font><font class="kw1">static_cast</font><font class="text">&lt; </font><font class="kw3">LA_Matrix</font><font class="text">* &gt;( AA-&gt;at( level ) ) ) ;
+      </font><font class="kw3">PEL_ASSERT</font><font class="text">( fine_A-&gt;nb_rows() == fine_A-&gt;nb_cols() ) ;
+      </font><font class="kw2">size_t</font><font class="text"> nb_fine = fine_A-&gt;nb_rows() ;
+      </font><font class="kw2">size_t</font><font class="text"> nb_local_fine = fine_A-&gt;nb_local_rows() ;
+      </font><font class="kw3">PEL_ASSERT</font><font class="text">( fine_A-&gt;row_distribution()-&gt;global_number() == nb_fine ) ;
+      </font><font class="kw3">PEL_ASSERT</font><font class="text">( fine_A-&gt;col_distribution()-&gt;global_number() == nb_fine ) ;
+      </font><font class="kw3">PEL_ASSERT</font><font class="text">( fine_A-&gt;nb_local_rows() == fine_A-&gt;nb_local_cols() ) ;
+
+      </font><font class="kw3">LA_Matrix</font><font class="text">* coar_A =
+           </font><font class="kw1">static_cast</font><font class="text">&lt; </font><font class="kw3">LA_Matrix</font><font class="text">* &gt;( AA-&gt;at( level-1 ) ) ;
+      </font><font class="kw3">PEL_ASSERT</font><font class="text">( coar_A-&gt;nb_rows() == coar_A-&gt;nb_cols() ) ;
+      </font><font class="kw2">size_t</font><font class="text"> nb_coar = coar_A-&gt;nb_rows() ;
+      </font><font class="kw2">size_t</font><font class="text"> nb_local_coar = coar_A-&gt;nb_local_rows() ;
+      </font><font class="kw3">PEL_ASSERT</font><font class="text">( coar_A-&gt;row_distribution()-&gt;global_number() == nb_coar ) ;
+      </font><font class="kw3">PEL_ASSERT</font><font class="text">( coar_A-&gt;col_distribution()-&gt;global_number() == nb_coar ) ;
+      </font><font class="kw3">PEL_ASSERT</font><font class="text">( coar_A-&gt;nb_local_rows() ==  coar_A-&gt;nb_local_cols() ) ;
+
+      </font><font class="kw3">LA_Matrix</font><font class="text">* pr =
+         </font><font class="kw1">static_cast</font><font class="text">&lt; </font><font class="kw3">LA_Matrix</font><font class="text">* &gt;( COARSE_TO_FINE-&gt;at( level-1 ) ) ;
+      </font><font class="kw3">PEL_ASSERT</font><font class="text">( pr-&gt;nb_rows() == nb_fine ) ;
+      </font><font class="kw3">PEL_ASSERT</font><font class="text">( pr-&gt;nb_cols() == nb_coar ) ;
+      </font><font class="kw3">PEL_ASSERT</font><font class="text">( pr-&gt;row_distribution()-&gt;global_number() == nb_fine ) ;
+      </font><font class="kw3">PEL_ASSERT</font><font class="text">( pr-&gt;col_distribution()-&gt;global_number() == nb_coar ) ;
+      </font><font class="kw3">PEL_ASSERT</font><font class="text">( pr-&gt;nb_local_rows() == nb_local_fine ) ;
+      </font><font class="kw3">PEL_ASSERT</font><font class="text">( pr-&gt;nb_local_cols()== nb_local_coar ) ;
+
+      dummy_1-&gt;re_initialize( nb_coar, nb_fine,
+                              nb_local_coar, nb_local_fine ) ;
+      dummy_1-&gt;add_tMat( pr ) ;
+      dummy_1-&gt;synchronize() ;
+
+      dummy_0-&gt;re_initialize( nb_coar, nb_fine,
+                              nb_local_coar, nb_local_fine ) ;
+      dummy_0-&gt;add_Mat_Mat( dummy_1, fine_A ) ;
+      dummy_0-&gt;synchronize() ;
+
+      </font><font class="comment">//dummy-&gt;add_tMat_Mat( pr, fine_A ) ;   // dummy = tr(pr) * fine_A
+</font><font class="text">      coar_A-&gt;add_Mat_Mat( dummy_0, pr ) ;    </font><font class="comment">// coar_A = dummy * Pr
+</font><font class="text">      coar_A-&gt;synchronize() ;
+   }
+   dummy_0-&gt;destroy() ;
+   dummy_1-&gt;destroy() ;
+
+   BUILD_OK = </font><font class="kw1">true</font><font class="text">  ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( build_POST( mat ) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( is_valid() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( finest_mat() == mat ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PDE_GeometricMultilevel_PC</font><font class="text">:: unbuild( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_GeometricMultilevel_PC:: unbuild&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( unbuild_PRE() ) ;
+   BUILD_OK = </font><font class="kw1">false</font><font class="text"> ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( unbuild_POST() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PDE_SystemNumbering</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">PDE_GeometricMultilevel_PC</font><font class="text">:: system_numbering( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_GeometricMultilevel_PC:: system_numbering&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw3">PDE_SystemNumbering</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result = NMB ;
+
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw2">size_t
+</font><font class="kw3">PDE_GeometricMultilevel_PC</font><font class="text">:: nb_fine_unknowns( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_GeometricMultilevel_PC:: nb_fine_unknowns&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> result = 0 ;
+   </font><font class="kw1">if</font><font class="text">( NMB != 0 )
+   {
+      result = NMB-&gt;nb_global_unknowns() ;
+   }
+
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw2">size_t
+</font><font class="kw3">PDE_GeometricMultilevel_PC</font><font class="text">:: nb_local_fine_unknowns( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_GeometricMultilevel_PC:: nb_local_fine_unknowns&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> result = 0 ;
+   </font><font class="kw1">if</font><font class="text">( NMB != 0 )
+   {
+      result = NMB-&gt;nb_unknowns_on_current_process() ;
+   }
+
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PDE_AlgebraicCoarsener</font><font class="text">*
+</font><font class="kw3">PDE_GeometricMultilevel_PC</font><font class="text">:: algebraic_coarsener( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">return</font><font class="text">( COAR ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PDE_GeometricMultilevel_PC</font><font class="text">:: smooth_GaussSeidel( </font><font class="kw2">size_t</font><font class="text"> nb_steps,
+                                                 </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* mat,
+                                                 </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* rhs,
+                                                 </font><font class="kw3">LA_Vector</font><font class="text">* sol )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_GeometricMultilevel_PC:: smooth_GaussSeidel&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( rhs-&gt;is_synchronized() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( mat-&gt;is_synchronized() ) ;
+
+   </font><font class="comment">//A faire avec le parallelisme : voir l'autre GaussSeidel ci-dessous
+</font><font class="text">   
+   </font><font class="kw3">LA_MatrixIterator</font><font class="text">* it = mat-&gt;create_stored_item_iterator( 0 ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( it-&gt;nb_rows() == mat-&gt;nb_rows() ) ;
+
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> is=0 ; is&lt;nb_steps ; ++is )
+   {
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;mat-&gt;nb_rows() ; ++i )
+      {
+         </font><font class="kw1">if</font><font class="text">( i &lt; mat-&gt;row_distribution()-&gt;local_index_limit() &amp;&amp;
+             i &gt;= mat-&gt;row_distribution()-&gt;first_local_index() )
+         {
+            </font><font class="kw1">double</font><font class="text"> xx = 0.0 ;
+            </font><font class="kw1">double</font><font class="text"> diag_term = </font><font class="kw3">PEL</font><font class="text">::bad_double() ;
+            it-&gt;start_row_items( i ) ;
+            </font><font class="kw1">for</font><font class="text">( ; it-&gt;is_valid() ; it-&gt;go_next() )
+            {
+               </font><font class="kw2">size_t</font><font class="text"> j = it-&gt;col() ;
+               </font><font class="kw1">if</font><font class="text">( j &lt; mat-&gt;row_distribution()-&gt;local_index_limit() &amp;&amp;
+                   j &gt;= mat-&gt;row_distribution()-&gt;first_local_index() )
+               {
+                  xx += it-&gt;item() * sol-&gt;item( j ) ;</font><font class="comment">//?? C'est pas bon
+</font><font class="text">                  </font><font class="kw1">if</font><font class="text">( i == j ) diag_term = it-&gt;item() ;
+               }
+            }
+            </font><font class="kw1">double</font><font class="text"> rr = rhs-&gt;item( i ) - xx ;
+            sol-&gt;add_to_item( i, rr/diag_term ) ;
+         }
+         sol-&gt;synchronize() ;</font><font class="comment">//Ca fait beaucoup de synchronisation
+</font><font class="text">      }
+   }
+   it-&gt;destroy() ; it=0 ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( sol-&gt;is_synchronized() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PDE_GeometricMultilevel_PC</font><font class="text">:: extra_columns(
+                                    </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* mat,
+                                    </font><font class="kw3">intVector</font><font class="text">&amp; ext_cols )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_GeometricMultilevel_PC:: extra_columns&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( mat-&gt;row_distribution()-&gt;is_compatible(
+                                              mat-&gt;col_distribution() ) ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( mat-&gt;nb_rows() == mat-&gt;nb_cols() ) ;
+
+   </font><font class="kw3">size_t_vector</font><font class="text"> receive_index( 0 ) ;
+
+   </font><font class="kw3">LA_MatrixIterator</font><font class="text">* it = mat-&gt;create_stored_item_iterator( 0 ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> first = mat-&gt;row_distribution()-&gt;first_local_index() ;
+   </font><font class="kw2">size_t</font><font class="text"> last  = mat-&gt;row_distribution()-&gt;local_index_limit() ;
+
+   </font><font class="kw3">boolVector</font><font class="text"> is_ext( mat-&gt;nb_rows(), </font><font class="kw1">false</font><font class="text"> ) ;
+   </font><font class="kw2">size_t</font><font class="text"> nb_ext = 0 ;
+
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=first ; i&lt;last ; ++i )
+   {
+      it-&gt;start_row_items( i ) ;
+      </font><font class="kw1">for</font><font class="text">( ; it-&gt;is_valid() ; it-&gt;go_next() )
+      {
+         </font><font class="kw2">size_t</font><font class="text"> j = it-&gt;col() ;
+         </font><font class="kw1">if</font><font class="text">( j&lt;first || j&gt;=last )
+         {
+            </font><font class="kw1">if</font><font class="text">( !is_ext( j ) )
+            {
+               nb_ext++ ;
+               is_ext( j ) = </font><font class="kw1">true</font><font class="text"> ;
+            }
+         }
+      }
+   }
+   it-&gt;destroy() ; it=0 ;
+
+   ext_cols.resize( nb_ext ) ;
+   </font><font class="kw2">size_t</font><font class="text"> idx = 0 ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; j&lt;is_ext.size() ; j++ )
+   {
+      </font><font class="kw1">if</font><font class="text">( is_ext( j ) )
+      {
+         ext_cols( idx ) = (</font><font class="kw1">int</font><font class="text">) j ;
+         ++idx ;
+      }
+   }
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( idx == nb_ext ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PDE_GeometricMultilevel_PC</font><font class="text">:: priority_rows(
+                                    </font><font class="kw3">PEL_DistributedPartition</font><font class="text"> </font><font class="kw1">const</font><font class="text">* row_dist,
+                                    </font><font class="kw3">intVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; rows_to_send,
+                                    </font><font class="kw3">size_t_vector</font><font class="text">&amp; priority_rows )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_Communicator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* com = </font><font class="kw3">PEL_Exec</font><font class="text">::communicator() ;
+
+   </font><font class="kw3">intVector</font><font class="text"> nb_to_send_to_proc( com-&gt;nb_ranks() ) ;
+   </font><font class="kw3">intVector</font><font class="text"> nb_priority_from_proc( com-&gt;nb_ranks() ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> rank = com-&gt;rank() ;
+
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;rows_to_send.size() ; i++ )
+   {
+      </font><font class="kw2">size_t</font><font class="text"> idx = (</font><font class="kw2">size_t</font><font class="text">) rows_to_send( i ) ;
+      </font><font class="kw2">size_t</font><font class="text"> row_owner = row_dist-&gt;rank_of( idx ) ;
+      nb_to_send_to_proc( row_owner )++ ;
+   }
+
+   com-&gt;all_to_all( nb_to_send_to_proc, nb_priority_from_proc ) ;
+   nb_priority_from_proc( rank ) = 0 ;
+
+   </font><font class="kw2">size_t</font><font class="text"> nb_total_priority = nb_priority_from_proc.sum() ;
+
+   priority_rows.resize( nb_total_priority ) ;
+
+   </font><font class="comment">//Communications
+</font><font class="text">
+   </font><font class="kw2">size_t</font><font class="text"> nb_sent = 0 ;
+   </font><font class="kw2">size_t</font><font class="text"> nb_received = 0 ;
+
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> r=0 ; r&lt;com-&gt;rank() ; r++ )
+   {
+      </font><font class="kw2">size_t</font><font class="text"> nb_from_r = (</font><font class="kw2">size_t</font><font class="text">) nb_priority_from_proc( r ) ;
+
+      </font><font class="kw1">if</font><font class="text">( nb_from_r &gt; 0 )
+      {
+         </font><font class="kw3">intVector</font><font class="text"> received( nb_from_r ) ;
+         com-&gt;receive( r, </font><font class="kw1">const_cast</font><font class="text">&lt;</font><font class="kw1">int</font><font class="text">*&gt;(received.data()), nb_from_r ) ;
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; j&lt;nb_from_r ; j++ )
+         {
+            priority_rows( nb_received + j ) = (</font><font class="kw2">size_t</font><font class="text">) received( j ) ;
+         }
+         nb_received += nb_from_r ;
+      }
+   }
+
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> r=0 ; r&lt;com-&gt;nb_ranks() ; r++ )
+   {
+      </font><font class="kw2">size_t</font><font class="text"> nb_to_r = nb_to_send_to_proc( r ) ;
+
+      </font><font class="kw1">if</font><font class="text">( nb_to_r &gt; 0 )
+      {
+         </font><font class="kw1">if</font><font class="text">( r != com-&gt;rank() )
+         {
+            </font><font class="kw3">intVector</font><font class="text"> sent( nb_to_r ) ;
+            </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; j&lt;nb_to_r ; j++ )
+            {
+               sent( j ) = rows_to_send( j + nb_sent ) ;
+            }
+            com-&gt;send( r, sent.data(), nb_to_r ) ;
+         }
+         nb_sent += nb_to_r ;
+      }
+   }
+
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> r=com-&gt;rank()+1 ; r&lt;com-&gt;nb_ranks() ; r++ )
+   {
+      </font><font class="kw2">size_t</font><font class="text"> nb_from_r = nb_priority_from_proc( r ) ;
+      </font><font class="kw1">if</font><font class="text">( nb_from_r &gt; 0 )
+      {
+         </font><font class="kw3">intVector</font><font class="text"> received( nb_from_r ) ;
+         com-&gt;receive( r, </font><font class="kw1">const_cast</font><font class="text">&lt;</font><font class="kw1">int</font><font class="text">*&gt;(received.data()), nb_from_r ) ;
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; j&lt;nb_from_r ; j++ )
+         {
+            priority_rows( nb_received + j ) =  (</font><font class="kw2">size_t</font><font class="text">) received( j ) ;
+         }
+         nb_received += nb_from_r ;
+      }
+   }
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( </font><font class="kw3">FORALL</font><font class="text">( ( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;priority_rows.size() ; ++i ),
+                        priority_rows( i ) &gt;= row_dist-&gt;first_local_index() &amp;&amp;
+                        priority_rows( i ) &lt; row_dist-&gt;local_index_limit() ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PDE_GeometricMultilevel_PC</font><font class="text">:: smooth_GaussSeidel(
+                                    </font><font class="kw2">size_t</font><font class="text"> nb_steps,
+                                    </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* to_be_smoothed,
+                                    </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* mat,
+                                    </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* rhs,
+                                    </font><font class="kw3">LA_Vector</font><font class="text">* sol )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_GeometricMultilevel_PC:: smooth_GaussSeidel&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( to_be_smoothed != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( mat != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( rhs != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( sol != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( rhs-&gt;is_synchronized() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( to_be_smoothed-&gt;is_synchronized() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( mat-&gt;is_synchronized() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( mat-&gt;distribution_strategy() ==
+                  rhs-&gt;distribution_strategy() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( mat-&gt;distribution_strategy() ==
+                  sol-&gt;distribution_strategy() ) ;
+</font><font class="comment">//   PEL_CHECK_PRE( EQUIVALENT( mat-&gt;is_distributed(),
+//                              rhs-&gt;is_distributed() ) ) ;
+//   PEL_CHECK_PRE( EQUIVALENT( mat-&gt;is_distributed(),
+//                              sol-&gt;is_distributed() ) ) ;
+</font><font class="text">   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( </font><font class="kw3">IMPLIES</font><font class="text">( mat-&gt;distribution_strategy() != </font><font class="kw3">LA</font><font class="text">::NoDistribution,
+                  sol-&gt;row_distribution()-&gt;is_compatible(
+                                              mat-&gt;col_distribution() ) ) ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( </font><font class="kw3">IMPLIES</font><font class="text">( mat-&gt;distribution_strategy() != </font><font class="kw3">LA</font><font class="text">::NoDistribution,
+                  rhs-&gt;row_distribution()-&gt;is_compatible(
+                                              mat-&gt;row_distribution() ) ) ) ;
+
+   </font><font class="kw3">PEL_Communicator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* com = </font><font class="kw3">PEL_Exec</font><font class="text">::communicator() ;
+
+   </font><font class="kw3">boolVector</font><font class="text"> is_smoothed( mat-&gt;nb_rows(), </font><font class="kw1">false</font><font class="text"> ) ;
+
+   </font><font class="comment">//A attacher &#xE0; la matrice
+</font><font class="text">   </font><font class="kw3">LA_MatrixIterator</font><font class="text">* it = mat-&gt;create_stored_item_iterator( 0 ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( it-&gt;nb_rows() == mat-&gt;nb_rows() ) ;
+
+   </font><font class="kw3">LA_SeqVector</font><font class="text">* glo_vec = </font><font class="kw3">LA_SeqVector</font><font class="text">::create( 0, sol-&gt;nb_rows() ) ;
+
+   </font><font class="comment">//Ca pourrait etre attache &#xE0; la matrice
+</font><font class="text">   </font><font class="comment">//et fait une fois pour toute
+</font><font class="text">   </font><font class="kw3">size_t_vector</font><font class="text">  priority( 0 ) ;
+   </font><font class="kw3">intVector</font><font class="text"> ext_cols( 0 ) ;
+   </font><font class="kw1">if</font><font class="text">( mat-&gt;distribution_strategy() != </font><font class="kw3">LA</font><font class="text">::NoDistribution )
+   {
+      extra_columns( mat, ext_cols ) ;
+      priority_rows( mat-&gt;row_distribution(), ext_cols, priority ) ;
+   }
+
+   </font><font class="kw3">LA_Scatter</font><font class="text">* scatter = sol-&gt;create_scatter( 0, ext_cols, ext_cols ) ;
+
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( mat-&gt;row_distribution()-&gt;is_compatible(
+                                                  scatter-&gt;distribution() ) ) ;
+   </font><font class="kw2">size_t</font><font class="text"> first = mat-&gt;row_distribution()-&gt;first_local_index() ;
+   </font><font class="kw2">size_t</font><font class="text"> last  = mat-&gt;row_distribution()-&gt;local_index_limit() ;
+
+   sol-&gt;start_local_modifs() ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> is=0 ; is&lt;nb_steps ; ++is )
+   {
+      is_smoothed.</font><font class="kw2">set</font><font class="text">( </font><font class="kw1">false</font><font class="text"> ) ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> r=0 ; r&lt;com-&gt;nb_ranks() ; ++r )
+      {
+         scatter-&gt;get( sol, glo_vec ) ;
+         </font><font class="kw1">if</font><font class="text">( r == com-&gt;rank() )
+         {
+            </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;priority.size() ; ++i )
+            {
+               </font><font class="kw2">size_t</font><font class="text"> i_row = priority( i ) ;
+               </font><font class="kw3">PEL_ASSERT</font><font class="text">(  i_row &gt;= first &amp;&amp; i_row &lt; last ) ;
+               </font><font class="kw1">if</font><font class="text">( to_be_smoothed-&gt;item( i_row ) &gt; 0.9 )
+               {
+                  is_smoothed( i_row ) = </font><font class="kw1">true</font><font class="text"> ;
+                  </font><font class="kw1">double</font><font class="text"> xx = 0.0 ;
+                  </font><font class="kw1">double</font><font class="text"> diag_term = </font><font class="kw3">PEL</font><font class="text">::bad_double() ;
+                  it-&gt;start_row_items( i_row ) ;
+                  </font><font class="kw1">for</font><font class="text">( ; it-&gt;is_valid() ; it-&gt;go_next() )
+                  {
+                     </font><font class="kw2">size_t</font><font class="text"> j = it-&gt;col() ;
+                     </font><font class="kw1">double</font><font class="text"> sol_j = ( j &gt;= first &amp;&amp; j &lt; last ) ?
+                           sol-&gt;item( j ) : glo_vec-&gt;item( j ) ;
+                           xx += it-&gt;item() * sol_j ;
+                           </font><font class="kw1">if</font><font class="text">( i_row == j ) diag_term = it-&gt;item() ;
+                  }
+                  </font><font class="kw1">double</font><font class="text"> rr = rhs-&gt;item( i_row ) - xx ;
+                  sol-&gt;add_to_item( i_row, rr/diag_term ) ;
+               }
+            }
+         }
+      }
+      scatter-&gt;get( sol, glo_vec ) ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i_row=first ; i_row&lt;last ; ++i_row )
+      {
+         </font><font class="kw1">if</font><font class="text">( !is_smoothed( i_row ) &amp;&amp; to_be_smoothed-&gt;item( i_row ) &gt; 0.9 )
+         {
+            is_smoothed( i_row ) = </font><font class="kw1">true</font><font class="text"> ;
+            </font><font class="kw1">double</font><font class="text"> xx = 0.0 ;
+            </font><font class="kw1">double</font><font class="text"> diag_term = </font><font class="kw3">PEL</font><font class="text">::bad_double() ;
+            it-&gt;start_row_items( i_row ) ;
+            </font><font class="kw1">for</font><font class="text">( ; it-&gt;is_valid() ; it-&gt;go_next() )
+            {
+               </font><font class="kw2">size_t</font><font class="text"> j = it-&gt;col() ;
+               </font><font class="kw1">double</font><font class="text"> sol_j = ( j &gt;= first &amp;&amp; j &lt; last ) ?
+                     sol-&gt;item( j ) : glo_vec-&gt;item( j ) ;
+                     xx += it-&gt;item() * sol_j ;
+                     </font><font class="kw1">if</font><font class="text">( i_row == j ) diag_term = it-&gt;item() ;
+            }
+            </font><font class="kw1">double</font><font class="text"> rr = rhs-&gt;item( i_row ) - xx ;
+            sol-&gt;add_to_item( i_row, rr/diag_term ) ;
+         }
+      }
+   }
+   sol-&gt;stop_local_modifs() ;
+   it-&gt;destroy() ; it=0 ;
+   glo_vec-&gt;destroy() ; glo_vec = 0 ;
+   scatter-&gt;destroy() ; scatter = 0 ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( sol-&gt;is_synchronized() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw2">size_t
+</font><font class="kw3">PDE_GeometricMultilevel_PC</font><font class="text">:: nb_levels( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_GeometricMultilevel_PC:: nb_levels&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( is_valid() ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> result = NB_LEVELS ;
+
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_Matrix</font><font class="text">*
+</font><font class="kw3">PDE_GeometricMultilevel_PC</font><font class="text">:: mat_of_level( </font><font class="kw2">size_t</font><font class="text"> level ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_GeometricMultilevel_PC:: mat_of_level&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( is_valid() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( level &lt; nb_levels()-1 ) ;
+
+   </font><font class="kw3">LA_Matrix</font><font class="text">* result = </font><font class="kw1">static_cast</font><font class="text">&lt; </font><font class="kw3">LA_Matrix</font><font class="text">* &gt;( AA-&gt;at( level ) ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;owner() == </font><font class="kw1">this</font><font class="text"> ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">PDE_GeometricMultilevel_PC</font><font class="text">:: finest_mat( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_GeometricMultilevel_PC:: finest_mat&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( is_valid() ) ;
+
+   </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result = FINEST_A ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_Vector</font><font class="text">*
+</font><font class="kw3">PDE_GeometricMultilevel_PC</font><font class="text">:: rhs_of_level( </font><font class="kw2">size_t</font><font class="text"> level ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_GeometricMultilevel_PC:: rhs_of_level&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( is_valid() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( level &lt; nb_levels()-1 ) ;
+
+   </font><font class="kw3">LA_Vector</font><font class="text">* result = </font><font class="kw1">static_cast</font><font class="text">&lt; </font><font class="kw3">LA_Vector</font><font class="text">* &gt;( B-&gt;at( level ) ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;owner() == </font><font class="kw1">this</font><font class="text"> ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_Vector</font><font class="text">*
+</font><font class="kw3">PDE_GeometricMultilevel_PC</font><font class="text">:: res_of_level( </font><font class="kw2">size_t</font><font class="text"> level ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_GeometricMultilevel_PC:: res_of_level&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( is_valid() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( level &lt; nb_levels() ) ;
+
+   </font><font class="kw3">LA_Vector</font><font class="text">* result = </font><font class="kw1">static_cast</font><font class="text">&lt; </font><font class="kw3">LA_Vector</font><font class="text">* &gt;( RES-&gt;at( level ) ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;owner() == </font><font class="kw1">this</font><font class="text"> ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_Vector</font><font class="text">*
+</font><font class="kw3">PDE_GeometricMultilevel_PC</font><font class="text">:: sol_of_level( </font><font class="kw2">size_t</font><font class="text"> level ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_GeometricMultilevel_PC:: sol_of_level&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( is_valid() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( level &lt; nb_levels()-1 ) ;
+
+   </font><font class="kw3">LA_Vector</font><font class="text">* result = </font><font class="kw1">static_cast</font><font class="text">&lt; </font><font class="kw3">LA_Vector</font><font class="text">* &gt;( X-&gt;at( level ) ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;owner() == </font><font class="kw1">this</font><font class="text"> ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">PDE_GeometricMultilevel_PC</font><font class="text">:: coarse_to_fine( </font><font class="kw2">size_t</font><font class="text"> coarse_level ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_GeometricMultilevel_PC:: coarse_to_fine&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( is_valid() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( coarse_level &lt; nb_levels()-1 ) ;
+
+   </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result =
+      </font><font class="kw1">static_cast</font><font class="text">&lt; </font><font class="kw3">LA_Matrix</font><font class="text">* &gt;( COARSE_TO_FINE-&gt;at( coarse_level ) ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;owner() == </font><font class="kw1">this</font><font class="text"> ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">PDE_GeometricMultilevel_PC</font><font class="text">:: smoothing_lines_of_level( </font><font class="kw2">size_t</font><font class="text"> level ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_GeometricMultilevel_PC:: smoothing_lines_of_level&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( is_valid() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( level &lt; nb_levels()-1 ) ;
+
+   </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result =
+                    </font><font class="kw1">static_cast</font><font class="text">&lt; </font><font class="kw3">LA_Vector</font><font class="text">* &gt;( SMOO_LINE-&gt;at( level ) ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;owner() == </font><font class="kw1">this</font><font class="text"> ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">PDE_GeometricMultilevel_PC</font><font class="text">:: unknowns_of_level( </font><font class="kw2">size_t</font><font class="text"> level ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_GeometricMultilevel_PC:: unknowns_of_level&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( is_valid() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( level &lt; nb_levels()-1 ) ;
+
+   </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result =
+                    </font><font class="kw1">static_cast</font><font class="text">&lt; </font><font class="kw3">LA_Vector</font><font class="text">* &gt;( UNKNOWNS_LEVEL-&gt;at( level ) ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;owner() == </font><font class="kw1">this</font><font class="text"> ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PDE_GeometricMultilevel_PC</font><font class="text">:: compute_residual( </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* mat,
+                                               </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* rhs,
+                                               </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* sol,
+                                               </font><font class="kw3">LA_Vector</font><font class="text">* residual )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_GeometricMultilevel_PC:: compute_residual&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( mat-&gt;is_synchronized() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( rhs-&gt;is_synchronized() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( sol-&gt;is_synchronized() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( mat-&gt;distribution_strategy() == 
+                  rhs-&gt;distribution_strategy() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( mat-&gt;distribution_strategy() == 
+                  sol-&gt;distribution_strategy() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( mat-&gt;distribution_strategy() == 
+                  residual-&gt;distribution_strategy() ) ;
+</font><font class="comment">//   PEL_CHECK_PRE( EQUIVALENT( mat-&gt;is_distributed(),
+//                              rhs-&gt;is_distributed() ) ) ;
+//   PEL_CHECK_PRE( EQUIVALENT( mat-&gt;is_distributed(),
+//                              sol-&gt;is_distributed() ) ) ;
+//   PEL_CHECK_PRE( EQUIVALENT( mat-&gt;is_distributed(),
+//                              residual-&gt;is_distributed() ) ) ;
+</font><font class="text">   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( </font><font class="kw3">IMPLIES</font><font class="text">( mat-&gt;distribution_strategy() != </font><font class="kw3">LA</font><font class="text">::NoDistribution,
+                  sol-&gt;row_distribution()-&gt;is_compatible(
+                                              mat-&gt;col_distribution() ) ) ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( </font><font class="kw3">IMPLIES</font><font class="text">( mat-&gt;distribution_strategy() != </font><font class="kw3">LA</font><font class="text">::NoDistribution,
+                  rhs-&gt;row_distribution()-&gt;is_compatible(
+                                              mat-&gt;row_distribution() ) ) ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( </font><font class="kw3">IMPLIES</font><font class="text">( mat-&gt;distribution_strategy() != </font><font class="kw3">LA</font><font class="text">::NoDistribution,
+                  residual-&gt;row_distribution()-&gt;is_compatible(
+                                              mat-&gt;row_distribution() ) ) ) ;
+
+   </font><font class="comment">// residual = rhs
+</font><font class="text">   </font><font class="comment">// residual = -mat*rhs + residual
+</font><font class="text">   residual-&gt;</font><font class="kw2">set</font><font class="text">( rhs ) ;
+   mat-&gt;multiply_vec_then_add( sol, residual, -1.0, 1.0 ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PDE_GeometricMultilevel_PC</font><font class="text">:: print_residuals(
+                                      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; indent, </font><font class="kw2">size_t</font><font class="text"> n,
+                                      </font><font class="kw1">double</font><font class="text"> norm_res,
+                                      </font><font class="kw1">double</font><font class="text"> norm_res_0 )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_GeometricMultilevel_PC:: print_residuals&quot;</font><font class="text"> ) ;
+   </font><font class="kw2">ios_base</font><font class="text">::</font><font class="kw2">fmtflags</font><font class="text"> original_flags = </font><font class="kw3">PEL</font><font class="text">::out().</font><font class="kw2">flags</font><font class="text">() ;
+   </font><font class="kw3">PEL</font><font class="text">::out().setf( </font><font class="kw2">ios_base</font><font class="text">::</font><font class="kw2">uppercase</font><font class="text"> | </font><font class="kw2">ios_base</font><font class="text">::</font><font class="kw2">scientific</font><font class="text"> ) ;
+   </font><font class="kw2">std</font><font class="text">::streamsize p = </font><font class="kw3">PEL</font><font class="text">::out().precision() ;
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="kw2">setprecision</font><font class="text">( 6 ) ;
+
+   </font><font class="kw1">if</font><font class="text">( n==1 )
+   {
+      </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; indent
+           &lt;&lt; </font><font class="kw2">setw</font><font class="text">( 3+15 ) &lt;&lt; </font><font class="string">&quot;|r|_2&quot;
+</font><font class="text">           &lt;&lt; </font><font class="kw2">setw</font><font class="text">( 15 )   &lt;&lt; </font><font class="string">&quot;|r|_2/|r0|_2&quot;</font><font class="text"> ;
+      </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   }
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; indent
+        &lt;&lt; </font><font class="kw2">setw</font><font class="text">( 3 ) &lt;&lt; n
+        &lt;&lt; </font><font class="kw2">setw</font><font class="text">( 15 ) &lt;&lt; norm_res
+        &lt;&lt; </font><font class="kw2">setw</font><font class="text">( 15 ) &lt;&lt; norm_res/norm_res_0 ;
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">setprecision</font><font class="text">(p) ;
+   </font><font class="kw3">PEL</font><font class="text">::out().</font><font class="kw2">flags</font><font class="text">( original_flags ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PDE_GeometricMultilevel_PC</font><font class="text">:: get_prolongation_matrices(
+                                              </font><font class="kw3">PDE_AlgebraicCoarsener</font><font class="text">* coar )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_GeometricMultilevel_PC:: get_prolongation_matrices&quot;</font><font class="text"> ) ;
+
+   coar-&gt;prepare_for_coarsening( system_numbering() ) ;
+
+   NB_LEVELS = coar-&gt;nb_levels() ;
+   </font><font class="kw1">if</font><font class="text">( NB_LEVELS == 1 ) PDE_GeometricMultilevel_PC_ERROR::n2() ;
+
+   </font><font class="kw2">size_t</font><font class="text"> old_size = COARSE_TO_FINE-&gt;index_limit() ;
+   </font><font class="kw2">size_t</font><font class="text"> new_size = NB_LEVELS - 1 ;
+   </font><font class="kw1">if</font><font class="text">( new_size &gt; old_size )
+   {
+      COARSE_TO_FINE-&gt;resize( new_size ) ;
+      SMOO_LINE-&gt;resize( new_size ) ;
+      UNKNOWNS_LEVEL-&gt;resize( new_size ) ;
+      AA-&gt;resize( new_size ) ;
+      B-&gt;resize( new_size ) ;
+      X-&gt;resize( new_size ) ;
+      RES-&gt;resize( NB_LEVELS ) ;
+      RES-&gt;set_at( NB_LEVELS-1, MAT_PROTO-&gt;create_vector( </font><font class="kw1">this</font><font class="text"> ) ) ;
+   }
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=old_size ; i&lt;new_size ; ++i )
+   {
+      COARSE_TO_FINE-&gt;set_at( i, MAT_PROTO-&gt;create_matrix( </font><font class="kw1">this</font><font class="text"> ) ) ;
+      SMOO_LINE-&gt;set_at( i, MAT_PROTO-&gt;create_vector( </font><font class="kw1">this</font><font class="text"> ) ) ;
+      UNKNOWNS_LEVEL-&gt;set_at( i, MAT_PROTO-&gt;create_vector( </font><font class="kw1">this</font><font class="text"> ) ) ;
+      AA-&gt;set_at( i, MAT_PROTO-&gt;create_matrix( </font><font class="kw1">this</font><font class="text"> ) ) ;
+      B-&gt;set_at( i, MAT_PROTO-&gt;create_vector( </font><font class="kw1">this</font><font class="text"> ) ) ;
+      X-&gt;set_at( i, MAT_PROTO-&gt;create_vector( </font><font class="kw1">this</font><font class="text"> ) ) ;
+      RES-&gt;set_at( i, MAT_PROTO-&gt;create_vector( </font><font class="kw1">this</font><font class="text"> ) ) ;
+   }
+
+   </font><font class="comment">//??? si on ne change que la matrice, mais pas les niveaux,
+</font><font class="text">   </font><font class="comment">//??? on va ex&#xE9;cuter cette boucle inutilement
+</font><font class="text">   </font><font class="kw2">size_t</font><font class="text"> coarse_l = </font><font class="kw3">PEL</font><font class="text">::bad_index() ;
+   </font><font class="kw1">while</font><font class="text">( coar-&gt;coarsening_is_possible() )
+   {
+      coar-&gt;do_one_coarsening() ;
+      </font><font class="kw2">size_t</font><font class="text"> fine_l = coar-&gt;current_fine_level() ;
+      coarse_l = fine_l - 1 ;
+
+      </font><font class="kw3">LA_Matrix</font><font class="text">* mm =
+                 </font><font class="kw1">static_cast</font><font class="text">&lt; </font><font class="kw3">LA_Matrix</font><font class="text">* &gt;( COARSE_TO_FINE-&gt;at( coarse_l ) )  ;
+      coar-&gt;build_current_prolongation_matrix( mm ) ;
+      </font><font class="kw2">size_t</font><font class="text"> nb_coar = mm-&gt;nb_cols() ;
+      </font><font class="kw2">size_t</font><font class="text"> nb_local_coar = mm-&gt;nb_local_cols() ;
+
+      </font><font class="kw3">LA_Vector</font><font class="text">* vv = </font><font class="kw1">static_cast</font><font class="text">&lt; </font><font class="kw3">LA_Vector</font><font class="text">* &gt;( SMOO_LINE-&gt;at( coarse_l ) ) ;
+      coar-&gt;build_smoothing_lines( vv ) ;
+
+      vv= </font><font class="kw1">static_cast</font><font class="text">&lt; </font><font class="kw3">LA_Vector</font><font class="text">* &gt;( UNKNOWNS_LEVEL-&gt;at( coarse_l ) ) ;
+      coar-&gt;build_current_level_unknowns( vv ) ;
+
+      mm = </font><font class="kw1">static_cast</font><font class="text">&lt; </font><font class="kw3">LA_Matrix</font><font class="text">* &gt;( AA-&gt;at( coarse_l ) ) ;
+      mm-&gt;re_initialize( nb_coar, nb_coar, nb_local_coar, nb_local_coar ) ;
+
+      vv = </font><font class="kw1">static_cast</font><font class="text">&lt; </font><font class="kw3">LA_Vector</font><font class="text">* &gt;( B-&gt;at( coarse_l ) ) ;
+      vv-&gt;re_initialize( nb_coar, nb_local_coar ) ;
+
+      vv = </font><font class="kw1">static_cast</font><font class="text">&lt; </font><font class="kw3">LA_Vector</font><font class="text">* &gt;( X-&gt;at( coarse_l ) ) ;
+      vv-&gt;re_initialize( nb_coar, nb_local_coar ) ;
+
+      vv = </font><font class="kw1">static_cast</font><font class="text">&lt; </font><font class="kw3">LA_Vector</font><font class="text">* &gt;( RES-&gt;at( coarse_l ) ) ;
+      vv-&gt;re_initialize( nb_coar, nb_local_coar ) ;
+   }
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( coarse_l == 0 ) ;
+   </font><font class="kw3">LA_Vector</font><font class="text">* vv = </font><font class="kw1">static_cast</font><font class="text">&lt; </font><font class="kw3">LA_Vector</font><font class="text">* &gt;( RES-&gt;at( NB_LEVELS-1 ) ) ;
+   vv-&gt;re_initialize( nb_fine_unknowns(),
+                      NMB-&gt;nb_unknowns_on_current_process() ) ;
+}
+
+</font><font class="comment">//internal-------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">PDE_GeometricMultilevel_PC_ERROR:: n0( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_name )
+</font><font class="comment">//internal-------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">ostringstream</font><font class="text"> mesg ;
+   mesg &lt;&lt; </font><font class="string">&quot;*** PDE_GeometricMultilevel_PC error:&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;    attempt to create two instances with the&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;    same name: \&quot;&quot; &lt;&lt; a_name &lt;&lt; &quot;</font><font class="text">\</font><font class="string">&quot;&quot;</font><font class="text"> ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( mesg.str() ) ;
+}
+
+</font><font class="comment">//internal-------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">PDE_GeometricMultilevel_PC_ERROR:: n1( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_name )
+</font><font class="comment">//internal-------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">ostringstream</font><font class="text"> mesg ;
+   mesg &lt;&lt; </font><font class="string">&quot;*** PDE_GeometricMultilevel_PC error:&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;    there is no recorded instance of name: \&quot;&quot; &lt;&lt; a_name &lt;&lt; &quot;</font><font class="text">\</font><font class="string">&quot;&quot;</font><font class="text"> ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( mesg.str() ) ;
+}
+
+</font><font class="comment">//internal-------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">PDE_GeometricMultilevel_PC_ERROR:: n2( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//internal-------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">ostringstream</font><font class="text"> mesg ;
+   mesg &lt;&lt; </font><font class="string">&quot;*** PDE_GeometricMultilevel_PC error:&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;    a multilevel hierarchy is requested&quot;</font><font class="text"> ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( mesg.str() ) ;
+}
+
+</font><font class="comment">//internal-------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">PDE_GeometricMultilevel_PC_ERROR:: n3( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; tname )
+</font><font class="comment">//internal-------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">ostringstream</font><font class="text"> mesg ;
+   mesg &lt;&lt; </font><font class="string">&quot;*** PDE_GeometricMultilevel_PC error:&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;    invalid use of an object of type \&quot;&quot; &lt;&lt; tname &lt;&lt; &quot;</font><font class="text">\</font><font class="string">&quot;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;    the member function&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;       \&quot;</font><font class="text">set_discretization_scene\</font><font class="string">&quot;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;    may not have been called properly for that object&quot;</font><font class="text"> ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( mesg.str() ) ;
+}
+
+
+</font>
+</pre>
+</body>
+</html>

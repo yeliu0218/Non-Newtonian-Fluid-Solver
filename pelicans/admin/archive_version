@@ -1,0 +1,77 @@
+#!/bin/sh -e
+
+#-----------------------------------------------------------------------
+print_error() {
+#-----------------------------------------------------------------------
+   echo " "
+   echo "`basename $0` : $error"
+   echo " "
+   echo "Usage : `basename $0` [-version ver] version_directory archive_name"
+   echo " "
+   exit 1
+}
+
+#---------------------------------------------------------------------
+#   MAIN
+#---------------------------------------------------------------------
+
+N=`date '+%d_%m_%Y'`
+if [ $# -eq 4 ]
+then
+   if [ $1 = "-version" ]
+   then
+      shift
+      N=$1
+      shift
+   else
+      error="bad number of arguments ($#)"
+      print_error
+   fi
+elif [ $# -ne 2 ]
+then
+   error="bad number of arguments ($#)"
+   print_error
+fi
+
+here=`pwd`
+VERSION=$1
+NAME="$2"-"$N"
+TAR_NAME=$NAME.tar.gz
+TMP_FILE=/tmp/$NAME.$$.tar
+TMP_DIR=$here/$NAME
+
+RM="/bin/rm -fr"
+MD="/bin/mkdir -p"
+
+if [ ! -d $VERSION ]
+then
+   error="bad directory ($VERSION)"
+   print_error
+fi
+
+if [ -f $TMP_FILE ]
+then
+  $RM $TMP_FILE
+fi
+if [ -d $TMP_DIR ]
+then
+  $RM -fr  $TMP_DIR
+fi
+
+cd $VERSION
+# find -L . \( -name .svn -o -name CVS -o -name lib \) -prune -o -type d -o -print | tar chf $TMP_FILE -T -
+find . -follow \( -name .svn -o -name CVS -o -name lib \) -prune -o -type d -o -print | tar chf $TMP_FILE -T -
+
+$MD $TMP_DIR
+cd $TMP_DIR
+tar xf $TMP_FILE
+$RM $TMP_FILE
+make clean
+cd $TMP_DIR/..
+tar czf $here/$TAR_NAME $NAME
+$RM $TMP_DIR
+cd $here
+
+echo " "
+echo "   Archive $TAR_NAME is done"
+echo " "

@@ -1,0 +1,911 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>LA_Vector.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="LA_Vector.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="LApack-tree.html"><span>Tree</span></a>
+    <a href="LA_Vector.html"><span>Class</span></a>
+    <a href="LA_Vector.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <a href="LA_Vector.icc.html"><span>Inlined</span></a>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="LApack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated
+ *  reusable components, whose purpose is to simplify the task of developing
+ *  softwares of numerical mathematics and scientific computing.
+ *
+ *  This software is governed by the CeCILL-C license under French law and
+ *  abiding by the rules of distribution of free software. You can use, modify
+ *  and/or redistribute the software under the terms of the CeCILL-C license
+ *  as circulated by CEA, CNRS and INRIA at the following URL
+ *  &quot;http://www.cecill.info&quot;.
+ *
+ *  As a counterpart to the access to the source code and rights to copy,
+ *  modify and redistribute granted by the license, users are provided only
+ *  with a limited warranty and the software's author, the holder of the
+ *  economic rights, and the successive licensors have only limited liability.
+ *
+ *  In this respect, the user's attention is drawn to the risks associated
+ *  with loading, using, modifying and/or developing or reproducing the
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also
+ *  therefore means that it is reserved for developers and experienced
+ *  professionals having in-depth computer knowledge. Users are therefore
+ *  encouraged to load and test the software's suitability as regards their
+ *  requirements in conditions enabling the security of their systems and/or
+ *  data to be ensured and, more generally, to use and operate it in the same
+ *  conditions as regards security.
+ *
+ *  The fact that you are presently reading this means that you have had
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_Vector</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_SeqVector</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_Scatter</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Communicator</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_DistributedPartition</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Exec</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">size_t_vector</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#ifdef</font><font class="text"> OUTLINE
+</font><font class="kw2">#define</font><font class="text"> </font><font class="kw1">inline
+</font><font class="text">   </font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_Vector</font><font class="text">.icc&gt;
+#undef </font><font class="kw1">inline
+</font><font class="kw2">#endif
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;iostream&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;fstream&gt;
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_Vector</font><font class="text">:: </font><font class="kw3">LA_Vector</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner, </font><font class="kw2">size_t</font><font class="text"> a_nb_rows )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_Object</font><font class="text">( a_owner )
+   , NB_ROWS( a_nb_rows )
+   , DIST_STATUS( </font><font class="kw3">LA</font><font class="text">::Sync )
+   , RESIZABLE( </font><font class="kw1">true</font><font class="text"> )
+   , ONLY_LOCAL_MODIFS( </font><font class="kw1">false</font><font class="text"> )
+   , DIST_STRAT( </font><font class="kw3">LA</font><font class="text">::InvalidDistribution )
+{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_Vector:: LA_Vector&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( owner() == a_owner ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( nb_rows() == a_nb_rows ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( is_resizable() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( distribution_strategy() == </font><font class="kw3">LA</font><font class="text">::InvalidDistribution ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_Vector</font><font class="text">:: ~</font><font class="kw3">LA_Vector</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_Vector:: ~LA_Vector&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_Vector</font><font class="text">:: is_resizable( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">return</font><font class="text">( RESIZABLE ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_Vector</font><font class="text">:: make_non_resizable( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_Vector:: make_non_resizable&quot;</font><font class="text"> ) ;
+
+   RESIZABLE = </font><font class="kw1">false</font><font class="text"> ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( !is_resizable() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw2">size_t
+</font><font class="kw3">LA_Vector</font><font class="text">:: nb_local_rows( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> 
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_Vector:: nb_local_rows&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw2">size_t</font><font class="text"> result = row_distribution()-&gt;local_number() ;
+   
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result == row_distribution()-&gt;local_number() ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_Vector</font><font class="text">:: only_local_modifs( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_Vector:: only_local_modifs&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">bool</font><font class="text"> result = ONLY_LOCAL_MODIFS ;
+
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_Vector</font><font class="text">:: set_only_local_modifs_state( </font><font class="kw1">bool</font><font class="text"> only_local )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_Vector:: set_only_local_modifs_state&quot;</font><font class="text"> ) ;
+
+   ONLY_LOCAL_MODIFS = only_local ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( only_local_modifs() == only_local ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_Vector</font><font class="text">:: start_local_modifs( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_Vector:: start_local_modifs&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( start_local_modifs_PRE() ) ;
+
+   set_only_local_modifs_state( </font><font class="kw1">true</font><font class="text"> ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( start_local_modifs_POST() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_Vector</font><font class="text">:: stop_local_modifs( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_Vector:: stop_local_modifs&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( stop_local_modifs_PRE() ) ;
+
+   set_only_local_modifs_state( </font><font class="kw1">false</font><font class="text"> ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( stop_local_modifs_POST() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_Vector</font><font class="text">:: set_distribution_strategy(
+                              </font><font class="kw3">LA</font><font class="text">::DistributionStrategy dist_strat ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_Vector:: set_distribution_strategy&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( distribution_strategy() == </font><font class="kw3">LA</font><font class="text">::InvalidDistribution ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( dist_strat != </font><font class="kw3">LA</font><font class="text">::InvalidDistribution ) ;
+
+   DIST_STRAT = dist_strat ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( distribution_strategy() == dist_strat ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA</font><font class="text">::DistributionStrategy
+</font><font class="kw3">LA_Vector</font><font class="text">:: distribution_strategy( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_Vector:: distribution_strategy&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">return</font><font class="text">( DIST_STRAT ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_Vector</font><font class="text">:: is_synchronized( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_Vector:: is_synchronized&quot;</font><font class="text"> ) ;
+   PEL_CHECK_COLLECTIVE( is_desynchronizable() ) ;
+
+   </font><font class="kw1">bool</font><font class="text"> result = ( is_desynchronizable() ?
+                      </font><font class="kw3">PEL_Exec</font><font class="text">::communicator()-&gt;boolean_and(
+                                                        state() == </font><font class="kw3">LA</font><font class="text">::Sync ) :
+                      </font><font class="kw1">true</font><font class="text"> ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">(
+      </font><font class="kw3">IMPLIES</font><font class="text">( !is_desynchronizable(), result == </font><font class="kw1">true</font><font class="text"> ) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">(
+      </font><font class="kw3">IMPLIES</font><font class="text">( is_desynchronizable(),
+               result == </font><font class="kw3">PEL_Exec</font><font class="text">::communicator()-&gt;boolean_and(
+                                               state() == </font><font class="kw3">LA</font><font class="text">::Sync ) ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_Vector</font><font class="text">:: nullify( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_Vector:: nullify&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( nullify_PRE() ) ;
+
+   </font><font class="kw2">set</font><font class="text">( 0.0 ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( nullify_POST() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_Vector</font><font class="text">:: print( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostream</font><font class="text">&amp; os, </font><font class="kw2">size_t</font><font class="text"> indent_width ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> s( indent_width, </font><font class="string">' '</font><font class="text"> ) ;
+   os &lt;&lt; s &lt;&lt; </font><font class="string">&quot;vector: \&quot;&quot; &lt;&lt; type_name() &lt;&lt; &quot;</font><font class="text">\</font><font class="string">&quot;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+}
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_Vector</font><font class="text">:: read( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; filename )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_Vector:: read&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( read_PRE( filename ) ) ;
+
+   </font><font class="kw1">if</font><font class="text">( !is_resizable() )
+   {
+      </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_internal(
+         </font><font class="string">&quot;Reading of non resizable vector is not implemented&quot;</font><font class="text"> ) ;
+   }
+
+   </font><font class="kw2">size_t</font><font class="text"> rank = </font><font class="kw3">PEL_Exec</font><font class="text">::communicator()-&gt;rank() ;
+
+   </font><font class="kw2">std</font><font class="text">::ifstream in( filename.c_str() ) ;
+   </font><font class="kw1">if</font><font class="text">( !in )
+   {
+      </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_file_handling( filename, </font><font class="string">&quot;open&quot;</font><font class="text"> ) ;
+   }
+   </font><font class="kw2">size_t</font><font class="text"> nbrows ;
+
+   in &gt;&gt; nbrows ;
+   re_initialize( nbrows ) ;
+   </font><font class="kw2">size_t</font><font class="text"> i = 0 ;
+
+   </font><font class="kw1">if</font><font class="text">( rank==0 || !is_desynchronizable() )
+   {
+      </font><font class="kw1">while</font><font class="text">( !in.eof() )
+      {
+         </font><font class="kw1">if</font><font class="text">( i&gt;=nbrows )
+         {
+            </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( </font><font class="string">&quot;Invalid vector (rows&gt;nb_rows) in &quot;
+</font><font class="text">                                              +filename ) ;
+         }
+         </font><font class="kw1">double</font><font class="text"> v ;
+         in &gt;&gt; v ;
+         set_item( i, v ) ;
+         i++ ;
+      }
+      </font><font class="kw1">if</font><font class="text">( i!=nbrows )
+      {
+         </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( </font><font class="string">&quot;Invalid vector (rows&lt;nb_rows) in &quot;
+</font><font class="text">                                           +filename ) ;
+      }
+   }
+   in.close() ;
+   synchronize() ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( read_POST() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_Vector</font><font class="text">:: set_rows_number( </font><font class="kw2">size_t</font><font class="text"> a_nb_rows )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_Vector:: set_rows_number&quot;</font><font class="text"> ) ;
+   PEL_CHECK_COLLECTIVE( is_desynchronizable() ) ;
+
+   NB_ROWS = a_nb_rows ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( nb_rows() == a_nb_rows ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_Vector</font><font class="text">:: invariant( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">::invariant() ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_Vector</font><font class="text">:: re_initialize_PRE( </font><font class="kw2">size_t</font><font class="text"> a_nb_rows,
+                               </font><font class="kw2">size_t</font><font class="text"> a_nb_local_rows ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   PEL_CHECK_COLLECTIVE( is_desynchronizable() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( is_resizable() ) ;
+
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( </font><font class="kw3">IMPLIES</font><font class="text">( distribution_strategy() != </font><font class="kw3">LA</font><font class="text">::FromLocalSize,
+                        a_nb_rows != </font><font class="kw3">PEL</font><font class="text">::bad_index() ) ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">(
+     </font><font class="kw3">IMPLIES</font><font class="text">( distribution_strategy() != </font><font class="kw3">LA</font><font class="text">::FromLocalSize &amp;&amp; is_desynchronizable(),
+       </font><font class="kw3">PEL_Exec</font><font class="text">::communicator()-&gt;same_value_everywhere( (</font><font class="kw1">int</font><font class="text">) a_nb_rows ) ) ) ;
+
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( </font><font class="kw3">IMPLIES</font><font class="text">( distribution_strategy() == </font><font class="kw3">LA</font><font class="text">::FromLocalSize,
+                           a_nb_local_rows != </font><font class="kw3">PEL</font><font class="text">::bad_index() ) ) ;
+
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_Vector</font><font class="text">:: re_initialize_POST( </font><font class="kw2">size_t</font><font class="text"> a_nb_rows,
+                                </font><font class="kw2">size_t</font><font class="text"> a_nb_local_rows ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( </font><font class="kw3">IMPLIES</font><font class="text">( distribution_strategy() != </font><font class="kw3">LA</font><font class="text">::FromLocalSize,
+                        nb_rows() == a_nb_rows ) ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">(
+       </font><font class="kw3">IMPLIES</font><font class="text">( distribution_strategy() == </font><font class="kw3">LA</font><font class="text">::FromLocalSize,
+                row_distribution()-&gt;local_number() ==  a_nb_local_rows ) ) ;
+
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( state() == </font><font class="kw3">LA</font><font class="text">::Sync ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( is_synchronized() ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_Vector</font><font class="text">:: create_vector_PRE( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   PEL_CHECK_COLLECTIVE( is_desynchronizable() ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_Vector</font><font class="text">:: create_vector_POST(
+                          </font><font class="kw3">LA_Vector</font><font class="text">* result, </font><font class="kw3">PEL_Object</font><font class="text">* a_owner ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( result != 0 ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( result-&gt;owner() == a_owner ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( result-&gt;implementation() == implementation() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( result-&gt;is_resizable() == is_resizable() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( result-&gt;nb_rows() == nb_rows() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( result-&gt;is_desynchronizable() == is_desynchronizable() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( result-&gt;state() == </font><font class="kw3">LA</font><font class="text">::Sync ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( result-&gt;row_distribution()-&gt;is_compatible( row_distribution() ) ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( result-&gt;is_synchronized() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( result-&gt;distribution_strategy() == distribution_strategy() ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_Vector</font><font class="text">:: implementation_POST( </font><font class="kw3">LA_Implementation</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( result != 0 ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_Vector</font><font class="text">:: start_local_modifs_PRE( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   PEL_CHECK_COLLECTIVE( is_desynchronizable() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( !only_local_modifs() ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_Vector</font><font class="text">:: start_local_modifs_POST( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( only_local_modifs() ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_Vector</font><font class="text">:: stop_local_modifs_PRE( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   PEL_CHECK_COLLECTIVE( is_desynchronizable() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( only_local_modifs() ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_Vector</font><font class="text">:: stop_local_modifs_POST( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( !only_local_modifs() ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_Vector</font><font class="text">:: synchronize_PRE( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   PEL_CHECK_COLLECTIVE( is_desynchronizable() ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_Vector</font><font class="text">:: synchronize_POST( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( is_synchronized() ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_Vector</font><font class="text">:: row_distribution_PRE( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_Vector</font><font class="text">:: row_distribution_POST(
+                          </font><font class="kw3">PEL_DistributedPartition</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( result != 0 ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( result-&gt;owner() == </font><font class="kw1">this</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( result-&gt;partitioning().size()==
+                               </font><font class="kw3">PEL_Exec</font><font class="text">::communicator()-&gt;nb_ranks() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( result-&gt;global_number()==nb_rows() ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_Vector</font><font class="text">:: create_scatter_PRE( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                </font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; from,
+                                </font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; to ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   PEL_CHECK_COLLECTIVE( is_desynchronizable() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( from.size() == to.size() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( </font><font class="kw3">FORALL</font><font class="text">( ( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;from.size() ; ++i ),
+                       from(i) &lt; nb_rows() ) ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_Vector</font><font class="text">:: create_scatter_POST( </font><font class="kw3">LA_Scatter</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result,
+                                 </font><font class="kw3">PEL_Object</font><font class="text"> </font><font class="kw1">const</font><font class="text">* a_owner,
+                                 </font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; from,
+                                 </font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; to ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( result != 0 ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( result-&gt;owner() == a_owner ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( result-&gt;implementation() == implementation() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( result-&gt;size() == from.size() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">(
+      </font><font class="kw3">FORALL</font><font class="text">( ( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;result-&gt;size() ; ++i ),
+              result-&gt;repatriated_items().has( from(i) ) ) ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">(
+      </font><font class="kw3">FORALL</font><font class="text">( ( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;result-&gt;size() ; ++i ),
+              result-&gt;local_indices()(i) == to(
+                 from.index_of( result-&gt;repatriated_items()(i) ) ) ) ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( result-&gt;distribution()-&gt;is_compatible(
+                                                row_distribution() ) ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_Vector</font><font class="text">:: create_local_vector_PRE( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( is_synchronized() ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_Vector</font><font class="text">:: create_local_vector_POST(
+                       </font><font class="kw3">LA_SeqVector</font><font class="text">* result, </font><font class="kw3">PEL_Object</font><font class="text">* a_owner ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( result != 0 ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( result-&gt;owner() == a_owner ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( result-&gt;nb_rows() == nb_rows() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( result-&gt;is_synchronized() ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_Vector</font><font class="text">:: item_PRE( </font><font class="kw2">size_t</font><font class="text"> i ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( i &lt; row_distribution()-&gt;local_index_limit()  &amp;&amp;
+               i &gt;= row_distribution()-&gt;first_local_index() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( state() == </font><font class="kw3">LA</font><font class="text">::Sync ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_Vector</font><font class="text">:: set_item_PRE( </font><font class="kw2">size_t</font><font class="text"> i ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( i &lt; nb_rows() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( </font><font class="kw3">IMPLIES</font><font class="text">( only_local_modifs(),
+                        i &gt;= row_distribution()-&gt;first_local_index() &amp;&amp;
+                        i &lt; row_distribution()-&gt;local_index_limit() ) ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( state() != </font><font class="kw3">LA</font><font class="text">::NotSync_add ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_Vector</font><font class="text">:: set_item_POST( </font><font class="kw2">size_t</font><font class="text"> i, </font><font class="kw3">LA</font><font class="text">::SyncState old_state ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">(
+   </font><font class="kw3">IMPLIES</font><font class="text">( is_desynchronizable() &amp;&amp; !only_local_modifs(),
+            state() == </font><font class="kw3">LA</font><font class="text">::NotSync_set ) ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">(
+   </font><font class="kw3">IMPLIES</font><font class="text">( !is_desynchronizable() || only_local_modifs(),
+            state() == old_state ) ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_Vector</font><font class="text">:: add_to_item_PRE( </font><font class="kw2">size_t</font><font class="text"> i ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( i &lt; nb_rows() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( </font><font class="kw3">IMPLIES</font><font class="text">( only_local_modifs(),
+                        i &gt;= row_distribution()-&gt;first_local_index() &amp;&amp;
+                        i &lt; row_distribution()-&gt;local_index_limit() ) ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( state() != </font><font class="kw3">LA</font><font class="text">::NotSync_set ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_Vector</font><font class="text">:: add_to_item_POST( </font><font class="kw2">size_t</font><font class="text"> i, </font><font class="kw3">LA</font><font class="text">::SyncState old_state ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">(
+      </font><font class="kw3">IMPLIES</font><font class="text">( is_desynchronizable() &amp;&amp; !only_local_modifs(),
+               state() == </font><font class="kw3">LA</font><font class="text">::NotSync_add ) ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">(
+   </font><font class="kw3">IMPLIES</font><font class="text">( !is_desynchronizable() || only_local_modifs(),
+            state() == old_state ) ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_Vector</font><font class="text">:: dot_PRE( </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* a ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   PEL_CHECK_COLLECTIVE( is_desynchronizable() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( is_synchronized() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( a != 0 ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( a-&gt;nb_rows() == nb_rows() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( a-&gt;implementation() == implementation() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( a-&gt;is_synchronized() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( a-&gt;row_distribution()-&gt;is_compatible( row_distribution() ) ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_Vector</font><font class="text">:: dot_POST( </font><font class="kw1">double</font><font class="text"> result ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_Vector</font><font class="text">:: two_norm_PRE( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   PEL_CHECK_COLLECTIVE( is_desynchronizable() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( nb_rows() &gt; 0 ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( is_synchronized() ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_Vector</font><font class="text">:: two_norm_POST( </font><font class="kw1">double</font><font class="text"> result ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( result &gt;= 0.0 ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_Vector</font><font class="text">:: max_norm_PRE( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   PEL_CHECK_COLLECTIVE( is_desynchronizable() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( nb_rows() &gt; 0 ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( is_synchronized() ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_Vector</font><font class="text">:: max_norm_POST( </font><font class="kw1">double</font><font class="text"> result ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( result &gt;= 0.0 ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_Vector</font><font class="text">:: nullify_PRE( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   PEL_CHECK_COLLECTIVE( is_desynchronizable() ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_Vector</font><font class="text">:: nullify_POST( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( is_synchronized() ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_Vector</font><font class="text">:: scale_PRE( </font><font class="kw1">double</font><font class="text"> value ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   PEL_CHECK_COLLECTIVE( is_desynchronizable() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( is_synchronized() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">(
+      </font><font class="kw3">IMPLIES</font><font class="text">( is_desynchronizable(),
+               </font><font class="kw3">PEL_Exec</font><font class="text">::communicator()-&gt;same_value_everywhere( value ) ) ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_Vector</font><font class="text">:: scale_POST( </font><font class="kw1">double</font><font class="text"> value ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( is_synchronized() ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_Vector</font><font class="text">:: set_PRE( </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* a ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   PEL_CHECK_COLLECTIVE( is_desynchronizable() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( a != 0 ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( a-&gt;nb_rows() == nb_rows() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( a-&gt;implementation() == implementation() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( a-&gt;is_synchronized() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( a-&gt;row_distribution()-&gt;is_compatible( row_distribution() ) ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_Vector</font><font class="text">:: set_POST( </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* a ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( is_synchronized() ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_Vector</font><font class="text">:: set_PRE( </font><font class="kw1">double</font><font class="text"> value ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   PEL_CHECK_COLLECTIVE( is_desynchronizable() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">(
+      </font><font class="kw3">IMPLIES</font><font class="text">( is_desynchronizable(),
+               </font><font class="kw3">PEL_Exec</font><font class="text">::communicator()-&gt;same_value_everywhere( value ) ) )  ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_Vector</font><font class="text">:: set_POST( </font><font class="kw1">double</font><font class="text"> value ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( is_synchronized() ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_Vector</font><font class="text">:: set_as_v_product_PRE(
+                          </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* a, </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* b ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   PEL_CHECK_COLLECTIVE( is_desynchronizable() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( a != 0 ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( a-&gt;nb_rows() == nb_rows() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( a-&gt;implementation() == implementation() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( a-&gt;is_synchronized() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( a-&gt;row_distribution()-&gt;is_compatible( row_distribution() ) ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( b != 0 ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( b-&gt;nb_rows() == nb_rows() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( b-&gt;implementation() == implementation() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( b-&gt;is_synchronized() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( b-&gt;row_distribution()-&gt;is_compatible( row_distribution() ) ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_Vector</font><font class="text">:: set_as_v_product_POST(
+                          </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* a, </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* b ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( is_synchronized() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( </font><font class="kw3">FORMAL</font><font class="text">( </font><font class="kw3">FORALL</font><font class="text">( ( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;nb_rows() ; ++i ),
+                               item(i) == a-&gt;item(i)*b-&gt;item(i) ) ) ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_Vector</font><font class="text">:: set_as_reciprocal_PRE( </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* a,
+                                   </font><font class="kw1">double</font><font class="text"> smallest_inverted_item,
+                                   </font><font class="kw1">double</font><font class="text"> default_value ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   PEL_CHECK_COLLECTIVE( is_desynchronizable() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( a != 0 ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( a-&gt;nb_rows() == nb_rows() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( a-&gt;implementation() == implementation() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( a-&gt;is_synchronized() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( a-&gt;row_distribution()-&gt;is_compatible( row_distribution() ) ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( smallest_inverted_item &gt;= 0. ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">(
+      </font><font class="kw3">IMPLIES</font><font class="text">( is_desynchronizable(),
+               </font><font class="kw3">PEL_Exec</font><font class="text">::communicator()-&gt;same_value_everywhere( smallest_inverted_item ) ) ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">(
+      </font><font class="kw3">IMPLIES</font><font class="text">( is_desynchronizable(),
+               </font><font class="kw3">PEL_Exec</font><font class="text">::communicator()-&gt;same_value_everywhere( default_value ) ) ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_Vector</font><font class="text">:: set_as_reciprocal_POST( </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* a ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( is_synchronized() ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_Vector</font><font class="text">:: sum_PRE( </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* a, </font><font class="kw1">double</font><font class="text"> alpha ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   PEL_CHECK_COLLECTIVE( is_desynchronizable() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( is_synchronized() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( a != 0 ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( a-&gt;nb_rows() == nb_rows() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( a-&gt;implementation() == implementation() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( a-&gt;is_synchronized() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( a-&gt;row_distribution()-&gt;is_compatible( row_distribution() ) ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">(
+      </font><font class="kw3">IMPLIES</font><font class="text">( is_desynchronizable(),
+               </font><font class="kw3">PEL_Exec</font><font class="text">::communicator()-&gt;same_value_everywhere( alpha ) ) ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_Vector</font><font class="text">:: sum_POST(  </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* a, </font><font class="kw1">double</font><font class="text"> alpha ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( is_synchronized() ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_Vector</font><font class="text">:: print_items_PRE( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostream</font><font class="text">&amp; os, </font><font class="kw2">size_t</font><font class="text"> indent_width ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( os ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( is_synchronized() ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_Vector</font><font class="text">:: write_PRE( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; filename ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   PEL_CHECK_COLLECTIVE( is_desynchronizable() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( is_synchronized() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( !filename.empty() ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_Vector</font><font class="text">:: write_POST( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_Vector</font><font class="text">:: read_PRE( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; filename ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   PEL_CHECK_COLLECTIVE( is_desynchronizable() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( !filename.empty() ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_Vector</font><font class="text">:: read_POST( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( is_synchronized() ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font>
+</pre>
+</body>
+</html>

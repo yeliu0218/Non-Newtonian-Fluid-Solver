@@ -1,0 +1,154 @@
+MODULE PEL_Application
+  
+   concrete_name = "FE_StepByStepProgression"
+
+   $DS_time_end = 10.0
+   MODULE FE_TimeIterator
+      time_initial = 0.0
+      time_end = $DS_time_end
+      time_step = 0.1
+   END MODULE FE_TimeIterator
+   
+   graphics_output_times = regular_vector( 0.0, 150, $DS_time_end )
+
+   MODULE memory_trace
+      type = "trace_first_iterations"
+      last_iteration_checked = 3
+   END MODULE memory_trace
+   
+   MODULE PDE_DomainAndFields
+   
+      verbose_level = 0
+      nb_space_dimensions = 2
+      type = "finite_element"
+   
+      MODULE GE_Meshing
+
+         concrete_name = "GE_BoxWithBoxes"
+
+         vertices_coordinate_0 = regular_vector( -1., 21, 1. )
+         vertices_coordinate_1 = regular_vector( -0.5,  3,  0.5 )
+         mesh_polyhedron = < "GE_Segment" "GE_Rectangle" >
+         
+      END MODULE GE_Meshing
+
+      MODULE macro_colors
+         vertical = < "left" "right" >
+         horizontal = < "bottom" "top" >
+      END MODULE macro_colors
+
+      MODULE interior_fields
+         
+         MODULE uu
+            name = "uu"
+            nb_components = 1
+            element_name = "PDE_2D_Q0_1node"
+            storage_depth = 1
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = < 0.0 >
+            END MODULE DOFs_values
+         END MODULE uu
+ 
+      END MODULE interior_fields
+
+      MODULE boundary_conditions
+         
+         MODULE vertical
+            field = "uu"
+            type  = "Dirichlet"
+            color = "vertical"
+            imposed_value = < 1.0 >
+         END MODULE vertical
+         
+         MODULE horizontal
+            field = "uu"
+            type = "NeumannScalarCFV"
+            color = "horizontal"
+            flux_value = < 0.0 >
+         END MODULE horizontal
+         
+      END MODULE boundary_conditions
+
+      MODULE PDE_ResultSaver   
+         writers = < "PEL_TICwriter" >
+         
+         writing_mode = "text"
+         files_basename = "save" 
+
+         MODULE uu
+            where_to_save = "at_cell_centers"
+            entry_name = "UU"
+            field = "uu"
+         END MODULE uu
+         
+      END MODULE PDE_ResultSaver
+
+   END MODULE PDE_DomainAndFields
+
+   MODULE FE_SetOfParameters
+      advective_velocity = < 0.0 0.0 >
+      pi = < 0.0 >
+   END MODULE FE_SetOfParameters
+
+   MODULE FE_OneStepIteration
+      
+      concrete_name = "FE_SplitSystem"
+      
+      MODULE list_of_FE_OneStepIteration
+         
+         MODULE FE_OneStepIteration#check
+            concrete_name = "AP_CheckDiscretizationCFV"
+            fields = < "uu" >
+            fields_with_BCs = < "uu" >
+            max_allowed_negative_distance_to_face = -1.e-8
+            max_allowed_normal_scalar_VtoFVcenter = 1.e-8
+            min_distance_between_centers = 1.e-8
+         END MODULE FE_OneStepIteration#check
+         
+         MODULE FE_OneStepIteration#cvadv
+            
+            concrete_name = "AP_AdvectionDiffusion1CFV"
+            
+            unknown_field = "uu"
+            level_to_update = 0
+            level_of_explicit = 0
+            
+            coef_unsteady  = 4.0
+            coef_diffusion = 1.0
+            param_source   = "pi"
+            
+            param_advective_velocity = "advective_velocity"
+            
+            quadrature_rule_provider_for_advective_velocity = "GE_QRprovider_1"
+            quadrature_rule_provider_for_source = "GE_QRprovider_1"
+            
+            MODULE LA_Matrix
+               concrete_name = "LA_PelMatrix"
+            END MODULE LA_Matrix
+
+            MODULE LA_Solver
+               concrete_name = "LA_PreconditionedSolver"
+               MODULE LA_IterativeSolver
+                  concrete_name = "LA_GMRES_IS"
+                  nb_iterations_max = 200000
+                  restart = 50
+                  MODULE LA_ConvergenceTest
+                     concrete_name = "LA_DefaultConvergenceTest"
+                     relative_tolerance = 1.e-12
+                     absolute_tolerance = 1.e-20
+                  END MODULE LA_ConvergenceTest
+                  verbose = true
+               END MODULE LA_IterativeSolver
+               MODULE LA_Preconditioner
+                  concrete_name = "LA_Jacobi_PC"
+                  smallest_inverted_item = 1.e-20
+               END MODULE LA_Preconditioner
+            END MODULE LA_Solver
+         END MODULE FE_OneStepIteration#cvadv
+         
+      END MODULE list_of_FE_OneStepIteration
+      
+   END MODULE FE_OneStepIteration
+   
+END MODULE PEL_Application

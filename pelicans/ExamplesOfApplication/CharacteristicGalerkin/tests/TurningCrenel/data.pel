@@ -1,0 +1,182 @@
+MODULE PEL_Application
+   
+   concrete_name = "FE_StepByStepProgression"
+   
+   MODULE FE_TimeIterator
+      time_initial = 0.
+      time_end     = 2.
+      time_step    = 0.025
+   END MODULE FE_TimeIterator
+   
+   graphics_output_times = regular_vector( 0.0, 2, 2.0 )   
+   
+   MODULE PDE_DomainAndFields
+      
+      type = "finite_element"
+      verbose_level = 1
+      nb_space_dimensions = 2
+      
+      MODULE GE_Meshing
+         concrete_name = "GE_SplitMeshing"
+         security_bandwidth = 2
+         MODULE splitting_strategy
+            concrete_name = "GE_CoordinateSplitting"
+            $DS_X = component( $DV_X, 0 )
+            coordinate_splitting_formula = 
+               unit_sort( $DS_X, 0., 1., nb_ranks() )
+         END MODULE splitting_strategy
+         MODULE GE_Meshing   
+            concrete_name = "GE_BoxWithBoxes"
+            vertices_coordinate_1 = regular_vector( 0.0, 20, 1.0 )
+            vertices_coordinate_0 = regular_vector( 0.0, 20, 1.0 )
+            mesh_polyhedron = < "GE_Segment" "GE_Rectangle" >
+         END MODULE GE_Meshing    
+      END MODULE GE_Meshing
+      
+      MODULE macro_colors
+         tempBC = < "left" "bottom" >
+      END MODULE macro_colors
+      
+      MODULE interior_fields
+         
+         MODULE temperature
+            name = "temperature"
+            nb_components = 1
+            element_name = "PDE_2D_Q1_4nodes"
+            storage_depth = 2
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = < 0.0 >
+            END MODULE DOFs_values
+            
+            MODULE DOFs_imposed_value
+               MODULE xxx
+                  location = "on_bounds"
+                  color = "tempBC"
+                  type = "uniformly_defined"
+                  value = ( in_range( sqrt( sqr( 1.0-component($DV_X,0) )
+                  + sqr( component($DV_X,1) ) ),
+                  < 0.333334 0.666666 > ) ?
+                  < 1.0 > :
+                  < 0.0 > )
+               END MODULE xxx 
+            END MODULE DOFs_imposed_value
+      
+         END MODULE temperature
+         
+         MODULE velocity
+            name = "velocity"
+            nb_components = 2
+            element_name = "PDE_2D_Q1_4nodes"
+            storage_depth = 1
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = vector( component($DV_X,1), 1.0-component($DV_X,0) )
+            END MODULE DOFs_values
+         END MODULE velocity
+         
+      END MODULE interior_fields
+      
+      MODULE PDE_ResultSaver
+         writing_mode = "text"
+         files_basename = "save"
+         MODULE temperature
+            where_to_save = "at_vertices"
+            entry_name = "T"
+            field = "temperature"
+         END MODULE temperature
+      END MODULE PDE_ResultSaver
+
+       if( nb_ranks()=1 )
+      MODULE PDE_ResultSaver
+         writers = < "PEL_TICwriter" >
+      END MODULE PDE_ResultSaver
+
+      if( nb_ranks()>1 )
+      MODULE PDE_ResultSaver
+         writers = < "PEL_CrossProcessWriter" >
+         sub_writers = < "PEL_TICwriter" >
+      END MODULE PDE_ResultSaver 
+      
+   END MODULE PDE_DomainAndFields
+   
+   MODULE FE_SetOfParameters
+      density = < 1. >
+      conductivity = < 1.E-08 >
+      specific_heat = < 1. >
+      volumic_power = < 0. >
+   END MODULE FE_SetOfParameters
+   
+   MODULE FE_OneStepIteration
+      
+      concrete_name = "FE_SplitSystem"
+      
+      MODULE list_of_FE_OneStepIteration
+         
+         MODULE FE_OneStepIteration#gc
+            concrete_name = "FE_GalerkinCharacteristic"
+            
+            MODULE PDE_CFootFinder
+               concrete_name = "PDE_ForwardEulerFinder"
+               nb_iter_max_when_searching_in_cell = 5
+               nb_iter_max_when_searching_in_bound = 5
+               distance_max_characteristic_foot = 3.0
+            END MODULE PDE_CFootFinder
+            
+            advective_field = "velocity"
+            advective_field_level = 0
+            
+            MODULE list_of_FE_Galerkin
+               MODULE FE_Galerkin#1
+                  
+                  concrete_name = "AP_DiffusionCG"
+                  
+                  param_density = "density"
+                  param_conductivity = "conductivity"
+                  param_specific_heat = "specific_heat"
+                  param_volumic_power = "volumic_power"
+                  
+                  level_to_update = 0
+                  level_of_explicit = 1
+                  
+                  quadrature_rule_provider = "GE_QRprovider_5"
+                  
+                  MODULE LA_Matrix
+                     concrete_name = "LA_DistMatrix"
+                  END MODULE LA_Matrix
+                  
+                  MODULE LA_Solver
+                     concrete_name = "LA_PreconditionedSolver"
+                     MODULE LA_IterativeSolver
+                        concrete_name = "LA_CG_IS"
+                        verbose = true
+                        nb_iterations_max = 2000
+                        MODULE LA_ConvergenceTest
+                           concrete_name = "LA_DefaultConvergenceTest"
+                           relative_tolerance = 1.e-10
+                           absolute_tolerance = 1.e-50
+                        END MODULE LA_ConvergenceTest
+                     END MODULE LA_IterativeSolver
+                     MODULE LA_Preconditioner
+                        concrete_name = "LA_Jacobi_PC"
+                        smallest_inverted_item = 1.0e-20
+                     END MODULE LA_Preconditioner
+                  END MODULE LA_Solver
+               END MODULE FE_Galerkin#1
+            END MODULE list_of_FE_Galerkin
+         END MODULE FE_OneStepIteration#gc
+         
+         MODULE FE_OneStepIteration#DOF_copy
+            concrete_name = "FE_DOFsCopy"
+            MODULE temperature
+               field = "temperature"
+               source = 0
+               target = 1
+            END MODULE temperature
+         END MODULE FE_OneStepIteration#DOF_copy
+         
+      END MODULE list_of_FE_OneStepIteration
+      
+   END MODULE FE_OneStepIteration
+   
+END MODULE PEL_Application

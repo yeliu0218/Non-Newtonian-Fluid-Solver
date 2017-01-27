@@ -1,0 +1,67 @@
+MODULE PEL_ObjectTest#PDE_LocalFE_TEST         
+   
+   MODULE PDE_LocalFE_TEST_4
+      
+      $DS_x = component($DV_X,0)
+      $DS_y = component($DV_X,1)
+      $DS_z = component($DV_X,2)
+      
+      $DS_A = 3.0 * $DS_x*$DS_x - 2.0* $DS_x + 4.0
+      $DS_B = 4.0* $DS_y + 3.
+      $DS_C = 5.0*$DS_z*$DS_z + $DS_z + 1.0
+      
+      verbose_level = 0
+      nb_space_dimensions = 3
+      type = "finite_element"
+      
+      MODULE GE_Meshing
+         concrete_name = "GE_RefinedMeshing"
+         mesh_polyhedron = < "GE_Triangle" "GE_Tetrahedron" >
+         MODULE list_of_GE_ReferencePolyhedronRefiner
+            MODULE GE_ReferencePolyhedronRefiner#1
+               concrete_name = "GE_ReferenceCubeWithTetrahedra"
+            END MODULE GE_ReferencePolyhedronRefiner#1
+         END MODULE list_of_GE_ReferencePolyhedronRefiner
+         MODULE GE_Meshing
+            concrete_name = "GE_BoxWithBoxes"
+            vertices_coordinate_0 = regular_vector( 0., 2, 1. )
+            vertices_coordinate_1 = regular_vector( 0., 2, 2. )
+            vertices_coordinate_2 = regular_vector( -1., 4, 1. )
+            mesh_polyhedron = < "GE_Rectangle" "GE_Cuboid" >
+         END MODULE GE_Meshing
+      END MODULE GE_Meshing
+      
+      MODULE interior_fields
+         
+         MODULE uu
+            name = "uu"
+            nb_components = 1
+            element_name = "PDE_3D_P2_10nodes"
+            storage_depth = 1
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = vector( $DS_A+$DS_B+$DS_C )
+            END MODULE DOFs_values
+         END MODULE uu
+         
+      END MODULE interior_fields      
+      
+      MODULE solution
+         
+         MODULE uu
+            jacobian = array( vector( 6.0*$DS_x - 2.0, 4.0, 10.0*$DS_z + 1.0) )
+            hessian = array( array( < 6.0 0.0 0.0 > ,
+                                    < 0.0 0.0 0.0 > ,
+                                    < 0.0 0.0 10.0 > ) )
+         END MODULE uu
+         
+      END MODULE solution
+      
+      dbl_epsilon = 1.e-12
+      dbl_minimum = 1.e-12
+      
+   END MODULE PDE_LocalFE_TEST_4
+   
+END MODULE PEL_ObjectTest#PDE_LocalFE_TEST
+      
+      

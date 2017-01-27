@@ -1,0 +1,193 @@
+<html>
+<head>
+<title>AP_Stefan1Velocity.cc</title>
+<link rel=stylesheet type="text/css" href="stylesheet.css">
+</head>
+<body>
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;AP_Stefan1Velocity.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">GE_Vector</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_DomainAndFields</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_LocalFEbound</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_SetOfDiscreteFields</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE_SetOfParameters</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;iostream&gt;
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw1">namespace</font><font class="text"> </font><font class="kw2">std</font><font class="text"> ;
+
+AP_Stefan1Velocity </font><font class="kw1">const</font><font class="text">* 
+AP_Stefan1Velocity:: PROTOTYPE = </font><font class="kw1">new</font><font class="text"> AP_Stefan1Velocity() ;
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">AP_Stefan1Velocity:: AP_Stefan1Velocity( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">FE_Parameter</font><font class="text">( </font><font class="string">&quot;AP_Stefan1Velocity&quot;</font><font class="text"> )
+{
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">AP_Stefan1Velocity*
+AP_Stefan1Velocity:: create_replica( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                     </font><font class="kw3">PDE_DomainAndFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dom,
+                                     </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp ) </font><font class="kw1">const
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;AP_Stefan1Velocity:: create_replica&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_PRE( a_owner, dom, exp ) ) ;
+
+   AP_Stefan1Velocity* result = </font><font class="kw1">new</font><font class="text"> AP_Stefan1Velocity( a_owner, dom, exp ) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_POST( result, a_owner, dom, exp ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">AP_Stefan1Velocity:: AP_Stefan1Velocity( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                         </font><font class="kw3">PDE_DomainAndFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dom,
+                                         </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp )
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">FE_Parameter</font><font class="text">( a_owner, exp-&gt;string_data( </font><font class="string">&quot;name&quot;</font><font class="text"> ) )
+   , TT( dom-&gt;set_of_discrete_fields()-&gt;item( 
+                                         exp-&gt;string_data( </font><font class="string">&quot;temperature&quot;</font><font class="text"> ) ) )
+   , L_TT( exp-&gt;int_data( </font><font class="string">&quot;level_of_temperature&quot;</font><font class="text"> ) )
+   , EXP( exp-&gt;create_clone( </font><font class="kw1">this</font><font class="text"> ) )
+   , KAPPA( 0 )
+   , S_DENS( exp-&gt;double_data( </font><font class="string">&quot;solid_density&quot;</font><font class="text"> ) )
+   , LHEAT( exp-&gt;double_data( </font><font class="string">&quot;h_in_minus_h_out&quot;</font><font class="text"> ) )
+   , FLUX_EXT( 0 )
+   , NB_DIMS( dom-&gt;nb_space_dimensions() )
+   , TMEL( 0 )
+   , CHECK_BOUNDING( </font><font class="kw1">false</font><font class="text"> )
+   , TT_MIN( 0.0 )
+   , TT_MAX( 0.0 )
+{
+   </font><font class="kw1">if</font><font class="text">( exp-&gt;has_module( </font><font class="string">&quot;check_bounding&quot;</font><font class="text"> ) )
+   {
+      </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* se = 
+                             exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;check_bounding&quot;</font><font class="text"> ) ;
+      TT_MIN = se-&gt;double_data( </font><font class="string">&quot;value_min&quot;</font><font class="text"> ) ;
+      TT_MAX = se-&gt;double_data( </font><font class="string">&quot;value_max&quot;</font><font class="text"> ) ;
+      CHECK_BOUNDING = </font><font class="kw1">true</font><font class="text"> ;
+      se-&gt;destroy() ;
+   }
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">AP_Stefan1Velocity:: ~AP_Stefan1Velocity( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw2">size_t
+</font><font class="text">AP_Stefan1Velocity:: nb_components( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">size_t</font><font class="text"> result = NB_DIMS ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">AP_Stefan1Velocity:: do_the_links( </font><font class="kw3">FE_SetOfParameters</font><font class="text"> </font><font class="kw1">const</font><font class="text">* prms )
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;AP_Stefan1Velocity:: do_the_links&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( do_the_links_PRE( prms ) ) ;
+
+   KAPPA = prms-&gt;item( EXP-&gt;string_data( </font><font class="string">&quot;conductivity&quot;</font><font class="text"> ) ) ;
+   FLUX_EXT = prms-&gt;item( EXP-&gt;string_data( </font><font class="string">&quot;flux_from_out&quot;</font><font class="text"> ) ) ;
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw1">double
+</font><font class="text">AP_Stefan1Velocity:: bound_value_at_IP( </font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* t_it,
+                                        </font><font class="kw3">PDE_LocalFEbound</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fe,
+                                        </font><font class="kw2">size_t</font><font class="text"> ic ) </font><font class="kw1">const
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;AP_Stefan1Velocity:: bound_value_at_IP&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( bound_value_at_IP_PRE( t_it, fe, ic ) ) ;
+
+   </font><font class="kw1">double</font><font class="text"> result = 0.0 ;
+
+   </font><font class="kw1">if</font><font class="text">( CHECK_BOUNDING )
+   {
+      </font><font class="kw1">double</font><font class="text"> VAL = fe-&gt;value_at_IP( TT, L_TT ) ;
+      </font><font class="kw1">if</font><font class="text">( (VAL &lt;= TT_MIN) || (VAL &gt;= TT_MAX) )
+      {
+         </font><font class="kw1">return</font><font class="text">( result ) ;
+	 </font><font class="comment">// -------------
+</font><font class="text">      }
+   }
+
+   </font><font class="kw3">GE_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* nn = fe-&gt;outward_normal() ;
+   </font><font class="kw1">double</font><font class="text"> flux_in = 0.0 ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> d=0 ; d&lt;NB_DIMS ; ++d )
+   {
+      flux_in -= fe-&gt;gradient_at_IP( TT, L_TT, d ) * nn-&gt;component( d ) ;
+   }
+   flux_in *= KAPPA-&gt;bound_value_at_IP( t_it, fe ) ;
+
+   result = ( FLUX_EXT-&gt;bound_value_at_IP( t_it, fe ) + flux_in ) 
+            / S_DENS / LHEAT ;
+
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+   </font><font class="comment">// -------------
+</font><font class="text">}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">AP_Stefan1Velocity:: prepare_for_value_on_bounds( </font><font class="kw3">PDE_LocalFEbound</font><font class="text">* fe ) </font><font class="kw1">const
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">if</font><font class="text">( CHECK_BOUNDING ) fe-&gt;require_field_calculation( TT, </font><font class="kw3">PDE_LocalFE</font><font class="text">::N )  ;
+   fe-&gt;require_field_calculation( TT, </font><font class="kw3">PDE_LocalFE</font><font class="text">::dN ) ;
+   KAPPA-&gt;transfer_bound_calculation_requirements( fe, </font><font class="kw3">FE_Parameter</font><font class="text">::Val ) ;
+   FLUX_EXT-&gt;transfer_bound_calculation_requirements( fe, </font><font class="kw3">FE_Parameter</font><font class="text">::Val ) ;
+}
+
+
+</font>
+</pre>
+</body>
+</html>

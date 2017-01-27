@@ -1,0 +1,69 @@
+MODULE PEL_ObjectTest#PDE_SystemNumbering_TEST
+
+   MODULE PDE_SystemNumbering_11
+
+      distributed = false
+      
+      output_file = "sysnum_11.trace" 
+
+      fields_name = < "uu_1" "uu_2" >
+      orderings = < "sequence_of_the_components" "sequence_of_the_components" >
+
+      system_ordering = "sequence_of_the_unknowns"
+
+      MODULE PDE_DomainAndFields
+         
+         verbose_level = 1
+         nb_space_dimensions = 2
+         type = "finite_element"
+
+         $DS_x = component( $DV_X, 0 ) 
+         
+         MODULE GE_Meshing
+            concrete_name = "GE_SplitMeshing"
+            security_bandwidth = 0
+            MODULE splitting_strategy
+               concrete_name = "GE_CoordinateSplitting"
+               coordinate_splitting_formula =
+               unit_sort( $DS_x, -2.0, 2.0, nb_ranks() ) 
+            END MODULE splitting_strategy
+            
+            MODULE GE_Meshing
+               concrete_name = "GE_BoxWithBoxes"
+               vertices_coordinate_0 = regular_vector( -2.0, 2, 2.0 )
+               vertices_coordinate_1 = regular_vector(  0.0, 1, 1.0 )
+               mesh_polyhedron = < "GE_Segment" "GE_Rectangle" >
+            END MODULE GE_Meshing
+         END MODULE GE_Meshing
+         
+         MODULE interior_fields
+            
+            MODULE uu_1
+               name = "uu_1"
+               nb_components = 1
+               element_name = "PDE_2D_Q1_4nodes"
+               storage_depth = 1
+               MODULE DOFs_values
+                  type = "uniformly_defined"
+                  value = < 0.0 >
+               END MODULE DOFs_values
+            END MODULE uu_1
+            
+            MODULE uu_2
+               name = "uu_2"
+               nb_components = 1
+               element_name = "PDE_2D_Q1_4nodes"
+               storage_depth = 1
+               MODULE DOFs_values
+                  type = "uniformly_defined"
+                  value = < 0.0 >
+               END MODULE DOFs_values
+            END MODULE uu_2
+            
+         END MODULE interior_fields
+         
+      END MODULE PDE_DomainAndFields
+      
+   END MODULE PDE_SystemNumbering_11
+   
+END MODULE PEL_ObjectTest#PDE_SystemNumbering_TEST

@@ -1,0 +1,773 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>FE_FieldValue</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="FE_FieldValue_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="FEpack-tree.html"><span>Tree</span></a>
+    <span class=selected>Class</span>
+    <a href="FE_FieldValue.hh.html"><span>Header</span></a>
+    <a href="FE_FieldValue.cc.html"><span>Implementation</span></a>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="FEpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<br />
+<div class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></div>
+<br />
+
+
+<!-- ====== START OF CLASS DATA ======== -->
+<div id=classtitle>
+  <span class=classpath>FrameFE / </span><br />
+  <span class=classname>Class  FE_FieldValue</span>
+</div>
+
+<br />
+
+<div id=hierarchy>
+<ul class=rootclass><li><a href="PEL_Object.html#" target="classFrame">PEL_Object</a></li>
+  <ul class=parentclass><li><a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></li>
+  <ul class=self><li>FE_FieldValue</li>
+</ul></ul>
+</div>
+<hr />
+<pre>
+PUBLISHED
+
+   Servers for determination of the values of several fields, parameters
+   or expressions (or several components of fields, parameters or expressions) 
+   at a succession of points of the domain.
+
+   * Points definition
+
+     1/ List of points
+     
+        MODULE FE_OneStepIteration
+           concrete_name = "FE_FieldValue"
+           MODULE points_definition
+              type = "list_of_points"
+              points = array( < 0. 0. >, < 1. 2. > )
+           END MODULE points_definition
+        END MODULE FE_OneStepIteration
+
+        The values are computed at points < 0. 0. > and < 1. 2. >.
+
+     2/ Regular cutline
+     
+        MODULE FE_OneStepIteration
+           concrete_name = "FE_FieldValue"
+           MODULE points_definition
+              type = "regular_cutline"
+              first_endpoint  = < 0.333 0.1 0. >
+              second_endpoint = < 0.333 0.9 0. >
+              number_of_points = 5
+           END MODULE points_definition
+        END MODULE FE_OneStepIteration
+
+        The values are computed at 5 points regularly defined between
+        < 0.333 0.1 0. > and < 0.333 0.9 0. > (points included)
+   
+     3/ General cutline
+     
+        MODULE FE_OneStepIteration
+           concrete_name = "FE_FieldValue"
+           MODULE points_definition
+              type = "cutline"
+              first_endpoint  = < 0.333 0.1 0. >
+              second_endpoint = < 0.333 0.9 0. >
+              curvilinear_abscissae = < -1. 0. 0.5 >
+           END MODULE points_definition
+        END MODULE FE_OneStepIteration
+
+        The values are computed at the points defined with their
+        given curvilinear abscissae in [first_endpoint,second_endpoint]
+        local coordinates.
+
+   * Remark on points that are not found within the grid:
+
+        Some points may be located outside the grid. In order to remove them
+        automatically from the cutline, the optional entry of keyword
+        <span class="uid1">ignore_exterior_points</span> may be used (its default data being <span class="uid1">false</span>):
+
+           MODULE FE_OneStepIteration
+              concrete_name = "FE_FieldValue"
+              MODULE points_definition
+                 type = ...
+                 ignore_exterior_points = true
+              END MODULE points_definition
+           END MODULE FE_OneStepIteration
+  
+   * Fields, parameters and expression definition :
+
+      MODULE FE_OneStepIteration
+         ...
+         MODULE fields
+            MODULE field#1
+               name = "FF"
+            END MODULE field#1
+            MODULE field#2
+               name = "UU"
+               component = 1
+            END MODULE field#2
+        END MODULE fields
+        MODULE parameters
+           MODULE parameter#1
+              name = "param1"
+              type = "at_points"
+           END MODULE parameter#1
+           MODULE parameter#2
+              name = "param2"
+              type = "cell_values"
+              component = 1
+           END MODULE parameter#2
+        END MODULE parameters
+        MODULE field_compositions
+           MODULE field_composition#1
+              name = "compo1"
+           END MODULE field_composition#1
+           MODULE field_composition#2
+              name = "compo2"
+              component = 1
+           END MODULE field_composition#2
+        END MODULE field_compositions
+        MODULE expressions
+           MODULE expression#1
+              value = vector( $DS_T*component( $DV_X, 0 ) )
+           END MODULE expression#1
+        END MODULE expressions
+      END MODULE FE_OneStepIteration
+
+      The fields of name "FF" and "UU", as well as the expression t*x,
+      are evaluated at the different points.
+
+      The parameter of name "param1" is evaluated with
+      <a href="FE_Parameter.html#cell_value_at_pt" target="classFrame">FE_Parameter::cell_value_at_pt</a> at the different points
+      (<span class="uid1">type</span> "at_points") and the parameter of name "param2" is
+      evaluated with <a href="FE_Parameter.html#cell_value" target="classFrame">FE_Parameter::cell_value</a> for the cells containing
+      the different points (<span class="uid1">type</span> "cell_values").
+
+      <a href="FE_FieldCompositionParameter.html#" target="classFrame">FE_FieldCompositionParameter</a> objects are built with the field
+      compositions of name "compo1" and "compo2" and are evaluated at the
+      different points (all the values of the discrete fields are computed
+      at at given level 0).
+
+   * Post processing :
+
+      1/ In a file:
+      
+         MODULE FE_OneStepIteration
+            ...
+            MODULE post_processing
+               type = "one_file"
+               file_name = "values"
+            END MODULE post_processing
+         END MODULE FE_OneStepIteration
+
+         All the values computed are stored in an unique file
+         of name "values.txt", one line per storage cycle
+
+         #
+         # FE_FieldValue generated file
+         #
+         #    Field values computed at:
+         #        pt0 = ( 0.000000000e+00 , 0.000000000e+00 )
+         #        pt1 = ( 0.100000000e+01 , 0.200000000e+01 )
+         #
+         #        time ####          uu # ...
+            0.0000e+00      0.00000e+00   ...
+            1.0000e-00      3.06164e-01   ...
+            2.0000e+00      6.16229e-01   ...
+
+         Rem : the description of the file (lines beginning with #) can
+               be omitted with the optional keyword :
+      
+                   MODULE post_processing
+                      ...
+                      banner = false
+                   END MODULE post_processing
+
+         Rem : by default, the saving times correspond to the
+               <a href="FE_FieldValue.html#save_other_than_time_and_fields" target="classFrame">save_other_than_time_and_fields</a> times.
+               It is possible to specify different saving times :
+               
+                   MODULE post_processing
+                      ...
+                      saving_times = < 0. 1. 2. 3. >
+                   END MODULE post_processing
+                   
+      2/ In separated files:
+      
+         MODULE FE_OneStepIteration
+            ...
+            MODULE post_processing
+               type = "separated_files"
+               file_basename = "values"
+            END MODULE post_processing
+         END MODULE FE_OneStepIteration
+
+         Output will be done in one separate text file at each saving
+         cycle :
+         - File name will be formed by the output_file_basename, the
+           saving cycle number and the ".txt" extension.
+         - Output format will be the following one :
+            - Each line corresponds to one point
+            - First the point coordinates (2 or 3 depending on the
+              space dimension), then the curvilinear abscissae for
+              cutline computation, followed by the corresponding field
+              values in the order defined in the data deck, finally
+              followed by the corresponding expression values in the
+              order defined in the data deck
+
+         #
+         # FE_FieldValue generated file
+         #
+         #    Field values computed at time: 6
+         #
+         #             coordinates #      curve #         uu #
+          0.00000e+00  0.00000e+00  0.00000e+00  1.00000e+00
+          0.10000e+01  0.20000e+02  0.10000e+01  9.88063e-01
+
+         Rem : the description of the file (lines beginning with #) can
+               be ommited with the optionnal keyword :
+      
+                   MODULE post_processing
+                      ...
+                      banner = false
+                   END MODULE post_processing
+
+         Rem : by default, the saving times correspond to the
+               <a href="FE_FieldValue.html#save_other_than_time_and_fields" target="classFrame">save_other_than_time_and_fields</a> times.
+               It is possible to specify different saving times :
+               
+                   MODULE post_processing
+                      ...
+                      saving_times = < 0. 1. 2. 3. >
+                   END MODULE post_processing
+                   
+      3/ Performed by the <span class="uid1">PDE_ResultSaver</span> object transmitted to
+         <a href="FE_FieldValue.html#save_other_than_time_and_fields" target="classFrame">save_other_than_time_and_fields</a>
+      
+         MODULE FE_OneStepIteration
+            ...
+            MODULE post_processing
+               type = "result_saver"
+               variable_name = "VAL"
+            END MODULE post_processing
+         END MODULE FE_OneStepIteration
+
+         The array "VAL" is stored in the result saver
+               VAL(i,j) : j-th values at the i-th points
+
+         For the previous example : at each storing cycle,
+             VAL(1,1) : value of "F" at <0. 0.>
+             VAL(1,2) : value of "UU(1)" at <0. 0.>
+             VAL(1,3) : value of the expression t*x at <0. 0.>
+             VAL(2,1) : value of "F" at <1. 2.>
+             VAL(2,2) : value of "UU(1)" at <1. 2.>
+             VAL(2,3) : value of the expression t*x at <1. 2.>
+</pre>
+<hr />
+<a name="method_summary"></a>
+
+<!-- ========== NEW CATEGORY ========== -->
+<table class=category cellpadding=2 cellspacing=0 rules=rows>
+  <tr class=heading><th class=name>Persistence</th><th class=protection>public</th></tr>
+  <tr><td colspan="2"><a href="FE_FieldValue.html#register_storable_objects" target="classFrame">void register_storable_objects( PEL_ListIdentity* list )</a></td></tr>
+  <tr><td colspan="2"><a href="FE_FieldValue.html#add_storable_objects" target="classFrame">virtual void add_storable_objects( PEL_ListIdentity* list )</a></td></tr>
+</table>
+
+<!-- ========== NEW CATEGORY ========== -->
+<table class=category cellpadding=2 cellspacing=0 rules=rows>
+  <tr class=heading><th class=name>Substeps of the step by step progression</th><th class=protection>public</th></tr>
+  <tr><td colspan="2"><a href="FE_FieldValue.html#do_before_inner_iterations_stage" target="classFrame">virtual void do_before_inner_iterations_stage( FE_TimeIterator const* t_it )</a></td></tr>
+  <tr><td colspan="2"><a href="FE_FieldValue.html#do_inner_iterations_stage" target="classFrame">virtual void do_inner_iterations_stage( FE_TimeIterator const* t_it )</a></td></tr>
+  <tr><td colspan="2"><a href="FE_FieldValue.html#inner_iterations_stage_failed" target="classFrame">bool inner_iterations_stage_failed( void ) const</a></td></tr>
+  <tr><td colspan="2"><a href="FE_FieldValue.html#inner_iterations_are_completed" target="classFrame">virtual bool inner_iterations_are_completed( FE_TimeIterator const* t_it ) const</a></td></tr>
+  <tr><td colspan="2"><a href="FE_FieldValue.html#do_after_inner_iterations_stage" target="classFrame">virtual void do_after_inner_iterations_stage( FE_TimeIterator const* t_it )</a></td></tr>
+  <tr><td colspan="2"><a href="FE_FieldValue.html#do_after_time_stepping" target="classFrame">virtual void do_after_time_stepping( void )</a></td></tr>
+  <tr><td colspan="2"><a href="FE_FieldValue.html#do_before_time_stepping" target="classFrame">virtual void do_before_time_stepping( FE_TimeIterator const* t_it )</a></td></tr>
+  <tr><td colspan="2"><a href="FE_FieldValue.html#do_one_inner_iteration" target="classFrame">virtual void do_one_inner_iteration( FE_TimeIterator const* t_it )</a></td></tr>
+  <tr><td colspan="2"><a href="FE_FieldValue.html#do_after_time_adaptation" target="classFrame">virtual void do_after_time_adaptation( FE_TimeIterator const* t_it )</a></td></tr>
+</table>
+
+<!-- ========== NEW CATEGORY ========== -->
+<table class=category cellpadding=2 cellspacing=0 rules=rows>
+  <tr class=heading><th class=name>Elapsed times</th><th class=protection>public</th></tr>
+  <tr><td colspan="2"><a href="FE_FieldValue.html#print_additional_times" target="classFrame">virtual void print_additional_times( std::ostream& os, size_t indent_width ) const</a></td></tr>
+</table>
+
+<!-- ========== NEW CATEGORY ========== -->
+<table class=category cellpadding=2 cellspacing=0 rules=rows>
+  <tr class=heading><th class=name>Time iterator modification</th><th class=protection>public</th></tr>
+  <tr><td colspan="2"><a href="FE_FieldValue.html#adapt_time_iterator" target="classFrame">virtual void adapt_time_iterator( FE_TimeIteratorAdapter* t_adapter )</a></td></tr>
+  <tr><td colspan="2"><a href="FE_FieldValue.html#notify_inner_iterations_stage_failure" target="classFrame">virtual void notify_inner_iterations_stage_failure( void )</a></td></tr>
+  <tr><td colspan="2"><a href="FE_FieldValue.html#reset_after_inner_iterations_stage_failure" target="classFrame">virtual void reset_after_inner_iterations_stage_failure( void )</a></td></tr>
+</table>
+
+<!-- ========== NEW CATEGORY ========== -->
+<table class=category cellpadding=2 cellspacing=0 rules=rows>
+  <tr class=heading><th class=name>Savings for post-processing</th><th class=protection>public</th></tr>
+  <tr><td colspan="2"><a href="FE_FieldValue.html#do_additional_savings" target="classFrame">virtual void do_additional_savings( FE_TimeIterator const* t_it, PDE_ResultSaver* rs )</a></td></tr>
+  <tr><td colspan="2"><a href="FE_FieldValue.html#save_other_than_time_and_fields" target="classFrame">virtual void save_other_than_time_and_fields( FE_TimeIterator const* t_it, PDE_ResultSaver* rs )</a></td></tr>
+</table>
+
+<!-- ========== NEW CATEGORY ========== -->
+<table class=category cellpadding=2 cellspacing=0 rules=rows>
+  <tr class=heading><th class=name>Input - Output</th><th class=protection>public</th></tr>
+  <tr><td colspan="2"><a href="FE_FieldValue.html#print" target="classFrame">virtual void print( std::ostream& os, size_t indent_width ) const</a></td></tr>
+</table>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="register_storable_objects"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>void register_storable_objects(</code></td><td><code><a href="PEL_ListIdentity.html#" target="classFrame">PEL_ListIdentity</a>* <span class="uid1">list</span> ) </code></td></tr>
+</table>
+<pre>Extend <span class="uid1">list</span> so that it contains all objects required by the
+storage and retrieval mechanisms concerning the <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a>
+base class subobject, then call <a href="FE_OneStepIteration.html#add_storable_objects" target="classFrame">add_storable_objects</a>.</pre>
+<br />
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="add_storable_objects"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual void add_storable_objects(</code></td><td><code><a href="PEL_ListIdentity.html#" target="classFrame">PEL_ListIdentity</a>* <span class="uid1">list</span> ) </code></td></tr>
+</table>
+<pre>Extend <span class="uid1">list</span> so that it contains all objects required by the
+storage and retrieval mechanisms that are not part of the
+<a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a> base class subobject.
+IMPLEMENTATION : do nothing, i.e. leave <span class="uid1">list</span> unchanged.</pre>
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">list</span></span> != 0</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="do_before_inner_iterations_stage"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual void do_before_inner_iterations_stage(</code></td><td><code><a href="FE_TimeIterator.html#" target="classFrame">FE_TimeIterator</a> const* <span class="uid1">t_it</span> ) </code></td></tr>
+</table>
+<pre>Within a step of the time marching procedure in
+<a href="FE_StepByStepProgression.html#run" target="classFrame">FE_StepByStepProgression::run</a>, perform an initial stage
+just before start of the inner iterations.
+IMPLEMENTATION : do nothing.</pre>
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">t_it</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">t_it</span></span>->is_started()</code></li>
+    <li><code>!<span class="uid1"><span class="uid1">t_it</span></span>->is_finished()</code></li>
+    <li><code>!<a href="FE_OneStepIteration.html#inner_iterations_stage_failed" target="classFrame">inner_iterations_stage_failed</a>()</code></li>
+  </ul>
+<br />
+  <span class=postcondition>Postcondition</span>
+  <ul>
+    <li><code>!<a href="FE_OneStepIteration.html#inner_iterations_stage_failed" target="classFrame">inner_iterations_stage_failed</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="do_inner_iterations_stage"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual void do_inner_iterations_stage(</code></td><td><code><a href="FE_TimeIterator.html#" target="classFrame">FE_TimeIterator</a> const* <span class="uid1">t_it</span> ) </code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">t_it</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">t_it</span></span>->is_started()</code></li>
+    <li><code>!<span class="uid1"><span class="uid1">t_it</span></span>->is_finished()</code></li>
+    <li><code>!<a href="FE_OneStepIteration.html#inner_iterations_stage_failed" target="classFrame">inner_iterations_stage_failed</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="inner_iterations_stage_failed"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>bool inner_iterations_stage_failed(</code></td><td><code>void ) const</code></td></tr>
+</table>
+<br />
+<br />
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="inner_iterations_are_completed"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual bool inner_iterations_are_completed(</code></td><td><code><a href="FE_TimeIterator.html#" target="classFrame">FE_TimeIterator</a> const* <span class="uid1">t_it</span> ) const</code></td></tr>
+</table>
+<pre>Are inner iterations performed in <a href="FE_OneStepIteration.html#do_one_inner_iteration" target="classFrame">do_one_inner_iteration</a>
+completed ?
+IMPLEMENTATION : true</pre>
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">t_it</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">t_it</span></span>->is_started()</code></li>
+    <li><code>!<span class="uid1"><span class="uid1">t_it</span></span>->is_finished()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="do_after_inner_iterations_stage"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual void do_after_inner_iterations_stage(</code></td><td><code><a href="FE_TimeIterator.html#" target="classFrame">FE_TimeIterator</a> const* <span class="uid1">t_it</span> ) </code></td></tr>
+</table>
+<pre>Within a step of the time marching procedure in
+<a href="FE_StepByStepProgression.html#run" target="classFrame">FE_StepByStepProgression::run</a>, perform a final stage just
+after completion of the inner iterations.
+IMPLEMENTATION : do nothing.</pre>
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">t_it</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">t_it</span></span>->is_started()</code></li>
+    <li><code>!<span class="uid1"><span class="uid1">t_it</span></span>->is_finished()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="do_after_time_stepping"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual void do_after_time_stepping(</code></td><td><code>void ) </code></td></tr>
+</table>
+<pre>After completion of the time marching procedure in
+<a href="FE_StepByStepProgression.html#run" target="classFrame">FE_StepByStepProgression::run</a>, perform final computations.
+IMPLEMENTATION : do nothing.</pre>
+<br />
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="do_before_time_stepping"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual void do_before_time_stepping(</code></td><td><code><a href="FE_TimeIterator.html#" target="classFrame">FE_TimeIterator</a> const* <span class="uid1">t_it</span> ) </code></td></tr>
+</table>
+<pre>Before starting time marching in <a href="FE_StepByStepProgression.html#run" target="classFrame">FE_StepByStepProgression::run</a>,
+perform initial computations.
+
+</pre>
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">t_it</span></span> != 0</code></li>
+    <li><code>!<span class="uid1"><span class="uid1">t_it</span></span>->is_started()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=overrides> Overridden from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="do_one_inner_iteration"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual void do_one_inner_iteration(</code></td><td><code><a href="FE_TimeIterator.html#" target="classFrame">FE_TimeIterator</a> const* <span class="uid1">t_it</span> ) </code></td></tr>
+</table>
+<pre>Within a step of the time marching procedure in
+<a href="FE_StepByStepProgression.html#run" target="classFrame">FE_StepByStepProgression::run</a>, perform an inner iteration stage.
+</pre>
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">t_it</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">t_it</span></span>->is_started()</code></li>
+    <li><code>!<span class="uid1"><span class="uid1">t_it</span></span>->is_finished()</code></li>
+    <li><code>!<a href="FE_FieldValue.html#inner_iterations_stage_failed" target="classFrame">inner_iterations_stage_failed</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=overrides> Overridden from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="do_after_time_adaptation"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual void do_after_time_adaptation(</code></td><td><code><a href="FE_TimeIterator.html#" target="classFrame">FE_TimeIterator</a> const* <span class="uid1">t_it</span> ) </code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">t_it</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">t_it</span></span>->is_started()</code></li>
+    <li><code>!<span class="uid1"><span class="uid1">t_it</span></span>->just_went_back()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=overrides> Overridden from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="print_additional_times"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual void print_additional_times(</code></td><td><code>std::ostream& <span class="uid1">os</span>,</tr>
+  <tr><td /><td><code> size_t <span class="uid1">indent_width</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="adapt_time_iterator"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual void adapt_time_iterator(</code></td><td><code><a href="FE_TimeIteratorAdapter.html#" target="classFrame">FE_TimeIteratorAdapter</a>* <span class="uid1">t_adapter</span> ) </code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">t_adapter</span></span> != 0</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="notify_inner_iterations_stage_failure"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual void notify_inner_iterations_stage_failure(</code></td><td><code>void ) </code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code>!<a href="FE_OneStepIteration.html#inner_iterations_stage_failed" target="classFrame">inner_iterations_stage_failed</a>()</code></li>
+  </ul>
+<br />
+  <span class=postcondition>Postcondition</span>
+  <ul>
+    <li><code><a href="FE_OneStepIteration.html#inner_iterations_stage_failed" target="classFrame">inner_iterations_stage_failed</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="reset_after_inner_iterations_stage_failure"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual void reset_after_inner_iterations_stage_failure(</code></td><td><code>void ) </code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><a href="FE_OneStepIteration.html#inner_iterations_stage_failed" target="classFrame">inner_iterations_stage_failed</a>()</code></li>
+  </ul>
+<br />
+  <span class=postcondition>Postcondition</span>
+  <ul>
+    <li><code>!<a href="FE_OneStepIteration.html#inner_iterations_stage_failed" target="classFrame">inner_iterations_stage_failed</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="do_additional_savings"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual void do_additional_savings(</code></td><td><code><a href="FE_TimeIterator.html#" target="classFrame">FE_TimeIterator</a> const* <span class="uid1">t_it</span>,</tr>
+  <tr><td /><td><code><a href="PDE_ResultSaver.html#" target="classFrame">PDE_ResultSaver</a>* <span class="uid1">rs</span> ) </code></td></tr>
+</table>
+<pre>Use <span class="uid1">rs</span> to save data other than time and fields at the current time
+step (attainable through <span class="uid1">t_it</span>) in the time marching procedure
+of <a href="FE_StepByStepProgression.html#run" target="classFrame">FE_StepByStepProgression::run</a>.
+IMPLEMENTATION : do nothing.</pre>
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">t_it</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">rs</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">rs</span></span>->has_an_opened_cycle()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="save_other_than_time_and_fields"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual void save_other_than_time_and_fields(</code></td><td><code><a href="FE_TimeIterator.html#" target="classFrame">FE_TimeIterator</a> const* <span class="uid1">t_it</span>,</tr>
+  <tr><td /><td><code><a href="PDE_ResultSaver.html#" target="classFrame">PDE_ResultSaver</a>* <span class="uid1">rs</span> ) </code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">t_it</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">rs</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">rs</span></span>->has_an_opened_cycle()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=overrides> Overridden from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="print"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual void print(</code></td><td><code>std::ostream& <span class="uid1">os</span>,</tr>
+  <tr><td /><td><code>size_t <span class="uid1">indent_width</span> ) const</code></td></tr>
+</table>
+<pre>Write text to <span class="uid1">os</span> with <span class="uid1">indent_width</span> indentation.
+
+</pre>
+<br />
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,91 @@
+MODULE PEL_Application
+   
+   concrete_name = "CH_Fsaver"
+   
+   $DS_sigma_12 = 1.
+   $DS_sigma_13 = 2.
+   $DS_sigma_23 = 3.
+   
+   $DS_Sig1 = $DS_sigma_12 + $DS_sigma_13 - $DS_sigma_23
+   $DS_Sig2 = $DS_sigma_12 + $DS_sigma_23 - $DS_sigma_13
+   $DS_Sig3 = $DS_sigma_13 + $DS_sigma_23 - $DS_sigma_12
+
+   $DS_coef_lambda = 20.
+
+   MODULE PDE_DomainAndFields
+      verbose_level = 1
+      nb_space_dimensions = 2
+      type = "finite_element"
+      
+      // meshing of the Gibbs Triangle and its surroundings
+      $IS_nb_intervals = 5
+      #include ( join( getenv( "PELICANSHOME" ),
+                       "ExamplesOfApplication",
+                       "CahnHilliardNavierStokes",
+                       "tests",
+                       "Fsave",
+                       "GibbsTriangleMeshing.pel" ) )
+      
+      MODULE interior_fields
+      END MODULE interior_fields
+
+      MODULE PDE_ResultSaver
+         writers = < "PEL_GMVwriter" >         
+         writing_mode = "text"
+         files_basename = "save"    
+      END MODULE PDE_ResultSaver
+      
+   END MODULE PDE_DomainAndFields
+
+   MODULE plots
+
+      MODULE plot#F
+         type = "CH_BulkChemicalPotential"
+         
+         name = "F"
+         
+         coef_Sigma_1 = $DS_Sig1
+         coef_Sigma_2 = $DS_Sig2
+         coef_Sigma_3 = $DS_Sig3
+         MODULE CH_BulkEnergy#F0
+            concrete_name = "CH_F0Implicit"
+         END MODULE CH_BulkEnergy#F0
+         MODULE CH_BulkEnergy#P
+            concrete_name = "CH_PSemiImplicit"
+            coef_lambda = $DS_coef_lambda
+         END MODULE CH_BulkEnergy#P
+         
+      END MODULE plot#F
+
+      MODULE plot#F0
+         type = "CH_BulkEnergy"
+         
+         name = "F0"
+
+         coef_Sigma_1 = $DS_Sig1
+         coef_Sigma_2 = $DS_Sig2
+         coef_Sigma_3 = $DS_Sig3
+         MODULE CH_BulkEnergy
+            concrete_name = "CH_F0Implicit"
+         END MODULE CH_BulkEnergy
+         
+      END MODULE plot#F0
+      
+      MODULE plot#P
+         type = "CH_BulkEnergy"
+         
+         name = "P"
+         
+         coef_Sigma_1 = $DS_Sig1
+         coef_Sigma_2 = $DS_Sig2
+         coef_Sigma_3 = $DS_Sig3   
+         MODULE CH_BulkEnergy
+            concrete_name = "CH_PSemiImplicit"
+            coef_lambda = $DS_coef_lambda
+         END MODULE CH_BulkEnergy
+
+      END MODULE plot#P
+      
+   END  MODULE plots
+   
+END MODULE PEL_Application

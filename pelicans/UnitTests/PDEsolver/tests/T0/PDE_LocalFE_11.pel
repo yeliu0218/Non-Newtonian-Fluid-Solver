@@ -1,0 +1,143 @@
+MODULE PEL_ObjectTest#PDE_LocalFE_TEST
+      
+   MODULE PDE_LocalFE_TEST_11
+      
+      $DS_x = component($DV_X,0)
+      $DS_y = component($DV_X,1)
+
+      $DS_F0 = 1.
+      $DS_F1 = 2.
+      $DS_F2 = 5.
+      $DS_F3 = 4.
+      $DS_Fb1 = 2.5
+      $DS_Fb2 = 3.5
+
+      $BS_B1 = ! ( $DS_x<$DS_y )
+      $BS_B2 = ! ( $DS_x>$DS_y )
+      
+      $DS_F = $DS_F0*(1.0-$DS_x)*(1.0-$DS_y)
+             +$DS_F1*$DS_x*(1.0-$DS_y)
+             +$DS_F2*$DS_x*$DS_y
+             +$DS_F3*(1.0-$DS_x)*$DS_y
+             +$DS_Fb1*( $BS_B1 ? 27.0*(1.0-$DS_x)*$DS_y*($DS_x-$DS_y) : 0. )
+             +$DS_Fb2*( $BS_B2 ? 27.0*$DS_x*(1.0-$DS_y)*($DS_y-$DS_x) : 0. )
+      $DS_dFdx =
+             -$DS_F0*(1.0-$DS_y)
+             +$DS_F1*(1.0-$DS_y)
+             +$DS_F2*$DS_y
+             -$DS_F3*$DS_y
+             +$DS_Fb1*( $BS_B1 ? 27.0*$DS_y*(1.0-2.0*$DS_x+$DS_y) : 0. )
+             +$DS_Fb2*( $BS_B2 ? 27.0*(1.0-$DS_y)*(-2.0*$DS_x+$DS_y) : 0. )
+      $DS_dFdy =
+             -$DS_F0*(1.0-$DS_x)
+             -$DS_F1*$DS_x
+             +$DS_F2*$DS_x
+             +$DS_F3*(1.0-$DS_x)
+             +$DS_Fb1*( $BS_B1 ? 27.0*(1.0-$DS_x)*($DS_x-2.0*$DS_y) : 0. )
+             +$DS_Fb2*( $BS_B2 ? 27.0*$DS_x*(1.0+$DS_x-2.0*$DS_y) : 0. )
+      $DS_d2Fdxdx =
+              $DS_Fb1*( $BS_B1 ? -54.0*$DS_y : 0. )
+             +$DS_Fb2*( $BS_B2 ? -54.0*(1.0-$DS_y) : 0. )
+      $DS_d2Fdydy = 
+              $DS_Fb1*( $BS_B1 ? -54.0*(1.0-$DS_x) : 0. )
+             +$DS_Fb2*( $BS_B2 ? -54.0*$DS_x : 0. )
+      $DS_d2Fdxdy =
+              $DS_F0
+             -$DS_F1
+             +$DS_F2
+             -$DS_F3
+             +$DS_Fb1*( $BS_B1 ? 27.0*(1.0-2.0*$DS_x+2.0*$DS_y ) : 0. )
+             +$DS_Fb2*( $BS_B2 ? 27.0*(1.0+2.0*$DS_x-2.0*$DS_y ) : 0. )
+      
+      verbose_level = 0
+      nb_space_dimensions = 2
+      type = "finite_element"
+      
+      MODULE GE_Meshing
+         concrete_name = "GE_ExplicitMeshing"
+         MODULE vertices
+            number = 4
+            coordinates =
+               <
+                  0. 0.
+                  1. 0.
+                  1. 1.
+                  0. 1.
+               >
+         END MODULE vertices
+         MODULE faces
+            number = 4
+            MODULE polyhedra_and_connectivities
+               GE_Segment =
+                  <
+                     0 1
+                     1 2
+                     2 3
+                     3 0
+                  >
+            END MODULE polyhedra_and_connectivities
+         END MODULE faces
+         MODULE cells
+            number = 1
+            MODULE polyhedra_and_connectivities
+               GE_Rectangle =
+                  < 0 1 2 3
+                    0 1 2 3
+                  >
+            END MODULE polyhedra_and_connectivities
+         END MODULE cells
+      END MODULE GE_Meshing
+      
+      MODULE interior_fields               
+         MODULE uu
+            name = "uu"
+            nb_components = 1
+            element_name = "PDE_2D_Q1bubbles_6nodes"
+            storage_depth = 1
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = vector( $DS_F )
+               mode = "set_by_L2_projection"
+            END MODULE DOFs_values
+         END MODULE uu               
+      END MODULE interior_fields
+
+      MODULE L2_projection
+         QRprovider_name = "GE_ProductQRprovider_5"
+         MODULE LA_Matrix
+            concrete_name = "LA_PelMatrix"
+         END MODULE LA_Matrix
+         MODULE LA_Solver
+            concrete_name = "LA_PreconditionedSolver"
+            MODULE LA_Preconditioner
+               concrete_name = "LA_Jacobi_PC"
+               smallest_inverted_item = 1.e-300
+            END MODULE LA_Preconditioner
+            MODULE LA_IterativeSolver
+               concrete_name = "LA_CG_IS"
+               verbose = false
+               nb_iterations_max = 2000
+               MODULE LA_ConvergenceTest
+                  concrete_name = "LA_DefaultConvergenceTest"
+                  absolute_tolerance = 1.0e-50
+                  relative_tolerance = 1.0e-12
+               END MODULE LA_ConvergenceTest
+            END MODULE LA_IterativeSolver
+         END MODULE LA_Solver
+      END MODULE L2_projection
+      
+      MODULE solution         
+         MODULE uu
+            jacobian = array( vector( $DS_dFdx, $DS_dFdy ) )
+            hessian = array( array( vector( $DS_d2Fdxdx, $DS_d2Fdxdy ) ,
+                                    vector( $DS_d2Fdxdy, $DS_d2Fdydy ) ) )
+         END MODULE uu         
+      END MODULE solution
+      
+      dbl_epsilon = 1.e-10
+      dbl_minimum = 1.e-12 
+      
+   END MODULE PDE_LocalFE_TEST_11
+   
+END MODULE PEL_ObjectTest#PDE_LocalFE_TEST
+            

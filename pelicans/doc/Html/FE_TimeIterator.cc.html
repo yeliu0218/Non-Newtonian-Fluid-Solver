@@ -1,0 +1,683 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>FE_TimeIterator.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="FE_TimeIterator.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="FEpack-tree.html"><span>Tree</span></a>
+    <a href="FE_TimeIterator.html"><span>Class</span></a>
+    <a href="FE_TimeIterator.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="FEpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE_TimeIterator</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Bool</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Communicator</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ContextSimple</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_DataWithContext</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Double</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_DoubleVector</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Exec</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Int</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ObjectReader</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ObjectWriter</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_System</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Variable</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_assertions</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;fstream&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;iostream&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;sstream&gt;
+
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">FE_TimeIterator</font><font class="text">*
+</font><font class="kw3">FE_TimeIterator</font><font class="text">:: create( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                          </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_TimeIterator:: create&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( exp != 0 ) ;
+   
+   </font><font class="kw3">FE_TimeIterator</font><font class="text">* result =  </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">FE_TimeIterator</font><font class="text">( a_owner,  exp ) ;
+   
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;owner() == a_owner ) ; 
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( 
+      result-&gt;initial_time() == exp-&gt;double_data( </font><font class="string">&quot;time_initial&quot;</font><font class="text"> ) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( 
+      result-&gt;final_time() == exp-&gt;double_data( </font><font class="string">&quot;time_end&quot;</font><font class="text"> ) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">(
+      </font><font class="kw3">IMPLIES</font><font class="text">( !result-&gt;time_step_is_fixed(),
+               result-&gt;time_step() == exp-&gt;double_data( </font><font class="string">&quot;time_step&quot;</font><font class="text"> ) ) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">(
+      result-&gt;initial_iteration_number() == 1 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">(
+      </font><font class="kw3">IMPLIES</font><font class="text">( exp-&gt;has_entry( </font><font class="string">&quot;storage_depth&quot;</font><font class="text"> ),
+               result-&gt;storage_depth() == (</font><font class="kw2">size_t</font><font class="text">) exp-&gt;int_data( </font><font class="string">&quot;storage_depth&quot;</font><font class="text"> ) ) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">(
+      </font><font class="kw3">IMPLIES</font><font class="text">( !exp-&gt;has_entry( </font><font class="string">&quot;storage_depth&quot;</font><font class="text"> ),
+	           result-&gt;storage_depth() == 5 ) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( 
+      result-&gt;time() == result-&gt;initial_time() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( !result-&gt;is_started() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;time() == result-&gt;initial_time() ) ;
+   
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">FE_TimeIterator</font><font class="text">:: </font><font class="kw3">FE_TimeIterator</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_Object</font><font class="text">( a_owner )
+   , STARTED( </font><font class="kw1">false</font><font class="text"> )
+   , FINISHED_REASON( NotFinished )
+   , ITER_INIT( 1 )
+   , ITER( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+   , T_INIT( exp-&gt;double_data( </font><font class="string">&quot;time_initial&quot;</font><font class="text"> ) )
+   , T_START( exp-&gt;double_data( </font><font class="string">&quot;time_initial&quot;</font><font class="text"> ) )
+   , T_END( exp-&gt;double_data( </font><font class="string">&quot;time_end&quot;</font><font class="text"> ) )
+   , T( exp-&gt;double_data( </font><font class="string">&quot;time_initial&quot;</font><font class="text"> ) )
+   , VARYING_DT( 0 )
+   , TIME( 0 )
+   , RESTART_IT( </font><font class="kw1">false</font><font class="text"> )
+   , BACK_AND_FORTH_IT( </font><font class="kw1">false</font><font class="text"> )
+   , DT( </font><font class="kw3">doubleVector</font><font class="text">( 5 ) )
+   , INI_DT( </font><font class="kw3">PEL</font><font class="text">::bad_double() )
+   , NEXT_DT( </font><font class="kw3">PEL</font><font class="text">::bad_double() )
+{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_TimeIterator:: FE_TimeIterator&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">if</font><font class="text">( T_END &lt; T_START )
+   {
+      </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_bad_data_value(
+         exp, </font><font class="string">&quot;time_end&quot;</font><font class="text">,
+         </font><font class="string">&quot; a value greater than \&quot;</font><font class="text">time_initial\</font><font class="string">&quot; is expected&quot;</font><font class="text"> ) ;
+   }
+   </font><font class="kw1">if</font><font class="text">( exp-&gt;has_entry( </font><font class="string">&quot;storage_depth&quot;</font><font class="text"> ) )
+   {
+      </font><font class="kw1">int</font><font class="text"> s = exp-&gt;int_data( </font><font class="string">&quot;storage_depth&quot;</font><font class="text"> ) ;
+      </font><font class="kw1">if</font><font class="text">( s&lt;=0 )
+      {
+         </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_bad_data_value(
+            exp, </font><font class="string">&quot;storage_depth&quot;</font><font class="text">,
+            </font><font class="string">&quot;   a positive value is expected&quot;</font><font class="text"> ) ;
+      }
+      DT.re_initialize( (</font><font class="kw2">size_t</font><font class="text">) s ) ;
+   }
+   
+   </font><font class="kw3">PEL_Data</font><font class="text">* cste_dt = exp-&gt;abstract_data( 0, </font><font class="string">&quot;time_step&quot;</font><font class="text"> ) ;
+   </font><font class="kw1">if</font><font class="text">( cste_dt-&gt;value_can_be_evaluated(0) )
+   {
+      </font><font class="kw1">double</font><font class="text"> dt_ini = exp-&gt;double_data( </font><font class="string">&quot;time_step&quot;</font><font class="text"> ) ;
+      DT.</font><font class="kw2">set</font><font class="text">( dt_ini ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      </font><font class="kw3">PEL_ContextSimple</font><font class="text">* ctx = </font><font class="kw3">PEL_ContextSimple</font><font class="text">::create( </font><font class="kw1">this</font><font class="text"> ) ;
+      TIME = </font><font class="kw3">PEL_Double</font><font class="text">::create( ctx, T_INIT ) ;
+      ctx-&gt;extend( </font><font class="kw3">PEL_Variable</font><font class="text">::object( </font><font class="string">&quot;DS_T&quot;</font><font class="text"> ), TIME ) ;
+      VARYING_DT = exp-&gt;abstract_data( </font><font class="kw1">this</font><font class="text">, </font><font class="string">&quot;time_step&quot;</font><font class="text">, ctx ) ;
+      </font><font class="kw1">if</font><font class="text">( !VARYING_DT-&gt;value_can_be_evaluated(0) )
+      {
+         </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_not_evaluable(
+                    exp, </font><font class="string">&quot;time_step&quot;</font><font class="text">, VARYING_DT-&gt;undefined_variables(0) ) ;
+      }
+      </font><font class="kw1">if</font><font class="text">( VARYING_DT-&gt;data_type() != </font><font class="kw3">PEL_Data</font><font class="text">::Double )
+      {
+         </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_bad_data_type(
+                        exp, </font><font class="string">&quot;time_step&quot;</font><font class="text">, </font><font class="kw3">PEL_Data</font><font class="text">::Double ) ;
+      }
+      DT.</font><font class="kw2">set</font><font class="text">( VARYING_DT-&gt;to_double() ) ;
+   }
+   cste_dt-&gt;destroy() ; cste_dt = 0 ;
+   
+   INI_DT = DT(0) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">FE_TimeIterator</font><font class="text">:: ~</font><font class="kw3">FE_TimeIterator</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_Communicator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* com = </font><font class="kw3">PEL_Exec</font><font class="text">::communicator() ;
+   com-&gt;barrier() ;
+   </font><font class="kw1">if</font><font class="text">( com-&gt;rank() == 0 )
+   {
+      </font><font class="kw3">PEL_System</font><font class="text">::erase( CHECKPOINT_FILE ) ;
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw2">size_t
+</font><font class="kw3">FE_TimeIterator</font><font class="text">:: initial_iteration_number( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">return</font><font class="text">( ITER_INIT ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">double
+</font><font class="kw3">FE_TimeIterator</font><font class="text">:: initial_time( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">return</font><font class="text">( T_INIT ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">double
+</font><font class="kw3">FE_TimeIterator</font><font class="text">:: final_time( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">return</font><font class="text">( T_END ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw2">size_t
+</font><font class="kw3">FE_TimeIterator</font><font class="text">:: storage_depth( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">return</font><font class="text">( DT.size() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_TimeIterator</font><font class="text">:: start( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_TimeIterator:: start&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( !is_started() || is_finished() ) ;
+   
+   STARTED = </font><font class="kw1">true</font><font class="text"> ;
+   FINISHED_REASON = NotFinished ;
+   ITER = ITER_INIT ;
+   T = T_START ;
+   set_time_step() ;
+   start_checkpointing() ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( is_started() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( !is_finished() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( iteration_number() == initial_iteration_number() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( </font><font class="kw3">FORMAL</font><font class="text">( time() == initial_time()+time_step() ) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( !just_went_back() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( !just_went_back_and_forth() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_TimeIterator</font><font class="text">:: go_next_time( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_TimeIterator:: go_next_time&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( is_started() ) ;
+   </font><font class="kw3">PEL_SAVEOLD</font><font class="text">( </font><font class="kw1">double</font><font class="text">, time, time() ) ;
+   </font><font class="kw3">PEL_SAVEOLD</font><font class="text">( </font><font class="kw1">double</font><font class="text">, time_step, time_step() ) ;
+   </font><font class="kw3">PEL_SAVEOLD</font><font class="text">( </font><font class="kw2">size_t</font><font class="text">, iteration_number, iteration_number() ) ;
+   </font><font class="kw3">PEL_SAVEOLD</font><font class="text">( </font><font class="kw1">bool</font><font class="text">, just_went_back, just_went_back() ) ;
+   
+   test_checkpoint() ;
+   </font><font class="kw1">if</font><font class="text">( ( FINISHED_REASON == NotFinished ) &amp;&amp; ( T&gt;T_END ) )
+   {
+      FINISHED_REASON = FinalTimeReached ;
+   }
+   
+   </font><font class="kw1">if</font><font class="text">( FINISHED_REASON == NotFinished )
+   {
+      ITER++ ;
+      set_time_step() ;
+   }
+   
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( </font><font class="kw3">IMPLIES</font><font class="text">( is_finished(),
+                            iteration_number() == </font><font class="kw3">OLD</font><font class="text">(iteration_number) ) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( </font><font class="kw3">IMPLIES</font><font class="text">( !is_finished(),
+                            iteration_number() == </font><font class="kw3">OLD</font><font class="text">(iteration_number)+1 ) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( </font><font class="kw3">IMPLIES</font><font class="text">( is_finished(), time() == </font><font class="kw3">OLD</font><font class="text">(time) ) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( </font><font class="kw3">IMPLIES</font><font class="text">( is_finished(),
+                            time_step() == </font><font class="kw3">OLD</font><font class="text">(time_step) ) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( </font><font class="kw3">IMPLIES</font><font class="text">( !is_finished(),
+                            </font><font class="kw3">FORMAL</font><font class="text">( time() == </font><font class="kw3">OLD</font><font class="text">(time) + time_step() ) ) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( </font><font class="kw3">IMPLIES</font><font class="text">( !is_finished(),
+                            !just_went_back() ) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( </font><font class="kw3">IMPLIES</font><font class="text">( !is_finished(),
+                            just_went_back_and_forth() == </font><font class="kw3">OLD</font><font class="text">(just_went_back) ) ) ;
+   
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">FE_TimeIterator</font><font class="text">:: is_started( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">return</font><font class="text">( STARTED ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">FE_TimeIterator</font><font class="text">:: is_finished( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_TimeIterator:: is_finished&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( is_started() ) ;
+   
+   </font><font class="kw1">bool</font><font class="text"> result = ( FINISHED_REASON != NotFinished ) ;
+   
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( </font><font class="kw3">EQUIVALENT</font><font class="text">( result, ( FINISHED_REASON != NotFinished ) ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">double
+</font><font class="kw3">FE_TimeIterator</font><font class="text">:: time( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">return</font><font class="text">( T ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">double
+</font><font class="kw3">FE_TimeIterator</font><font class="text">:: time_step( </font><font class="kw2">size_t</font><font class="text"> level ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_TimeIterator:: time_step&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( level&lt;storage_depth() ) ;
+   </font><font class="kw1">return</font><font class="text">( DT(level) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw2">size_t
+</font><font class="kw3">FE_TimeIterator</font><font class="text">:: iteration_number( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_TimeIterator:: iteration_number&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( is_started() ) ;
+   </font><font class="kw1">return</font><font class="text">( ITER ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">FE_TimeIterator</font><font class="text">:: just_went_back_and_forth( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_TimeIterator:: just_went_back_and_forth&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( is_started() ) ;
+   </font><font class="kw1">return</font><font class="text">( BACK_AND_FORTH_IT ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">FE_TimeIterator</font><font class="text">::FinishedReason
+</font><font class="kw3">FE_TimeIterator</font><font class="text">:: finished_reason( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">return</font><font class="text">( FINISHED_REASON ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_TimeIterator</font><font class="text">:: finish_iterations( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_TimeIterator:: finish_iterations&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( is_started() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( !is_finished() ) ;
+   
+   FINISHED_REASON = FinishIterationsCalled ;
+   
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( is_finished() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( finished_reason() == FinishIterationsCalled ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">FE_TimeIterator</font><font class="text">:: time_step_is_fixed( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">return</font><font class="text">( VARYING_DT != 0 ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_TimeIterator</font><font class="text">:: set_next_time_step( </font><font class="kw1">double</font><font class="text"> dt )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_TimeIterator:: set_next_time_step&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( is_started() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( !is_finished() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( !time_step_is_fixed() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( dt &gt; 0. ) ;
+
+   NEXT_DT = ( dt == DT(0) ? </font><font class="kw3">PEL</font><font class="text">::bad_double() : dt ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( next_time_step() == dt ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">double
+</font><font class="kw3">FE_TimeIterator</font><font class="text">:: next_time_step( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_TimeIterator:: next_time_step&quot;</font><font class="text"> ) ;
+   </font><font class="kw1">double</font><font class="text"> result = ( NEXT_DT == </font><font class="kw3">PEL</font><font class="text">::bad_double() ? DT(0) : NEXT_DT ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result &gt; 0. ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_TimeIterator</font><font class="text">:: go_back( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_TimeIterator:: go_back&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( is_started() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( !just_went_back() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( !is_finished() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( !time_step_is_fixed() ) ;
+   </font><font class="kw3">PEL_SAVEOLD</font><font class="text">( </font><font class="kw1">double</font><font class="text">, time_step, time_step() ) ;
+   
+   T = T-DT(0) ;
+   RESTART_IT = </font><font class="kw1">true</font><font class="text"> ;
+ 
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( !is_finished() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( time_step() == </font><font class="kw3">OLD</font><font class="text">(time_step) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( </font><font class="kw3">FORMAL</font><font class="text">( time() == </font><font class="kw3">OLD</font><font class="text">(time) - time_step() ) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( just_went_back() ) ;
+}
+
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">FE_TimeIterator</font><font class="text">:: just_went_back( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">return</font><font class="text">( RESTART_IT ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">FE_TimeIterator</font><font class="text">:: greater_or_equal( </font><font class="kw1">double</font><font class="text"> time1, </font><font class="kw1">double</font><font class="text"> time2 )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_TimeIterator:: greater_or_equal&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">double</font><font class="text"> </font><font class="kw1">const</font><font class="text"> epsilon = ( time2&gt;0. ? 1.E-8 : -1.E-8 ) ;
+   </font><font class="kw1">bool</font><font class="text"> </font><font class="kw1">const</font><font class="text"> result = ( time1 &gt;= time2*( 1.0 - epsilon ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">FE_TimeIterator</font><font class="text">:: table_of_times_is_valid( </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; times ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_TimeIterator:: table_of_times_is_valid&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">bool</font><font class="text"> result = </font><font class="kw1">true</font><font class="text"> ;
+   </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> n = times.size() ;
+   </font><font class="kw1">if</font><font class="text">( n&gt;0 )
+   {
+      result = greater_or_equal( times(0), initial_time() )
+            &amp;&amp; greater_or_equal( final_time(), times(n-1) ) ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; result &amp;&amp; i&lt;n-1 ; ++i )
+      {
+         result = ( times(i+1)&gt;times(i) ) ; </font><font class="comment">// increasing values
+</font><font class="text">      }
+   }
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_TimeIterator</font><font class="text">:: raise_invalid_table_of_times( 
+                                         </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; class_name,
+                                         </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; keyword,
+                                         </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; times ) </font><font class="kw1">const</font><font class="text"> 
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_TimeIterator:: raise_invalid_table_of_times&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( !table_of_times_is_valid( times ) ) ;
+
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> mesg ;
+   mesg &lt;&lt; </font><font class="string">&quot;*** &quot;</font><font class="text"> &lt;&lt; class_name &lt;&lt; </font><font class="string">&quot; error:&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;    invalid data of keyword \&quot;&quot;&lt;&lt; keyword &lt;&lt;&quot;</font><font class="text">\</font><font class="string">&quot;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;    the time sequence must &quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;      - start after the initial time (which is: &quot;</font><font class="text"> 
+        &lt;&lt; initial_time() &lt;&lt; </font><font class="string">&quot;)&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;      - stop before the final time (which is: &quot;</font><font class="text"> 
+        &lt;&lt; final_time() &lt;&lt; </font><font class="string">&quot;)&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;      - be sorted by increasing values&quot;</font><font class="text"> ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( mesg.str() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">double
+</font><font class="kw3">FE_TimeIterator</font><font class="text">:: next_time_in_table( </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; times ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_TimeIterator:: next_time_in_table&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( table_of_times_is_valid( times ) ) ;
+   
+   </font><font class="kw1">double</font><font class="text"> result = </font><font class="kw3">PEL</font><font class="text">::max_double() ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;times.size() ; i++ )
+   {
+      </font><font class="kw1">if</font><font class="text">( !greater_or_equal( time(), times(i) ) )
+      {
+         result = times(i) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      }
+   }
+   
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( !greater_or_equal( time(), result ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_TimeIterator</font><font class="text">:: save_state( </font><font class="kw3">PEL_ObjectWriter</font><font class="text">* writer ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_TimeIterator:: save_state&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( save_state_PRE( writer ) ) ;
+   
+   writer-&gt;start_new_object( </font><font class="string">&quot;FE_TimeIterator&quot;</font><font class="text"> ) ;
+
+   </font><font class="comment">// Saving current time
+</font><font class="text">   writer-&gt;add_entry( </font><font class="string">&quot;t&quot;</font><font class="text">, </font><font class="kw3">PEL_Double</font><font class="text">::create( 0, T ) ) ;
+   
+   </font><font class="comment">// Saving current iter
+</font><font class="text">   writer-&gt;add_entry( </font><font class="string">&quot;iter&quot;</font><font class="text">, </font><font class="kw3">PEL_Int</font><font class="text">::create( 0, ITER ) ) ;
+   
+   </font><font class="comment">// Initial time step
+</font><font class="text">   writer-&gt;add_entry( </font><font class="string">&quot;initial_dt&quot;</font><font class="text">, </font><font class="kw3">PEL_Double</font><font class="text">::create( 0, INI_DT ) ) ;
+
+   </font><font class="comment">// Time step has been modified
+</font><font class="text">   </font><font class="kw1">if</font><font class="text">( NEXT_DT != </font><font class="kw3">PEL</font><font class="text">::bad_double() )
+   {
+      writer-&gt;add_entry( </font><font class="string">&quot;new_dt&quot;</font><font class="text">, </font><font class="kw3">PEL_Double</font><font class="text">::create( 0, NEXT_DT ) ) ;
+   }
+   
+   </font><font class="comment">// Restart
+</font><font class="text">   </font><font class="kw1">if</font><font class="text">( RESTART_IT )
+   {
+     writer-&gt;add_entry( </font><font class="string">&quot;just_went_back&quot;</font><font class="text">, </font><font class="kw3">PEL_Bool</font><font class="text">::create( 0, </font><font class="kw1">true</font><font class="text"> ) ) ;
+   }
+   
+   </font><font class="comment">// Restart
+</font><font class="text">   </font><font class="kw1">if</font><font class="text">( BACK_AND_FORTH_IT )
+   {
+     writer-&gt;add_entry( </font><font class="string">&quot;just_went_back_and_forth&quot;</font><font class="text">, </font><font class="kw3">PEL_Bool</font><font class="text">::create( 0, </font><font class="kw1">true</font><font class="text"> ) ) ;
+   }
+   
+   </font><font class="comment">// Saving current time step
+</font><font class="text">   writer-&gt;add_entry( </font><font class="string">&quot;dt&quot;</font><font class="text">, </font><font class="kw3">PEL_DoubleVector</font><font class="text">::create( 0, DT ) ) ;
+   
+   writer-&gt;finalize_object() ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( save_state_POST( writer ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_TimeIterator</font><font class="text">:: restore_state( </font><font class="kw3">PEL_ObjectReader</font><font class="text">* reader )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_TimeIterator:: restore_state&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( restore_state_PRE( reader ) ) ;
+
+   reader-&gt;start_object_retrieval( </font><font class="string">&quot;FE_TimeIterator&quot;</font><font class="text"> ) ;
+   
+   T = reader-&gt;data_of_entry( </font><font class="string">&quot;t&quot;</font><font class="text"> )-&gt;to_double() ;
+   T_START = T ;
+   ITER_INIT = reader-&gt;data_of_entry( </font><font class="string">&quot;iter&quot;</font><font class="text"> )-&gt;to_int()+1 ;
+   NEXT_DT = </font><font class="kw3">PEL</font><font class="text">::bad_double() ;
+   </font><font class="kw1">if</font><font class="text">( !VARYING_DT )
+   {
+      </font><font class="kw1">double</font><font class="text"> ini_dt = reader-&gt;data_of_entry( </font><font class="string">&quot;initial_dt&quot;</font><font class="text"> )-&gt;to_double() ;
+      </font><font class="kw1">if</font><font class="text">( ini_dt != INI_DT ) </font><font class="comment">// time step is changed in the data deck
+</font><font class="text">      {
+         NEXT_DT = INI_DT ;
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( reader-&gt;has_entry( </font><font class="string">&quot;new_dt&quot;</font><font class="text"> ) )
+      {
+         NEXT_DT = reader-&gt;data_of_entry( </font><font class="string">&quot;new_dt&quot;</font><font class="text"> )-&gt;to_double() ;
+      }
+   }
+   RESTART_IT = reader-&gt;has_entry( </font><font class="string">&quot;just_went_back&quot;</font><font class="text"> ) ;
+   BACK_AND_FORTH_IT = reader-&gt;has_entry( </font><font class="string">&quot;just_went_back_and_forth&quot;</font><font class="text"> ) ;
+   DT = reader-&gt;data_of_entry( </font><font class="string">&quot;dt&quot;</font><font class="text"> )-&gt;to_double_vector() ;
+   ITER = </font><font class="kw3">PEL</font><font class="text">::bad_index() ;
+   STARTED = </font><font class="kw1">false</font><font class="text"> ;
+   FINISHED_REASON = NotFinished ;
+   reader-&gt;end_object_retrieval() ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( restore_state_POST( reader ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_TimeIterator</font><font class="text">:: set_time_step( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_TimeIterator:: set_time_step&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">if</font><font class="text">( !RESTART_IT )
+   {
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=DT.size()-1 ; i&gt;0 ; --i )
+      {
+         DT( i ) = DT( i-1 ) ;
+      }
+   }
+   </font><font class="kw1">if</font><font class="text">( NEXT_DT != </font><font class="kw3">PEL</font><font class="text">::bad_double() )
+   {
+      DT(0) = NEXT_DT ;
+      NEXT_DT =  </font><font class="kw3">PEL</font><font class="text">::bad_double() ;
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( VARYING_DT != 0 )
+   {
+      TIME-&gt;</font><font class="kw2">set</font><font class="text">( T ) ;
+      DT(0) = VARYING_DT-&gt;to_double() ;
+   }
+   T += DT(0) ;
+   BACK_AND_FORTH_IT = RESTART_IT ;
+   RESTART_IT = </font><font class="kw1">false</font><font class="text"> ;
+}
+
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_TimeIterator</font><font class="text">:: start_checkpointing( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_TimeIterator:: start_checkpointing&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw3">PEL_Communicator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* com = </font><font class="kw3">PEL_Exec</font><font class="text">::communicator() ;
+   </font><font class="kw2">size_t</font><font class="text"> rank = com-&gt;rank() ;
+   </font><font class="kw1">int</font><font class="text"> pid ;
+   </font><font class="kw1">if</font><font class="text">( rank == 0 )
+   {
+      pid = </font><font class="kw3">PEL_System</font><font class="text">::process_id() ;
+   }
+   com-&gt;broadcast( pid, 0 ) ;
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> nstr ;
+   nstr &lt;&lt; </font><font class="string">&quot;remove_to_stop_&quot;</font><font class="text"> &lt;&lt; pid ;
+   CHECKPOINT_FILE = nstr.str() ;
+   </font><font class="kw1">if</font><font class="text">( rank == 0 )
+   {
+      </font><font class="kw2">std</font><font class="text">::ofstream file( CHECKPOINT_FILE.c_str(), </font><font class="kw2">std</font><font class="text">::ios::trunc ) ;
+      file.close() ;
+   }
+}
+
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_TimeIterator</font><font class="text">:: test_checkpoint( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_TimeIterator:: test_checkpoint&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw2">std</font><font class="text">::ifstream file( CHECKPOINT_FILE.c_str() ) ;
+   </font><font class="kw1">if</font><font class="text">( !file ) FINISHED_REASON = UserCheckpoint ;
+}
+
+</font>
+</pre>
+</body>
+</html>

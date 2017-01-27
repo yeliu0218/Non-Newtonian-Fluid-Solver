@@ -1,0 +1,361 @@
+MODULE PEL_Application
+
+   concrete_name = "FE_StepByStepProgression"
+   
+   save_grid_and_fields_for_postprocessing = true
+   
+   $IS_CURRENT = 0
+   $DS_T = 0.0
+   
+   $DS_ALPHA = 0.5
+   $DS_BETA = 2.*pi()
+   $DS_MU = 1.0
+   $DS_X0 = 0.2  
+   $DS_X1 = 0.8
+   $DS_C = 1.0
+   $DS_L = 1.0
+
+   MODULE FE_TimeIterator
+      time_initial = 0.0
+      time_end = 0.99999999999999
+      time_step = $DS_TIME_STEP
+   END MODULE FE_TimeIterator
+  
+   graphics_output_times = regular_vector( 0.0, $IS_NB_SAVINGS, 1.0 )
+   
+   MODULE PDE_DomainAndFields
+   
+      verbose_level = 1
+      nb_space_dimensions = 2
+      type = "finite_element"
+
+      MODULE GE_Meshing
+         concrete_name = "GE_BoxWithBoxes"
+         vertices_coordinate_0 = regular_vector( 0., $IS_NB_MESHES, $DS_L )
+         vertices_coordinate_1 = regular_vector( 0., $IS_NB_MESHES, 1. )
+         mesh_polyhedron = < "GE_Segment" "GE_Rectangle" >
+      END MODULE GE_Meshing
+      
+      MODULE macro_colors
+         ALL = <"left" "right" "top" "bottom" "top_left" "bottom_left"
+                 "bottom_right" "top_right"  >
+      END MODULE macro_colors
+
+      MODULE interior_fields
+         
+         MODULE uu
+            name = "velocity"
+            nb_components = 2
+            element_name  = "PDE_2D_Q2_9nodes"
+            storage_depth = 1
+            MODULE DOFs_values
+               type  = "uniformly_defined"
+               value = VariableDensityFlow1_velocity( $DV_X, $DS_T,
+                                                      $DS_ALPHA, $DS_BETA,
+                                                      $DS_MU,
+                                                      $DS_X0, $DS_X1,
+                                                      $DS_C, $DS_L )
+            END MODULE DOFs_values
+            MODULE DOFs_imposed_value
+               MODULE xxx
+                  location = "on_bounds"
+                  type  = "uniformly_defined"
+                  value = VariableDensityFlow1_velocity( $DV_X, $DS_T,
+                                                         $DS_ALPHA, $DS_BETA,
+                                                         $DS_MU,
+                                                         $DS_X0, $DS_X1,
+                                                         $DS_C, $DS_L )
+               END MODULE xxx
+            END MODULE DOFs_imposed_value
+         END MODULE uu
+                           
+         MODULE pp
+            name = "pressure"
+            nb_components = 1
+            element_name  = "PDE_2D_Q1_4nodes"
+            storage_depth = 1
+            MODULE DOFs_values
+               type  = "uniformly_defined"
+               value = VariableDensityFlow1_pressure( $DV_X, $DS_T,
+                                                      $DS_ALPHA, $DS_BETA,
+                                                      $DS_MU,
+                                                      $DS_X0, $DS_X1,
+                                                      $DS_C, $DS_L )
+            END MODULE DOFs_values
+         END MODULE pp
+
+      END MODULE interior_fields
+      
+      MODULE boundary_conditions
+         
+         MODULE uu
+            field = "velocity"
+            type  = "Dirichlet_to_update"
+            color = "ALL"
+            value = VariableDensityFlow1_velocity( $DV_X, $DS_T,
+                                                   $DS_ALPHA, $DS_BETA,
+                                                   $DS_MU,
+                                                   $DS_X0, $DS_X1,
+                                                   $DS_C, $DS_L ) 
+         END MODULE uu     
+        
+      END MODULE boundary_conditions
+      
+      MODULE PDE_ResultSaver
+         
+         writers = < "PEL_TICwriter" >
+         
+         writing_mode   = "text"
+         files_basename = "save"
+         
+          MODULE uu
+            where_to_save = "at_vertices"
+            entry_name = "UU"
+            field = "velocity"
+         END MODULE uu   
+         
+         MODULE pp
+            where_to_save = "at_vertices"
+            entry_name = "PP"
+            field = "pressure"
+         END MODULE pp
+         
+      END MODULE PDE_ResultSaver
+      
+   END MODULE PDE_DomainAndFields
+
+   MODULE FE_SetOfParameters
+      
+      mu = vector( $DS_MU )
+      MODULE FE_Parameter#rho
+         concrete_name = "FE_SpaceTimeParameter"      
+         name = "alpha"
+         nb_components = 1
+         value = VariableDensityFlow1_rho( $DV_X, $DS_T,
+                                           $DS_ALPHA, $DS_BETA,
+                                           $DS_MU,
+                                           $DS_X0, $DS_X1,
+                                           $DS_C, $DS_L ) 
+      END MODULE FE_Parameter#rho
+
+ 
+      MODULE FE_Parameter#rhs_adv
+         concrete_name = "FE_SumOfParameters"
+         name = "rhs_adV"
+         MODULE list_of_parameters
+             MODULE rhs_f
+               coefficient = 1.0
+               type = "to_be_defined"
+               MODULE FE_Parameter
+                  concrete_name = "FE_SpaceTimeParameter"
+                  name = "rhsf"
+                  nb_components = 2
+                  value = VariableDensityFlow1_rhsf( $DV_X, $DS_T,
+                                                     $DS_ALPHA, $DS_BETA,
+                                                     $DS_MU,
+                                                     $DS_X0, $DS_X1,
+                                                     $DS_C, $DS_L )
+               END MODULE FE_Parameter
+            END MODULE rhs_f
+         END MODULE list_of_parameters      
+      END MODULE FE_Parameter#rhs_adv
+      
+      MODULE FE_Parameter#adv
+         concrete_name = "FE_ProductOfParameters"
+         name = "advective_velocity"
+         MODULE list_of_parameters
+            MODULE xxx
+               type = "already_defined"
+               name = "alpha"
+            END MODULE xxx
+            MODULE yyy
+               type = "to_be_defined"
+               MODULE FE_Parameter
+                  concrete_name = "FE_FieldParameter"
+                  name = "vexp"
+                  field_name = "velocity"
+                  field_level = $IS_CURRENT
+               END MODULE FE_Parameter
+            END MODULE yyy
+         END MODULE list_of_parameters
+      END MODULE FE_Parameter#adv
+      
+   END MODULE FE_SetOfParameters
+   
+   MODULE FE_OneStepIteration
+
+      concrete_name = "FE_SplitSystem"
+
+      MODULE list_of_FE_OneStepIteration
+
+         MODULE FE_OneStepIteration
+            concrete_name = "FE_BCupdate"
+            field = "velocity"
+            levels_of_field = vector( $IS_CURRENT )
+            verbose_level = 0
+         END MODULE FE_OneStepIteration
+         
+         MODULE FE_OneStepIteration#3
+            concrete_name = "AP_NavierStokes1G"
+            
+            velocity = "velocity"
+            level_of_velocity = $IS_CURRENT
+            
+            pressure = "pressure"
+            level_of_pressure = $IS_CURRENT
+
+            MODULE time_discretization
+               type = "Euler"
+               velocity_explicit = "velocity"
+               level_of_velocity_explicit = $IS_CURRENT 
+               pressure_explicit = "pressure"
+               level_of_pressure_explicit = $IS_CURRENT
+               param_unsteady = "alpha"
+            END MODULE time_discretization
+
+            viscosity_term = "mu_laplacian_uu"
+
+            quadrature_rule_provider = "GE_QRprovider_5"
+
+            param_viscous  = "mu"
+            param_source   = "rhs_adV"         
+
+            MODULE advection
+               param_advective_velocity = "advective_velocity"
+            END MODULE advection
+
+            MODULE LA_Matrix
+               concrete_name = "LA_PelMatrix"
+            END MODULE LA_Matrix
+               
+            initialize_discrete_pressure = true
+            initialize_discrete_velocity = true
+
+            MODULE LA_TwoBlocksMethod
+               concrete_name = "LA_Uzawa"
+               verbose_level = 1
+               augmentation_parameter = 1.0
+               tolerance_on_divergence = 1.e-4
+               tolerance_on_velocity_increment = 5.e-4
+               
+               MODULE solver_A
+                  concrete_name = "LA_PreconditionedSolver"
+                  MODULE LA_IterativeSolver
+                     concrete_name = "LA_GMRES_IS"
+                     nb_iterations_max = 200000
+                     restart = 50
+                     MODULE LA_ConvergenceTest
+                        concrete_name = "LA_DefaultConvergenceTest"
+                        relative_tolerance = 1.e-12
+                        absolute_tolerance = 1.e-20
+                     END MODULE LA_ConvergenceTest
+                     verbose = false
+                  END MODULE LA_IterativeSolver
+                  MODULE LA_Preconditioner
+                     concrete_name = "LA_Jacobi_PC"
+                     smallest_inverted_item = 1.e-12
+                  END MODULE LA_Preconditioner
+               END MODULE solver_A
+               
+            END MODULE LA_TwoBlocksMethod
+            
+         END MODULE FE_OneStepIteration#3
+         
+         MODULE FE_OneStepIteration#5            
+            concrete_name = "FE_ComparatorWithAnalytic"
+            field = "velocity"
+            level = $IS_CURRENT
+            quadrature_rule_provider = "GE_QRprovider_7"
+            norms = vector( "L2_error_norm", "L2_solution_norm",
+                            "H1_error_norm", "H1_solution_norm",
+                            "Infinity_error_norm")
+            norm_saving_names = vector( "XLDT", "ULD", "XHUT", "UHU",
+                                        "XINT")
+            solution = VariableDensityFlow1_velocity( $DV_X, $DS_T,
+                                                      $DS_ALPHA, $DS_BETA,
+                                                      $DS_MU,
+                                                      $DS_X0, $DS_X1,
+                                                      $DS_C, $DS_L )
+            d_solution = VariableDensityFlow1_grad_velocity( $DV_X, $DS_T,
+                                                      $DS_ALPHA, $DS_BETA,
+                                                      $DS_MU,
+                                                      $DS_X0, $DS_X1,
+                                                      $DS_C, $DS_L )
+         END MODULE FE_OneStepIteration#5
+         
+         MODULE FE_OneStepIteration#6
+            concrete_name = "FE_ComparatorWithAnalytic"            
+            field = "pressure"
+            level = $IS_CURRENT
+            norms = vector( "L2_error_norm", "L2_solution_norm",
+                            "Infinity_error_norm")
+            norm_saving_names = vector( "XLDP", "PLD", "XINP")
+            quadrature_rule_provider = "GE_QRprovider_7"
+            solution = VariableDensityFlow1_pressure( $DV_X, $DS_T,
+                                                      $DS_ALPHA, $DS_BETA,
+                                                      $DS_MU,
+                                                      $DS_X0, $DS_X1,
+                                                      $DS_C, $DS_L )
+            nullify_integral = true
+         END MODULE FE_OneStepIteration#6
+         
+         MODULE FE_OneStepIteration#7
+            concrete_name = "FE_FieldValue"
+            MODULE points_definition
+               type = "regular_cutline"
+               number_of_points = 100
+               first_endpoint =  vector( 0., 0.5 )
+               second_endpoint = vector( $DS_L, 0.5 )
+            END MODULE points_definition
+            MODULE fields
+               MODULE fields#uu
+                  name = "velocity"
+               END MODULE fields#uu
+               MODULE fields#p
+                  name = "pressure"
+               END MODULE fields#p
+            END MODULE fields
+            MODULE expressions
+               MODULE fields#uu_ana
+                  value = VariableDensityFlow1_velocity(
+                                                      $DV_X, $DS_T,
+                                                      $DS_ALPHA, $DS_BETA,
+                                                      $DS_MU,
+                                                      $DS_X0, $DS_X1,
+                                                      $DS_C, $DS_L )
+               END MODULE fields#uu_ana
+               MODULE fields#p_ana
+                  value = VariableDensityFlow1_pressure(
+                                                      $DV_X, $DS_T,
+                                                      $DS_ALPHA, $DS_BETA,
+                                                      $DS_MU,
+                                                      $DS_X0, $DS_X1,
+                                                      $DS_C, $DS_L )
+               END MODULE fields#p_ana
+            END MODULE expressions
+            MODULE post_processing
+               type = "separated_files"
+               file_basename = "values"
+            END MODULE post_processing
+         END MODULE FE_OneStepIteration#7
+
+         MODULE FE_OneStepIteration#8
+            concrete_name = "FE_ParameterSaver"
+            MODULE parameters
+               MODULE param#0
+                  type = "at_vertices"
+                  parameter_name = "alpha"
+                  entry_name = "RHO"
+               END MODULE param#0
+               MODULE param#1
+                  type = "at_cell_centers"
+                  parameter_name = "rhs_adV"
+                  entry_name = "ADV"
+               END MODULE param#1
+            END MODULE parameters
+         END MODULE FE_OneStepIteration#8
+      END MODULE list_of_FE_OneStepIteration
+
+   END MODULE FE_OneStepIteration
+   
+END MODULE PEL_Application

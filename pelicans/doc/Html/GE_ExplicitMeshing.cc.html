@@ -1,0 +1,902 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>GE_ExplicitMeshing.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="GE_ExplicitMeshing.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="GEpack-tree.html"><span>Tree</span></a>
+    <a href="GE_ExplicitMeshing.html"><span>Class</span></a>
+    <a href="GE_ExplicitMeshing.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="GEpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">GE_ExplicitMeshing</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_KeywordDataPair</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_KeywordDataIterator</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Module</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Data</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_String</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Vector</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">intVector</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">size_t_vector</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">GE_Color</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">GE_Mpolyhedron</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">GE_ReferencePolyhedron</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;sstream&gt;
+
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> ;
+
+</font><font class="kw3">GE_ExplicitMeshing</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">GE_ExplicitMeshing</font><font class="text">::PROTOTYPE = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">GE_ExplicitMeshing</font><font class="text">() ;
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw3">GE_ExplicitMeshing</font><font class="text">:: </font><font class="kw3">GE_ExplicitMeshing</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">GE_Meshing</font><font class="text">( </font><font class="string">&quot;GE_ExplicitMeshing&quot;</font><font class="text"> )
+   , EXP( 0 )
+   , MESHES_EXP( 0 )
+   , VERT_COORDS( </font><font class="kw3">doubleVector</font><font class="text">( 0 ) )
+   , VERT_COLORS( 0 )
+   , IVERT( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+   , A_VERT_COORDS( 0 )
+   , MESH_COLORS( 0 )
+   , MESH_POLY_NAME( </font><font class="string">&quot;&quot;</font><font class="text"> )
+   , CELL_IT( </font><font class="kw1">false</font><font class="text"> )
+   , FACE_IT( </font><font class="kw1">false</font><font class="text"> )
+   , I_MESH( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+   , I_GLOB_MESH( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+   , MESH_IDX( 0 )
+   , MESH_2_VERTS( 0 )
+   , HAS_MESH_2_FACES( </font><font class="kw1">false</font><font class="text"> )
+   , MESH_2_FACES( 0 )
+   , VALID_MESH( </font><font class="kw1">false</font><font class="text"> )
+   , DECAL_MESH( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+{
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw3">GE_ExplicitMeshing</font><font class="text">*
+</font><font class="kw3">GE_ExplicitMeshing</font><font class="text">:: create_replica( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                     </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp,
+                                     </font><font class="kw2">size_t</font><font class="text"> dim_space ) </font><font class="kw1">const
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_PRE( a_owner, exp, dim_space ) ) ;
+
+   </font><font class="kw3">GE_ExplicitMeshing</font><font class="text">* result =
+                       </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">GE_ExplicitMeshing</font><font class="text">( a_owner, exp, dim_space ) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_POST( result, a_owner, dim_space ) ) ;
+   </font><font class="kw1">return</font><font class="text"> result ;
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw3">GE_ExplicitMeshing</font><font class="text">:: </font><font class="kw3">GE_ExplicitMeshing</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                         </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp,
+                                         </font><font class="kw2">size_t</font><font class="text"> dim_space )
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">GE_Meshing</font><font class="text">( a_owner, exp, dim_space )
+   , EXP( exp-&gt;create_clone( </font><font class="kw1">this</font><font class="text"> ) )
+   , MESHES_EXP( 0 )
+   , VERT_COORDS( exp-&gt;doubleVector_data( </font><font class="string">&quot;vertices/coordinates&quot;</font><font class="text"> ) )
+   , VERT_COLORS( </font><font class="kw3">PEL_Vector</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, 0 ) )
+   , IVERT( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+   , A_VERT_COORDS( dim_space )
+   , MESH_COLORS( </font><font class="kw3">PEL_Vector</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, 0 ) )
+   , MESH_POLY_NAME( </font><font class="string">&quot;&quot;</font><font class="text"> )
+   , CELL_IT( </font><font class="kw1">false</font><font class="text"> )
+   , FACE_IT( </font><font class="kw1">false</font><font class="text"> )
+   , I_MESH( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+   , I_GLOB_MESH( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+   , MESH_IDX( 0 )
+   , MESH_2_VERTS( 0 )
+   , HAS_MESH_2_FACES( </font><font class="kw1">false</font><font class="text"> )
+   , MESH_2_FACES( 0 )
+   , VALID_MESH( </font><font class="kw1">false</font><font class="text"> )
+   , DECAL_MESH( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+ 
+{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_ExplicitMeshing:: GE_ExplicitMeshing&quot;</font><font class="text"> ) ;
+
+   </font><font class="comment">// Vertices checks:
+</font><font class="text">   </font><font class="kw1">if</font><font class="text">( VERT_COORDS.size() != dim_space*nb_vertices() )
+   {
+      </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_data_error(
+         exp, </font><font class="string">&quot;vertices&quot;</font><font class="text">,
+         </font><font class="string">&quot;   the size of the table of coordinates\n&quot;
+</font><font class="text">         </font><font class="string">&quot;   and the number of vertices are mismatched&quot;</font><font class="text"> ) ;
+   }
+
+   </font><font class="comment">// Cell checks:
+</font><font class="text">   </font><font class="kw2">size_t</font><font class="text"> nb_elms = 0 ;
+   </font><font class="kw1">for</font><font class="text">( start_cell_iterator() ; valid_cell() ; go_next_cell() )
+   {
+      ++nb_elms ;
+   }
+   </font><font class="kw1">if</font><font class="text">( nb_elms != nb_cells() )
+   {
+      </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_data_error(
+         exp, </font><font class="string">&quot;cells&quot;</font><font class="text">,
+         </font><font class="string">&quot;   the size of the table of connectivities\n&quot;
+</font><font class="text">         </font><font class="string">&quot;   and the number of cells are mismatched&quot;</font><font class="text"> ) ;
+   }
+   
+   
+   </font><font class="comment">// Face checks:
+</font><font class="text">   nb_elms = 0 ;
+   </font><font class="kw2">size_t</font><font class="text"> nb_f_verts_max = 0 ;
+   </font><font class="kw1">for</font><font class="text">( start_face_iterator() ; valid_face() ; go_next_face(), ++nb_elms )
+   {
+      nb_f_verts_max = </font><font class="kw3">PEL</font><font class="text">::max( nb_f_verts_max, face_vertices().size() ) ;
+   }
+   </font><font class="kw1">if</font><font class="text">( nb_elms != nb_faces() )
+   {
+      </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_data_error(
+         exp, </font><font class="string">&quot;faces&quot;</font><font class="text">,
+         </font><font class="string">&quot;   the size of the table of connectivities\n&quot;
+</font><font class="text">         </font><font class="string">&quot;   and the number of cells are mismatched&quot;</font><font class="text"> ) ;
+   }
+
+   </font><font class="comment">// Face cells numbering:
+</font><font class="text">   </font><font class="kw3">size_t_vector</font><font class="text"> nb_f_verts( nb_faces(), 0 ) ;
+   </font><font class="kw3">size_t_array2D</font><font class="text"> f_verts( nb_faces(), nb_f_verts_max, </font><font class="kw3">PEL</font><font class="text">::bad_index() ) ;
+   nb_elms = 0 ;
+   </font><font class="kw1">for</font><font class="text">( start_face_iterator() ; valid_face() ; go_next_face(), ++nb_elms )
+   {
+      </font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; face_v = face_vertices() ;
+      nb_f_verts( nb_elms ) = face_v.size() ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;face_v.size() ; ++i )
+      {
+         f_verts( nb_elms, i ) = face_v(i) ;
+      }
+   }
+   
+   </font><font class="kw3">size_t_vector</font><font class="text"> ref_poly_faces(0) ;
+   </font><font class="kw3">size_t_vector</font><font class="text"> poly_faces(0) ;
+   nb_elms = 0 ;
+   </font><font class="kw1">for</font><font class="text">( start_cell_iterator() ; valid_cell() ; go_next_cell(), ++nb_elms )
+   {
+      </font><font class="kw3">GE_ReferencePolyhedron</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ref_poly = cell_reference_polyhedron() ;
+      </font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; cell_v = cell_vertices() ;
+      </font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; cell_f = cell_faces() ;
+      </font><font class="kw1">if</font><font class="text">( ref_poly-&gt;nb_vertices() != cell_v.size() ||
+          ref_poly-&gt;nb_faces() != cell_f.size() )
+      {
+         </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_data_error(
+            exp, </font><font class="string">&quot;cells&quot;</font><font class="text">,
+            </font><font class="string">&quot;   bad size for connectivity table&quot;</font><font class="text"> ) ;
+      }
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;ref_poly-&gt;nb_faces() ; ++i )
+      {
+         </font><font class="comment">// Reference polyhedron face:
+</font><font class="text">         ref_poly_faces.resize( ref_poly-&gt;nb_face_vertices( i ) ) ;
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; j&lt;ref_poly-&gt;nb_face_vertices( i ) ; ++j )
+         {
+            ref_poly_faces( j ) = cell_v( ref_poly-&gt;face_vertex( i, j ) ) ;
+         }
+         ref_poly_faces.sort_increasingly() ;
+
+         </font><font class="comment">// Polyhedron face:
+</font><font class="text">         </font><font class="kw2">size_t</font><font class="text"> ii = cell_f( i ) ;
+         poly_faces.resize( nb_f_verts( ii ) ) ;
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; j&lt;nb_f_verts( ii ) ; ++j )
+         {
+            poly_faces( j ) = f_verts( ii, j ) ;
+         }
+         poly_faces.sort_increasingly() ;
+         </font><font class="kw1">if</font><font class="text">( poly_faces != ref_poly_faces )
+         {
+            </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> msg ;
+            msg &lt;&lt; </font><font class="string">&quot;   the face connectivity does not respect numbering&quot;
+</font><font class="text">                &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl
+</font><font class="text">                &lt;&lt; </font><font class="string">&quot;   imposed by reference polyhedron&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl
+</font><font class="text">                &lt;&lt; </font><font class="string">&quot;      cell: &quot;</font><font class="text"> &lt;&lt; nb_elms
+                &lt;&lt; </font><font class="string">&quot; (&quot;</font><font class="text"> &lt;&lt; cell_polyhedron_name() &lt;&lt; </font><font class="string">&quot;)&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl
+</font><font class="text">                &lt;&lt; </font><font class="string">&quot;      face: &quot;</font><font class="text"> &lt;&lt; i &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl
+</font><font class="text">                &lt;&lt; </font><font class="string">&quot;      face connectivity: &quot;</font><font class="text"> &lt;&lt; poly_faces &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl
+</font><font class="text">                &lt;&lt; </font><font class="string">&quot;      expected connectivity: &quot;</font><font class="text"> &lt;&lt; ref_poly_faces ;
+            </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_data_error( exp, </font><font class="string">&quot;cells&quot;</font><font class="text">, msg.str() ) ;
+         }
+      }
+   }
+}
+
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="kw3">GE_ExplicitMeshing</font><font class="text">:: ~</font><font class="kw3">GE_ExplicitMeshing</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_ExplicitMeshing:: ~GE_ExplicitMeshing&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   
+   </font><font class="kw1">if</font><font class="text">( is_a_prototype() ) PROTOTYPE = 0 ;
+}
+
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="kw2">size_t
+</font><font class="kw3">GE_ExplicitMeshing</font><font class="text">:: nb_vertices( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_ExplicitMeshing:: nb_vertices&quot;</font><font class="text"> ) ;
+   </font><font class="kw2">size_t</font><font class="text"> result = EXP-&gt;int_data( </font><font class="string">&quot;vertices/number&quot;</font><font class="text"> ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="kw2">size_t
+</font><font class="kw3">GE_ExplicitMeshing</font><font class="text">:: nb_cells( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_ExplicitMeshing:: nb_cells&quot;</font><font class="text"> ) ;
+   </font><font class="kw2">size_t</font><font class="text"> result = EXP-&gt;int_data( </font><font class="string">&quot;cells/number&quot;</font><font class="text"> ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="kw2">size_t
+</font><font class="kw3">GE_ExplicitMeshing</font><font class="text">:: nb_faces( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_ExplicitMeshing:: nb_faces&quot;</font><font class="text"> ) ;
+   </font><font class="kw2">size_t</font><font class="text"> result = EXP-&gt;int_data( </font><font class="string">&quot;faces/number&quot;</font><font class="text"> ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">GE_ExplicitMeshing</font><font class="text">:: start_vertex_iterator( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_ExplicitMeshing:: start_vertex_iterator&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   IVERT = 0 ;
+
+   </font><font class="comment">// Recover vertices color:
+</font><font class="text">   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* color_identification = 0 ;
+   </font><font class="kw1">if</font><font class="text">( EXP-&gt;has_module( </font><font class="string">&quot;vertices/colors&quot;</font><font class="text"> ) )
+   {
+      color_identification =
+                 EXP-&gt;create_subexplorer( 0, </font><font class="string">&quot;vertices/colors&quot;</font><font class="text"> ) ;
+   }
+   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* special_color = 0 ;
+   </font><font class="kw1">if</font><font class="text">( EXP-&gt;has_module( </font><font class="string">&quot;vertices/special_colors&quot;</font><font class="text"> ) )
+   {
+      special_color =
+         EXP-&gt;create_subexplorer( 0, </font><font class="string">&quot;vertices/special_colors&quot;</font><font class="text"> ) ;
+   }
+   recover_color_table( color_identification, special_color,
+                        nb_vertices(),
+                        VERT_COLORS ) ;
+   </font><font class="kw1">if</font><font class="text">( color_identification!=0 )
+   {
+      color_identification-&gt;destroy() ; color_identification = 0 ;
+   }
+   </font><font class="kw1">if</font><font class="text">( special_color!=0 )
+   {
+      special_color-&gt;destroy() ; special_color = 0 ;
+   }
+}
+
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">GE_ExplicitMeshing</font><font class="text">:: valid_vertex( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_ExplicitMeshing:: valid_vertex&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw1">return</font><font class="text">( IVERT&lt;nb_vertices() ) ;
+}
+
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">GE_ExplicitMeshing</font><font class="text">:: go_next_vertex( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_ExplicitMeshing:: go_next_vertex&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( go_next_vertex_PRE() ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   IVERT++ ;
+}
+
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; 
+</font><font class="kw3">GE_ExplicitMeshing</font><font class="text">:: vertex_coordinates( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_ExplicitMeshing:: vertex_coordinates&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( vertex_coordinates_PRE() ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> nbc = nb_space_dimensions() ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> ic=0 ; ic&lt;nbc ; ic++ )
+   {
+      A_VERT_COORDS( ic ) = VERT_COORDS( IVERT*nbc+ic )  ;
+   }
+   </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; result = A_VERT_COORDS ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( vertex_coordinates_POST( result ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">GE_ExplicitMeshing</font><font class="text">:: start_cell_iterator( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_ExplicitMeshing:: start_cell_iterator&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( start_cell_iterator_PRE() ) ;
+
+   CELL_IT = </font><font class="kw1">true</font><font class="text"> ;
+   FACE_IT = </font><font class="kw1">false</font><font class="text"> ;
+
+   </font><font class="kw1">if</font><font class="text">( MESHES_EXP!=0 )
+   {
+      destroy_possession( MESHES_EXP ) ;
+   }
+   MESHES_EXP = EXP-&gt;create_subexplorer(
+                           </font><font class="kw1">this</font><font class="text">, </font><font class="string">&quot;cells/polyhedra_and_connectivities&quot;</font><font class="text"> ) ;
+   HAS_MESH_2_FACES = </font><font class="kw1">true</font><font class="text"> ;
+   
+   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* color_identification = 0 ;
+   </font><font class="kw1">if</font><font class="text">( EXP-&gt;has_module( </font><font class="string">&quot;cells/colors&quot;</font><font class="text"> ) )
+   {
+      color_identification =
+                      EXP-&gt;create_subexplorer( 0, </font><font class="string">&quot;cells/colors&quot;</font><font class="text"> ) ;
+   }
+   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* special_color = 0 ;
+   </font><font class="kw1">if</font><font class="text">( EXP-&gt;has_module( </font><font class="string">&quot;cells/special_colors&quot;</font><font class="text"> ) )
+   {
+      special_color =
+              EXP-&gt;create_subexplorer( 0, </font><font class="string">&quot;cells/special_colors&quot;</font><font class="text"> ) ;
+   }
+   recover_color_table( color_identification, special_color, nb_cells(),
+                        MESH_COLORS ) ;
+
+   MESHES_EXP-&gt;start_entry_iterator() ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( MESHES_EXP-&gt;is_valid_entry() ) ;
+   
+   take_new_mesh_partition() ;
+
+   </font><font class="kw1">if</font><font class="text">( color_identification!=0 )
+   {
+      color_identification-&gt;destroy() ; color_identification = 0 ;
+   }
+   </font><font class="kw1">if</font><font class="text">( special_color!=0 )
+   {
+      special_color-&gt;destroy() ; special_color = 0 ;
+   }
+
+   I_GLOB_MESH = 0 ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( start_cell_iterator_POST() ) ;
+}
+
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">GE_ExplicitMeshing</font><font class="text">:: valid_cell( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_ExplicitMeshing:: valid_cell&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">bool</font><font class="text"> result = CELL_IT &amp;&amp; VALID_MESH ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( valid_cell_POST( result ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">GE_ExplicitMeshing</font><font class="text">:: go_next_cell( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_ExplicitMeshing:: go_next_cell&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( go_next_cell_PRE() ) ;
+   I_MESH++ ;
+   I_GLOB_MESH++ ;
+   </font><font class="kw2">size_t</font><font class="text"> index_mesh = DECAL_MESH*I_MESH ;
+   </font><font class="kw1">if</font><font class="text">( index_mesh &gt;= MESH_IDX-&gt;size() )
+   {
+      MESHES_EXP-&gt;go_next_entry() ;
+      take_new_mesh_partition() ;
+   }
+}
+
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp;
+</font><font class="kw3">GE_ExplicitMeshing</font><font class="text">:: cell_polyhedron_name( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_ExplicitMeshing:: cell_polyhedron_name&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( cell_polyhedron_name_PRE() ) ;
+
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; result = MESH_POLY_NAME ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( cell_polyhedron_name_POST( result ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; 
+</font><font class="kw3">GE_ExplicitMeshing</font><font class="text">:: cell_vertices( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_ExplicitMeshing:: cell_vertices&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( cell_vertices_PRE() ) ;
+
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;MESH_2_VERTS.size() ; i++ )
+   {
+      </font><font class="kw1">int</font><font class="text"> ivert = (*MESH_IDX)( I_MESH*DECAL_MESH+i )  ;
+      </font><font class="kw1">if</font><font class="text">( ivert&lt;0 || ivert&gt;=(</font><font class="kw1">int</font><font class="text">)nb_vertices() )
+      {
+         </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain(
+                                      </font><font class="string">&quot;Bad index of vertices for cell&quot;</font><font class="text"> ) ;
+      }
+      MESH_2_VERTS( i ) = (</font><font class="kw2">size_t</font><font class="text">) ivert ;
+   }
+   </font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; result = MESH_2_VERTS ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( cell_vertices_POST( result ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; 
+</font><font class="kw3">GE_ExplicitMeshing</font><font class="text">:: cell_faces( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_ExplicitMeshing:: cell_faces&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( cell_faces_PRE() ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> decal = I_MESH*DECAL_MESH + MESH_2_VERTS.size() ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;MESH_2_FACES.size() ; i++ )
+   {
+      </font><font class="kw1">int</font><font class="text"> iside = (*MESH_IDX)( decal+i ) ;
+      </font><font class="kw1">if</font><font class="text">( iside&lt;0 || iside&gt;=(</font><font class="kw1">int</font><font class="text">)nb_faces() )
+      {
+         </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain(
+                                      </font><font class="string">&quot;Bad index of faces for cell&quot;</font><font class="text"> ) ;
+      }
+      MESH_2_FACES( i ) = (</font><font class="kw2">size_t</font><font class="text">) iside  ;
+   }
+   </font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; result = MESH_2_FACES ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( cell_faces_POST( result ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">GE_ExplicitMeshing</font><font class="text">:: start_face_iterator( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_ExplicitMeshing:: start_face_iterator&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( start_face_iterator_PRE() ) ;
+
+   CELL_IT = </font><font class="kw1">false</font><font class="text"> ;
+   FACE_IT = </font><font class="kw1">true</font><font class="text"> ;
+
+   </font><font class="kw1">if</font><font class="text">( MESHES_EXP!=0 )
+   {
+      destroy_possession( MESHES_EXP ) ;
+   }
+   MESHES_EXP = EXP-&gt;create_subexplorer(
+                             </font><font class="kw1">this</font><font class="text">, </font><font class="string">&quot;faces/polyhedra_and_connectivities&quot;</font><font class="text"> ) ;
+   HAS_MESH_2_FACES = </font><font class="kw1">false</font><font class="text"> ;
+
+   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* color_identification = 0 ;
+   </font><font class="kw1">if</font><font class="text">( EXP-&gt;has_module( </font><font class="string">&quot;faces/colors&quot;</font><font class="text"> ) )
+   {
+      color_identification =
+                        EXP-&gt;create_subexplorer( 0, </font><font class="string">&quot;faces/colors&quot;</font><font class="text"> ) ;
+   }
+   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* special_color = 0 ;
+   </font><font class="kw1">if</font><font class="text">( EXP-&gt;has_module( </font><font class="string">&quot;faces/special_colors&quot;</font><font class="text"> ) )
+   {
+      special_color =
+                EXP-&gt;create_subexplorer( 0, </font><font class="string">&quot;faces/special_colors&quot;</font><font class="text"> ) ;
+   }
+   recover_color_table( color_identification, special_color, nb_faces(),
+                        MESH_COLORS ) ;
+   </font><font class="kw1">if</font><font class="text">( color_identification!=0 )
+   {
+      color_identification-&gt;destroy() ; color_identification = 0 ;
+   }
+   </font><font class="kw1">if</font><font class="text">( special_color!=0 )
+   {
+      special_color-&gt;destroy() ; special_color = 0 ;
+   }
+
+   </font><font class="kw1">if</font><font class="text">( EXP-&gt;has_module( </font><font class="string">&quot;bounds&quot;</font><font class="text">) )
+   {
+      </font><font class="kw3">intVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; global_sides =
+                    EXP-&gt;intVector_data( </font><font class="string">&quot;bounds/adjacent_faces&quot;</font><font class="text"> ) ;
+      </font><font class="kw2">size_t</font><font class="text"> nb_bds = global_sides.size() ;
+      
+      </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* bd_color_identification =
+                     EXP-&gt;create_subexplorer( 0, </font><font class="string">&quot;bounds/colors&quot;</font><font class="text"> ) ;
+      </font><font class="kw3">PEL_Vector</font><font class="text">* bd_colors = </font><font class="kw3">PEL_Vector</font><font class="text">::create( 0, 0 ) ;
+      </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* bd_special_color = 0 ;
+      recover_color_table( bd_color_identification, bd_special_color,
+                           nb_bds,
+                           bd_colors ) ;
+      
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i_bd=0 ; i_bd&lt;nb_bds ; ++i_bd )
+      {
+         </font><font class="kw1">if</font><font class="text">( global_sides(i_bd)&lt;0 || global_sides(i_bd)&gt;=(</font><font class="kw1">int</font><font class="text">)nb_faces() )
+         {
+            </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( </font><font class="string">&quot;Bad index of bounds&quot;</font><font class="text"> ) ;
+         }
+         </font><font class="kw2">size_t</font><font class="text"> i_side = (</font><font class="kw2">size_t</font><font class="text">) global_sides(i_bd) ;
+         </font><font class="kw3">GE_Color</font><font class="text">* col = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">GE_Color</font><font class="text">*&gt;( bd_colors-&gt;at(i_bd) ) ;
+         </font><font class="kw1">if</font><font class="text">( col!=0 ) MESH_COLORS-&gt;set_at( i_side, col ) ;
+      }
+      bd_colors-&gt;destroy() ; bd_colors = 0 ;
+      bd_color_identification-&gt;destroy() ; bd_color_identification = 0 ;
+   }
+   MESHES_EXP-&gt;start_entry_iterator() ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( MESHES_EXP-&gt;is_valid_entry() ) ;
+   
+   take_new_mesh_partition() ;
+
+   I_GLOB_MESH = 0 ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( start_face_iterator_POST() ) ;
+}
+
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">GE_ExplicitMeshing</font><font class="text">:: valid_face( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_ExplicitMeshing:: valid_face&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">bool</font><font class="text"> result = FACE_IT &amp;&amp; VALID_MESH ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( valid_face_POST( result ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">GE_ExplicitMeshing</font><font class="text">:: go_next_face( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_ExplicitMeshing:: go_next_face&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( go_next_face_PRE() ) ;
+   I_MESH++ ;
+   I_GLOB_MESH++ ;
+   </font><font class="kw2">size_t</font><font class="text"> index_mesh = DECAL_MESH*I_MESH ;
+   </font><font class="kw1">if</font><font class="text">( index_mesh &gt;= MESH_IDX-&gt;size() )
+   {
+      MESHES_EXP-&gt;go_next_entry() ;
+      take_new_mesh_partition() ;
+   }
+}
+
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp;
+</font><font class="kw3">GE_ExplicitMeshing</font><font class="text">:: face_polyhedron_name( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_ExplicitMeshing:: face_polyhedron_name&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( face_polyhedron_name_PRE() ) ;
+
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; result = MESH_POLY_NAME ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( face_polyhedron_name_POST( result ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; 
+</font><font class="kw3">GE_ExplicitMeshing</font><font class="text">:: face_vertices( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_ExplicitMeshing:: face_vertices&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( face_vertices_PRE() ) ;
+
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;MESH_2_VERTS.size() ; i++ )
+   {
+      </font><font class="kw1">int</font><font class="text"> ivert = (*MESH_IDX)( I_MESH*DECAL_MESH+i ) ;
+      </font><font class="kw1">if</font><font class="text">( ivert&lt;0 || ivert&gt;=(</font><font class="kw1">int</font><font class="text">)nb_vertices() )
+      {
+         </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain(
+                                      </font><font class="string">&quot;Bad index of vertices for face&quot;</font><font class="text"> ) ;
+      }
+      MESH_2_VERTS( i ) = (</font><font class="kw2">size_t</font><font class="text">) ivert  ;
+   }
+   </font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; result = MESH_2_VERTS ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( face_vertices_POST( result ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="kw3">GE_Color</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">GE_ExplicitMeshing</font><font class="text">:: default_vertex_color( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( default_vertex_color_PRE() ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw3">GE_Color</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result = </font><font class="kw3">GE_Color</font><font class="text">::null_color() ;
+   </font><font class="kw1">if</font><font class="text">( VERT_COLORS-&gt;index_limit()&gt;IVERT )
+   {
+      </font><font class="kw3">GE_Color</font><font class="text"> </font><font class="kw1">const</font><font class="text">* in_list_color =
+         </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">GE_Color</font><font class="text"> </font><font class="kw1">const</font><font class="text">* &gt;( VERT_COLORS-&gt;at( IVERT ) ) ;
+      </font><font class="kw1">if</font><font class="text">( in_list_color!=0 )
+      {
+         result = in_list_color ;
+      }
+   }
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( default_vertex_color_POST( result ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="kw3">GE_Color</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">GE_ExplicitMeshing</font><font class="text">:: default_cell_color( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( default_cell_color_PRE() ) ;
+
+   </font><font class="kw3">GE_Color</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result = </font><font class="kw3">GE_Color</font><font class="text">::null_color() ;
+   </font><font class="kw1">if</font><font class="text">( MESH_COLORS-&gt;index_limit()&gt;I_MESH )
+   {
+      </font><font class="kw3">GE_Color</font><font class="text"> </font><font class="kw1">const</font><font class="text">* in_list_color =
+         </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">GE_Color</font><font class="text"> </font><font class="kw1">const</font><font class="text">* &gt;( MESH_COLORS-&gt;at( I_GLOB_MESH ) ) ;
+      </font><font class="kw1">if</font><font class="text">( in_list_color!=0 )
+      {
+         result = in_list_color ;
+      }
+   }
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( default_cell_color_POST( result ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="kw3">GE_Color</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">GE_ExplicitMeshing</font><font class="text">:: default_face_color( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( default_face_color_PRE() ) ;
+
+   </font><font class="kw3">GE_Color</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result = </font><font class="kw3">GE_Color</font><font class="text">::null_color() ;
+   </font><font class="kw1">if</font><font class="text">( MESH_COLORS-&gt;index_limit()&gt;I_MESH )
+   {
+      </font><font class="kw3">GE_Color</font><font class="text"> </font><font class="kw1">const</font><font class="text">* in_list_color =
+         </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">GE_Color</font><font class="text"> </font><font class="kw1">const</font><font class="text">* &gt;( MESH_COLORS-&gt;at( I_GLOB_MESH ) ) ;
+      </font><font class="kw1">if</font><font class="text">( in_list_color!=0 )
+      {
+         result = in_list_color ;
+      }
+   }
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( default_face_color_POST( result ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">GE_ExplicitMeshing</font><font class="text">:: recover_color_table(
+                           </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* color_identification,
+                           </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* special_color,
+                           </font><font class="kw2">size_t</font><font class="text"> nb_elements,
+                           </font><font class="kw3">PEL_Vector</font><font class="text">* color_table ) </font><font class="kw1">const
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_ExplicitMeshing:: recover_color_table&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   color_table-&gt;re_initialize( nb_elements ) ;
+
+   </font><font class="comment">// Colors :
+</font><font class="text">   </font><font class="kw1">if</font><font class="text">( color_identification!=0 )
+   {
+      </font><font class="kw1">for</font><font class="text">( color_identification-&gt;start_entry_iterator() ;
+           color_identification-&gt;is_valid_entry() ;
+           color_identification-&gt;go_next_entry() )
+      {
+         </font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; id_color = color_identification-&gt;keyword() ;
+         </font><font class="kw3">GE_Color</font><font class="text">::extend( id_color ) ;
+         </font><font class="kw3">GE_Color</font><font class="text"> </font><font class="kw1">const</font><font class="text">* color = </font><font class="kw3">GE_Color</font><font class="text">::object( id_color ) ;
+         </font><font class="kw3">intVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; color2elem =
+            color_identification-&gt;intVector_data( id_color ) ;
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;color2elem.size() ; i++ )
+         {
+            </font><font class="kw1">if</font><font class="text">( color2elem(i)&lt;0 || color2elem(i)&gt;=(</font><font class="kw1">int</font><font class="text">)nb_elements )
+            {
+               </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain(
+                  </font><font class="string">&quot;Bad index of a geometrical element on color \&quot;&quot;
+                  +color-&gt;name()+&quot;</font><font class="text">\</font><font class="string">&quot;&quot;</font><font class="text"> ) ;
+            }
+            </font><font class="kw2">size_t</font><font class="text"> id_elem = (</font><font class="kw2">size_t</font><font class="text">) color2elem(i) ;
+            </font><font class="kw3">PEL_Object</font><font class="text"> </font><font class="kw1">const</font><font class="text">* old_color = color_table-&gt;at( id_elem ) ;
+            </font><font class="kw1">if</font><font class="text">( old_color!=0 )
+            {
+               </font><font class="kw3">GE_Color</font><font class="text"> </font><font class="kw1">const</font><font class="text">* c = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">GE_Color</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;( old_color ) ;
+               </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain(
+                  </font><font class="string">&quot;\&quot;&quot;+c-&gt;name()+&quot;</font><font class="text">\</font><font class="string">&quot; and \&quot;&quot;+color-&gt;name()
+                              +&quot;</font><font class="text">\</font><font class="string">&quot; colorize the same geometrical element.&quot;</font><font class="text"> ) ;
+            }
+            color_table-&gt;set_at( id_elem, </font><font class="kw1">const_cast</font><font class="text">&lt;</font><font class="kw3">GE_Color</font><font class="text">*&gt;( color ) ) ;
+         }
+      }
+   }
+
+   </font><font class="comment">// Halo elements :
+</font><font class="text">   </font><font class="kw1">if</font><font class="text">( special_color!=0 )
+   {
+      </font><font class="kw1">if</font><font class="text">( special_color-&gt;has_entry( </font><font class="string">&quot;null&quot;</font><font class="text"> ) )
+      {
+         </font><font class="kw3">GE_Color</font><font class="text"> </font><font class="kw1">const</font><font class="text">* color = </font><font class="kw3">GE_Color</font><font class="text">::null_color() ;
+         </font><font class="kw3">intVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; color2elem =
+                                    special_color-&gt;intVector_data( </font><font class="string">&quot;null&quot;</font><font class="text"> ) ;
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;color2elem.size() ; i++ )
+         {
+            </font><font class="kw1">if</font><font class="text">( color2elem(i)&lt;0 || color2elem(i)&gt;=(</font><font class="kw1">int</font><font class="text">)nb_elements )
+            {
+               </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain(
+                  </font><font class="string">&quot;Bad index of a geometrical element on color \&quot;&quot;
+                  +color-&gt;name()+&quot;</font><font class="text">\</font><font class="string">&quot;&quot;</font><font class="text"> ) ;
+            }
+            </font><font class="kw2">size_t</font><font class="text"> id_elem = (</font><font class="kw2">size_t</font><font class="text">) color2elem(i) ;
+            </font><font class="kw3">PEL_Object</font><font class="text"> </font><font class="kw1">const</font><font class="text">* old_color = color_table-&gt;at( id_elem ) ;
+            </font><font class="kw1">if</font><font class="text">( old_color!=0 )
+            {
+               </font><font class="kw3">GE_Color</font><font class="text"> </font><font class="kw1">const</font><font class="text">* c = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">GE_Color</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;( old_color ) ;
+               </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain(
+                  </font><font class="string">&quot;\&quot;&quot;+c-&gt;name()+&quot;</font><font class="text">\</font><font class="string">&quot; and \&quot;&quot;+color-&gt;name()
+                              +&quot;</font><font class="text">\</font><font class="string">&quot; colorize the same geometrical element.&quot;</font><font class="text"> ) ;
+            }
+            color_table-&gt;set_at( id_elem, </font><font class="kw1">const_cast</font><font class="text">&lt;</font><font class="kw3">GE_Color</font><font class="text">*&gt;( color ) ) ;
+         }
+      }
+      </font><font class="kw1">if</font><font class="text">( special_color-&gt;has_entry( </font><font class="string">&quot;halo&quot;</font><font class="text"> ) )
+      {
+         </font><font class="kw3">GE_Color</font><font class="text"> </font><font class="kw1">const</font><font class="text">* color = </font><font class="kw3">GE_Color</font><font class="text">::halo_color() ;
+         </font><font class="kw3">intVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; color2elem =
+                                   special_color-&gt;intVector_data( </font><font class="string">&quot;halo&quot;</font><font class="text"> ) ;
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;color2elem.size() ; i++ )
+         {
+            </font><font class="kw1">if</font><font class="text">( color2elem(i)&lt;0 || color2elem(i)&gt;=(</font><font class="kw1">int</font><font class="text">)nb_elements )
+            {
+               </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain(
+                  </font><font class="string">&quot;Bad index of a geometrical element on color \&quot;&quot;
+                  +color-&gt;name()+&quot;</font><font class="text">\</font><font class="string">&quot;&quot;</font><font class="text"> ) ;
+            }
+            </font><font class="kw2">size_t</font><font class="text"> id_elem = (</font><font class="kw2">size_t</font><font class="text">) color2elem(i) ;
+            </font><font class="kw3">PEL_Object</font><font class="text"> </font><font class="kw1">const</font><font class="text">* old_color = color_table-&gt;at( id_elem ) ;
+            </font><font class="kw1">if</font><font class="text">( old_color!=0 )
+            {
+               </font><font class="kw3">GE_Color</font><font class="text"> </font><font class="kw1">const</font><font class="text">* c = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">GE_Color</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;( old_color ) ;
+               </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain(
+                  </font><font class="string">&quot;\&quot;&quot;+c-&gt;name()+&quot;</font><font class="text">\</font><font class="string">&quot; and \&quot;&quot;+color-&gt;name()
+                              +&quot;</font><font class="text">\</font><font class="string">&quot; colorize the same geometrical element.&quot;</font><font class="text"> ) ;
+            }
+            color_table-&gt;set_at( id_elem, </font><font class="kw1">const_cast</font><font class="text">&lt;</font><font class="kw3">GE_Color</font><font class="text">*&gt;( color ) ) ;
+         }
+      }
+   }
+}
+
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">GE_ExplicitMeshing</font><font class="text">:: take_new_mesh_partition( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_ExplicitMeshing:: take_new_mesh_partition&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( MESHES_EXP != 0 ) ;
+   VALID_MESH = MESHES_EXP-&gt;is_valid_entry() ;
+   
+   </font><font class="kw1">if</font><font class="text">( VALID_MESH )
+   {
+      MESH_POLY_NAME = MESHES_EXP-&gt;keyword() ;
+      </font><font class="kw3">GE_ReferencePolyhedron</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ref_poly =
+                    </font><font class="kw3">GE_Mpolyhedron</font><font class="text">::reference_polyhedron( MESH_POLY_NAME ) ;
+      MESH_IDX = &amp;MESHES_EXP-&gt;intVector_data( MESH_POLY_NAME ) ;
+      I_MESH = 0 ;
+      </font><font class="kw2">size_t</font><font class="text"> nb_vert = ref_poly-&gt;nb_vertices() ;
+      MESH_2_VERTS.re_initialize( nb_vert ) ;
+      DECAL_MESH = nb_vert ;
+      </font><font class="kw1">if</font><font class="text">( HAS_MESH_2_FACES )
+      {
+         </font><font class="kw2">size_t</font><font class="text"> nb_conn = ref_poly-&gt;nb_faces() ;
+         MESH_2_FACES.re_initialize( nb_conn ) ;
+         DECAL_MESH += nb_conn ;
+      }
+      </font><font class="kw1">if</font><font class="text">( MESH_IDX-&gt;size()%DECAL_MESH != 0 )
+      {
+         </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_data_error(
+            MESHES_EXP, MESH_POLY_NAME,
+            </font><font class="string">&quot;   bad size of the table of connectivity&quot;</font><font class="text"> ) ;
+      }
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      MESHES_EXP = 0 ;
+   }
+}
+
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">GE_ExplicitMeshing</font><font class="text">:: invariant( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( </font><font class="kw3">GE_Meshing</font><font class="text">::invariant() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( </font><font class="kw3">IMPLIES</font><font class="text">( valid_cell() || valid_face(), MESH_IDX!=0 ) ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+
+   
+
+</font>
+</pre>
+</body>
+</html>

@@ -1,0 +1,311 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>FE_SteadyStateAdapter.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="FE_SteadyStateAdapter.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="FEpack-tree.html"><span>Tree</span></a>
+    <a href="FE_SteadyStateAdapter.html"><span>Class</span></a>
+    <a href="FE_SteadyStateAdapter.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="FEpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE_SteadyStateAdapter</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_DiscreteField</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_DomainAndFields</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_SetOfDiscreteFields</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Communicator</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Exec</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_assertions</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE_TimeIterator</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;fstream&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;iostream&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;iomanip&gt;
+
+</font><font class="kw3">FE_SteadyStateAdapter</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">FE_SteadyStateAdapter</font><font class="text">::PROTOTYPE = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">FE_SteadyStateAdapter</font><font class="text">(
+                                               </font><font class="string">&quot;FE_SteadyStateAdapter&quot;</font><font class="text"> ) ;
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw3">FE_SteadyStateAdapter</font><font class="text">:: </font><font class="kw3">FE_SteadyStateAdapter</font><font class="text">(
+                                         </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; concrete_name )
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">FE_TimeIteratorAdapter</font><font class="text">( concrete_name )
+   , FIELDS( 0 )
+   , LEVEL1( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+   , LEVEL0( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+   , FIELDS_TABLE( 0 )
+   , FIELDS_ERROR( 0 )
+   , OFILE_NAME( )
+{
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw3">FE_SteadyStateAdapter</font><font class="text">:: </font><font class="kw3">FE_SteadyStateAdapter</font><font class="text">(
+                                     </font><font class="kw3">FE_TimeIterator</font><font class="text">* t_it,
+                                     </font><font class="kw3">PDE_DomainAndFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dom,
+                                     </font><font class="kw3">FE_SetOfParameters</font><font class="text"> </font><font class="kw1">const</font><font class="text">* prms,
+                                     </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp )
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">FE_TimeIteratorAdapter</font><font class="text">( t_it )
+   , FIELDS( dom-&gt;set_of_discrete_fields() )
+   , LEVEL1( (</font><font class="kw2">size_t</font><font class="text">) exp-&gt;int_data( </font><font class="string">&quot;initial_level&quot;</font><font class="text"> ) )
+   , LEVEL0( (</font><font class="kw2">size_t</font><font class="text">) exp-&gt;int_data( </font><font class="string">&quot;current_level&quot;</font><font class="text"> ) )
+   , FIELDS_TABLE( exp-&gt;stringVector_data( </font><font class="string">&quot;discrete_fields&quot;</font><font class="text"> ) )
+   , FIELDS_ERROR( exp-&gt;doubleVector_data( </font><font class="string">&quot;minimal_error&quot;</font><font class="text"> ) )
+   , OFILE_NAME( )
+{
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;FIELDS_TABLE.size() ; ++i )
+   {
+      </font><font class="kw1">if</font><font class="text">( !FIELDS-&gt;has( FIELDS_TABLE(i) ) )
+      {
+         </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_bad_data_value(
+            exp, </font><font class="string">&quot;discrete_fields&quot;</font><font class="text">,
+            </font><font class="string">&quot;   unknown discrete field of name \&quot;&quot;+FIELDS_TABLE(i)+&quot;</font><font class="text">\</font><font class="string">&quot;&quot;</font><font class="text"> ) ;
+      }
+      </font><font class="kw3">PDE_DiscreteField</font><font class="text">* f = FIELDS-&gt;item( FIELDS_TABLE(i) ) ;
+      </font><font class="kw1">if</font><font class="text">( f-&gt;storage_depth() &lt;= LEVEL1 ||
+          f-&gt;storage_depth() &lt;= LEVEL0 )
+      {
+         </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain(
+            </font><font class="string">&quot;*** FE_SteadyStateAdapter error:\n&quot;
+</font><font class="text">            </font><font class="string">&quot;    bad storage depth for discrete field of name \&quot;&quot;+FIELDS_TABLE(i)+&quot;</font><font class="text">\</font><font class="string">&quot;&quot;</font><font class="text"> ) ;
+      }
+   }
+   </font><font class="kw1">if</font><font class="text">( FIELDS_ERROR.size() != FIELDS_TABLE.size() )
+   {
+      </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_bad_data_value(
+         exp, </font><font class="string">&quot;minimal_error&quot;</font><font class="text">,
+         </font><font class="string">&quot;   same size than \&quot;</font><font class="text">discrete_fields\</font><font class="string">&quot; is expected&quot;</font><font class="text"> ) ;
+   }
+   </font><font class="kw1">if</font><font class="text">( exp-&gt;has_module( </font><font class="string">&quot;post_processing&quot;</font><font class="text"> ) )
+   {
+      </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* eee =
+                            exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;post_processing&quot;</font><font class="text"> ) ;
+      OFILE_NAME = eee-&gt;string_data( </font><font class="string">&quot;file_name&quot;</font><font class="text"> ) ;
+      </font><font class="kw1">bool</font><font class="text"> banner = </font><font class="kw1">true</font><font class="text"> ;
+      </font><font class="kw1">if</font><font class="text">( eee-&gt;has_entry( </font><font class="string">&quot;banner&quot;</font><font class="text"> ) )
+      {
+         banner = eee-&gt;bool_data( </font><font class="string">&quot;banner&quot;</font><font class="text"> ) ;
+      }
+      </font><font class="kw1">if</font><font class="text">( </font><font class="kw3">PEL_Exec</font><font class="text">::communicator()-&gt;rank() == 0 )
+      {
+         initialize_cv_file( banner ) ;
+      }
+            eee-&gt;destroy() ; eee = 0 ;
+   }
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw3">FE_SteadyStateAdapter</font><font class="text">:: ~</font><font class="kw3">FE_SteadyStateAdapter</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">if</font><font class="text">( </font><font class="kw1">this</font><font class="text"> == PROTOTYPE )
+   {
+      PROTOTYPE = 0 ;
+   }
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_SteadyStateAdapter</font><font class="text">:: define_parameters_for_next_iteration( 
+                           </font><font class="kw1">bool</font><font class="text">&amp; finished, </font><font class="kw1">bool</font><font class="text">&amp; restart, </font><font class="kw1">double</font><font class="text">&amp; next_dt )
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_SteadyStateAdapter:: define_parameters_for_next_iteration&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( define_parameters_for_next_iteration_PRE( finished, restart, next_dt ) ) ;
+
+   </font><font class="kw3">PEL_Communicator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* com = </font><font class="kw3">PEL_Exec</font><font class="text">::communicator() ;
+   </font><font class="kw3">doubleVector</font><font class="text"> values( FIELDS_TABLE.size()+1 ) ;
+   values(0) =  time_iterator()-&gt;time() ;
+   finished = </font><font class="kw1">true</font><font class="text"> ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;FIELDS_TABLE.size() ; ++i )
+   {
+      </font><font class="kw3">PDE_DiscreteField</font><font class="text"> </font><font class="kw1">const</font><font class="text">* f = FIELDS-&gt;item( FIELDS_TABLE(i) ) ;
+      </font><font class="kw1">double</font><font class="text"> v_max = -</font><font class="kw3">PEL</font><font class="text">::bad_double() ;
+      </font><font class="kw1">double</font><font class="text"> err = -</font><font class="kw3">PEL</font><font class="text">::bad_double() ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> ic=0 ; ic&lt;f-&gt;nb_components() ; ++ic )
+      {
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i_node=0 ; i_node&lt;f-&gt;nb_nodes() ; ++i_node )
+         {
+            </font><font class="kw1">double</font><font class="text"> </font><font class="kw1">const</font><font class="text"> v_cur =
+               f-&gt;DOF_value( LEVEL0, i_node, ic ) ;
+            </font><font class="kw1">double</font><font class="text"> </font><font class="kw1">const</font><font class="text"> v_ini =
+               f-&gt;DOF_value( LEVEL1, i_node, ic ) ;
+            </font><font class="kw1">if</font><font class="text">( </font><font class="kw3">PEL</font><font class="text">::abs(v_ini) &gt; v_max ) v_max = </font><font class="kw3">PEL</font><font class="text">::abs(v_ini) ;
+            </font><font class="kw1">double</font><font class="text"> dv = </font><font class="kw3">PEL</font><font class="text">::abs( v_cur-v_ini ) ;
+            </font><font class="kw1">if</font><font class="text">( dv &gt; err ) err = dv ;
+         }
+      }
+      v_max = com-&gt;max( v_max ) ;
+      err = com-&gt;max( err ) ;
+      err /= </font><font class="kw3">PEL</font><font class="text">::max( 1., v_max ) ;
+      </font><font class="kw1">if</font><font class="text">( err &gt; FIELDS_ERROR(i) )
+      {
+         finished = </font><font class="kw1">false</font><font class="text"> ;
+      }
+      values( i+1 ) = err ;
+   }
+   </font><font class="kw1">if</font><font class="text">( finished )
+   {
+      </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;display_info(
+         </font><font class="string">&quot;*** FE_SteadyStateAdapter : steady state reached&quot;</font><font class="text"> ) ;
+   }
+   </font><font class="kw1">if</font><font class="text">( com-&gt;rank() == 0 &amp;&amp; !OFILE_NAME.empty() )
+   {
+      save_in_cv_file( values ) ;
+   }   
+   
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( define_parameters_for_next_iteration_POST( finished, restart, next_dt ) ) ;
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw3">FE_TimeIteratorAdapter</font><font class="text">*
+</font><font class="kw3">FE_SteadyStateAdapter</font><font class="text">:: create_replica(
+                                   </font><font class="kw3">FE_TimeIterator</font><font class="text">* t_it,
+                                   </font><font class="kw3">PDE_DomainAndFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dom,
+                                   </font><font class="kw3">FE_SetOfParameters</font><font class="text"> </font><font class="kw1">const</font><font class="text">* prms,
+                                   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp  ) </font><font class="kw1">const
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_SteadyStateAdapter:: create_replica&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_PRE( t_it, dom, prms, exp ) ) ;
+   
+   </font><font class="kw3">FE_SteadyStateAdapter</font><font class="text">* result =
+                      </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">FE_SteadyStateAdapter</font><font class="text">( t_it, dom, prms, exp ) ;
+   
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_POST( result, t_it, dom, prms, exp ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_SteadyStateAdapter</font><font class="text">:: initialize_cv_file( </font><font class="kw1">bool</font><font class="text"> banner ) </font><font class="kw1">const
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_SteadyStateAdapter:: initialize_cv_file&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw2">std</font><font class="text">::ofstream file( OFILE_NAME.c_str(),
+                       </font><font class="kw2">std</font><font class="text">::ios::out | </font><font class="kw2">std</font><font class="text">::ios::trunc ) ;
+   </font><font class="kw1">if</font><font class="text">( !file )
+   {
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> mess ;
+      mess += </font><font class="string">&quot;*** FE_SteadyStateAdapter error:\n&quot;</font><font class="text"> ;
+      mess += </font><font class="string">&quot;    Saving failure : unable to open file \&quot;&quot; ;
+      mess += OFILE_NAME ;
+      mess += &quot;</font><font class="text">\</font><font class="string">&quot; for writing&quot;</font><font class="text"> ;
+      </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( mess ) ;
+   }
+   </font><font class="kw1">if</font><font class="text">( banner )
+   {
+      file &lt;&lt; </font><font class="string">&quot;#&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+      file &lt;&lt; </font><font class="string">&quot;# FE_SteadyStateAdapter generated file&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+      file &lt;&lt; </font><font class="string">&quot;#&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+      file &lt;&lt; </font><font class="string">&quot;#        time&quot;</font><font class="text"> ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;FIELDS_TABLE.size() ; ++i )
+      {
+         </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> s = FIELDS_TABLE(i) ;
+         </font><font class="kw1">if</font><font class="text">( s.size()&gt;10 )
+         {
+            s.erase( 10, s.size() ) ;
+         }
+         file &lt;&lt; </font><font class="string">&quot; # &quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">setw</font><font class="text">( 10 ) &lt;&lt; s ;
+      }
+      file &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+      file &lt;&lt; </font><font class="string">&quot;#&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   }
+   file.close() ;
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_SteadyStateAdapter</font><font class="text">::save_in_cv_file( </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; values ) </font><font class="kw1">const
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">std</font><font class="text">::ofstream os( OFILE_NAME.c_str(), </font><font class="kw2">std</font><font class="text">::ios::out | </font><font class="kw2">std</font><font class="text">::ios::app ) ;
+   </font><font class="kw1">if</font><font class="text">( !os )
+   {
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> mess ;
+      mess += </font><font class="string">&quot;*** FE_SteadyStateAdapter error:\n&quot;</font><font class="text"> ;
+      mess += </font><font class="string">&quot;    Saving failure : unable to open file \&quot;&quot; ;
+      mess += OFILE_NAME ;
+      mess += &quot;</font><font class="text">\</font><font class="string">&quot; for writing&quot;</font><font class="text"> ;      
+   }
+   os &lt;&lt; </font><font class="kw2">std</font><font class="text">::setiosflags( </font><font class="kw2">std</font><font class="text">::ios::</font><font class="kw2">scientific</font><font class="text"> )
+      &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">setprecision</font><font class="text">( 4 ) ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;values.size() ; ++i )
+   {
+      os &lt;&lt; </font><font class="string">&quot;   &quot;</font><font class="text"> &lt;&lt; values(i) ;
+   }
+   os &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   os.close() ;
+}
+
+</font>
+</pre>
+</body>
+</html>

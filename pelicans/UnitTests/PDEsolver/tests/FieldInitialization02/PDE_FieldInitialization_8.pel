@@ -1,0 +1,80 @@
+MODULE PEL_ObjectTest#PDE_FieldInitialization_TEST
+   
+   MODULE PDE_FieldInitialization_8
+      
+      $DS_x = component( $DV_X, 0 )
+      $DS_y = component( $DV_X, 1 )
+      $DS_z = component( $DV_X, 2 )
+      
+      $DS_H = 0.1
+      $DS_L = 1.0
+      
+      $IS_NX = 1
+      $IS_NY = 1
+      $IS_NZ = 1
+      
+      $DV_MESH_X = regular_vector( 0., $IS_NX, $DS_L )
+      $DV_MESH_Y = regular_vector( 0., $IS_NY, $DS_L )
+      $DV_MESH_Z = regular_vector( -$DS_H/2., $IS_NZ, $DS_H/2. )
+
+      MODULE PDE_DomainAndFields
+
+         verbose_level = 1
+         nb_space_dimensions = 3
+         type = "finite_element"
+
+         MODULE GE_Meshing
+            concrete_name = "GE_BoxWithBoxes"
+            vertices_coordinate_0 = $DV_MESH_X
+            vertices_coordinate_1 = $DV_MESH_Y
+            vertices_coordinate_2 = $DV_MESH_Z
+            mesh_polyhedron = <"GE_Rectangle" "GE_Cuboid">
+         END MODULE GE_Meshing
+         
+         MODULE macro_colors
+            dirichlet = < "left" >
+            no_slip = < "front" "behind" >
+            neumann = <"bottom" "top">
+         END MODULE macro_colors
+         
+         MODULE interior_fields
+            
+            MODULE field#velocity
+               name = "velocity"
+               nb_components = 3
+               element_name = "PDE_3D_Q2_27nodes"
+               storage_depth = 3
+               MODULE DOFs_values
+                  type = "uniformly_defined"
+                  value = vector( 0.0, 0.0, 0.0 )
+               END MODULE DOFs_values
+               MODULE DOFs_imposed_value
+                  MODULE xxx
+                     location = "on_bounds"
+                     color = "dirichlet"
+                     type = "uniformly_defined"
+                     value = vector( 1.0, 0.0, 0.0 )
+                  END MODULE xxx
+                  MODULE yyy
+                     location = "on_bounds"
+                     color = "front"
+                     type = "uniformly_defined"
+                     value = vector( 0., 0., 0. )
+                  END MODULE yyy
+                  MODULE zzz
+                     location= "on_bounds"
+                     type = "uniformly_defined"
+                     color = "neumann"
+                     component = 1
+                     value = vector( 0. )
+                  END MODULE zzz
+               END MODULE DOFs_imposed_value
+            END MODULE field#velocity
+            
+         END MODULE interior_fields
+                  
+      END MODULE PDE_DomainAndFields
+      
+   END MODULE PDE_FieldInitialization_8
+
+END MODULE PEL_ObjectTest#PDE_FieldInitialization_TEST

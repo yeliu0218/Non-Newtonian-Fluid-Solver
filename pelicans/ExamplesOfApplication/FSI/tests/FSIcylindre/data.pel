@@ -1,0 +1,700 @@
+MODULE PEL_Application
+   
+   concrete_name = "AP_FluidStructureMaster"
+
+   $DS_a = 1.0
+   $DS_b = 3.0
+  
+   $DS_fluid_density = 1.0
+   $DS_fluid_viscosity = 1.0
+   $DS_solid_Young = 100.
+   $DS_solid_Poisson = 0.3
+
+   $DS_x = component( $DV_X, 0 )
+   $DS_y = component( $DV_X, 1 )
+
+   $DS_rr = $DS_x * $DS_x + $DS_y * $DS_y
+   $DS_r = sqrt( $DS_rr )
+
+   $DV_pression = vector( -10.*log($DS_r)/log(2.0) + 10. )
+   $DS_p_entree = 10.
+   
+   $DS_T = 0.0
+   
+   $DS_TIME_END  = 0.05
+   $DS_TIME_STEP = 0.01
+   $IS_NB_SAVES = 1
+   
+   MODULE FE_TimeIterator
+      time_initial = 0.0
+      time_end = $DS_TIME_END
+      time_step = $DS_TIME_STEP
+   END MODULE FE_TimeIterator
+   
+   graphics_output_times = regular_vector( 0., $IS_NB_SAVES, $DS_TIME_END )
+
+   $IS_NEW = 0
+   $IS_EXPLICIT = 1
+   $IS_EXPLICIT_EXPLICIT = 2
+   $IS_OLD = 2
+
+   $IS_TIME_ORDER = 1
+
+   MODULE fluid_structure_coupling
+      color_of_fluid_interface_with_structure = "FLUID_SOLID"
+      level_of_new = $IS_NEW
+      level_of_explicit = $IS_EXPLICIT
+      level_of_explicit_explicit = $IS_EXPLICIT_EXPLICIT
+      level_of_old_in_internal_iteration = $IS_OLD
+      boundary_condition_of_fluid_velocity_at_interface = $IS_TIME_ORDER
+      MODULE strategy
+         type = "fixed_point"
+         tol_epsilon = 1.E-4
+         tol_minimum = 1.E-4
+         relaxation_coefficient = 0.01
+      END MODULE strategy
+   END MODULE fluid_structure_coupling
+
+   MODULE PDE_SetOfDomains
+
+      verbose_level = 1
+      
+      MODULE list_of_PDE_DomainAndFields
+         
+         MODULE PDE_DomainAndFields#fluid
+
+            name = "fluid"
+
+            verbose_level = 1
+            nb_space_dimensions = 2
+            type = "finite_element"
+
+            check_meshing_consistency = false
+
+            MODULE GE_Meshing
+               concrete_name = "GE_GambitMeshing"
+               mesh_polyhedron = < "GE_Segment" "GE_Quadrilateral" >
+               filename = join( this_file_dir(), "fluid_myduct.neu" )
+            END MODULE GE_Meshing
+               
+            MODULE interior_fields
+
+                MODULE fluid_velocity
+                  name = "fluid_velocity"
+                  nb_components = 2
+                  element_name = "PDE_2D_Q2_9nodes"
+                  storage_depth = 3
+                  MODULE DOFs_values
+                     type = "uniformly_defined"
+                     value = vector( 0.0, 0.0 )
+                  END MODULE DOFs_values
+                  MODULE DOFs_imposed_value
+                     MODULE sym_a
+                        location = "on_bounds"
+                        color = "FLUID_BOTTOM"
+                        type = "uniformly_defined"
+                        component = 1
+                        value = < 0.0 >
+                     END MODULE sym_a
+                     MODULE sym_b
+                        location = "on_bounds"
+                        color = "FLUID_LEFT"
+                        type = "uniformly_defined"
+                        component = 0
+                        value = < 0.0 >
+                     END MODULE sym_b
+                     MODULE no_slip
+                        location = "on_bounds"
+                        color = "FLUID_SOLID"
+                        type = "uniformly_defined"
+                        value = vector( 0.0, 0.0 )
+                     END MODULE no_slip
+                  END MODULE DOFs_imposed_value
+               END MODULE fluid_velocity
+               
+               MODULE pressure
+                  name = "fluid_pressure" 
+                  nb_components = 1 
+                  element_name = "PDE_2D_Q1_4nodes"
+                  storage_depth = 2
+                  MODULE DOFs_values
+                     type = "uniformly_defined"
+                     value = $DV_pression
+                  END MODULE DOFs_values
+               END MODULE pressure
+
+               //??????? storage_depth ????????
+               MODULE fluid_grid_displacement
+                  name = "fluid_grid_displacement"
+                  nb_components = 2
+                  element_name = "PDE_2D_Q2_9nodes"
+                  storage_depth = 3
+                  MODULE DOFs_values
+                     type = "uniformly_defined"
+                     value = vector( 0.0, 0.0 )
+                  END MODULE DOFs_values
+                  MODULE DOFs_imposed_value
+                     MODULE xxx
+                        location = "on_bounds"
+                        color = "FLUID_INNER"
+                        type = "uniformly_defined"
+                        value = vector( 0.0, 0.0 )
+                     END MODULE xxx
+                     MODULE x2
+                        location = "on_bounds"
+                        color = "FLUID_SOLID"
+                        type = "uniformly_defined"
+                        value = vector( 0.0, 0.0 )
+                     END MODULE x2
+                     MODULE x3
+                        location = "on_bounds"
+                        color = "FLUID_LEFT"
+                        type = "uniformly_defined"
+                        component = 0
+                        value = vector( 0.0 )
+                     END MODULE x3
+                     MODULE x4
+                        location = "on_bounds"
+                        color = "FLUID_BOTTOM"
+                        type = "uniformly_defined"
+                        component = 1
+                        value = vector( 0.0 )
+                     END MODULE x4
+                  END MODULE DOFs_imposed_value
+               END MODULE fluid_grid_displacement
+               
+            END MODULE interior_fields
+
+            MODULE boundary_conditions
+
+               MODULE imposed_pressure
+                  field = "fluid_velocity"
+                  color = "FLUID_INNER"
+                  type = "FE_PressureStressBC"
+                  param_imposed_pressure = "pression_entree"
+               END MODULE imposed_pressure
+
+               MODULE pp_out_for_projection
+                  field = "fluid_pressure"
+                  type = "Dirichlet_pressure_penalization"
+                  color = "FLUID_INNER"
+                  penalization_coefficient = 1.e+6
+               END MODULE pp_out_for_projection
+               
+            END MODULE boundary_conditions
+            
+            MODULE PDE_ResultSaver
+               
+               writers = < "PEL_TICwriter" >
+               
+               writing_mode = "text"
+               files_basename = "save_fluid"
+
+               MODULE velocity
+                  where_to_save = "at_vertices"
+                  entry_name = "FV"
+                  field = "fluid_velocity"
+               END MODULE velocity
+
+               MODULE pressure
+                  where_to_save = "at_vertices"
+                  entry_name = "FP"
+                  field = "fluid_pressure"
+               END MODULE pressure
+
+               MODULE fluid_grid_displacement
+                  field = "fluid_grid_displacement"
+                  where_to_save = "at_vertices"
+                  entry_name = "FGD"
+               END MODULE fluid_grid_displacement
+               
+            END MODULE PDE_ResultSaver
+            
+         END MODULE PDE_DomainAndFields#fluid
+
+         MODULE PDE_DomainAndFields#structure
+            
+            name = "structure"
+            
+            verbose_level = 1
+            nb_space_dimensions = 2
+            type = "finite_element"
+
+            MODULE GE_Meshing
+               concrete_name = "GE_GambitMeshing"
+               mesh_polyhedron = < "GE_Segment" "GE_Quadrilateral" >
+               filename = join( this_file_dir(), "solid_myduct.neu" )
+            END MODULE GE_Meshing
+
+            MODULE interior_fields
+
+               MODULE displacement
+                  name = "structure_displacement"
+                  nb_components = 2
+                  element_name = "PDE_2D_Q2_9nodes"
+                  storage_depth = 3
+                  MODULE DOFs_values
+                     type = "uniformly_defined"
+                     value = vector( 0.0, 0.0 )
+                  END MODULE DOFs_values
+                  MODULE DOFs_imposed_value
+                     MODULE sym_a
+                        location = "on_bounds"
+                        color = "SOLID_BOTTOM"
+                        type = "uniformly_defined"
+                        component = 1
+                        value = < 0.0 >
+                     END MODULE sym_a
+                     MODULE sym_b
+                        location = "on_bounds"
+                        color = "SOLID_LEFT"
+                        type = "uniformly_defined"
+                        component = 0
+                        value = < 0.0 >
+                     END MODULE sym_b
+                     MODULE rigid_wall
+                        location = "on_bounds"
+                        color = "SOLID_EXT"
+                        type = "uniformly_defined"
+                        value = vector( 0.0, 0.0 )
+                     END MODULE rigid_wall
+                  END MODULE DOFs_imposed_value
+               END MODULE displacement
+               
+               MODULE velocity
+                  name = "structure_velocity"
+                  nb_components = 2
+                  element_name = "PDE_2D_Q2_9nodes"
+                  storage_depth = 3
+                  MODULE DOFs_values
+                     type = "uniformly_defined"
+                     value = vector( 0.0, 0.0 )
+                  END MODULE DOFs_values
+               END MODULE velocity
+
+            END MODULE interior_fields
+
+            MODULE boundary_conditions
+
+            END MODULE boundary_conditions
+
+            MODULE PDE_ResultSaver
+               writers = < "PEL_TICwriter" >
+                  
+               writing_mode = "text"
+               files_basename = "save_structure"
+               
+               MODULE displacement
+                  where_to_save = "at_vertices"
+                  entry_name = "SD"
+                  field = "structure_displacement"
+               END MODULE displacement
+
+               MODULE velocity
+                  where_to_save = "at_vertices"
+                  entry_name = "SV"
+                  field = "structure_velocity"
+               END MODULE velocity
+
+            END MODULE PDE_ResultSaver
+               
+         END MODULE PDE_DomainAndFields#structure
+
+      END MODULE list_of_PDE_DomainAndFields
+      
+      MODULE list_of_conformal_adjacencies
+            
+         MODULE adjacency#0
+            adjacent_domain_0 = "fluid"
+            adjacent_domain_1 = "structure"
+         END MODULE adjacency#0
+            
+      END MODULE list_of_conformal_adjacencies
+         
+   END MODULE PDE_SetOfDomains
+
+   MODULE FE_SetOfParameters
+      rho          = vector(  $DS_fluid_density )
+      rho_over_dt  = vector(  $DS_fluid_density / $DS_TIME_STEP )
+      mrho_over_dt = vector( -$DS_fluid_density / $DS_TIME_STEP )
+      m_three_rho_over_two_dt =
+                     vector( -3.0*$DS_fluid_density / 2.0*$DS_TIME_STEP )
+      two_rho_over_dt =
+                     vector( 2.0*$DS_fluid_density / $DS_TIME_STEP )
+      m_rho_over_two_dt =
+                     vector( -$DS_fluid_density / 2.0*$DS_TIME_STEP )
+      no_force     = vector( 0.0, 0.0 )
+      mu           = vector(  $DS_fluid_viscosity )
+      rhsS         = vector( 0.0, 0.0 )
+      rhsF         = vector( 0.0, 0.0 )
+      one          = < 1.0 >
+      MODULE FE_Parameter#pin
+         concrete_name = "FE_SpaceTimeParameter"
+         name = "pression_entree"
+         domain = "fluid"
+         nb_components = 1
+         value = vector( $DS_p_entree )
+      END MODULE FE_Parameter#pin
+   END MODULE FE_SetOfParameters
+
+   MODULE fluid_grid_solver
+      
+      concrete_name = "AP_AdvectionDiffusion1G"
+
+      domain = "fluid"
+
+      field = "fluid_grid_displacement"
+      level_of_field = $IS_NEW
+
+      param_diffusion = "one"
+      quadrature_rule_provider = "GE_ProductQRprovider_5"
+
+      MODULE LA_Matrix
+         concrete_name = "LA_PelMatrix"
+      END MODULE LA_Matrix
+      
+      MODULE LA_Solver
+         concrete_name = "LA_PreconditionedSolver"
+         MODULE LA_IterativeSolver
+            concrete_name = "LA_CG_IS"
+            verbose = false
+            nb_iterations_max = 2000
+            MODULE LA_ConvergenceTest
+               concrete_name = "LA_DefaultConvergenceTest"
+               relative_tolerance = 1.E-12
+               absolute_tolerance = 1.E-20
+            END MODULE LA_ConvergenceTest
+         END MODULE LA_IterativeSolver
+         MODULE LA_Preconditioner
+            concrete_name = "LA_Jacobi_PC"
+            smallest_inverted_item = 1.0e-30
+         END MODULE LA_Preconditioner
+      END MODULE LA_Solver
+      
+   END MODULE fluid_grid_solver
+//
+//   MODULE fluid_grid_solver // remet tout à 0
+//      concrete_name = "FE_DOFsCopy"
+//      domain = "fluid"
+//      MODULE xxx
+//         field = "delta_displacement"
+//         source = $IS_EXPLICIT
+//         target = $IS_NEW
+//      END MODULE xxx
+//   END MODULE fluid_grid_solver
+
+   MODULE fluid_solver
+      
+      concrete_name = "FE_SplitSystem"
+      
+      MODULE list_of_FE_OneStepIteration
+
+         MODULE FE_OneStepIteration#1
+            concrete_name = "FE_BCupdate"
+            domain = "fluid"
+            field = "fluid_velocity"
+            levels_of_field = vector( $IS_NEW )
+         END MODULE FE_OneStepIteration#1
+
+         MODULE FE_OneStepIteration#NS
+            
+            $SS_solver_A = "iterative"
+            // $SS_solver_A = "direct"
+            $SS_method = "augmented_Lagrangian"
+            // $SS_method = "Yosida"
+            // $SS_method = "augmented_projection"
+            $DS_AUG = 100.
+            
+            concrete_name = "AP_FSINavierStokes"
+            domain = "fluid"
+            
+            velocity = "fluid_velocity"
+            velocity_level_to_update = $IS_NEW
+            level_of_explicit_velocity = $IS_EXPLICIT
+            
+            pressure = "fluid_pressure"
+            pressure_level_to_update = $IS_NEW
+            level_of_explicit_pressure = $IS_NEW
+
+            boundary_conditions_types = < "FE_PressureStressBC" >
+                        
+            viscosity_term = "div_mu_D_uu"
+            
+            time_order = $IS_TIME_ORDER
+            
+            param_unsteady = "rho"
+            param_viscous = "mu"
+            param_source = "rhsF"
+
+            MODULE advection               
+               MODULE advective_field
+                  MODULE xx1
+                     field = "fluid_velocity"
+                     level = $IS_EXPLICIT
+                     param_coef = "rho"
+                  END MODULE xx1
+                  MODULE xx2
+                     field = "fluid_grid_displacement"
+                     level = $IS_NEW
+                     param_coef = "mrho_over_dt"
+                  END MODULE xx2
+                  MODULE xx3
+                     field = "fluid_grid_displacement"
+                     level = $IS_EXPLICIT
+                     param_coef = "rho_over_dt"
+                  END MODULE xx3
+               END MODULE advective_field
+            END MODULE advection
+            
+            quadrature_rule_provider = "GE_ProductQRprovider_5"
+            
+            MODULE AP_FSINavierStokesSystem
+               verbose_level = 2
+               
+               if( $SS_method = "augmented_Lagrangian" )
+               MODULE method
+                  type = "augmented_Lagrangian"
+                  augmentation_parameter = $DS_AUG
+                  tolerance_on_divergence = 5.e-4
+                  tolerance_on_velocity_increment = 5.e-4
+               END MODULE method
+               
+               if( $SS_method = "Yosida" )
+               MODULE method
+                  type = "Yosida"
+               END MODULE method
+               
+               if( $SS_method = "augmented_projection" )
+               MODULE method
+                  type = "augmented_projection"
+                  augmentation_parameter = $DS_AUG
+               END MODULE method
+               
+               MODULE LA_Matrix
+                  concrete_name = "LA_PelMatrix"
+               END MODULE LA_Matrix
+                  
+               if( $SS_solver_A = "iterative" )
+               MODULE solver_A
+                  concrete_name = "LA_PreconditionedSolver"
+                  MODULE LA_IterativeSolver
+                     concrete_name = "LA_GMRES_IS"
+                     nb_iterations_max = 10000
+                     restart = 50
+                     MODULE LA_ConvergenceTest
+                        concrete_name = "LA_DefaultConvergenceTest"
+                        relative_tolerance = 1.e-12 // 1.e-8 
+                        absolute_tolerance = 1.E-20
+                     END MODULE LA_ConvergenceTest
+                     verbose = false
+                  END MODULE LA_IterativeSolver
+                  MODULE LA_Preconditioner
+                     concrete_name = "LA_Jacobi_PC"
+                     smallest_inverted_item = 1.e-22
+                  END MODULE LA_Preconditioner
+               END MODULE solver_A
+                        
+               if( $SS_solver_A = "direct" )
+               MODULE solver_A
+                  concrete_name = "EXT_UMFsolver_DS"
+               END MODULE solver_A
+                        
+               if( $SS_method = "Yosida" ||
+                   $SS_method = "penalty_projection" )
+                MODULE method
+                   MODULE solver_Mv
+                      concrete_name = "LA_PreconditionedSolver" 
+                      MODULE LA_IterativeSolver
+                         concrete_name = "LA_CG_IS"
+                         nb_iterations_max = 2000000
+                         MODULE LA_ConvergenceTest
+                            concrete_name = "LA_DefaultConvergenceTest"
+                            relative_tolerance = 1.e-12
+                            absolute_tolerance = 1.E-20
+                         END MODULE LA_ConvergenceTest
+                         verbose = false
+                      END MODULE LA_IterativeSolver
+                      MODULE LA_Preconditioner
+                         concrete_name = "LA_Jacobi_PC"
+                         smallest_inverted_item = 1.0e-20
+                      END MODULE LA_Preconditioner
+                   END MODULE solver_Mv
+                      
+                   MODULE solver_L
+                      concrete_name = "LA_PreconditionedSolver"
+                      MODULE LA_IterativeSolver
+                         concrete_name = "LA_CG_IS"
+                         nb_iterations_max = 20000
+                         MODULE LA_ConvergenceTest
+                            concrete_name = "LA_DefaultConvergenceTest"
+                            relative_tolerance = 1.e-8 // 1.e-12 
+                            absolute_tolerance = 1.E-20
+                         END MODULE LA_ConvergenceTest
+                         verbose = false
+                      END MODULE LA_IterativeSolver
+                      MODULE LA_Preconditioner
+                         concrete_name = "LA_Jacobi_PC"
+                         smallest_inverted_item = 1.0e-20
+                      END MODULE LA_Preconditioner
+                   END MODULE solver_L
+                END MODULE method
+               
+            END MODULE AP_FSINavierStokesSystem
+            
+         END MODULE FE_OneStepIteration#NS
+         
+      END MODULE list_of_FE_OneStepIteration
+      
+   END MODULE fluid_solver
+
+//   MODULE fluid_solver // remet tout à 0
+//      concrete_name = "FE_DOFsCopy"
+//      domain = "fluid"
+//      MODULE xxx
+//         field = "fluid_velocity"
+//         source = $IS_EXPLICIT
+//         target = $IS_NEW
+//      END MODULE xxx
+//      MODULE yyy
+//         field = "fluid_pressure"
+//         source = $IS_EXPLICIT
+//         target = $IS_NEW
+//      END MODULE yyy
+//      MODULE www
+//         field = "fluid_grid_displacement"
+//         source = $IS_EXPLICIT
+//         target = $IS_NEW
+//      END MODULE www
+//      MODULE zzz
+//         field = "delta_displacement"
+//         source = $IS_EXPLICIT
+//         target = $IS_NEW
+//      END MODULE zzz
+//   END MODULE fluid_solver
+
+   MODULE load_calculator
+      concrete_name = "AP_LoadCalculator"
+      
+      name = "lcalc"
+      
+      domain_of_fluid = "fluid"
+      fluid_velocity = "fluid_velocity"
+      level_of_fluid_velocity = $IS_NEW
+      fluid_pressure = "fluid_pressure"
+      level_of_fluid_pressure = $IS_NEW
+      param_viscous = "mu"
+      
+      domain_of_structure = "structure"
+      structure_displacement = "structure_displacement"
+      
+      color_of_fluid_interface_with_structure = "FLUID_SOLID"
+      
+      quadrature_rule_provider = "GE_ProductQRprovider_5" 
+   END MODULE load_calculator
+               
+   MODULE structure_solver
+
+      concrete_name = "FE_SplitSystem"
+      
+      MODULE list_of_FE_OneStepIteration
+
+         MODULE FE_OneStepIteration#1
+            concrete_name = "AP_FiniteHyperElStructure"
+            verbose_level = 1
+      
+            domain = "structure"
+      
+            displacement = "structure_displacement"
+            level_to_update = $IS_NEW
+            level_of_explicit = $IS_EXPLICIT   
+                 
+            load_calculator = "lcalc"
+      
+            quadrature_rule_provider = "GE_ProductQRprovider_5" //????
+
+            small_deformations = true
+  
+            MODULE AP_ConstitutiveLaw
+               concrete_name = "AP_LinearElasticity"
+               Young_modulus = $DS_solid_Young
+               Poisson_coefficient = $DS_solid_Poisson
+            END MODULE AP_ConstitutiveLaw
+
+            param_source = "rhsS"
+
+//            MODULE dynamic
+//               velocity = "structure_velocity"
+//               density = 1.0
+//            END MODULE dynamic
+      
+            max_nb_iterations = 10
+            disp_tolerance = 1.e-4    // 1.e-8
+
+            MODULE LA_Matrix
+               concrete_name = "LA_PelMatrix"
+            END MODULE LA_Matrix
+            
+            MODULE LA_Solver
+               concrete_name = "LA_PreconditionedSolver"   
+               MODULE LA_IterativeSolver
+                  concrete_name = "LA_CG_IS"
+                  nb_iterations_max = 200000  //2000
+                  MODULE LA_ConvergenceTest
+                     concrete_name = "LA_DefaultConvergenceTest"
+                     relative_tolerance =  1.E-8   // 1.E-20
+                     absolute_tolerance = 1.E-20
+                  END MODULE LA_ConvergenceTest
+                  verbose = false
+               END MODULE LA_IterativeSolver
+               MODULE LA_Preconditioner
+                  concrete_name = "LA_Jacobi_PC"
+                  smallest_inverted_item = 1.0e-20
+               END MODULE LA_Preconditioner
+                  
+            END MODULE LA_Solver
+            
+         END MODULE FE_OneStepIteration#1
+
+         MODULE FE_OneStepIteration#save_value_file
+            
+            concrete_name = "FE_FieldValue"
+            domain = "structure"
+
+            MODULE points_definition
+               type = "list_of_points"
+               points = array(<0. 2.>)
+            END MODULE points_definition
+            MODULE fields
+               MODULE fields#sd
+                  name = "structure_displacement"
+                  component = 1
+               END MODULE fields#sd
+            END MODULE fields
+            MODULE post_processing
+               type = "one_file"
+               file_name = "numeric"
+               banner = false
+            END MODULE post_processing
+
+         END MODULE FE_OneStepIteration#save_value_file
+
+      END MODULE list_of_FE_OneStepIteration
+       
+   END MODULE structure_solver
+               
+//   MODULE structure_solver // remet tout à 0
+//      concrete_name = "FE_DOFsCopy"
+//      domain = "structure"
+//      MODULE xxx
+//         field = "structure_velocity"
+//         source = $IS_EXPLICIT
+//         target = $IS_NEW
+//      END MODULE xxx
+//      MODULE yyy
+//         field = "structure_displacement"
+//         source = $IS_EXPLICIT
+//         target = $IS_NEW
+//      END MODULE yyy
+//   END MODULE structure_solver
+   
+END MODULE PEL_Application

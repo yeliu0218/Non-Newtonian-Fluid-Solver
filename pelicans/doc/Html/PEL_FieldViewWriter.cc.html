@@ -1,0 +1,1196 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>PEL_FieldViewWriter.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="PEL_FieldViewWriter.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="PELpack-tree.html"><span>Tree</span></a>
+    <a href="PEL_FieldViewWriter.html"><span>Class</span></a>
+    <a href="PEL_FieldViewWriter.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="PELpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_FieldViewWriter</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">doubleArray2D</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">doubleVector</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">intVector</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">intArray2D</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">size_t_vector</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">stringVector</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;iostream&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;fstream&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;sstream&gt;
+
+</font><font class="comment">// *******************************************************************
+// File: fv_reader_tags.h
+//
+/* Numeric tags (codes) for FIELDVIEW binary file format. */
+</font><font class="text">
+</font><font class="kw2">#define</font><font class="text"> FV_MAGIC	0x00010203	</font><font class="comment">/* decimal 66051 */
+</font><font class="text">
+</font><font class="comment">/* Content of the file (grid only, results only or combined). */
+</font><font class="kw2">#define</font><font class="text"> FV_GRIDS_FILE           1
+</font><font class="kw2">#define</font><font class="text"> FV_RESULTS_FILE         2
+</font><font class="kw2">#define</font><font class="text"> FV_COMBINED_FILE        3
+
+</font><font class="kw2">#define</font><font class="text"> FV_NODES        	1001
+</font><font class="kw2">#define</font><font class="text"> FV_FACES        	1002
+</font><font class="kw2">#define</font><font class="text"> FV_ELEMENTS     	1003
+</font><font class="kw2">#define</font><font class="text"> FV_VARIABLES    	1004
+</font><font class="kw2">#define</font><font class="text"> FV_BNDRY_VARS   	1006
+</font><font class="kw2">#define</font><font class="text"> FV_ARB_POLY_FACES       1007
+</font><font class="kw2">#define</font><font class="text"> FV_ARB_POLY_ELEMENTS    1008
+</font><font class="kw2">#define</font><font class="text"> FV_ARB_POLY_BNDRY_VARS  1009
+
+</font><font class="kw2">#define</font><font class="text"> FV_TET_ELEM_ID          1
+</font><font class="kw2">#define</font><font class="text"> FV_HEX_ELEM_ID          2
+</font><font class="kw2">#define</font><font class="text"> FV_PRISM_ELEM_ID        3
+</font><font class="kw2">#define</font><font class="text"> FV_PYRA_ELEM_ID         4
+</font><font class="kw2">#define</font><font class="text"> FV_ARB_POLY_ELEM_ID     5
+
+</font><font class="kw2">#define</font><font class="text"> MAX_NUM_ELEM_FACES     6
+</font><font class="kw2">#define</font><font class="text"> BITS_PER_WALL  3
+</font><font class="kw2">#define</font><font class="text"> ELEM_TYPE_BIT_SHIFT    (MAX_NUM_ELEM_FACES*BITS_PER_WALL)
+
+</font><font class="comment">/* Values for &quot;wall_info&quot; array (see comments in fv_encode_elem_header). */
+// #ifdef __STDC__
+// #define A_WALL         (07u)
+// #define NOT_A_WALL     (0u)
+// #else
+// #define A_WALL         (07)
+// #define NOT_A_WALL     (0)
+// #endif
+</font><font class="text">
+</font><font class="comment">// *******************************************************************
+</font><font class="text">
+</font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text"> FILE_EXTENSION = </font><font class="string">&quot;.uns&quot;</font><font class="text"> ;
+
+</font><font class="comment">// Dummy vectors:
+</font><font class="kw3">intVector</font><font class="text"> IBUFF2(2) ;
+</font><font class="kw3">intVector</font><font class="text"> IBUFF3(3) ;
+</font><font class="kw3">intVector</font><font class="text"> IBUFF4(4) ;
+</font><font class="kw3">intVector</font><font class="text"> IBUFF5(5) ;
+</font><font class="kw3">doubleVector</font><font class="text"> DBUFF4(4) ;
+
+</font><font class="comment">// Connectivity PEL -&gt; FieldView
+</font><font class="kw1">int</font><font class="text"> </font><font class="kw1">const</font><font class="text"> PEL2FV_HEXA[8]  = { 0, 1, 3, 2, 4, 5, 7, 6 } ;
+</font><font class="kw1">int</font><font class="text"> </font><font class="kw1">const</font><font class="text"> PEL2FV_TETRA[4] = { 0, 1, 2, 3 } ;
+</font><font class="kw1">int</font><font class="text"> </font><font class="kw1">const</font><font class="text"> PEL2FV_QUAD[4]  = { 0, 1, 2, 3 } ;
+</font><font class="kw1">int</font><font class="text"> </font><font class="kw1">const</font><font class="text"> PEL2FV_TRIA[3]  = { 0, 1, 2 } ;
+
+</font><font class="comment">// FV_ELEMENTS:
+</font><font class="kw1">int</font><font class="text"> </font><font class="kw1">const</font><font class="text"> TETRA_IDX = 1 ;
+</font><font class="kw1">int</font><font class="text"> </font><font class="kw1">const</font><font class="text"> HEXA_IDX  = 2 ;
+</font><font class="kw1">int</font><font class="text"> </font><font class="kw1">const</font><font class="text"> PRISM_IDX = 3 ;
+</font><font class="kw1">int</font><font class="text"> </font><font class="kw1">const</font><font class="text"> PYRA_IDX  = 4 ;
+   
+</font><font class="kw3">PEL_FieldViewWriter</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">PEL_FieldViewWriter</font><font class="text">::PROTOTYPE = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_FieldViewWriter</font><font class="text">() ;
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_FieldViewWriter</font><font class="text">:: </font><font class="kw3">PEL_FieldViewWriter</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_DataOnMeshingWriter</font><font class="text">( </font><font class="string">&quot;PEL_FieldViewWriter&quot;</font><font class="text"> )
+   , FILE_BASENAME()
+   , BINARY( </font><font class="kw1">false</font><font class="text"> )
+   , DIM( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+   , ICYCLE( 0 )
+{
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_FieldViewWriter</font><font class="text">*
+</font><font class="kw3">PEL_FieldViewWriter</font><font class="text">:: create_replica( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                      </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_FieldViewWriter:: create_replica&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_PRE( a_owner, exp ) ) ;
+
+   </font><font class="kw3">PEL_FieldViewWriter</font><font class="text">* result = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_FieldViewWriter</font><font class="text">( a_owner, exp ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( create_replica_POST( result, a_owner, exp ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_FieldViewWriter</font><font class="text">:: </font><font class="kw3">PEL_FieldViewWriter</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                           </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_DataOnMeshingWriter</font><font class="text">( a_owner )
+   , FILE_BASENAME( exp-&gt;string_data( </font><font class="string">&quot;files_basename&quot;</font><font class="text"> ) )
+   , BINARY( exp-&gt;string_data( </font><font class="string">&quot;writing_mode&quot;</font><font class="text"> )==</font><font class="string">&quot;binary&quot;</font><font class="text"> )
+   , DIM( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+   , ICYCLE( 0 )
+{
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw1">if</font><font class="text">( BINARY )
+   {
+      </font><font class="kw1">if</font><font class="text">( </font><font class="kw1">sizeof</font><font class="text">(</font><font class="kw1">int</font><font class="text">) != 4 )
+      {
+         </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> mesg ;
+         mesg &lt;&lt; </font><font class="string">&quot;*** PEL_FieldViewWriter error:&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+         mesg &lt;&lt; </font><font class="string">&quot;    size_of(int) returns : &quot;</font><font class="text"> &lt;&lt; </font><font class="kw1">sizeof</font><font class="text">(</font><font class="kw1">int</font><font class="text">) &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+         mesg &lt;&lt; </font><font class="string">&quot;    and the size of the type \&quot;</font><font class="kw1">int</font><font class="text">\</font><font class="string">&quot; should be 4&quot;</font><font class="text"> ;
+         </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( mesg.str() ) ;
+      }
+      </font><font class="kw1">if</font><font class="text">( </font><font class="kw1">sizeof</font><font class="text">(</font><font class="kw1">float</font><font class="text">) != 4 )
+      {
+         </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> mesg ;
+         mesg &lt;&lt; </font><font class="string">&quot;*** PEL_FieldViewWriter error:&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+         mesg &lt;&lt; </font><font class="string">&quot;    size_of(float) returns : &quot;</font><font class="text"> &lt;&lt; </font><font class="kw1">sizeof</font><font class="text">(</font><font class="kw1">float</font><font class="text">) &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+         mesg &lt;&lt; </font><font class="string">&quot;    and the size of the type \&quot;</font><font class="kw1">float</font><font class="text">\</font><font class="string">&quot; should be 4&quot;</font><font class="text"> ;
+         </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( mesg.str() ) ;
+      }
+   }
+}
+
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_FieldViewWriter</font><font class="text">:: ~</font><font class="kw3">PEL_FieldViewWriter</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">if</font><font class="text">( is_a_prototype() )
+   {
+      PROTOTYPE = 0 ;
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_FieldViewWriter</font><font class="text">:: write_cycle( </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_FieldViewWriter:: write_cycle&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( write_cycle_PRE( exp ) ) ;
+   
+   </font><font class="comment">// Current time
+</font><font class="text">   ICYCLE = exp-&gt;int_data( </font><font class="string">&quot;cycle_number&quot;</font><font class="text"> ) ;
+
+   </font><font class="comment">// Grid file:
+</font><font class="text">   </font><font class="kw1">if</font><font class="text">( exp-&gt;has_module( </font><font class="string">&quot;meshing&quot;</font><font class="text"> ) )
+   {
+      </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* se = exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;meshing&quot;</font><font class="text"> ) ;
+      </font><font class="kw1">if</font><font class="text">( DIM == </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+      {
+         DIM = (</font><font class="kw2">size_t</font><font class="text">) se-&gt;int_data( </font><font class="string">&quot;nb_sp_dims&quot;</font><font class="text"> ) ;
+         </font><font class="kw1">if</font><font class="text">( DIM != 2 &amp;&amp; DIM != 3 )
+         {
+            </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain(
+               </font><font class="string">&quot;*** PEL_FieldViewWriter error:\n&quot;
+</font><font class="text">               </font><font class="string">&quot;    2D or 3D meshing is expected&quot;</font><font class="text"> ) ;
+         }
+      }
+      write_meshing( se ) ;
+      
+      se-&gt;destroy() ; se = 0 ;
+   }
+
+   </font><font class="kw1">if</font><font class="text">( DIM == </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+   {
+      </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain(
+         </font><font class="string">&quot;*** PEL_FieldViewWriter error:\n&quot;
+</font><font class="text">         </font><font class="string">&quot;    meshing saving if expected at the first saving cycle&quot;</font><font class="text"> ) ;
+   }
+
+   </font><font class="comment">// Result file:
+</font><font class="text">   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; file_name = output_file_name( ICYCLE, </font><font class="string">&quot;&quot;</font><font class="text"> ) ;
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ios_base</font><font class="text">::openmode file_mode =
+      ( BINARY ? </font><font class="kw2">std</font><font class="text">::ios::out|</font><font class="kw2">std</font><font class="text">::ios::binary : </font><font class="kw2">std</font><font class="text">::ios::out ) ;
+   </font><font class="kw2">std</font><font class="text">::ofstream file( file_name.c_str(), file_mode ) ; 
+   </font><font class="kw1">if</font><font class="text">( file.fail() || !file.is_open() )
+   {
+      </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain(
+	 </font><font class="string">&quot;*** PEL_FieldViewWriter error:\n&quot;
+</font><font class="text">         </font><font class="string">&quot;    unable to create the FieldView output file: &quot;</font><font class="text">+file_name ) ;
+   }
+
+   </font><font class="comment">// Header:
+</font><font class="text">   write_result_header( file ) ;
+
+   </font><font class="comment">// Contants:
+</font><font class="text">   write_constants( exp, file ) ;
+
+   </font><font class="comment">// Fields:
+</font><font class="text">   write_fields( exp, file ) ;
+
+   file.close() ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_FieldViewWriter</font><font class="text">:: write_meshing( </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_FieldViewWriter::  write_meshing&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( exp != 0 ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( DIM !=  </font><font class="kw3">PEL</font><font class="text">::bad_index()) ;
+
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; file_name = output_file_name( ICYCLE, </font><font class="string">&quot;_grid&quot;</font><font class="text"> ) ;
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ios_base</font><font class="text">::openmode file_mode =
+      ( BINARY ? </font><font class="kw2">std</font><font class="text">::ios::out|</font><font class="kw2">std</font><font class="text">::ios::binary : </font><font class="kw2">std</font><font class="text">::ios::out ) ;
+   </font><font class="kw2">std</font><font class="text">::ofstream file( file_name.c_str(), file_mode ) ; 
+   </font><font class="kw1">if</font><font class="text">( file.fail() || !file.is_open() )
+   {
+      </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain(
+	 </font><font class="string">&quot;*** PEL_FieldViewWriter error:\n&quot;
+</font><font class="text">         </font><font class="string">&quot;    unable to create the FieldView output file: &quot;</font><font class="text">+file_name ) ;
+   }
+
+   </font><font class="comment">// Header:
+</font><font class="text">   write_meshing_header( file ) ;
+
+   </font><font class="comment">// Boundary colors:
+</font><font class="text">   </font><font class="kw2">size_t</font><font class="text"> nb_bounds = 0 ;
+   </font><font class="kw3">size_t_vector</font><font class="text"> db_color_idx(0) ;
+   write_bound_colors( exp, nb_bounds, db_color_idx, file ) ;
+
+   </font><font class="comment">// Vertices:
+</font><font class="text">   write_vertices( exp, file ) ;
+
+   </font><font class="comment">// Bounds:
+</font><font class="text">   write_boundaries( exp, nb_bounds, db_color_idx, file ) ;
+
+   </font><font class="comment">// Cells:
+</font><font class="text">   write_cells( exp, file ) ;
+   
+   file.close() ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp;
+</font><font class="kw3">PEL_FieldViewWriter</font><font class="text">:: output_file_name( </font><font class="kw2">size_t</font><font class="text"> cycle, 
+                                        </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; add_string ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_FieldViewWriter:: output_file_name&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> result ;
+
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> tmp ;
+   tmp &lt;&lt; cycle  ;
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> nb_string = tmp.str() ;
+   
+   result = FILE_BASENAME+add_string+</font><font class="string">&quot;_00000&quot;</font><font class="text"> ;
+   result.replace( result.length()-nb_string.length(), 
+                   nb_string.length(),
+                   nb_string ) ;
+   result += FILE_EXTENSION ;
+   
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_FieldViewWriter</font><font class="text">:: write_meshing_header( </font><font class="kw2">std</font><font class="text">::ofstream&amp; file ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_FieldViewWriter:: write_meshing_header&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( file ) ;
+
+   </font><font class="comment">/* Output the magic number. */
+</font><font class="text">   </font><font class="kw1">if</font><font class="text">( BINARY ) write_data( (</font><font class="kw1">int</font><font class="text">) FV_MAGIC, file ) ;
+   
+   </font><font class="comment">/* Output file header and version number. */
+</font><font class="text">   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text"> head = ( BINARY ? </font><font class="string">&quot;FIELDVIEW&quot;</font><font class="text"> : </font><font class="string">&quot;FIELDVIEW_Grids&quot;</font><font class="text"> ) ;
+   write_str_data( head, file ) ;
+
+   </font><font class="comment">/* This version of the FIELDVIEW unstructured file is &quot;3.0&quot; */
+</font><font class="text">   IBUFF2(0)=3 ; IBUFF2(1)=0 ;
+   write_data( IBUFF2, file ) ;
+   write_data_endl( file ) ;
+   
+   </font><font class="comment">/* Comments */
+</font><font class="text">   write_data_endl( file ) ;
+   write_comment( </font><font class="string">&quot;File generated by PELICANS for FieldView post-processing&quot;</font><font class="text">,
+                  file ) ;
+   write_comment( </font><font class="string">&quot;Grid file&quot;</font><font class="text">, file ) ;
+   write_data_endl( file ) ;
+   
+   
+   </font><font class="comment">// Nb grids
+</font><font class="text">   </font><font class="kw1">int</font><font class="text"> </font><font class="kw1">const</font><font class="text"> nb_grids = 1 ;
+   </font><font class="kw1">if</font><font class="text">( BINARY )
+   {
+      </font><font class="comment">/* File type code - new in version 2.7 */
+</font><font class="text">      write_data( FV_GRIDS_FILE, file ) ;
+      
+      </font><font class="comment">/* Reserved field, always write a zero - new in version 2.6 */
+</font><font class="text">      write_data( (</font><font class="kw1">int</font><font class="text">) 0, file ) ;
+      
+      </font><font class="comment">/* Number of grids */
+</font><font class="text">      write_data( nb_grids, file ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      write_str_data( </font><font class="string">&quot;Grids&quot;</font><font class="text">, file ) ;
+      write_data( nb_grids, file ) ;
+      write_data_endl( file ) ;
+      write_data_endl( file ) ;
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_FieldViewWriter</font><font class="text">:: write_bound_colors( </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp,
+                                          </font><font class="kw2">size_t</font><font class="text">&amp; nb_bounds,
+                                          </font><font class="kw3">size_t_vector</font><font class="text">&amp; db_color_idx,
+                                          </font><font class="kw2">std</font><font class="text">::ofstream&amp; file ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_FieldViewWriter:: write_bound_colors&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( exp != 0 ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( db_color_idx.size() == 0 ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( file ) ;
+   
+   </font><font class="kw3">intArray2D</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; face2cell = exp-&gt;intArray2D_data( </font><font class="string">&quot;face2cell&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">stringVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; colors = exp-&gt;stringVector_data( </font><font class="string">&quot;color_table&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">intVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; face2col = exp-&gt;intVector_data( </font><font class="string">&quot;face_color&quot;</font><font class="text"> ) ;
+   </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> nb_faces = face2col.size() ;
+
+   nb_bounds = 0 ;
+   </font><font class="kw2">size_t</font><font class="text"> nb_bd_colors = 0 ;
+   </font><font class="kw3">stringVector</font><font class="text"> bd_colors(0) ;
+   db_color_idx.resize( colors.size() ) ;
+   db_color_idx.</font><font class="kw2">set</font><font class="text">( </font><font class="kw3">PEL</font><font class="text">::bad_index() ) ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> iface=0 ; iface&lt;nb_faces ; ++iface )
+   {
+      </font><font class="kw1">if</font><font class="text">( face2cell(1,iface) == index_for_trash() )
+      {
+         </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> bd_col = face2col(iface) ;
+         </font><font class="kw1">if</font><font class="text">( db_color_idx(bd_col) == </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+         {
+            db_color_idx(bd_col) = nb_bd_colors ;
+            bd_colors.append( colors(bd_col) ) ;
+            ++nb_bd_colors ;
+         }
+         ++nb_bounds ;
+      }
+   }
+
+   </font><font class="kw1">if</font><font class="text">( !BINARY ) write_str_data( </font><font class="string">&quot;Boundary Table&quot;</font><font class="text">, file ) ;
+   write_data( (</font><font class="kw1">int</font><font class="text">) nb_bd_colors, file ) ;
+   write_data_endl( file ) ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> icol=0 ; icol&lt;nb_bd_colors ; ++icol )
+   {
+      </font><font class="kw1">if</font><font class="text">( BINARY )
+      {
+         IBUFF2(0) = 0 ; IBUFF2(1) = 0 ;
+         write_data( IBUFF2, file ) ;
+      }
+      </font><font class="kw1">else
+</font><font class="text">      {
+         IBUFF3(0) = 0 ; IBUFF3(1) = 0 ; IBUFF3(2) = 0 ;
+         write_data( IBUFF3, file ) ;
+         write_str_data( </font><font class="string">&quot; &quot;</font><font class="text">, file ) ;
+      }
+      write_str_data( bd_colors(icol), file ) ;
+      write_data_endl( file ) ;
+   }
+   write_data_endl( file ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_FieldViewWriter</font><font class="text">:: write_vertices( </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp,
+                                      </font><font class="kw2">std</font><font class="text">::ofstream&amp; file ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_FieldViewWriter:: write_vertices&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( exp != 0 ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( file ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( DIM == 2 || DIM == 3 ) ;
+
+   </font><font class="kw1">double</font><font class="text"> </font><font class="kw1">const</font><font class="text"> epsilon = 1.e-5 ;
+
+   </font><font class="kw3">doubleArray2D</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; vertices = exp-&gt;doubleArray2D_data( </font><font class="string">&quot;vertices&quot;</font><font class="text"> ) ;
+   </font><font class="kw1">int</font><font class="text"> </font><font class="kw1">const</font><font class="text"> nb_verts = vertices.index_bound( 1 ) ;
+   </font><font class="kw1">int</font><font class="text"> </font><font class="kw1">const</font><font class="text"> nb_fv_verts = ( DIM == 3 ? nb_verts : 2*nb_verts ) ;
+   </font><font class="kw1">if</font><font class="text">( BINARY )
+   {
+      IBUFF2(0) = FV_NODES ; IBUFF2(1) = nb_fv_verts ;
+      write_data( IBUFF2, file ) ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> ic=0 ; ic&lt;3 ; ic++ )
+      {
+         </font><font class="kw3">doubleVector</font><font class="text"> coords( nb_fv_verts ) ;
+         </font><font class="kw1">if</font><font class="text">( DIM == 3 )
+         {
+            vertices.extract_section( 0, ic, coords ) ;
+         }
+         </font><font class="kw1">else
+</font><font class="text">         {
+            </font><font class="kw1">if</font><font class="text">( ic == 2 )
+            {
+               </font><font class="kw1">for</font><font class="text">( </font><font class="kw1">int</font><font class="text"> i=0 ; i&lt;nb_verts ; ++i )
+               {
+                  coords(i) = 0. ;
+                  coords(i+nb_verts) = epsilon ;
+               }
+            }
+            </font><font class="kw1">else
+</font><font class="text">            {
+               </font><font class="kw1">for</font><font class="text">( </font><font class="kw1">int</font><font class="text"> i=0 ; i&lt;nb_verts ; ++i )
+               {
+                  </font><font class="kw1">double</font><font class="text"> </font><font class="kw1">const</font><font class="text"> xi = vertices( ic, i ) ;
+                  coords(i) = xi ;
+                  coords(i+nb_verts) = xi ;
+               }
+            }
+         }
+         write_data( coords, file ) ;
+      }
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      write_str_data( </font><font class="string">&quot;Nodes&quot;</font><font class="text">, file ) ;
+      write_data( nb_fv_verts, file ) ;
+      write_data_endl( file ) ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw1">int</font><font class="text"> i=0 ; i&lt;nb_verts ; ++i )
+      {
+         write_data( vertices(0,i), file ) ;
+         write_data( vertices(1,i), file ) ;
+         </font><font class="kw1">double</font><font class="text"> </font><font class="kw1">const</font><font class="text"> z = ( DIM == 3 ? vertices(2,i) : 0. ) ;
+         write_data( z, file ) ;
+         write_data_endl( file ) ;
+      }
+      </font><font class="kw1">if</font><font class="text">( DIM == 2 )
+      {
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw1">int</font><font class="text"> i=0 ; i&lt;nb_verts ; ++i )
+         {
+            write_data( vertices(0,i), file ) ;
+            write_data( vertices(1,i), file ) ;
+            write_data( epsilon, file ) ;
+            write_data_endl( file ) ;
+         }
+      }
+      write_data_endl( file ) ;
+   }   
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_FieldViewWriter</font><font class="text">:: write_boundaries( </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp,
+                                        </font><font class="kw2">size_t</font><font class="text"> nb_bounds,
+                                        </font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; db_color_idx,
+                                        </font><font class="kw2">std</font><font class="text">::ofstream&amp; file ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_FieldViewWriter:: write_boundaries&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( exp != 0 ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( file ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( DIM == 2 || DIM == 3 ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> nb_verts =
+      exp-&gt;doubleArray2D_data( </font><font class="string">&quot;vertices&quot;</font><font class="text"> ).index_bound( 1 ) ;
+   </font><font class="kw3">intVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; face_nb_verts = exp-&gt;intVector_data( </font><font class="string">&quot;face_nb_vertices&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">intArray2D</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; face2vertex = exp-&gt;intArray2D_data( </font><font class="string">&quot;face2vertex&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">intArray2D</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; face2cell = exp-&gt;intArray2D_data( </font><font class="string">&quot;face2cell&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">intVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; face2col = exp-&gt;intVector_data( </font><font class="string">&quot;face_color&quot;</font><font class="text"> ) ;
+   </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> nb_faces = face2col.size() ;
+
+   </font><font class="kw1">if</font><font class="text">( !BINARY )
+   {
+      write_str_data( </font><font class="string">&quot;Boundary Faces&quot;</font><font class="text">, file ) ;
+      write_data( (</font><font class="kw1">int</font><font class="text">) nb_bounds, file ) ;
+      write_data_endl( file ) ;
+   }
+
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> iface=0 ; iface&lt;nb_faces ; ++iface )
+   {
+      </font><font class="kw1">if</font><font class="text">( face2cell(1,iface) == index_for_trash() )
+      {
+         </font><font class="kw1">int</font><font class="text"> </font><font class="kw1">const</font><font class="text"> bd_idx = (</font><font class="kw1">int</font><font class="text">) db_color_idx( face2col( iface ) )+1 ;
+         </font><font class="kw1">if</font><font class="text">( BINARY )
+         {
+            IBUFF3(0) = FV_FACES ;
+            IBUFF3(1) = bd_idx ;
+            IBUFF3(2) = 1 ;
+            write_data( IBUFF3, file ) ;
+         }
+         </font><font class="kw1">else
+</font><font class="text">         {
+            write_data( bd_idx, file ) ;
+         }
+         </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> f_nb_verts = face_nb_verts(iface) ;
+         </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> fv_f_nb_verts = ( DIM == 3 ? f_nb_verts : 4 ) ;
+         </font><font class="kw1">if</font><font class="text">( DIM == 3 )
+         {
+            </font><font class="kw1">const</font><font class="text"> </font><font class="kw1">int</font><font class="text">* pel2fv = 0 ;
+            </font><font class="kw1">if</font><font class="text">( f_nb_verts==3 )
+            {
+               pel2fv = PEL2FV_TRIA ;
+            }
+            </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( f_nb_verts==4 )
+            {
+               pel2fv = PEL2FV_QUAD ;
+            }
+            </font><font class="kw1">else
+</font><font class="text">            {
+               raise_internal_error(
+                  </font><font class="string">&quot;In 3D, triangle or quadrangle is expected as boundary&quot;</font><font class="text"> ) ;
+            }
+            IBUFF4(3) = 0 ;
+            </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> iv=0 ; iv&lt;f_nb_verts ; ++iv )
+            {
+               IBUFF4(iv) = face2vertex( pel2fv[iv], iface )+1 ;
+            }
+         }
+         </font><font class="kw1">else
+</font><font class="text">         {
+            </font><font class="kw1">if</font><font class="text">( f_nb_verts != 2 )
+            {
+               raise_internal_error(
+                  </font><font class="string">&quot;In 2D, segment is expected as boundary&quot;</font><font class="text"> ) ;
+            }
+            IBUFF4(0) = face2vertex( 0, iface )+1 ;
+            IBUFF4(1) = face2vertex( 1, iface )+1 ;
+            IBUFF4(2) = face2vertex( 1, iface )+1+nb_verts ;
+            IBUFF4(3) = face2vertex( 0, iface )+1+nb_verts ;
+         }
+         </font><font class="kw1">if</font><font class="text">( BINARY )
+         {
+            write_data( IBUFF4, file ) ;
+         }
+         </font><font class="kw1">else
+</font><font class="text">         {
+            write_data( (</font><font class="kw1">int</font><font class="text">) fv_f_nb_verts, file ) ;
+            </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> iv=0 ; iv&lt;fv_f_nb_verts ; ++iv )
+            {
+               write_data( IBUFF4( iv), file ) ;
+            }
+         }
+         write_data_endl( file ) ;
+      }
+   }
+   write_data_endl( file ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_FieldViewWriter</font><font class="text">:: write_cells( </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp,
+                                   </font><font class="kw2">std</font><font class="text">::ofstream&amp; file ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_FieldViewWriter:: write_cells&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( exp != 0 ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( file ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( DIM == 2 || DIM == 3 ) ;
+   
+   </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> nb_verts =
+                       exp-&gt;doubleArray2D_data( </font><font class="string">&quot;vertices&quot;</font><font class="text"> ).index_bound( 1 ) ;
+   </font><font class="kw3">intVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; cell_nb_verts = exp-&gt;intVector_data( </font><font class="string">&quot;cell_nb_vertices&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">intArray2D</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; cell2vertex = exp-&gt;intArray2D_data( </font><font class="string">&quot;cell2vertex&quot;</font><font class="text"> ) ;
+   </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> nb_cells = cell_nb_verts.size() ;
+   
+   </font><font class="kw1">if</font><font class="text">( BINARY )
+   {
+      IBUFF5.</font><font class="kw2">set</font><font class="text">(0) ;
+      IBUFF5(0) = FV_ELEMENTS ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> icell=0 ; icell&lt;nb_cells ; ++icell )
+      {
+         </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> c_nb_verts = cell_nb_verts(icell) ;
+         </font><font class="kw1">if</font><font class="text">( DIM == 3 &amp;&amp; c_nb_verts == 4 ) </font><font class="comment">/* tet count */
+</font><font class="text">         {
+            IBUFF5(TETRA_IDX) += 1 ;
+         }
+         </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( DIM == 3 &amp;&amp; c_nb_verts == 8 ) </font><font class="comment">/* hex count */
+</font><font class="text">         {
+            IBUFF5(HEXA_IDX) += 1 ;
+         }
+         </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( DIM == 2 &amp;&amp; c_nb_verts == 3 ) </font><font class="comment">/* prism count */
+</font><font class="text">         {
+            IBUFF5(PRISM_IDX) += 1 ;
+         }
+         </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( DIM == 2 &amp;&amp; c_nb_verts == 4 ) </font><font class="comment">/* hex count */
+</font><font class="text">         {
+            IBUFF5(HEXA_IDX) += 1 ;
+         }
+         </font><font class="kw1">else
+</font><font class="text">         {
+            raise_internal_error( </font><font class="string">&quot;invalid cell&quot;</font><font class="text"> ) ;
+         }
+      }
+      write_data( IBUFF5, file ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      write_str_data( </font><font class="string">&quot;Elements&quot;</font><font class="text">, file ) ;
+      write_data_endl( file ) ;
+   }
+   
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> icell=0 ; icell&lt;nb_cells ; ++icell )
+   {
+      </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> c_nb_verts = cell_nb_verts(icell) ;
+      </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> fv_c_nb_verts = ( DIM == 3 ? c_nb_verts : 2*c_nb_verts ) ;
+      </font><font class="kw1">int</font><font class="text"> elem = 0 ;
+      </font><font class="kw1">const</font><font class="text"> </font><font class="kw1">int</font><font class="text">* pel2fv = 0 ;
+      </font><font class="kw1">if</font><font class="text">( DIM == 2 &amp;&amp; c_nb_verts == 3 )
+      {
+         elem = PRISM_IDX ;
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( DIM == 2 &amp;&amp; c_nb_verts == 4 )
+      {
+         elem = HEXA_IDX ;
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( DIM == 3 &amp;&amp; c_nb_verts == 4 )
+      {
+         elem = TETRA_IDX ;
+         pel2fv = PEL2FV_TETRA ;
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( DIM == 3 &amp;&amp; c_nb_verts == 8 )
+      {
+         elem = HEXA_IDX ;
+         pel2fv = PEL2FV_HEXA ;
+      }
+      </font><font class="kw1">else
+</font><font class="text">      {
+         raise_internal_error( </font><font class="string">&quot;Unexpected cell&quot;</font><font class="text"> ) ;
+      }
+      </font><font class="kw1">if</font><font class="text">( BINARY )
+      {
+         </font><font class="kw1">unsigned</font><font class="text"> </font><font class="kw1">int</font><font class="text"> header = (</font><font class="kw1">unsigned</font><font class="text"> </font><font class="kw1">int</font><font class="text">) fv_encode_elem_header( elem ) ;
+         file.write( (</font><font class="kw1">const</font><font class="text"> </font><font class="kw1">char</font><font class="text">*)&amp;header, </font><font class="kw1">sizeof</font><font class="text">(header) ) ;
+      }
+      </font><font class="kw1">else
+</font><font class="text">      {
+         write_data( elem, file ) ;
+         write_data( (</font><font class="kw1">int</font><font class="text">) 1, file ) ;
+         write_data_endl( file ) ;
+      }
+      </font><font class="kw3">intVector</font><font class="text"> conn( fv_c_nb_verts ) ;
+      </font><font class="kw1">if</font><font class="text">( DIM == 3 )
+      {
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> iv=0 ; iv&lt;fv_c_nb_verts ; ++iv )
+         {
+            conn( iv ) = cell2vertex( pel2fv[iv], icell )+1 ;
+         }
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( c_nb_verts == 3 )
+      {
+         conn(0) = cell2vertex( 0, icell )+1 ;
+         conn(1) = cell2vertex( 0, icell )+1+nb_verts ;
+         conn(2) = cell2vertex( 1, icell )+1+nb_verts ;
+         conn(3) = cell2vertex( 1, icell )+1 ;
+         conn(4) = cell2vertex( 2, icell )+1+nb_verts ;
+         conn(5) = cell2vertex( 2, icell )+1 ;
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( c_nb_verts == 4 )
+      {
+         conn(0) = cell2vertex( 0, icell )+1 ;
+         conn(1) = cell2vertex( 1, icell )+1 ;
+         conn(2) = cell2vertex( 3, icell )+1 ;
+         conn(3) = cell2vertex( 2, icell )+1 ;
+         conn(4) = cell2vertex( 0, icell )+1+nb_verts ;
+         conn(5) = cell2vertex( 1, icell )+1+nb_verts ;
+         conn(6) = cell2vertex( 3, icell )+1+nb_verts ;
+         conn(7) = cell2vertex( 2, icell )+1+nb_verts ;
+      }      
+      write_data( conn, file ) ;
+      write_data_endl( file ) ;
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_FieldViewWriter</font><font class="text">:: write_result_header( </font><font class="kw2">std</font><font class="text">::ofstream&amp; file ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_FieldViewWriter:: write_result_header&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( file ) ;
+
+   </font><font class="comment">/* Output the magic number. */
+</font><font class="text">   </font><font class="kw1">if</font><font class="text">( BINARY ) write_data( (</font><font class="kw1">int</font><font class="text">) FV_MAGIC, file ) ;
+   
+   </font><font class="comment">/* Output file header and version number. */
+</font><font class="text">   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text"> head = ( BINARY ? </font><font class="string">&quot;FIELDVIEW&quot;</font><font class="text"> : </font><font class="string">&quot;FIELDVIEW_Results&quot;</font><font class="text"> ) ;
+   write_str_data( head, file ) ;
+
+   </font><font class="comment">/* This version of the FIELDVIEW unstructured file is &quot;3.0&quot; */
+</font><font class="text">   IBUFF2(0)=3 ; IBUFF2(1)=0 ;
+   write_data( IBUFF2, file ) ;
+   write_data_endl( file ) ;
+
+   </font><font class="comment">/* Comments */
+</font><font class="text">   write_data_endl( file ) ;
+   write_comment( </font><font class="string">&quot;File generated by PELICANS for FieldView post-processing&quot;</font><font class="text">,
+                  file ) ;
+   write_comment( </font><font class="string">&quot;Result file&quot;</font><font class="text">, file ) ;
+   write_data_endl( file ) ;
+   
+   
+   </font><font class="kw1">if</font><font class="text">( BINARY )
+   {
+      </font><font class="comment">/* File type code - new in version 2.7 */
+</font><font class="text">      write_data( FV_RESULTS_FILE, file ) ;
+
+      </font><font class="comment">/* Reserved field, always write a zero - new in version 2.6 */
+</font><font class="text">      write_data( (</font><font class="kw1">int</font><font class="text">) 0, file ) ;
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_FieldViewWriter</font><font class="text">:: write_constants( </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp,
+                                       </font><font class="kw2">std</font><font class="text">::ofstream&amp; file ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_FieldViewWriter:: write_constants&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( exp != 0 ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( file ) ;
+
+   </font><font class="kw1">if</font><font class="text">( !BINARY )
+   {
+      write_str_data(</font><font class="string">&quot;Constants&quot;</font><font class="text">, file ) ;
+      write_data_endl( file ) ;
+   }
+
+   DBUFF4.</font><font class="kw2">set</font><font class="text">(0.) ; </font><font class="comment">// time, fsmach, alpha and re.
+</font><font class="text">   </font><font class="kw1">if</font><font class="text">( exp-&gt;has_module( </font><font class="string">&quot;variables&quot;</font><font class="text"> ) )
+   {
+      </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* se = exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;variables&quot;</font><font class="text"> ) ;
+      </font><font class="kw1">if</font><font class="text">( se-&gt;has_entry( </font><font class="string">&quot;TIME&quot;</font><font class="text"> ) )
+      {
+         DBUFF4(0) = se-&gt;double_data( </font><font class="string">&quot;TIME&quot;</font><font class="text"> ) ;
+      }
+      se-&gt;destroy() ; se = 0 ;
+   }
+   write_data( DBUFF4, file ) ;
+   write_data_endl( file ) ;
+   write_data_endl( file ) ;
+
+   </font><font class="comment">// Nb grids:
+</font><font class="text">   </font><font class="kw1">int</font><font class="text"> </font><font class="kw1">const</font><font class="text"> nb_grids = 1 ;
+   </font><font class="kw1">if</font><font class="text">( BINARY )
+   {
+      write_data( nb_grids, file ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      write_str_data( </font><font class="string">&quot;Grids&quot;</font><font class="text">, file ) ;
+      write_data( nb_grids, file ) ;
+      write_data_endl( file ) ;
+      write_data_endl( file ) ;
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_FieldViewWriter</font><font class="text">:: write_fields( </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp,
+                                    </font><font class="kw2">std</font><font class="text">::ofstream&amp; file ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_FieldViewWriter:: write_fields&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( exp != 0 ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( file ) ;
+
+   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* se = 0 ;
+   </font><font class="kw1">if</font><font class="text">( exp-&gt;has_module( </font><font class="string">&quot;fields&quot;</font><font class="text"> ) )
+      se = exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;fields&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">int</font><font class="text"> nb_vars = 0 ;
+   </font><font class="kw1">int</font><font class="text"> nb_verts = 0 ;
+   </font><font class="kw3">stringVector</font><font class="text"> var_names( 0 ) ;
+   </font><font class="kw1">if</font><font class="text">( se != 0 )
+   {
+      </font><font class="kw1">for</font><font class="text">( se-&gt;start_module_iterator() ;
+           se-&gt;is_valid_module() ;
+           se-&gt;go_next_module() )
+      {
+         </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fexp = se-&gt;create_subexplorer( 0 ) ;
+         </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; name = fexp-&gt;string_data( </font><font class="string">&quot;name&quot;</font><font class="text"> ) ;
+         </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; location = fexp-&gt;string_data( </font><font class="string">&quot;location&quot;</font><font class="text"> ) ;
+         </font><font class="kw1">if</font><font class="text">( location != </font><font class="string">&quot;at_vertices&quot;</font><font class="text"> )
+         {
+            raise_field_location_error( name, location, </font><font class="string">&quot;at_vertices&quot;</font><font class="text"> ) ;
+         }
+         </font><font class="kw3">doubleArray2D</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; X = fexp-&gt;doubleArray2D_data( </font><font class="string">&quot;value&quot;</font><font class="text"> ) ;
+         </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> nb_comps = X.index_bound(0) ;
+         nb_verts = X.index_bound(1) ;
+         </font><font class="kw1">if</font><font class="text">( DIM == 2 ) nb_verts *= 2 ;
+         </font><font class="kw1">if</font><font class="text">( nb_comps == 1 )
+         {
+            nb_vars += 1 ;
+            var_names.append( name ) ;
+         }
+         </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( nb_comps == DIM )
+         {
+            nb_vars += 3 ;
+            var_names.append( name+</font><font class="string">&quot;_0; &quot;</font><font class="text">+name ) ;
+            var_names.append( name+</font><font class="string">&quot;_1&quot;</font><font class="text"> ) ;
+            var_names.append( name+</font><font class="string">&quot;_2&quot;</font><font class="text"> ) ;
+         }
+         </font><font class="kw1">else
+</font><font class="text">         {
+            nb_vars += nb_comps ;
+            </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> ic=0 ; ic&lt;nb_comps ; ++ic )
+            {
+               </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> tmp ;
+               tmp &lt;&lt; ic ;
+               var_names.append( name+</font><font class="string">&quot;_&quot;</font><font class="text">+tmp.str() ) ;
+            }
+         }
+         fexp-&gt;destroy() ; fexp = 0 ;
+      }
+   }
+   
+   </font><font class="kw1">if</font><font class="text">( !BINARY ) write_str_data( </font><font class="string">&quot;Variable Names&quot;</font><font class="text">, file ) ;
+   write_data( nb_vars, file ) ;
+   write_data_endl( file ) ;
+   write_data( var_names, file ) ;
+   write_data_endl( file ) ;
+   
+   </font><font class="kw1">if</font><font class="text">( !BINARY ) write_str_data( </font><font class="string">&quot;Boundary Variable Names&quot;</font><font class="text">, file ) ;
+   write_data( (</font><font class="kw1">int</font><font class="text">) 0, file ) ;
+   write_data_endl( file ) ;
+   write_data_endl( file ) ;
+
+   </font><font class="kw1">if</font><font class="text">( se != 0 )
+   {
+      </font><font class="kw1">if</font><font class="text">( BINARY )
+      {
+         IBUFF2(0) = FV_NODES ; IBUFF2(1) = nb_verts ;
+         write_data( IBUFF2, file ) ;
+      }
+      </font><font class="kw1">else
+</font><font class="text">      {
+         write_str_data( </font><font class="string">&quot;Nodes&quot;</font><font class="text">, file ) ;
+         write_data( nb_verts, file ) ;
+         write_data_endl( file ) ;
+         write_data_endl( file ) ;
+      }
+
+      </font><font class="kw1">if</font><font class="text">( BINARY )
+      {
+         write_data( FV_VARIABLES, file ) ;
+      }
+      </font><font class="kw1">else
+</font><font class="text">      {
+         write_str_data( </font><font class="string">&quot;Variables&quot;</font><font class="text">, file ) ;
+         write_data_endl( file ) ;
+      }
+      
+      </font><font class="kw3">doubleVector</font><font class="text"> x( nb_verts ) ;
+      </font><font class="kw2">size_t</font><font class="text"> ivar = 0 ;
+      </font><font class="kw1">for</font><font class="text">( se-&gt;start_module_iterator() ;
+           se-&gt;is_valid_module() ;
+           se-&gt;go_next_module() )
+      {
+         </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fexp = se-&gt;create_subexplorer( 0 ) ;
+         </font><font class="kw3">doubleArray2D</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; X = fexp-&gt;doubleArray2D_data( </font><font class="string">&quot;value&quot;</font><font class="text"> ) ;
+         </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> nb_comps = X.index_bound(0) ;
+         </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> nb_vs = X.index_bound(1) ;
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> ic=0 ; ic&lt;nb_comps ; ++ic )
+         {
+            </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;nb_vs ; ++i )
+            {
+               x(i) = X(ic,i) ;
+               </font><font class="kw1">if</font><font class="text">( DIM == 2 ) x(i+nb_vs) = X(ic,i) ;
+            }
+            write_comment( var_names(ivar++), file ) ;
+            write_data( x, file ) ;
+            write_data_endl( file ) ;
+            write_data_endl( file ) ;
+         }
+         </font><font class="kw1">if</font><font class="text">( nb_comps == DIM &amp;&amp; DIM == 2 )
+         {
+            x.</font><font class="kw2">set</font><font class="text">( 0. ) ;
+            write_comment( var_names(ivar++), file ) ;
+            write_data( x, file ) ;
+            write_data_endl( file ) ;
+            write_data_endl( file ) ;
+         }
+         fexp-&gt;destroy() ; fexp = 0 ;
+      }
+      </font><font class="kw1">if</font><font class="text">( BINARY )
+      {
+         write_data( FV_BNDRY_VARS, file ) ;
+      }
+   }
+   
+   </font><font class="kw1">if</font><font class="text">( se != 0 ) se-&gt;destroy() ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------
+</font><font class="kw1">int
+</font><font class="kw3">PEL_FieldViewWriter</font><font class="text">:: fv_encode_elem_header( </font><font class="kw1">int</font><font class="text"> elem ) </font><font class="kw1">const
+</font><font class="comment">//-----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_FieldViewWriter:: fv_encode_elem_header&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( elem == TETRA_IDX ||
+              elem == HEXA_IDX ||
+              elem == PRISM_IDX ||
+              elem == PYRA_IDX ) ;
+
+   </font><font class="kw1">int</font><font class="text"> result = 0 ;
+   </font><font class="kw1">switch</font><font class="text">( elem )
+   {
+      </font><font class="kw1">case</font><font class="text"> TETRA_IDX:
+         result = ( 1 &lt;&lt; ELEM_TYPE_BIT_SHIFT ) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> PYRA_IDX:
+         result = ( 2 &lt;&lt; ELEM_TYPE_BIT_SHIFT ) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> PRISM_IDX:
+         result = ( 3 &lt;&lt; ELEM_TYPE_BIT_SHIFT ) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> HEXA_IDX:
+         result = ( 4 &lt;&lt; ELEM_TYPE_BIT_SHIFT ) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">default</font><font class="text">:
+         raise_internal_error( </font><font class="string">&quot;Unexpected element&quot;</font><font class="text"> ) ;
+   }
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_FieldViewWriter</font><font class="text">:: write_str_data( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; val,
+                                      </font><font class="kw2">std</font><font class="text">::ofstream&amp; file ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_FieldViewWriter:: write_str_data(string)&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">const</font><font class="text"> </font><font class="kw2">size_t</font><font class="text"> ss = </font><font class="kw1">sizeof</font><font class="text">(</font><font class="kw1">char</font><font class="text">) ;
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">char</font><font class="text"> cbuf[80] ;
+   
+   </font><font class="kw1">if</font><font class="text">( !BINARY )
+   {
+      file &lt;&lt; val ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> len = val.size() ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i = 0 ; i &lt; ( len &lt; 80 ? len : 80 ) ; ++i )
+         cbuf[i] = val[i] ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i = len ; i &lt; 80 ; ++i )
+        cbuf[i] = </font><font class="string">'\0'</font><font class="text">;  </font><font class="comment">/* pad with zeros */
+</font><font class="text">      file.write( (</font><font class="kw1">const</font><font class="text"> </font><font class="kw1">char</font><font class="text">*) cbuf, 80*ss ) ;
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_FieldViewWriter</font><font class="text">:: write_data( </font><font class="kw1">int</font><font class="text"> val, </font><font class="kw2">std</font><font class="text">::ofstream&amp; file ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_FieldViewWriter:: write_data(int)&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">const</font><font class="text"> </font><font class="kw2">size_t</font><font class="text"> si = </font><font class="kw1">sizeof</font><font class="text">(</font><font class="kw1">int</font><font class="text">) ;
+   </font><font class="kw1">if</font><font class="text">( !BINARY )
+   {
+      file &lt;&lt; </font><font class="string">&quot; &quot;</font><font class="text"> &lt;&lt; val ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      file.write( (</font><font class="kw1">const</font><font class="text"> </font><font class="kw1">char</font><font class="text">*) &amp;val, si ) ;
+   }
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_FieldViewWriter</font><font class="text">:: write_data( </font><font class="kw1">double</font><font class="text"> val, </font><font class="kw2">std</font><font class="text">::ofstream&amp; file )  </font><font class="kw1">const
+</font><font class="comment">//-----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_FieldViewWriter:: write_data(double)&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">const</font><font class="text"> </font><font class="kw2">size_t</font><font class="text"> sd = </font><font class="kw1">sizeof</font><font class="text">(</font><font class="kw1">float</font><font class="text">) ;
+   </font><font class="kw1">float</font><font class="text"> fval = (</font><font class="kw1">float</font><font class="text">)val ;
+   </font><font class="kw1">if</font><font class="text">( !BINARY )
+   {
+      file &lt;&lt; </font><font class="string">&quot; &quot;</font><font class="text"> &lt;&lt; fval ;
+      </font><font class="kw1">if</font><font class="text">( (</font><font class="kw1">int</font><font class="text">) fval == fval ) file &lt;&lt; </font><font class="string">&quot;.0&quot;</font><font class="text"> ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      file.write( (</font><font class="kw1">const</font><font class="text"> </font><font class="kw1">char</font><font class="text">*) &amp;fval, sd ) ;
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_FieldViewWriter</font><font class="text">:: write_data( </font><font class="kw3">intVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; val, 
+                                  </font><font class="kw2">std</font><font class="text">::ofstream&amp; file ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_FieldViewWriter:: write_data(intVector)&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">const</font><font class="text"> </font><font class="kw2">size_t</font><font class="text"> si = </font><font class="kw1">sizeof</font><font class="text">(</font><font class="kw1">int</font><font class="text">) ;
+   </font><font class="kw1">if</font><font class="text">( !BINARY )
+   {
+      </font><font class="kw2">size_t</font><font class="text"> j=1 ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;val.size() ; ++i, ++j )
+      {
+         write_data( val(i), file ) ;
+         </font><font class="kw1">if</font><font class="text">( j == 10 )
+         {
+            file &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+            j = 0 ;
+         }
+      }
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> nb = val.size() ;
+      </font><font class="kw1">int</font><font class="text"> *dval = </font><font class="kw1">new</font><font class="text"> </font><font class="kw1">int</font><font class="text">[nb] ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;nb ; i++ )
+      {
+         dval[i] = val(i) ;
+      }      
+      file.write( (</font><font class="kw1">const</font><font class="text"> </font><font class="kw1">char</font><font class="text">*) dval, nb*si ) ;
+      </font><font class="kw1">delete</font><font class="text"> [] dval ;
+   }
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_FieldViewWriter</font><font class="text">:: write_data( </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; val, 
+                                  </font><font class="kw2">std</font><font class="text">::ofstream&amp; file ) </font><font class="kw1">const</font><font class="text"> 
+</font><font class="comment">//-----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_FieldViewWriter:: write_data(doubleVector)&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">const</font><font class="text"> </font><font class="kw2">size_t</font><font class="text"> sd = </font><font class="kw1">sizeof</font><font class="text">(</font><font class="kw1">float</font><font class="text">) ;
+   </font><font class="kw1">if</font><font class="text">( !BINARY )
+   {
+      </font><font class="kw2">size_t</font><font class="text"> j=1 ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;val.size() ; ++i, ++j )
+      {
+         write_data( val(i), file ) ;
+         </font><font class="kw1">if</font><font class="text">( j == 10 )
+         {
+            file &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+            j = 0 ;
+         }
+      }
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> nb = val.size() ;
+      </font><font class="kw1">float</font><font class="text"> *dval = </font><font class="kw1">new</font><font class="text"> </font><font class="kw1">float</font><font class="text">[nb] ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;nb ; i++ )
+      {
+         dval[i] = (</font><font class="kw1">float</font><font class="text">) val(i) ;
+      }
+      file.write( (</font><font class="kw1">const</font><font class="text"> </font><font class="kw1">char</font><font class="text">*) dval, nb*sd ) ;
+      </font><font class="kw1">delete</font><font class="text"> [] dval ;
+   }
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_FieldViewWriter</font><font class="text">:: write_data( </font><font class="kw3">stringVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; val, 
+                                  </font><font class="kw2">std</font><font class="text">::ofstream&amp; file ) </font><font class="kw1">const</font><font class="text"> 
+</font><font class="comment">//-----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_FieldViewWriter:: write_data(stringVector)&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;val.size() ; ++i )
+   {
+      write_str_data( val(i), file ) ;
+      write_data_endl( file ) ;
+   }
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_FieldViewWriter</font><font class="text">:: write_comment( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; val, 
+                                     </font><font class="kw2">std</font><font class="text">::ofstream&amp; file ) </font><font class="kw1">const
+</font><font class="comment">//-----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_FieldViewWriter:: write_comment&quot;</font><font class="text"> ) ;   
+   
+   </font><font class="kw1">if</font><font class="text">( !BINARY )
+   {
+      file &lt;&lt; </font><font class="string">&quot;! &quot;</font><font class="text"> &lt;&lt; val &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   }
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_FieldViewWriter</font><font class="text">:: write_data_endl( </font><font class="kw2">std</font><font class="text">::ofstream&amp; file ) </font><font class="kw1">const
+</font><font class="comment">//-----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_FieldViewWriter:: write_data_endl&quot;</font><font class="text"> ) ;   
+   
+   </font><font class="kw1">if</font><font class="text">( !BINARY )
+   {
+      file &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   }
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_FieldViewWriter</font><font class="text">:: raise_internal_error( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; mes ) </font><font class="kw1">const</font><font class="text"> 
+</font><font class="comment">//-----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_internal( </font><font class="string">&quot;*** PEL_FieldViewWriter error\n&quot;</font><font class="text">+mes ) ;
+}
+
+</font>
+</pre>
+</body>
+</html>

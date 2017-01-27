@@ -1,0 +1,96 @@
+
+if( nb_ranks()=1 )
+MODULE umfpack#copy
+   tested_matrix = < "gmres_M4.1.mtx" >
+   error_bound = 1.E-6
+   is_iterative = false
+   MODULE LA_Solver
+      concrete_name = "EXT_PETScSolver"
+      MODULE PETSc_Krylov_subspace_method
+         type = "preonly"
+         verbose = false
+      END MODULE PETSc_Krylov_subspace_method
+      MODULE PETSc_preconditioner
+         type = "lu"
+         pc_factor_ordering_type = "rcm"
+      END MODULE PETSc_preconditioner
+      MODULE LA_Matrix
+         concrete_name = "PETSc_SeqAIJ"
+         subtype = "umfpack"
+      END MODULE LA_Matrix
+   END MODULE LA_Solver
+   MODULE LA_Matrix
+      concrete_name = "LA_PelMatrix"         
+   END MODULE LA_Matrix
+END MODULE umfpack#copy
+
+if( nb_ranks()=1 )
+MODULE superlu_dist#copy
+   tested_matrix = < "gmres_M4.1.mtx" >
+   error_bound = 1.E-6
+   is_iterative = false
+   MODULE LA_Solver
+      concrete_name = "EXT_PETScSolver"
+      MODULE PETSc_Krylov_subspace_method
+         type = "preonly"
+         verbose = false
+      END MODULE PETSc_Krylov_subspace_method
+      MODULE PETSc_preconditioner
+         type = "lu"
+         pc_factor_ordering_type = "rcm"
+      END MODULE PETSc_preconditioner
+      MODULE LA_Matrix
+         concrete_name = "PETSc_SeqAIJ"
+         subtype = "superlu_dist"
+      END MODULE LA_Matrix
+   END MODULE LA_Solver
+   MODULE LA_Matrix
+      concrete_name = "LA_CRSmatrix"         
+   END MODULE LA_Matrix
+END MODULE superlu_dist#copy
+
+if( nb_ranks()=1 )
+MODULE umfpack#native
+   tested_matrix = < "gmres_M4.1.mtx" >
+   error_bound = 1.E-6
+   is_iterative = false
+   MODULE LA_Solver
+      concrete_name = "EXT_PETScSolver"
+      MODULE PETSc_Krylov_subspace_method
+         type = "preonly"
+         verbose = false
+      END MODULE PETSc_Krylov_subspace_method
+      MODULE PETSc_preconditioner
+         type = "lu"
+         pc_factor_ordering_type = "rcm"
+      END MODULE PETSc_preconditioner
+   END MODULE LA_Solver
+   MODULE LA_Matrix
+      concrete_name = "PETSc_SeqAIJ"
+      subtype = "umfpack"
+   END MODULE LA_Matrix
+END MODULE umfpack#native
+
+MODULE superlu_dist#native
+   tested_matrix = < "gmres_M4.1.mtx" >
+   error_bound = 1.E-6
+   is_iterative = false
+   MODULE LA_Solver
+      concrete_name = "EXT_PETScSolver"
+      MODULE PETSc_Krylov_subspace_method
+         type = "preonly"
+         verbose = false
+      END MODULE PETSc_Krylov_subspace_method
+      MODULE PETSc_preconditioner
+         type = "lu"
+         pc_factor_ordering_type = "natural"
+      END MODULE PETSc_preconditioner
+   END MODULE LA_Solver
+   MODULE LA_Matrix
+      concrete_name = "PETSc_MPIAIJ"
+      subtype = "superlu_dist"
+      o_nz = 10
+      d_nz = 10
+    END MODULE LA_Matrix
+END MODULE superlu_dist#native
+

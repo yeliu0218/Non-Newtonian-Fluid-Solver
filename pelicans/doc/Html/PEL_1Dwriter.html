@@ -1,0 +1,138 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>PEL_1Dwriter</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="PEL_1Dwriter_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="PELpack-tree.html"><span>Tree</span></a>
+    <span class=selected>Class</span>
+    <a href="PEL_1Dwriter.hh.html"><span>Header</span></a>
+    <a href="PEL_1Dwriter.cc.html"><span>Implementation</span></a>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="PELpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<br />
+<div class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></div>
+<br />
+
+
+<!-- ====== START OF CLASS DATA ======== -->
+<div id=classtitle>
+  <span class=classpath>PELbase / Data on Meshing / </span><br />
+  <span class=classname>Class  PEL_1Dwriter</span>
+</div>
+
+<br />
+
+<div id=hierarchy>
+<ul class=rootclass><li><a href="PEL_Object.html#" target="classFrame">PEL_Object</a></li>
+  <ul class=parentclass><li><a href="PEL_DataOnMeshingWriter.html#" target="classFrame">PEL_DataOnMeshingWriter</a></li>
+  <ul class=self><li>PEL_1Dwriter</li>
+</ul></ul>
+</div>
+<hr />
+<pre>
+writers for data on 1D meshings and plotting programs operating with 
+files where data are arranged in columns of numbers
+
+For each cycle required to be saved, one or two new file are created with 
+a name that follows the syntax :
+   a basename given by the entry "files_basename" in the PDE_ResultSaver
+              hierarchical data structure.
+   + "_c.1d." for fields saved "at_cell_centers", or
+     "_v.1d." for fields saved "at_vertices"
+   + a five-figure number that is incremented at each new cycle saved.
+
+a.e. with the entry PDE_ResultSaver/files_basename = "save"  the name
+of the successive output files will be :
+   save_c.1d.00001, save_v.1d.00001, save_c.1d.00002, save_v.1d.00002 ...
+
+The first column of the files save_c.1d.* contains the coordinates of the 
+cell centers, whereas the first column of the files save_v.1d.* contains 
+the coordinates of the vertices. Each other column contains the associated
+values of a component of a field.
+
+The first lines of the files save_c.1d.* and save_v.1d.* begin with 
+a # character and are intended to treated as comments by the 
+plotting program. These comment lines give the meaning of the subsequent
+columns.
+
+PUBLISHED
+</pre>
+<hr />
+<a name="method_summary"></a>
+
+<!-- ========== NEW CATEGORY ========== -->
+<table class=category cellpadding=2 cellspacing=0 rules=rows>
+  <tr class=heading><th class=name>Write</th><th class=protection>public</th></tr>
+  <tr><td colspan="2"><a href="PEL_1Dwriter.html#is_parallel_writer" target="classFrame">virtual bool is_parallel_writer( void ) const</a></td></tr>
+  <tr><td colspan="2"><a href="PEL_1Dwriter.html#write_cycle" target="classFrame">virtual void write_cycle( PEL_ModuleExplorer const* exp )</a></td></tr>
+</table>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="is_parallel_writer"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual bool is_parallel_writer(</code></td><td><code>void ) const</code></td></tr>
+</table>
+<pre>Can <span class="uid1">self</span> save distributed information in parallel context ?
+IMPLEMENTATION : false</pre>
+<br />
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="PEL_DataOnMeshingWriter.html#" target="classFrame">PEL_DataOnMeshingWriter</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="write_cycle"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual void write_cycle(</code></td><td><code><a href="PEL_ModuleExplorer.html#" target="classFrame">PEL_ModuleExplorer</a> const* <span class="uid1">exp</span> ) </code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">exp</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">exp</span></span>->name().substr( 0, 6 ) == "cycle_"</code></li>
+    <li><code><span class="uid1"><span class="uid1">exp</span></span>->has_entry( "cycle_number" )</code></li>
+    <li><code><span class="uid1"><span class="uid1">exp</span></span>->has_module( "meshing" ) ==&gt; <span class="uid1"><span class="uid1">exp</span></span>->has_entry( "meshing/nb_sp_dims" ) && <span class="uid1"><span class="uid1">exp</span></span>->has_entry( "meshing/vertices" ) && <span class="uid1"><span class="uid1">exp</span></span>->has_entry( "meshing/cell2vertex" )</code></li>
+    <li><code><span class="uid1"><span class="uid1">exp</span></span>->has_module( "integration_domain" ) ==&gt; <span class="uid1"><span class="uid1">exp</span></span>->has_entry( "integration_domain/inner_boundary" ) && <span class="uid1"><span class="uid1">exp</span></span>->has_entry( "integration_domain/polygon" )</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=overrides> Overridden from <a href="PEL_DataOnMeshingWriter.html#" target="classFrame">PEL_DataOnMeshingWriter</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,151 @@
+MODULE PEL_Application
+   
+   concrete_name = "FE_StepByStepProgression"
+
+   $DV_Center = < 1.0 1.0 >
+   $DS_Delta   = 0.3
+   $DS_epsilon = 0.1
+
+   $DS_xc = component( $DV_Center, 0 )
+   $DS_yc = component( $DV_Center, 1 )
+
+   $DS_x = component( $DV_X, 0 )
+   $DS_y = component( $DV_X, 1 )
+         
+   MODULE FE_TimeIterator
+      time_initial = 0.
+      time_end  = 1.0
+      time_step = 1.0E+8
+   END MODULE FE_TimeIterator
+
+   MODULE PDE_DomainAndFields
+      
+      verbose_level = 2
+      nb_space_dimensions = 2
+      type = "finite_element"
+
+      MODULE GE_Meshing
+         concrete_name = "GE_BoxWithBoxes"
+         vertices_coordinate_0 = regular_vector( 0.0, $IS_nb_m, 2.0 )    
+         vertices_coordinate_1 = regular_vector( 0.0, $IS_nb_m, 2.0 )
+         mesh_polyhedron = < "GE_Segment" "GE_Rectangle" >
+      END MODULE GE_Meshing
+   
+      MODULE interior_fields
+         MODULE uu
+            name = "uu"
+            nb_components = 1
+            element_name = $SS_element
+            storage_depth = 1
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = < 0.0 >
+            END MODULE DOFs_values
+            MODULE DOFs_imposed_value
+               MODULE xxx
+                  location = "on_bounds"
+                  type = "uniformly_defined"
+                  value = < 0.0 >
+               END MODULE xxx
+            END MODULE DOFs_imposed_value
+         END MODULE uu
+      END MODULE interior_fields
+
+      MODULE PDE_ResultSaver
+         writers = < "PEL_TICwriter" >
+         writing_mode = "text"
+         files_basename = "save"
+         
+         if( $SS_element = "PDE_2D_Q1isoNonConfA_4nodes" )
+         MODULE u
+            where_to_save = "at_cell_centers"
+            entry_name = "U"
+            field = "uu"
+         END MODULE u
+         
+         if( $SS_element != "PDE_2D_Q1isoNonConfA_4nodes" )
+         MODULE u
+            where_to_save = "at_vertices"
+            entry_name = "U"
+            field = "uu"
+         END MODULE u
+      END MODULE PDE_ResultSaver
+
+      if( $BS_refinement )
+      MODULE PDE_AdapterHN
+         $DS_rr = sqrt( sqr( $DS_x - $DS_xc  ) + sqr( $DS_y - $DS_yc ) )
+         refinement_indicator = ( ( $DS_rr < ( $DS_Delta+2.*$DS_epsilon ) ) &&
+                                  ( $DS_rr > ( $DS_Delta-2.*$DS_epsilon ) ) &&
+                                  ( $DS_x > 1.0 ) ) 
+      END MODULE PDE_AdapterHN
+      
+   END MODULE PDE_DomainAndFields
+   
+   MODULE FE_SetOfParameters
+      kappa = < 1.0 >
+      MODULE FE_Parameter#rhs
+         concrete_name = "FE_SpaceTimeParameter"      
+         name = "source"
+         nb_components = 1
+         value = SmoothedBubbleForce( $DV_X,
+                                      $DV_Center, $DS_Delta, $DS_epsilon )
+      END MODULE FE_Parameter#rhs
+   END MODULE FE_SetOfParameters
+   
+   MODULE FE_OneStepIteration
+
+      concrete_name = "FE_SplitSystem"
+
+      MODULE list_of_FE_OneStepIteration
+
+         MODULE FE_OneStepIteration#adapt
+            concrete_name = "FE_AdaptationStepHN"
+         END MODULE FE_OneStepIteration#adapt
+         
+         MODULE FE_OneStepIteration#pb
+            concrete_name = "AP_AdvectionDiffusion1G"
+            field = "uu"
+            level_of_field = 0
+
+            param_diffusion = "kappa"
+            param_source    = "source"
+            
+            quadrature_rule_provider = "GE_QRprovider_5"
+            MODULE LA_Matrix
+               concrete_name = "LA_PelMatrix"
+            END MODULE LA_Matrix
+            
+            MODULE LA_Solver
+               concrete_name = "LA_PreconditionedSolver"
+               MODULE LA_IterativeSolver
+                  concrete_name = "LA_CG_IS"
+                  nb_iterations_max = 2000
+                  MODULE LA_ConvergenceTest
+                     concrete_name = "LA_DefaultConvergenceTest"
+                     relative_tolerance = 1.e-12
+                     absolute_tolerance = 1.e-20
+                  END MODULE LA_ConvergenceTest
+                  verbose = false
+               END MODULE LA_IterativeSolver
+               MODULE LA_Preconditioner
+                  concrete_name = "LA_Jacobi_PC"
+                  smallest_inverted_item = 1.e-20
+               END MODULE LA_Preconditioner
+            END MODULE LA_Solver
+         END MODULE FE_OneStepIteration#pb
+         
+         MODULE FE_OneStepIteration#error
+            concrete_name = "FE_ComparatorWithAnalytic"
+            field = "uu"
+            level = 0
+            norms = vector( "L2_solution_norm", "L2_error_norm" )
+            norm_saving_names = vector( "XLDE", "XLD"   )
+            solution = SmoothedBubble( $DV_X,
+                                       $DV_Center, $DS_Delta, $DS_epsilon )
+            quadrature_rule_provider = "GE_QRprovider_5"
+         END MODULE FE_OneStepIteration#error
+      END MODULE list_of_FE_OneStepIteration
+      
+   END MODULE FE_OneStepIteration
+   
+END MODULE PEL_Application

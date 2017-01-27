@@ -1,0 +1,99 @@
+MODULE PEL_Application
+   
+   concrete_name = "PEL_TestSuite"
+   
+   MODULE with_data_deck
+      
+      MODULE PEL_ObjectTest#0
+         
+         concrete_name = "PDE_PerfLocalFE_TEST"
+
+         MODULE test#0
+            
+            MODULE PDE_DomainAndFields
+               
+               verbose_level = 0
+               nb_space_dimensions = 2
+               type = "finite_element"
+               
+               MODULE GE_Meshing
+                  concrete_name = "GE_RefinedMeshing"
+                  mesh_polyhedron = < "GE_Segment" "GE_Triangle" >
+                  MODULE list_of_GE_ReferencePolyhedronRefiner
+                     MODULE GE_ReferencePolyhedronRefiner#1
+                        concrete_name = "GE_ReferenceSquareWithTriangles"
+                        strategy = "x"
+                     END MODULE GE_ReferencePolyhedronRefiner#1
+                  END MODULE list_of_GE_ReferencePolyhedronRefiner
+                  MODULE GE_Meshing
+                     concrete_name = "GE_BoxWithBoxes"
+                     
+                     vertices_coordinate_0 = regular_vector( 0., 100, 1. )
+                     vertices_coordinate_1 = regular_vector( 0., 100, 1. )
+                     
+                     mesh_polyhedron = < "GE_Segment" "GE_Rectangle" >
+                  END MODULE GE_Meshing
+               END MODULE GE_Meshing
+               
+               MODULE decohesion
+                  type = "everywhere"
+               END MODULE decohesion
+               
+               MODULE interior_fields
+                  
+                  MODULE FIELD
+                     name = "FIELD"
+                     nb_components = 2
+                     element_name = "PDE_2D_P1_3nodes"
+                     storage_depth = 3
+                     MODULE DOFs_values
+                        type = "uniformly_defined"
+                        value = vector( 0.0, 0.0 )
+                     END MODULE DOFs_values
+                  END MODULE FIELD
+                  
+               END MODULE interior_fields
+               
+            END MODULE PDE_DomainAndFields
+            
+            MODULE cell_go_next
+               nb_repetitions = 30
+            END MODULE cell_go_next
+            
+            MODULE bound_go_next
+               nb_repetitions = 1000
+            END MODULE bound_go_next
+            
+            MODULE cell_go_i_th
+               nb_access = 1000000
+            END MODULE cell_go_i_th
+            
+            MODULE bound_go_i_th
+               nb_access = 1000000
+            END MODULE bound_go_i_th
+            
+            MODULE cell_iteration_on_IPs
+               nb_repetitions = 30
+               quadrature_rule_provider = "GE_QRprovider_5"
+               test_N = true
+               test_dN = true
+               test_N_dN = true
+               test_N_dN_d2N = false
+            END MODULE cell_iteration_on_IPs
+            
+            MODULE bound_iteration_on_IPs
+               nb_repetitions = 1000
+               quadrature_rule_provider = "GE_QRprovider_5"
+               test_N = true
+               test_dN = true
+               test_N_dN = true
+               test_N_dN_d2N = false
+            END MODULE bound_iteration_on_IPs
+            
+         END MODULE test#0
+                  
+      END MODULE PEL_ObjectTest#0
+   
+   END MODULE with_data_deck
+      
+END MODULE PEL_Application

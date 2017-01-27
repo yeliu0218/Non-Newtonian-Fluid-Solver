@@ -1,0 +1,764 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>LA_DistScatter.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="LA_DistScatter.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="LApack-tree.html"><span>Tree</span></a>
+    <a href="LA_DistScatter.html"><span>Class</span></a>
+    <a href="LA_DistScatter.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="LApack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated
+ *  reusable components, whose purpose is to simplify the task of developing
+ *  softwares of numerical mathematics and scientific computing.
+ *
+ *  This software is governed by the CeCILL-C license under French law and
+ *  abiding by the rules of distribution of free software. You can use, modify
+ *  and/or redistribute the software under the terms of the CeCILL-C license
+ *  as circulated by CEA, CNRS and INRIA at the following URL
+ *  &quot;http://www.cecill.info&quot;.
+ *
+ *  As a counterpart to the access to the source code and rights to copy,
+ *  modify and redistribute granted by the license, users are provided only
+ *  with a limited warranty and the software's author, the holder of the
+ *  economic rights, and the successive licensors have only limited liability.
+ *
+ *  In this respect, the user's attention is drawn to the risks associated
+ *  with loading, using, modifying and/or developing or reproducing the
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also
+ *  therefore means that it is reserved for developers and experienced
+ *  professionals having in-depth computer knowledge. Users are therefore
+ *  encouraged to load and test the software's suitability as regards their
+ *  requirements in conditions enabling the security of their systems and/or
+ *  data to be ensured and, more generally, to use and operate it in the same
+ *  conditions as regards security.
+ *
+ *  The fact that you are presently reading this means that you have had
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_DistScatter</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_assertions</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Communicator</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Exec</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">doubleVector</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_CRSmatrix</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_DistImplementation</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_DistMatrix</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_DistVector</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_MatrixIterator</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_PelMatrix</font><font class="text">.hh&gt;
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_DistScatter</font><font class="text">*
+</font><font class="kw3">LA_DistScatter</font><font class="text">:: create( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                         </font><font class="kw3">PEL_DistributedPartition</font><font class="text"> </font><font class="kw1">const</font><font class="text">* partition )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_DistScatter:: create&quot;</font><font class="text"> ) ;
+   PEL_CHECK_COLLECTIVE( </font><font class="kw1">true</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( partition != 0 ) ;
+
+   </font><font class="kw3">LA_DistScatter</font><font class="text">* result = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">LA_DistScatter</font><font class="text">( a_owner, partition ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;owner() == a_owner ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;distribution()-&gt;is_compatible( partition ) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;size() == 0 ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_DistScatter</font><font class="text">:: </font><font class="kw3">LA_DistScatter</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                 </font><font class="kw3">PEL_DistributedPartition</font><font class="text"> </font><font class="kw1">const</font><font class="text">* partition )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">LA_Scatter</font><font class="text">( a_owner )
+   , DIST( </font><font class="kw3">PEL_DistributedPartition</font><font class="text">::create( </font><font class="kw1">this</font><font class="text"> ) )
+   , COMM( </font><font class="kw3">PEL_Exec</font><font class="text">::communicator() )
+   , RECEIVED_NB( 0 )
+   , SENT_NB( 0 )
+   , RECEIVED_IDX( 0 )
+   , SENT_IDX( 0 )
+   , ITEMS( 0 )
+   , LOCAL_IDS( 0 )
+   , REQUEST( 0 )
+{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_DistScatter:: LA_DistScatter&quot;</font><font class="text"> ) ;
+   re_initialize( partition ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_DistScatter</font><font class="text">:: ~</font><font class="kw3">LA_DistScatter</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_DistScatter</font><font class="text">:: re_initialize( </font><font class="kw3">PEL_DistributedPartition</font><font class="text"> </font><font class="kw1">const</font><font class="text">* partition )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_DistScatter:: re_initialize&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( partition != 0 ) ;
+
+   DIST-&gt;</font><font class="kw2">set</font><font class="text">( partition ) ;
+   ITEMS.resize(0) ;
+   LOCAL_IDS.resize(0) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( distribution()-&gt;is_compatible( partition ) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( size() == 0 ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_Implementation</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">LA_DistScatter</font><font class="text">:: implementation( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_DistScatter:: implementation&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw3">LA_Implementation</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result = </font><font class="kw3">LA_DistImplementation</font><font class="text">::object() ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( implementation_POST( result ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw2">size_t
+</font><font class="kw3">LA_DistScatter</font><font class="text">:: size( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">return</font><font class="text">( ITEMS.size() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp;
+</font><font class="kw3">LA_DistScatter</font><font class="text">:: repatriated_items( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_DistScatter:: repatriated_items&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; result = ITEMS ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( repatriated_items_POST( result ) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">(
+      </font><font class="kw3">FORALL</font><font class="text">( ( </font><font class="kw2">size_t</font><font class="text"> i=1 ; i&lt;result.size() ; ++i ),
+              result(i)&gt;result(i-1) ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp;
+</font><font class="kw3">LA_DistScatter</font><font class="text">:: local_indices( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_DistScatter:: local_indices&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; result = LOCAL_IDS ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( local_indices_POST( result ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_DistributedPartition</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">LA_DistScatter</font><font class="text">:: distribution( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_DistScatter:: distribution&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw3">PEL_DistributedPartition</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result = DIST ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( distribution_POST( result ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_DistScatter</font><font class="text">:: set_sorted( </font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_repatriated_items_table,
+                             </font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_local_indices_table )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_DistScatter:: set_sorted&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">(
+      </font><font class="kw3">FORALL</font><font class="text">(
+         ( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;a_repatriated_items_table.size() ; ++i ),
+         a_repatriated_items_table(i)&lt;distribution()-&gt;global_number() ) ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">(
+      </font><font class="kw3">FORALL</font><font class="text">(
+         ( </font><font class="kw2">size_t</font><font class="text"> i=1 ; i&lt;a_repatriated_items_table.size() ; ++i ),
+         a_repatriated_items_table(i)&gt;a_repatriated_items_table(i-1) ) ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">(
+      a_local_indices_table.size()==a_repatriated_items_table.size() ) ;
+
+   ITEMS = a_repatriated_items_table ;
+   LOCAL_IDS = a_local_indices_table ;
+
+   RECEIVED_NB.re_initialize( COMM-&gt;nb_ranks() ) ;
+   SENT_NB.re_initialize( COMM-&gt;nb_ranks() ) ;
+
+   </font><font class="kw1">if</font><font class="text">( RECEIVED_IDX.size()&lt;a_repatriated_items_table.size() )
+   {
+      RECEIVED_IDX.resize( a_repatriated_items_table.size() ) ;
+   }
+
+   </font><font class="kw3">intVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; start = DIST-&gt;start_of_partition() ;
+   </font><font class="kw3">intVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; partitioning = DIST-&gt;partitioning() ;
+
+   </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> rank = COMM-&gt;rank() ;
+   </font><font class="kw1">int</font><font class="text"> </font><font class="kw1">const</font><font class="text"> my_start = start( rank )  ;
+   </font><font class="kw1">int</font><font class="text"> </font><font class="kw1">const</font><font class="text"> my_up = my_start + partitioning( rank ) ;
+
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;ITEMS.size() ; i++ )
+   {
+      </font><font class="kw2">size_t</font><font class="text"> idx = ITEMS( i ) ;
+      RECEIVED_IDX( i ) = idx ;</font><font class="comment">//???S : recopie ITEMS
+</font><font class="text">
+      </font><font class="kw2">size_t</font><font class="text"> curr = DIST-&gt;rank_of( idx ) ;
+      RECEIVED_NB(curr )++ ;
+
+      </font><font class="kw3">PEL_CHECK</font><font class="text">( idx &gt;= (</font><font class="kw2">size_t</font><font class="text">) start( curr ) &amp;&amp;
+                 idx &lt;  (</font><font class="kw2">size_t</font><font class="text">) (start( curr )+partitioning(curr)) ) ;
+   }
+
+   COMM-&gt;all_to_all( RECEIVED_NB, SENT_NB ) ;
+   SENT_NB( rank ) = 0 ;
+
+   </font><font class="kw2">size_t</font><font class="text"> send_size = SENT_NB.sum() ;
+
+   </font><font class="comment">//if( SENT_IDX.size() &lt; send_size )
+</font><font class="text">   SENT_IDX.resize( send_size ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> N_send_tot = 0 ;
+   </font><font class="kw2">size_t</font><font class="text"> N_rec_tot = 0 ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> r=0 ; r&lt;COMM-&gt;rank() ; r++ )
+   {
+      </font><font class="kw2">size_t</font><font class="text"> N = SENT_NB( r ) ;
+
+      </font><font class="kw1">if</font><font class="text">( N&gt;0 )
+      {
+         receive_index_from( N_rec_tot, r ) ;
+         N_rec_tot += N ;
+      }
+   }
+
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> r=0 ; r&lt;COMM-&gt;nb_ranks() ; r++ )
+   {
+      </font><font class="kw2">size_t</font><font class="text"> N = RECEIVED_NB( r ) ;
+
+      </font><font class="kw1">if</font><font class="text">( N&gt;0 )
+      {
+         </font><font class="kw1">if</font><font class="text">( r!=COMM-&gt;rank() )
+         {
+            send_index_to( N_send_tot, r ) ;
+         }
+         N_send_tot += N ;
+      }
+   }
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> r=COMM-&gt;rank()+1 ; r&lt;COMM-&gt;nb_ranks() ; r++ )
+   {
+      </font><font class="kw2">size_t</font><font class="text"> N = SENT_NB( r ) ;
+      </font><font class="kw1">if</font><font class="text">( N&gt;0 )
+      {
+         receive_index_from( N_rec_tot, r ) ;
+         N_rec_tot += N ;
+      }
+   }
+
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( (</font><font class="kw2">size_t</font><font class="text">)my_start == DIST-&gt;first_local_index() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( (</font><font class="kw2">size_t</font><font class="text">)my_up == DIST-&gt;local_index_limit() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( </font><font class="kw3">FORALL</font><font class="text">( ( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;send_size ; ++i ),
+                        SENT_IDX(i)&gt;=my_start &amp;&amp; SENT_IDX(i)&lt;my_up ) ) ;
+
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( </font><font class="kw3">FORALL</font><font class="text">( ( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;send_size ; ++i ),
+                      SENT_IDX(i)&gt;=my_start &amp;&amp; SENT_IDX(i)&lt;my_up ) ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( N_rec_tot == send_size ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( size() == a_repatriated_items_table.size() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( repatriated_items() == a_repatriated_items_table ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( local_indices() == a_local_indices_table ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_DistScatter</font><font class="text">:: set_unsorted( </font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_repatriated_items_table,
+                               </font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_local_indices_table )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_DistScatter:: set_unsorted&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">(
+      </font><font class="kw3">FORALL</font><font class="text">(
+         ( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;a_repatriated_items_table.size() ; ++i ),
+         a_repatriated_items_table(i)&lt;distribution()-&gt;global_number() ) ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">(
+      a_repatriated_items_table.size() == a_local_indices_table.size() ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> N = a_repatriated_items_table.size() ;
+
+   </font><font class="kw3">size_t_vector</font><font class="text"> sorted_items( N ) ;
+   </font><font class="kw3">size_t_vector</font><font class="text"> sorted_indexes( N ) ;
+   </font><font class="comment">//global_to_local
+</font><font class="text">   </font><font class="kw3">size_t_vector</font><font class="text"> tmp( DIST-&gt;global_number(), </font><font class="kw3">PEL</font><font class="text">::bad_index() ) ;
+
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;N ; i++ )
+   {
+      tmp( a_repatriated_items_table(i) ) = a_local_indices_table(i) ;
+   }
+   </font><font class="kw2">size_t</font><font class="text"> idx=0 ;
+
+   </font><font class="kw2">size_t</font><font class="text"> GN = DIST-&gt;global_number() ;
+
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;GN ; i++ )
+   {
+      </font><font class="kw1">if</font><font class="text">( tmp(i) != </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+      {
+         sorted_items(idx) = i ;
+         sorted_indexes(idx) = tmp(i) ;
+         idx++ ;
+      }
+   }
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( idx==N ) ;
+
+   </font><font class="comment">/*
+    * Cela trie les indices globaux par ordre croissant.
+    * La fonction set_sorted utilise le fait que les indices sont rang&#xE9; par
+    * blocs correspondant au proc dans l'ordre croissant.
+    */
+</font><font class="text">
+
+
+   set_sorted( sorted_items, sorted_indexes ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( size() == a_repatriated_items_table.size() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">(
+      </font><font class="kw3">FORALL</font><font class="text">( ( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;size() ; ++i ),
+              repatriated_items().has( a_repatriated_items_table(i) ) ) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">(
+      </font><font class="kw3">FORALL</font><font class="text">( ( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;size() ; ++i ),
+              local_indices()(i) == a_local_indices_table(
+                 a_repatriated_items_table.index_of( repatriated_items()(i) ) ) ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_DistScatter</font><font class="text">:: get( </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* source,
+                      </font><font class="kw3">LA_SeqVector</font><font class="text">* dest ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_DistScatter:: get&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( get_PRE( source, dest) ) ;
+
+   </font><font class="kw3">LA_DistVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dsource = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">LA_DistVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;( source ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( </font><font class="kw1">dynamic_cast</font><font class="text">&lt;</font><font class="kw3">LA_DistVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;( source ) != 0 ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> N_rec_tot = 0 ;
+   </font><font class="kw2">size_t</font><font class="text"> N_send_tot = 0 ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> r=0 ; r&lt;COMM-&gt;rank() ; r++ )
+   {
+      receive_values_from( dest, N_rec_tot, r ) ;
+      N_rec_tot += RECEIVED_NB( r ) ;
+   }
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> r=0 ; r&lt;COMM-&gt;nb_ranks() ; r++ )
+   {
+      </font><font class="kw1">if</font><font class="text">( r!=COMM-&gt;rank() )
+         send_values_to( dsource, N_send_tot, r ) ;
+      N_send_tot += SENT_NB( r ) ;
+   }
+
+   </font><font class="kw2">size_t</font><font class="text"> n = RECEIVED_NB( COMM-&gt;rank() ) ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; j&lt;n ; j++ )
+   {
+      </font><font class="kw2">size_t</font><font class="text"> idx = RECEIVED_IDX(j+N_rec_tot) ;
+      dest-&gt;set_item( LOCAL_IDS( j+N_rec_tot ), dsource-&gt;item(idx) ) ;
+   }
+   N_rec_tot += n ;
+
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> r=COMM-&gt;rank()+1 ; r&lt;COMM-&gt;nb_ranks() ; r++ )
+   {
+      receive_values_from( dest, N_rec_tot, r ) ;
+      N_rec_tot += RECEIVED_NB( r ) ;
+   }
+   dest-&gt;synchronize() ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( get_POST( source, dest ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_DistScatter</font><font class="text">:: get_begin( </font><font class="kw3">LA_DistVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* source ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_DistScatter:: get_begin&quot;</font><font class="text"> ) ;
+   PEL_CHECK_COLLECTIVE( </font><font class="kw1">true</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( source!=0 ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( source-&gt;is_synchronized() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( distribution()-&gt;is_compatible(
+                                        source-&gt;row_distribution() ) ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">(
+      </font><font class="kw3">FORALL</font><font class="text">( ( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;size() ; ++i ),
+              repatriated_items()(i) &lt; source-&gt;nb_rows() ) ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( !is_getting() ) ;
+
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw3">doubleVector</font><font class="text"> BUFFER(0) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> N_send_tot = 0 ;
+   </font><font class="kw2">size_t</font><font class="text"> req = SENT_NB.sum() ;
+   </font><font class="kw1">if</font><font class="text">( BUFFER.size()&lt;req ) BUFFER.resize( req ) ;
+   </font><font class="kw1">double</font><font class="text"> * ptr = </font><font class="kw1">const_cast</font><font class="text">&lt;</font><font class="kw1">double</font><font class="text">*&gt;( BUFFER.data() ) ;
+   REQUEST = </font><font class="kw1">new</font><font class="text"> </font><font class="kw1">void</font><font class="text"> * [ COMM-&gt;nb_ranks() ] ;
+
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;COMM-&gt;nb_ranks() ; i++ )
+   {
+      </font><font class="kw1">if</font><font class="text">( i!= COMM-&gt;rank() )
+      {
+         REQUEST[i] = send_values_NB_to( source, N_send_tot, i, ptr ) ;
+         ptr += SENT_NB(i) ;
+         N_send_tot += SENT_NB(i) ;
+      }
+      </font><font class="kw1">else
+</font><font class="text">      {
+         REQUEST[i]  = 0 ;
+      }
+   }
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( is_getting() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_DistScatter</font><font class="text">:: get_end( </font><font class="kw3">LA_SeqVector</font><font class="text">* dest ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_DistScatter:: get_end&quot;</font><font class="text"> ) ;
+   PEL_CHECK_COLLECTIVE( </font><font class="kw1">true</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( dest!=0 ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">(
+      </font><font class="kw3">FORALL</font><font class="text">( ( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;size() ; ++i ),
+              local_indices()(i) &lt; dest-&gt;nb_rows() ) ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( is_getting() ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> N_rec_tot = 0 ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;COMM-&gt;nb_ranks() ; i++ )
+   {
+      </font><font class="kw1">if</font><font class="text">( i!=COMM-&gt;rank() )
+      {
+         receive_values_from( dest, N_rec_tot, i ) ;
+      }
+      N_rec_tot += RECEIVED_NB(i) ;
+   }
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;COMM-&gt;nb_ranks() ; i++ )
+   {
+      </font><font class="kw1">if</font><font class="text">( REQUEST[i] != 0 ) COMM-&gt;wait( REQUEST[i] ) ;
+   }
+   dest-&gt;synchronize() ;
+
+   </font><font class="kw1">delete</font><font class="text"> [] REQUEST ;
+   REQUEST = 0 ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( !is_getting() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( dest-&gt;is_synchronized() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_DistScatter</font><font class="text">:: is_getting( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">return</font><font class="text">( REQUEST != 0 ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_DistScatter</font><font class="text">:: </font><font class="kw2">set</font><font class="text">( </font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* source,
+                      </font><font class="kw3">LA_Vector</font><font class="text">* dest ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_DistScatter:: set&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( set_PRE( source, dest) ) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( </font><font class="kw1">dynamic_cast</font><font class="text">&lt;</font><font class="kw3">LA_DistVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;( dest ) != 0 ) ;
+   </font><font class="kw3">LA_DistVector</font><font class="text"> * ddest = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">LA_DistVector</font><font class="text"> *&gt;( dest ) ;
+
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;ITEMS.size() ; i++ )
+   {
+      </font><font class="kw2">size_t</font><font class="text"> idx = ITEMS(i) ;
+      dest-&gt;set_item( idx, source-&gt;item( LOCAL_IDS( i) ) ) ;
+   }
+   ddest-&gt;synchronize() ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( set_POST( source, dest) ) ;
+
+}
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_DistScatter</font><font class="text">:: get_rows( </font><font class="kw3">LA_DistMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* source,
+                           </font><font class="kw3">LA_SeqMatrix</font><font class="text">* dest ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_DistScatter:: get_rows&quot;</font><font class="text"> ) ;
+   PEL_CHECK_COLLECTIVE( </font><font class="kw1">true</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( source!=0 ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( source-&gt;is_synchronized() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( distribution()-&gt;is_compatible(
+                                       source-&gt;row_distribution() ) ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( dest!=0 ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( dest-&gt;state() != </font><font class="kw3">LA</font><font class="text">::NotSync_set ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( repatriated_items() == local_indices() ) ;
+
+   </font><font class="kw3">LA_MatrixIterator</font><font class="text">* it = source-&gt;create_stored_item_iterator( 0 ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> N_rec_tot = 0 ;
+   </font><font class="kw2">size_t</font><font class="text"> N_send_tot = 0 ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;COMM-&gt;rank() ; i++ )
+   {
+      receive_rows_from( dest, N_rec_tot, i ) ;
+   }
+
+   </font><font class="kw2">size_t</font><font class="text"> local_to_local = RECEIVED_NB(COMM-&gt;rank()) ;
+
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;local_to_local ; i++ )
+   {
+      </font><font class="kw2">size_t</font><font class="text"> idx = ITEMS( N_rec_tot ) ;
+      </font><font class="kw2">size_t</font><font class="text"> jdx = LOCAL_IDS( N_rec_tot ) ;
+      </font><font class="kw1">for</font><font class="text">( it-&gt;start_row_items( idx ) ; it-&gt;is_valid() ; it-&gt;go_next() )
+      {
+         dest-&gt;set_item( jdx, it-&gt;col(), it-&gt;item() ) ;
+      }
+      N_rec_tot++ ;
+   }
+   dest-&gt;synchronize() ;
+
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;COMM-&gt;nb_ranks() ; i++ )
+   {
+      send_rows_to( it, source, N_send_tot, i ) ;
+   }
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=COMM-&gt;rank()+1 ; i&lt;COMM-&gt;nb_ranks() ; i++ )
+   {
+      receive_rows_from( dest, N_rec_tot, i ) ;
+   }
+   dest-&gt;synchronize() ;
+
+   it-&gt;destroy() ; it = 0 ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( dest-&gt;is_synchronized() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_DistScatter</font><font class="text">:: send_values_to( </font><font class="kw3">LA_DistVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* source,
+                                 </font><font class="kw2">size_t</font><font class="text"> start,
+                                 </font><font class="kw2">size_t</font><font class="text"> rank ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_DistScatter:: send_values_to&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( rank &lt; COMM-&gt;nb_ranks() ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( rank != COMM-&gt;rank() ) ;
+
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw3">doubleVector</font><font class="text"> tmp( 0 ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> N = SENT_NB( rank ) ;
+   </font><font class="kw1">if</font><font class="text">( N &gt; 0 )
+   {
+      </font><font class="kw1">if</font><font class="text">( tmp.size() &lt; N ) tmp.resize( N ) ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; j&lt;N ; j++ )
+         tmp( j ) = source-&gt;item( SENT_IDX( start+j ) ) ;
+      COMM-&gt;send( rank, tmp.data(), N ) ;
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_DistScatter</font><font class="text">:: send_index_to( </font><font class="kw2">size_t</font><font class="text"> start, </font><font class="kw2">size_t</font><font class="text"> rank ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_DistScatter:: send_index_to&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( rank &lt; COMM-&gt;nb_ranks() ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> N = RECEIVED_NB( rank ) ;
+
+   </font><font class="kw3">intVector</font><font class="text"> waited_index( N ) ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; j&lt;N ; j++ )
+   {
+      waited_index(j) = RECEIVED_IDX( j + start ) ;
+   }
+   COMM-&gt;send( rank, waited_index.data(), N ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_DistScatter</font><font class="text">:: receive_index_from( </font><font class="kw2">size_t</font><font class="text"> start, </font><font class="kw2">size_t</font><font class="text"> rank )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_DistScatter:: receive_index_from&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( rank &lt; COMM-&gt;nb_ranks() ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> N = SENT_NB( rank ) ;
+   </font><font class="kw3">intVector</font><font class="text"> sended_index( N ) ;
+   COMM-&gt;receive( rank, </font><font class="kw1">const_cast</font><font class="text">&lt;</font><font class="kw1">int</font><font class="text">*&gt;(sended_index.data()), N ) ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; j&lt;N ; j++ )
+   {
+      SENT_IDX( start+j ) = sended_index( j ) ;
+   }
+}
+
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void</font><font class="text">*
+</font><font class="kw3">LA_DistScatter</font><font class="text">:: send_values_NB_to( </font><font class="kw3">LA_DistVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* source,
+                                    </font><font class="kw2">size_t</font><font class="text"> start,
+                                    </font><font class="kw2">size_t</font><font class="text"> rank,
+                                    </font><font class="kw1">double</font><font class="text"> * ptr ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_DistScatter:: send_values_NB_to&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( rank &lt; COMM-&gt;nb_ranks() ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( rank != COMM-&gt;rank() ) ;
+
+   </font><font class="kw1">void</font><font class="text">* result = 0 ;
+
+   </font><font class="kw2">size_t</font><font class="text"> N = SENT_NB( rank ) ;
+   </font><font class="kw1">if</font><font class="text">( N&gt;0 )
+   {
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; j&lt;N ; j++ )
+         ptr[j] = source-&gt;item( SENT_IDX( start+j ) ) ;
+      result = COMM-&gt;Isend( rank, ptr, N ) ;
+   }
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_DistScatter</font><font class="text">:: receive_values_from( </font><font class="kw3">LA_SeqVector</font><font class="text">* dest,
+                                      </font><font class="kw2">size_t</font><font class="text"> start,
+                                      </font><font class="kw2">size_t</font><font class="text"> rank ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_DistScatter:: receive_values_from&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( rank &lt; COMM-&gt;nb_ranks() ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( rank != COMM-&gt;rank() ) ;
+
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw3">doubleVector</font><font class="text"> tmp( 0 ) ;
+   </font><font class="kw2">size_t</font><font class="text"> N = RECEIVED_NB( rank ) ;
+
+   </font><font class="kw1">if</font><font class="text">( N&gt;0 )
+   {
+      </font><font class="kw1">if</font><font class="text">( tmp.size() &lt; N ) tmp.resize( N ) ;
+      </font><font class="kw1">double</font><font class="text">* ptr_tmp = </font><font class="kw1">const_cast</font><font class="text">&lt;</font><font class="kw1">double</font><font class="text">*&gt;( tmp.data() ) ;
+      COMM-&gt;receive( rank, ptr_tmp, N ) ;
+      </font><font class="kw1">double</font><font class="text">* ptr_dest = dest-&gt;data() ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; j&lt;N ; ++j )
+      {
+         ptr_dest[ LOCAL_IDS( j+start ) ] = ptr_tmp[j] ;
+      }
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_DistScatter</font><font class="text">:: send_rows_to( </font><font class="kw3">LA_MatrixIterator</font><font class="text">* it,
+                               </font><font class="kw3">LA_DistMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* source,
+                               </font><font class="kw2">size_t</font><font class="text">&amp; start,
+                               </font><font class="kw2">size_t</font><font class="text"> rank ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_DistScatter:: send_rows_to&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( source != 0 ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( it != 0 ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( it-&gt;matrix() == source ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( rank &lt; COMM-&gt;nb_ranks() ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> N = SENT_NB( rank ) ;
+   </font><font class="kw1">if</font><font class="text">( N&gt;0 )
+   {
+      </font><font class="kw3">LA_PelMatrix</font><font class="text">* pmat =
+         </font><font class="kw3">LA_PelMatrix</font><font class="text">::create( 0, source-&gt;nb_rows(), source-&gt;nb_cols() ) ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; j&lt;N ; ++j )
+      {
+         </font><font class="kw1">for</font><font class="text">( it-&gt;start_row_items( SENT_IDX( start+j ) ) ;
+              it-&gt;is_valid() ; it-&gt;go_next() )
+         {
+            pmat-&gt;set_item( it-&gt;row(), it-&gt;col(), it-&gt;item() ) ;
+         }
+      }
+      pmat-&gt;synchronize() ;
+
+      </font><font class="kw3">LA_CRSmatrix</font><font class="text">* cmat = </font><font class="kw3">LA_CRSmatrix</font><font class="text">::create( 0, pmat ) ;
+      pmat-&gt;destroy() ;
+
+      cmat-&gt;send( COMM, rank, </font><font class="kw1">false</font><font class="text"> ) ;
+      cmat-&gt;destroy() ;
+
+   }
+   start += N ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_DistScatter</font><font class="text">:: receive_rows_from( </font><font class="kw3">LA_SeqMatrix</font><font class="text">* dest,
+                                    </font><font class="kw2">size_t</font><font class="text">&amp; start,
+                                    </font><font class="kw2">size_t</font><font class="text"> rank ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_DistScatter:: receive_rows_from&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( dest != 0 ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( dest-&gt;state() != </font><font class="kw3">LA</font><font class="text">::NotSync_set ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( rank &lt; COMM-&gt;nb_ranks() ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> N = RECEIVED_NB( rank ) ;
+   </font><font class="kw1">if</font><font class="text">( N&gt;0 )
+   {
+      </font><font class="kw3">LA_CRSmatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* mat = </font><font class="kw3">LA_CRSmatrix</font><font class="text">::receive( 0, COMM, rank ) ;
+      dest-&gt;add_Mat( mat, 1.0 ) ;
+      mat-&gt;destroy() ;
+   }
+   start += N ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_DistScatter</font><font class="text">:: implementation_POST(
+                                 </font><font class="kw3">LA_Implementation</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( </font><font class="kw3">LA_Scatter</font><font class="text">::implementation_POST( result ) ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( result == </font><font class="kw3">LA_DistImplementation</font><font class="text">::object() ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font>
+</pre>
+</body>
+</html>

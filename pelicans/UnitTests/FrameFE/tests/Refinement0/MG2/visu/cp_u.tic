@@ -1,0 +1,44 @@
+BATCH
+
+FRAME WHITE 20. 20.
+
+FILE 'save.gene' FORM END
+
+CYCLE 1
+
+CALL "build_meshing.tic"
+
+ANAL
+   ycut = 0.5
+   coorCut = SR1
+   coorCut(0) <- 0.0
+   coorCut(0) <- ycut
+   coorCut(0) <- 1.0
+   coorCut(0) <- ycut
+END-ANAL coorCut
+
+ANAL
+   fth = SR1
+   xth = SR1
+   pi=3.141592653
+   SPI=(EXP(pi)-EXP(-pi))/2.0
+   DO( 'i',1,101)
+     xx=(FLOAT(i)-1.0)*0.01
+     xth(0)<-xx
+     fth(0)<-(EXP(pi*xx)-EXP(-pi*xx))/(2.0*SPI)
+   ENDDO
+END-ANAL xth fth
+
+COLOR BLACK NONU CURV xth fth "anaytical"
+
+CYCL 2
+PHYS 0 U TABL sfield
+
+CREA epsCut 1.E-4 TERM
+CALL "cut_scalar_field.tic"
+COLOR RED NONU CURV absc fc "computed"
+
+VMIN 0.0  VMAX 1.0 CUTT 4 LABEL "x" AXIS X1
+VMIN 0.0  VMAX 1.0 CUTT 4 LABEL "u" AXIS Y1
+
+DRAW CURV

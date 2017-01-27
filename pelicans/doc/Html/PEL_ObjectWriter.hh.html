@@ -1,0 +1,254 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>PEL_ObjectWriter.hh</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="PEL_ObjectWriter.hh_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="PELpack-tree.html"><span>Tree</span></a>
+    <a href="PEL_ObjectWriter.html"><span>Class</span></a>
+    <span class=selected>Header</span>
+    <a href="PEL_ObjectWriter.cc.html"><span>Implementation</span></a>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="PELpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#ifndef</font><font class="text"> PEL_OBJECT_WRITER_HH
+</font><font class="kw2">#define</font><font class="text"> PEL_OBJECT_WRITER_HH
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Object</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw2">stack</font><font class="text">&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw2">string</font><font class="text">&gt;
+
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">PEL_Data</font><font class="text"> ;
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> ;
+
+</font><font class="comment">/*
+Servers used to store objects so that they can be retrieved with
+associated `PEL_ObjectReader::' instances.
+</font><font class="text">
+</font><font class="comment">Objects are stored in files according to some options
+specified in the Hierarchical Data Structure provided 
+at creation of `self'. That data structure is briefly described below.
+</font><font class="text">
+</font><font class="comment">The entry of keyword &quot;output_format&quot; defines the format of the
+saving files. There are two possibilities:
+   - &quot;text&quot;: human readable but not exact (truncated values)
+   - &quot;hybrid&quot;: parts of the data remain readable but 
+               double or integer values are stored in binary format 
+               (file with &quot;bin&quot; extension)
+                
+Several saving strategies are available :
+</font><font class="text">
+</font><font class="comment">   - all the saved cycles are stored in the same file
+</font><font class="text">
+</font><font class="comment">     example :
+     
+        MODULE PEL_ObjectWriter
+           type = &quot;all_cycles_in_one_file&quot;
+           file_name = join( getcwd(), &quot;saving.pel&quot; )
+           output_format = &quot;hybrid&quot;
+        END MODULE PEL_ObjectWriter
+</font><font class="text">
+</font><font class="comment">        A text file named &quot;saving.pel&quot; is created to store all the cycles
+        (a companion binary file named &quot;saving.pel.bin&quot; is also created 
+        to store the double and integer values).
+</font><font class="text">
+</font><font class="comment">   - each saved cycle is stored in a separate file (one cycle per file)
+</font><font class="text">
+</font><font class="comment">     example :
+     
+        MODULE PEL_ObjectWriter
+           type = &quot;cycles_in_separate_files&quot;
+           files_basename = join( getcwd(), &quot;saving&quot; )
+           output_format = &quot;hybrid&quot;
+        END MODULE PEL_ObjectWriter
+</font><font class="text">
+</font><font class="comment">        A sequence of text files named &quot;saving.00001.pel&quot;, 
+        &quot;saving.00002.pel&quot;,... is created to store respectively 
+        the first cycle, the second cycle,...
+        (a sequence of companion binary files named &quot;saving.00001.pel.bin&quot;, 
+        &quot;saving.00002.pel.bin&quot;,... is also created to stored
+         the double and integer values).
+</font><font class="text">
+</font><font class="comment">   - only the last two cycles are stored
+</font><font class="text">
+</font><font class="comment">     example :
+     
+        MODULE PEL_ObjectWriter
+           type = &quot;last_two_cycles&quot;
+           file_name_0 = join( getcwd(), &quot;saving_0.pel&quot; )
+           file_name_1 = join( getcwd(), &quot;saving_1.pel&quot; )
+           output_format = &quot;hybrid&quot;
+        END MODULE PEL_ObjectWriter
+</font><font class="text">
+</font><font class="comment">        The text files &quot;saving_0.pel&quot; and &quot;saving_1.pel&quot; are created to store
+        the last two cycles ; the time of last modification of these files 
+        identifies that of the more recent saving.
+        (the companion binary files named &quot;saving_0.pel.bin&quot; and 
+        &quot;saving_1.pel.bin&quot; are also created to store with the double and 
+        integer values).
+</font><font class="text">
+
+</font><font class="comment">See `PEL_ObjectReader::' and `PEL_ApplicationRestorer::' for restoring
+objects stored with `PEL_ObjectWriter::' objects.
+</font><font class="text">
+</font><font class="comment">PUBLISHED
+*/
+</font><font class="text">
+</font><font class="kw1">class</font><font class="text"> PEL_EXPORT </font><font class="kw3">PEL_ObjectWriter</font><font class="text"> : </font><font class="kw1">public</font><font class="text"> </font><font class="kw3">PEL_Object
+</font><font class="text">{
+   </font><font class="kw1">public</font><font class="text">: </font><font class="comment">//----------------------------------------------------------------
+</font><font class="text">
+   </font><font class="comment">//-- Instance delivery and initialization
+</font><font class="text">      
+      </font><font class="kw1">static</font><font class="text"> </font><font class="kw3">PEL_ObjectWriter</font><font class="text">* create( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                       </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp,
+                                       </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* header_exp ) ;
+
+   </font><font class="comment">//-- Cycles(1.)
+</font><font class="text">
+      </font><font class="comment">// Start a new cycle.
+</font><font class="text">      </font><font class="kw1">void</font><font class="text"> start_cycle( </font><font class="kw1">void</font><font class="text"> ) ;
+
+      </font><font class="comment">// Terminate the current cycle. `::finalize_object' must have been
+</font><font class="text">      </font><font class="comment">// called as many times as `::start_new_object'. If not, a fatal error 
+</font><font class="text">      </font><font class="comment">// is raised.
+</font><font class="text">      </font><font class="kw1">void</font><font class="text"> terminate_cycle( </font><font class="kw1">void</font><font class="text"> ) ;
+
+      </font><font class="comment">// Is there a cycle that is started and not terminated ?
+</font><font class="text">      </font><font class="kw1">bool</font><font class="text"> has_an_opened_cycle( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="comment">// cycle number
+</font><font class="text">      </font><font class="kw2">size_t</font><font class="text"> cycle_number( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+
+   </font><font class="comment">//-- Object storing(2.)
+</font><font class="text">
+      </font><font class="comment">// Notify that the storage of a new object is starting so that all 
+</font><font class="text">      </font><font class="comment">// subsequent calls to `::add_entry' are relative that object,
+</font><font class="text">      </font><font class="comment">// until `::finalize_object' or `::start_new_object' are called.
+</font><font class="text">      </font><font class="kw1">void</font><font class="text"> start_new_object( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; class_name ) ;
+
+      </font><font class="comment">// nonzero number associated to the object being currently stored if any,
+</font><font class="text">      </font><font class="comment">// 0 otherwize
+</font><font class="text">      </font><font class="kw2">size_t</font><font class="text"> current_object_number( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">void</font><font class="text"> add_entry( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; keyword, </font><font class="kw3">PEL_Data</font><font class="text">* data ) ;
+
+      </font><font class="comment">// Notify that the storage of the current object is completed.
+</font><font class="text">      </font><font class="kw1">void</font><font class="text"> finalize_object( </font><font class="kw1">void</font><font class="text"> ) ;
+
+   </font><font class="kw1">protected</font><font class="text">: </font><font class="comment">//-------------------------------------------------------------
+</font><font class="text">
+   </font><font class="kw1">private</font><font class="text">: </font><font class="comment">//---------------------------------------------------------------
+</font><font class="text">
+      </font><font class="comment">// all_cycles :      save all the cycles in one file
+</font><font class="text">      </font><font class="comment">// per_one_cycle :   save all the cycles, but one per file
+</font><font class="text">      </font><font class="comment">// last_two_cycles : save only the two last cycles
+</font><font class="text">      </font><font class="kw1">enum</font><font class="text"> PEL_ObjectWriterType 
+      {
+         all_cycles,
+         per_one_cycle,
+         last_two_cycles
+      } ;
+         
+
+      </font><font class="kw3">PEL_ObjectWriter</font><font class="text">( </font><font class="kw1">void</font><font class="text"> ) ;
+     ~</font><font class="kw3">PEL_ObjectWriter</font><font class="text">( </font><font class="kw1">void</font><font class="text"> ) ;
+      </font><font class="kw3">PEL_ObjectWriter</font><font class="text">( </font><font class="kw3">PEL_ObjectWriter</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; other ) ;
+      </font><font class="kw3">PEL_ObjectWriter</font><font class="text">&amp; </font><font class="kw1">operator</font><font class="text">=( </font><font class="kw3">PEL_ObjectWriter</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; other ) ;
+
+      </font><font class="kw3">PEL_ObjectWriter</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                        PEL_ObjectWriterType </font><font class="kw1">const</font><font class="text"> writer_type,
+                        </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp,
+                        </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* header_exp ) ;
+
+   </font><font class="comment">//-- Internals
+</font><font class="text">
+      </font><font class="kw1">void</font><font class="text"> initialize_saving_file( </font><font class="kw1">void</font><font class="text"> ) ;
+      </font><font class="kw1">void</font><font class="text"> set_file_name( </font><font class="kw1">void</font><font class="text"> ) ;
+      </font><font class="kw1">void</font><font class="text"> write_header( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+      </font><font class="kw1">void</font><font class="text"> write_communicator( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+
+   </font><font class="comment">//-- Preconditions, Postconditions, Invariant
+</font><font class="text">
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> invariant( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+
+   </font><font class="comment">//-- Attributes
+</font><font class="text">
+      PEL_ObjectWriterType </font><font class="kw1">const</font><font class="text"> TYPE ;
+
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text"> OFILE_FORMAT ;
+      </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* </font><font class="kw1">const</font><font class="text"> HEADER_EXP ;
+
+      </font><font class="comment">// File names :
+</font><font class="text">      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> OFILE_NAME ;
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> OFILE_NAME1 ;
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> OFILE_NAME2 ;
+      
+      </font><font class="kw2">size_t</font><font class="text"> iCYCLE ;
+      </font><font class="kw2">size_t</font><font class="text"> NB_OBJECTS ;
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">stack</font><font class="text">&lt; </font><font class="kw3">PEL_Module</font><font class="text">* &gt; MODS ;
+} ;
+
+</font><font class="kw2">#endif
+</font><font class="text">
+</font>
+</pre>
+</body>
+</html>

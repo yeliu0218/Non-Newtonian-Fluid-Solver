@@ -1,0 +1,217 @@
+MODULE PEL_ObjectTest#PDE_DomainIteration_TEST
+   
+   MODULE PDE_DomainIteration_21_seq
+      
+      MODULE calculations_consistency
+         dbl_epsilon = 1.e-10
+         dbl_minimum = 1.e-12
+         quadrature_rule_provider = "GE_QRprovider_3"
+      END MODULE calculations_consistency
+      
+      MODULE iterations_trace
+         output_file = "dom_21_seq.trace"
+      END MODULE iterations_trace
+      
+      MODULE PDE_DomainAndFields
+         
+         verbose_level = 1
+         nb_space_dimensions = 2
+         type = "finite_element"
+
+         $DV_MESH_X = regular_vector( 0., 4, 1. )
+         $DV_MESH_Y = regular_vector( 0., 3, 1. )
+    
+         MODULE GE_Meshing 
+            concrete_name = "GE_BoxWithBoxes"
+            vertices_coordinate_0 = $DV_MESH_X
+            vertices_coordinate_1 = $DV_MESH_Y
+            mesh_polyhedron = < "GE_Segment" "GE_Rectangle" >
+         END MODULE GE_Meshing
+         
+         MODULE domain_periodicity
+            MODULE GE_Transform#0
+               concrete_name = "GE_Translation"
+               translation_vector = vector( 1., 0. )
+               source_color = "left"
+               target_color = "right"
+            END MODULE GE_Transform#0
+            MODULE GE_Transform#1
+               concrete_name = "GE_Translation"
+               translation_vector = vector( 0., 1. )
+               source_color = "bottom"
+               target_color = "top"
+            END MODULE GE_Transform#1
+         END MODULE domain_periodicity
+      
+         MODULE interior_fields
+            
+            MODULE uu
+               name = "uu"
+               nb_components = 2
+               element_name = "PDE_2D_Q1_4nodes"
+               storage_depth = 2
+               MODULE DOFs_values
+                  type = "uniformly_defined"
+                  value = vector( 0.0, 0.0 )
+               END MODULE DOFs_values
+            END MODULE uu
+            
+         END MODULE interior_fields
+         
+      END MODULE PDE_DomainAndFields
+
+   END MODULE PDE_DomainIteration_21_seq
+   
+   MODULE PDE_DomainIteration_21_proc#0
+      
+      MODULE calculations_consistency
+         dbl_epsilon = 1.e-10
+         dbl_minimum = 1.e-12
+         quadrature_rule_provider = "GE_QRprovider_3"
+      END MODULE calculations_consistency
+      
+      MODULE iterations_trace
+         output_file = "dom_21_proc#0.trace"
+      END MODULE iterations_trace
+      
+      MODULE PDE_DomainAndFields
+         
+         verbose_level = 1
+         nb_space_dimensions = 2
+         type = "finite_element"
+         
+         $DV_MESH_X = regular_vector( 0., 4, 1. )
+         $DV_MESH_Y = regular_vector( 0., 3, 1. )
+         
+         MODULE GE_Meshing
+            concrete_name = "GE_SplitMeshing"
+            nb_ranks = 2
+            rank = 0
+            security_bandwidth = 1
+            MODULE GE_Meshing 
+               concrete_name = "GE_BoxWithBoxes"
+               vertices_coordinate_0 = $DV_MESH_X
+               vertices_coordinate_1 = $DV_MESH_Y
+               mesh_polyhedron = < "GE_Segment" "GE_Rectangle" >
+            END MODULE GE_Meshing
+            MODULE splitting_strategy
+               concrete_name = "GE_CoordinateSplitting"
+               coordinate_splitting_formula =
+                  segm2D_sort( $DV_X,
+                               $DV_MESH_X, 2,
+                               $DV_MESH_Y, 1,
+                               true )
+            END MODULE splitting_strategy
+         END MODULE GE_Meshing
+         
+         MODULE domain_periodicity
+            MODULE GE_Transform#0
+               concrete_name = "GE_Translation"
+               translation_vector = vector( 1., 0. )
+               source_color = "left"
+               target_color = "right"
+            END MODULE GE_Transform#0
+            MODULE GE_Transform#1
+               concrete_name = "GE_Translation"
+               translation_vector = vector( 0., 1. )
+               source_color = "bottom"
+               target_color = "top"
+            END MODULE GE_Transform#1
+         END MODULE domain_periodicity
+      
+         MODULE interior_fields
+            
+            MODULE uu
+               name = "uu"
+               nb_components = 2
+               element_name = "PDE_2D_Q1_4nodes"
+               storage_depth = 2
+               MODULE DOFs_values
+                  type = "uniformly_defined"
+                  value = vector( 0.0, 0.0 )
+               END MODULE DOFs_values
+            END MODULE uu
+            
+         END MODULE interior_fields
+         
+      END MODULE PDE_DomainAndFields
+
+   END MODULE PDE_DomainIteration_21_proc#0
+   
+   MODULE PDE_DomainIteration_21_proc#1
+      
+      MODULE calculations_consistency
+         dbl_epsilon = 1.e-10
+         dbl_minimum = 1.e-12
+         quadrature_rule_provider = "GE_QRprovider_3"
+      END MODULE calculations_consistency
+      
+      MODULE iterations_trace
+         output_file = "dom_21_proc#1.trace"
+      END MODULE iterations_trace
+      
+      MODULE PDE_DomainAndFields
+         
+         verbose_level = 1
+         nb_space_dimensions = 2
+         type = "finite_element"
+         
+         $DV_MESH_X = regular_vector( 0., 4, 1. )
+         $DV_MESH_Y = regular_vector( 0., 3, 1. )
+         
+         MODULE GE_Meshing
+            concrete_name = "GE_SplitMeshing"
+            nb_ranks = 2
+            rank = 1
+            security_bandwidth = 1
+            MODULE GE_Meshing 
+               concrete_name = "GE_BoxWithBoxes"
+               vertices_coordinate_0 = $DV_MESH_X
+               vertices_coordinate_1 = $DV_MESH_Y
+               mesh_polyhedron = < "GE_Segment" "GE_Rectangle" >
+            END MODULE GE_Meshing
+            MODULE splitting_strategy
+               concrete_name = "GE_CoordinateSplitting"
+               coordinate_splitting_formula =
+                  segm2D_sort( $DV_X,
+                               $DV_MESH_X, 2,
+                               $DV_MESH_Y, 1,
+                               true )
+            END MODULE splitting_strategy
+         END MODULE GE_Meshing
+         
+         MODULE domain_periodicity
+            MODULE GE_Transform#0
+               concrete_name = "GE_Translation"
+               translation_vector = vector( 1., 0. )
+               source_color = "left"
+               target_color = "right"
+            END MODULE GE_Transform#0
+            MODULE GE_Transform#1
+               concrete_name = "GE_Translation"
+               translation_vector = vector( 0., 1. )
+               source_color = "bottom"
+               target_color = "top"
+            END MODULE GE_Transform#1
+         END MODULE domain_periodicity
+      
+         MODULE interior_fields
+            
+            MODULE uu
+               name = "uu"
+               nb_components = 2
+               element_name = "PDE_2D_Q1_4nodes"
+               storage_depth = 2
+               MODULE DOFs_values
+                  type = "uniformly_defined"
+                  value = vector( 0.0, 0.0 )
+               END MODULE DOFs_values
+            END MODULE uu
+            
+         END MODULE interior_fields
+         
+      END MODULE PDE_DomainAndFields
+
+   END MODULE PDE_DomainIteration_21_proc#1
+   
+END MODULE PEL_ObjectTest#PDE_DomainIteration_TEST

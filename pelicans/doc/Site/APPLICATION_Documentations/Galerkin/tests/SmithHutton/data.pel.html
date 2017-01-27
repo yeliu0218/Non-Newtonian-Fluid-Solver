@@ -1,0 +1,167 @@
+<html>
+<head>
+<title>data.pel</title>
+<link rel=stylesheet type="text/css" href="stylesheet.css">
+</head>
+<body>
+<pre>
+<font class="kw1">MODULE</font><font class="text"> </font><font class="kw3">PEL_Application
+</font><font class="text">   
+   </font><font class="kw1">concrete_name</font><font class="text"> = </font><font class="string">&quot;FE_StepByStepProgression&quot;
+</font><font class="text">      
+   </font><font class="kw1">MODULE</font><font class="text"> FE_TimeIterator
+      time_initial = 0.
+      time_end = 1.
+      time_step = 1.E+8
+   </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> FE_TimeIterator
+
+   </font><font class="kw1">MODULE</font><font class="text"> PDE_DomainAndFields 
+      
+      nb_space_dimensions = 2
+      type = </font><font class="string">&quot;finite_element&quot;
+</font><font class="text">      verbose_level = 1
+      
+      </font><font class="kw1">MODULE</font><font class="text"> </font><font class="kw3">GE_Meshing
+</font><font class="text">         </font><font class="kw1">concrete_name</font><font class="text"> = </font><font class="string">&quot;GE_EMC2Meshing&quot;
+</font><font class="text">         format = </font><font class="string">&quot;ftq&quot;
+</font><font class="text">         cell_polyhedron = &lt; </font><font class="string">&quot;GE_Rectangle&quot;</font><font class="text"> &gt;
+         filename = </font><font class="kw2">join</font><font class="text">( </font><font class="kw2">this_file_dir</font><font class="text">(), </font><font class="string">&quot;meshing.ftq&quot;</font><font class="text"> )
+         roundoff = default_roundoff( $DS_x, 5, 1.e-6 )
+      </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> </font><font class="kw3">GE_Meshing
+</font><font class="text">      
+      </font><font class="kw1">MODULE</font><font class="text"> macro_colors
+         inlet  = &lt; </font><font class="string">&quot;r1&quot;</font><font class="text"> &gt;
+         rest   = &lt; </font><font class="string">&quot;r2&quot;</font><font class="text"> </font><font class="string">&quot;r1r2&quot;</font><font class="text"> &gt;
+         outlet = &lt; </font><font class="string">&quot;r3&quot;</font><font class="text"> </font><font class="string">&quot;r1r3&quot;</font><font class="text"> </font><font class="string">&quot;r2r3&quot;</font><font class="text"> &gt;
+      </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> macro_colors
+      
+      </font><font class="kw1">MODULE</font><font class="text"> interior_fields
+         
+         </font><font class="kw1">MODULE</font><font class="text"> uu
+            name=</font><font class="string">&quot;uu&quot;
+</font><font class="text">            nb_components = 1
+            element_name = </font><font class="string">&quot;PDE_2D_Q1_4nodes&quot;
+</font><font class="text">            storage_depth = 1
+            </font><font class="kw1">MODULE</font><font class="text"> DOFs_values
+               type = </font><font class="string">&quot;uniformly_defined&quot;
+</font><font class="text">               value = &lt; 0. &gt;
+            </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> DOFs_values
+            </font><font class="kw1">MODULE</font><font class="text"> DOFs_imposed_value
+               </font><font class="kw1">MODULE</font><font class="text"> inlet
+                  location = </font><font class="string">&quot;on_bounds&quot;
+</font><font class="text">                  color = </font><font class="string">&quot;inlet&quot;
+</font><font class="text">                  type = </font><font class="string">&quot;uniformly_defined&quot;
+</font><font class="text">                  value = </font><font class="kw1">vector</font><font class="text">( 1.+tanh(20.*</font><font class="kw1">component</font><font class="text">($DV_X,0)+10.) )
+               </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> inlet
+               </font><font class="kw1">MODULE</font><font class="text"> rest
+                  location = </font><font class="string">&quot;on_bounds&quot;
+</font><font class="text">                  color = </font><font class="string">&quot;rest&quot;
+</font><font class="text">                  type = </font><font class="string">&quot;uniformly_defined&quot;
+</font><font class="text">                  value = </font><font class="kw1">vector</font><font class="text">( 1. - tanh(10.) )
+               </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> rest
+            </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> DOFs_imposed_value
+         </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> uu
+         
+         </font><font class="kw1">MODULE</font><font class="text"> velocity
+            name=</font><font class="string">&quot;velocity&quot;
+</font><font class="text">            nb_components = 2
+            element_name = </font><font class="string">&quot;PDE_2D_Q2_9nodes&quot;
+</font><font class="text">            storage_depth = 1
+            </font><font class="kw1">MODULE</font><font class="text"> DOFs_values
+               type = </font><font class="string">&quot;uniformly_defined&quot;
+</font><font class="text">               value = </font><font class="kw1">vector</font><font class="text">(
+                     2.*</font><font class="kw1">component</font><font class="text">($DV_X,1)*(1.-</font><font class="kw2">sqr</font><font class="text">(</font><font class="kw1">component</font><font class="text">($DV_X,0))),
+                    -2.*</font><font class="kw1">component</font><font class="text">($DV_X,0)*(1.-</font><font class="kw2">sqr</font><font class="text">(</font><font class="kw1">component</font><font class="text">($DV_X,1))) )
+            </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> DOFs_values
+         </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> velocity
+         
+      </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> interior_fields
+
+      </font><font class="kw1">MODULE</font><font class="text"> </font><font class="kw3">PDE_ResultSaver
+</font><font class="text">         writers = &lt; </font><font class="string">&quot;PEL_TICwriter&quot;</font><font class="text"> &gt;
+         writing_mode = </font><font class="string">&quot;text&quot;
+</font><font class="text">         files_basename = </font><font class="string">&quot;save&quot;
+</font><font class="text">         
+         </font><font class="kw1">MODULE</font><font class="text"> uu
+            where_to_save = </font><font class="string">&quot;at_vertices&quot;
+</font><font class="text">            entry_name = </font><font class="string">&quot;UU&quot;
+</font><font class="text">            field=</font><font class="string">&quot;uu&quot;
+</font><font class="text">         </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> uu
+         
+      </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> </font><font class="kw3">PDE_ResultSaver
+</font><font class="text">      
+   </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> PDE_DomainAndFields
+
+   </font><font class="kw1">MODULE</font><font class="text"> FE_SetOfParameters
+      $DS_alpha = 1.0
+      alpha = </font><font class="kw1">vector</font><font class="text">( $DS_alpha )
+      kappa = &lt; 1.E-6 &gt;
+      </font><font class="kw1">MODULE</font><font class="text"> FE_Parameter#adv
+         </font><font class="kw1">concrete_name</font><font class="text"> = </font><font class="string">&quot;FE_FieldParameter&quot;
+</font><font class="text">         name = </font><font class="string">&quot;advective_velocity&quot;
+</font><font class="text">         field_name  = </font><font class="string">&quot;velocity&quot;
+</font><font class="text">         field_level = 0
+         coefficient = $DS_alpha
+      </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> FE_Parameter#adv
+   </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> FE_SetOfParameters
+   
+   </font><font class="kw1">MODULE</font><font class="text"> FE_OneStepIteration
+      
+      </font><font class="kw1">concrete_name</font><font class="text"> = </font><font class="string">&quot;AP_AdvectionDiffusion1G&quot;
+</font><font class="text">      
+      field = </font><font class="string">&quot;uu&quot;
+</font><font class="text">      level_of_field = 0
+
+      </font><font class="kw1">MODULE</font><font class="text"> time_discretization
+         type = </font><font class="string">&quot;Euler&quot;
+</font><font class="text">         field_explicit = </font><font class="string">&quot;uu&quot;
+</font><font class="text">         level_of_field_explicit = 0 
+         param_unsteady  = </font><font class="string">&quot;alpha&quot;
+</font><font class="text">      </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> time_discretization
+      
+      param_diffusion = </font><font class="string">&quot;kappa&quot;
+</font><font class="text">      
+      </font><font class="kw1">MODULE</font><font class="text"> advection
+         param_advective_velocity = </font><font class="string">&quot;advective_velocity&quot;
+</font><font class="text">         </font><font class="kw1">MODULE</font><font class="text"> stabilization
+            type = </font><font class="string">&quot;SUPG&quot;
+</font><font class="text">            </font><font class="kw1">MODULE</font><font class="text"> MI_TauStab
+               </font><font class="kw1">concrete_name</font><font class="text"> = </font><font class="string">&quot;FE_OptimalTauSUPG&quot;
+</font><font class="text">               upwind_factor = 1.
+            </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> MI_TauStab  
+         </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> stabilization  
+      </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> advection
+      
+      quadrature_rule_provider = </font><font class="string">&quot;GE_QRprovider_5&quot;
+</font><font class="text">
+      </font><font class="kw1">MODULE</font><font class="text"> LA_Matrix
+         </font><font class="kw1">concrete_name</font><font class="text"> = </font><font class="string">&quot;LA_PelMatrix&quot;
+</font><font class="text">      </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> LA_Matrix
+
+      </font><font class="kw1">MODULE</font><font class="text"> LA_Solver
+         </font><font class="kw1">concrete_name</font><font class="text"> = </font><font class="string">&quot;LA_PreconditionedSolver&quot;
+</font><font class="text">         </font><font class="kw1">MODULE</font><font class="text"> LA_IterativeSolver
+            </font><font class="kw1">concrete_name</font><font class="text"> = </font><font class="string">&quot;LA_GMRES_IS&quot;
+</font><font class="text">            restart = 50
+            </font><font class="kw1">MODULE</font><font class="text"> LA_ConvergenceTest
+               </font><font class="kw1">concrete_name</font><font class="text"> = </font><font class="string">&quot;LA_DefaultConvergenceTest&quot;
+</font><font class="text">               relative_tolerance = 1.e-8
+               absolute_tolerance = 1.e-15
+            </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> LA_ConvergenceTest
+            nb_iterations_max = 2000
+            verbose = </font><font class="kw1">false
+</font><font class="text">         </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> LA_IterativeSolver
+         </font><font class="kw1">MODULE</font><font class="text"> LA_Preconditioner
+            </font><font class="kw1">concrete_name</font><font class="text"> = </font><font class="string">&quot;LA_Jacobi_PC&quot;
+</font><font class="text">            smallest_inverted_item = 1.0e-20
+         </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> LA_Preconditioner
+      </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> LA_Solver
+      
+   </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> FE_OneStepIteration
+   
+</font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> </font><font class="kw3">PEL_Application
+</font><font class="text">
+</font>
+</pre>
+</body>
+</html>

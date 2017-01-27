@@ -1,0 +1,183 @@
+// field initialization :
+//   vertex defined
+//   2D rectangular meshing
+
+   MODULE PEL_ObjectTest#PDE_FieldInitialization_TEST
+            
+      MODULE PDE_FieldInitialization_2
+         
+         MODULE PDE_DomainAndFields
+            
+            verbose_level = 2
+            nb_space_dimensions = 2
+            type = "finite_element"
+            
+            MODULE GE_Meshing
+               
+               concrete_name = "GE_BoxWithBoxes"
+               
+               vertices_coordinate_0 = regular_vector( -1.0, 2, 0.0 )
+               vertices_coordinate_1 = regular_vector(  0.0, 2, 1.0 )
+               
+               mesh_polyhedron = < "GE_Segment" "GE_Rectangle" >
+
+               MODULE GE_Colorist
+                  MODULE vertices
+                     blue = in_box( $DV_X, <-1.1 -0.1>, <0.1 0.6> )
+                     red  = in_box( $DV_X, <-1.1  0.6>, <0.1 1.1> )
+                  END MODULE vertices
+               END MODULE GE_Colorist
+
+            END MODULE GE_Meshing
+
+            MODULE interior_fields
+               
+               MODULE uu_Q0
+                  name = "uu_Q0"
+                  nb_components = 1
+                  element_name = "PDE_2D_Q0_1node"
+                  storage_depth = 1
+                  MODULE DOFs_values
+                     type = "vertex_defined"
+                     MODULE value
+                        red = < 0.0 >
+                        blue =  vector(1.0-sqr( component($DV_X,1)-0.5 ))
+                     END MODULE value
+                  END MODULE DOFs_values
+               END MODULE uu_Q0
+               
+               MODULE uu_Q1
+                  name = "uu_Q1"
+                  nb_components = 1
+                  element_name = "PDE_2D_Q1_4nodes"
+                  storage_depth = 1
+                  MODULE DOFs_values
+                     type = "vertex_defined"
+                     MODULE value
+                        red = < 0.0 >
+                        blue =  vector(1.0-sqr( component($DV_X,1)-0.5 ))
+                     END MODULE value
+                  END MODULE DOFs_values
+               END MODULE uu_Q1
+               
+               MODULE uu_Q2_8
+                  name = "uu_Q2_8"
+                  nb_components = 1
+                  element_name = "PDE_2D_Q2_8nodes"
+                  storage_depth = 1
+                  MODULE DOFs_values
+                     type = "vertex_defined"
+                     MODULE value
+                        red = < 0.0 >
+                        blue =  vector(1.0-sqr( component($DV_X,1)-0.5 ))
+                     END MODULE value
+                  END MODULE DOFs_values
+               END MODULE uu_Q2_8
+               
+               MODULE uu_Q2_9
+                  name = "uu_Q2_9"
+                  nb_components = 1
+                  element_name = "PDE_2D_Q2_9nodes"
+                  storage_depth = 1
+                  MODULE DOFs_values
+                     type = "vertex_defined"
+                     MODULE value
+                        red = < 0.0 >
+                        blue =  vector(1.0-sqr( component($DV_X,1)-0.5 ))
+                     END MODULE value
+                  END MODULE DOFs_values
+               END MODULE uu_Q2_9
+            END MODULE interior_fields
+            
+            MODULE boundary_fields
+               
+               MODULE bd_L0
+                  name = "bd_L0"
+                  nb_components = 1
+                  element_name = "PDE_1D_P0_1node"
+                  storage_depth = 1
+                  MODULE DOFs_values
+                     type = "vertex_defined"
+                     MODULE value
+                        red = < 0.0 >
+                        blue =  vector(1.0-sqr( component($DV_X,1)-0.5 ))
+                     END MODULE value
+                  END MODULE DOFs_values
+               END MODULE bd_L0
+               
+               MODULE bd_L1
+                  name = "bd_L1"
+                  nb_components = 1
+                  element_name = "PDE_1D_P1_2nodes"
+                  storage_depth = 1
+                  MODULE DOFs_values
+                     type = "vertex_defined"
+                     MODULE value
+                        red = < 0.0 >
+                        blue =  vector(1.0-sqr( component($DV_X,1)-0.5 ))
+                     END MODULE value
+                  END MODULE DOFs_values
+               END MODULE bd_L1
+               
+            END MODULE boundary_fields
+            
+         END MODULE PDE_DomainAndFields
+         
+         MODULE solution
+            
+            MODULE interior_fields
+               
+               MODULE uu_Q0
+                  name = "uu_Q0"
+                  value = ( in_range( component($DV_X,1), < 0.0 0.5 > ) ?
+                            vector( 0.75+0.5*component($DV_X,1) ) :
+                            vector( 2.0*(1.0-component($DV_X,1)) ) )
+               END MODULE uu_Q0
+               
+               MODULE uu_Q1
+                  name = "uu_Q1"
+                  value = ( in_range( component($DV_X,1), < 0.0 0.5 > ) ?
+                            vector( 0.75+0.5*component($DV_X,1) ) :
+                            vector( 2.0*(1.0-component($DV_X,1)) ) )
+               END MODULE uu_Q1
+               
+               MODULE uu_Q2_8
+                  name = "uu_Q2_8"
+                  value = ( in_range( component($DV_X,1), < 0.0 0.5 > ) ?
+                            vector( 0.75+0.5*component($DV_X,1) ) :
+                            vector( 2.0*(1.0-component($DV_X,1)) ) )
+               END MODULE uu_Q2_8
+               
+               MODULE uu_Q2_9
+                  name = "uu_Q2_9"
+                  value = ( in_range( component($DV_X,1), < 0.0 0.5 > ) ?
+                            vector( 0.75+0.5*component($DV_X,1) ) :
+                            vector( 2.0*(1.0-component($DV_X,1)) ) )
+               END MODULE uu_Q2_9
+               
+            END MODULE interior_fields
+            
+            MODULE boundary_fields
+               
+               MODULE bd_L0
+                  name = "bd_L0"
+                  value = ( in_range( component($DV_X,1), < 0.0 0.5 > ) ?
+                            vector( 0.75+0.5*component($DV_X,1) ) :
+                            vector( 2.0*(1.0-component($DV_X,1)) ) )
+               END MODULE bd_L0
+               
+               MODULE bd_L1
+                  name = "bd_L1"
+                  value = ( in_range( component($DV_X,1), < 0.0 0.5 > ) ?
+                            vector( 0.75+0.5*component($DV_X,1) ) :
+                            vector( 2.0*(1.0-component($DV_X,1)) ) )
+               END MODULE bd_L1
+               
+            END MODULE boundary_fields
+            
+         END MODULE solution
+         
+      END MODULE PDE_FieldInitialization_2
+      
+   END MODULE PEL_ObjectTest#PDE_FieldInitialization_TEST
+   

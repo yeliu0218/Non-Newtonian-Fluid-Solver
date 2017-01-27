@@ -1,0 +1,55 @@
+MODULE PEL_Application
+   
+   concrete_name = "PEL_TestSuite"
+   
+   MODULE with_data_deck
+      
+      MODULE PEL_ObjectTest#EXT_MUMPSsolver
+         concrete_name = "LA_Solver_TEST"
+         test_matrices_path = join( this_file_dir(), "..", "..", "..", "..",
+                                    "LinearAlgebra", "tests", "Data" )
+         
+         MODULE EXT_MUMPSsolver#seq
+            
+            tested_matrix = < "sym22.mtx"
+            "gmres_M4.1.mtx"
+            "no_sym1522.mtx"
+            >
+            error_bound = 1.E-15
+            is_iterative = false
+            MODULE LA_Solver
+               concrete_name = "EXT_MUMPSsolver"
+               verbose = true
+               MUMPS_verbosity = -1
+               out_of_core = false
+               cntl1 = 0.001 // pivot threshold
+               icntl8 = 1 // diagonal scaling
+            END MODULE LA_Solver
+            MODULE LA_Matrix
+               concrete_name = "LA_DistMatrix" 
+            END MODULE LA_Matrix
+            
+         END MODULE EXT_MUMPSsolver#seq
+
+         if( nb_ranks()=1 )
+         MODULE EXT_MUMPSsolver#sym
+            
+            tested_matrix = < "sym22.mtx" "bcsstk03.mtx" >
+            error_bound = 1.E-15
+            is_iterative = false
+            MODULE LA_Solver
+               concrete_name = "EXT_MUMPSsolver"
+               verbose = true
+               MUMPS_verbosity = -1
+            END MODULE LA_Solver
+            MODULE LA_Matrix
+               concrete_name = "LA_SymmetricMatrix"
+            END MODULE LA_Matrix
+            
+         END MODULE EXT_MUMPSsolver#sym
+                  
+      END MODULE PEL_ObjectTest#EXT_MUMPSsolver
+      
+   END MODULE with_data_deck
+   
+END MODULE PEL_Application

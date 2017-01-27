@@ -1,0 +1,67 @@
+
+
+MODULE PEL_Application
+   concrete_name = "PDE_DomainVisu"
+      
+   check_meshing_connexity = true
+
+   MODULE PDE_DomainAndFields
+      nb_space_dimensions = 3
+      type = "finite_element"
+      verbose_level = 2
+      MODULE GE_Meshing
+         
+         concrete_name = "GE_BoxWithBoxes"
+         
+         vertices_coordinate_1 = regular_vector( 0.0, 5, 1.0 )
+         vertices_coordinate_0 = regular_vector( 0.0, 5, 1.0 )
+         vertices_coordinate_2 = regular_vector( 0.0, 5, 1.0 )
+         
+         mesh_polyhedron = < "GE_Rectangle" "GE_Cuboid" >
+         
+      END MODULE GE_Meshing
+            
+    MODULE interior_fields
+      MODULE field#velocity
+        MODULE DOFs_values
+          type = "uniformly_defined"
+          value = $DV_X
+        END MODULE DOFs_values
+        name = "velocity"
+        nb_components = 3
+        element_name =  "PDE_3D_Q1isoNonConfA_6nodes" 
+        storage_depth = 1
+      END MODULE field#velocity
+      MODULE field#pressure
+        MODULE DOFs_values
+          type = "uniformly_defined"
+          value = vector(component($DV_X,0))
+        END MODULE DOFs_values
+        name = "pressure"
+        nb_components = 1
+        element_name = "PDE_3D_Q0_1node"
+        storage_depth = 1
+      END MODULE field#pressure
+    END MODULE interior_fields
+      
+      MODULE PDE_ResultSaver
+         writers = < "PEL_VTKwriter" >
+         writing_mode = "text"
+         files_basename = "save" 
+         MODULE Velocity
+            where_to_save = "at_vertices"
+            entry_name = "Velocity"
+            field = "velocity"
+         END MODULE Velocity
+         
+         MODULE pressure
+            where_to_save = "at_cell_centers"
+            entry_name = "Pressure"
+            field = "pressure"
+         END MODULE pressure
+      END MODULE PDE_ResultSaver 
+      
+   END MODULE PDE_DomainAndFields
+   
+   
+END MODULE PEL_Application

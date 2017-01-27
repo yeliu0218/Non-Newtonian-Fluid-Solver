@@ -1,0 +1,291 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>FE.hh</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="FE.hh_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="FEpack-tree.html"><span>Tree</span></a>
+    <a href="FE.html"><span>Class</span></a>
+    <span class=selected>Header</span>
+    <a href="FE.cc.html"><span>Implementation</span></a>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="FEpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#ifndef</font><font class="text"> FE_HH
+</font><font class="kw2">#define</font><font class="text"> FE_HH
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Object</font><font class="text">.hh&gt;
+
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">doubleArray2D</font><font class="text"> ;
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">doubleVector</font><font class="text"> ;
+
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">PDE_CursorFEside</font><font class="text"> ;
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">PDE_DiscreteField</font><font class="text"> ;
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">PDE_LocalEquation</font><font class="text"> ;
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">PDE_LocalFE</font><font class="text"> ;
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">PDE_LocalFEbound</font><font class="text"> ;
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">PDE_LocalFEcell</font><font class="text"> ;
+
+</font><font class="comment">/*
+PUBLISHED
+*/
+</font><font class="text">
+</font><font class="kw1">class</font><font class="text"> PEL_EXPORT </font><font class="kw3">FE
+</font><font class="text">{
+   </font><font class="kw1">public</font><font class="text">: </font><font class="comment">//--------------------------------------------------------------
+</font><font class="text">
+   </font><font class="comment">//-- Geometrical characteristics
+</font><font class="text">
+      </font><font class="kw1">enum</font><font class="text"> FE_Geometry
+      {
+         cartesian,
+         axisymmetrical,
+         unspecified
+      } ;
+
+      </font><font class="kw1">static</font><font class="text"> FE_Geometry geometry( </font><font class="kw1">void</font><font class="text"> ) ;
+      </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> set_geometry( FE_Geometry geom ) ;
+
+      </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">double</font><font class="text"> bound_measure( </font><font class="kw3">PDE_LocalFEbound</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fe ) ;
+      </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">double</font><font class="text"> side_measure( </font><font class="kw3">PDE_CursorFEside</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fe ) ;
+      </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">double</font><font class="text"> side_measure( </font><font class="kw3">PDE_CursorFEside</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fe, </font><font class="kw2">size_t</font><font class="text"> i_adj ) ;
+      </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">double</font><font class="text"> cell_measure( </font><font class="kw3">PDE_LocalFEcell</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fe ) ;
+
+   </font><font class="comment">//-- Terms of variational approximations : contributions to local systems
+</font><font class="text">
+      </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> add_row_col_S( </font><font class="kw3">PDE_LocalEquation</font><font class="text">* leq,
+                                 </font><font class="kw3">PDE_LocalFE</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fe, 
+                                 </font><font class="kw1">double</font><font class="text"> coef ) ;
+
+      </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> add_row_col_NS( </font><font class="kw3">PDE_LocalEquation</font><font class="text">* leq,
+                                  </font><font class="kw3">PDE_LocalFE</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fe, 
+                                  </font><font class="kw1">double</font><font class="text"> coef ) ;
+
+      </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> add_lumped_row_col( </font><font class="kw3">PDE_LocalEquation</font><font class="text">* leq,
+                                      </font><font class="kw3">PDE_LocalFE</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fe, 
+                                      </font><font class="kw1">double</font><font class="text"> coef ) ;
+
+      </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> add_grad_row_grad_col_S( </font><font class="kw3">PDE_LocalEquation</font><font class="text">* leq,
+                                           </font><font class="kw3">PDE_LocalFEcell</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fe, 
+                                           </font><font class="kw1">double</font><font class="text"> coef ) ;
+
+      </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> add_grad_row_grad_col_NS( </font><font class="kw3">PDE_LocalEquation</font><font class="text">* leq,
+                                            </font><font class="kw3">PDE_LocalFEcell</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fe, 
+                                            </font><font class="kw1">double</font><font class="text"> coef ) ;
+
+      </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> add_grad_row_D_col_S( </font><font class="kw3">PDE_LocalEquation</font><font class="text">* leq,
+                                        </font><font class="kw3">PDE_LocalFEcell</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fe,
+                                        </font><font class="kw1">double</font><font class="text"> coef ) ;
+
+      </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> add_row( </font><font class="kw3">PDE_LocalEquation</font><font class="text">* leq,
+                           </font><font class="kw3">PDE_LocalFE</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fe,
+                           </font><font class="kw1">double</font><font class="text"> coef ) ;
+
+      </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> add_row( </font><font class="kw3">PDE_LocalEquation</font><font class="text">* leq,
+                           </font><font class="kw3">PDE_LocalFE</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fe,
+                           </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; coef_1,
+                           </font><font class="kw1">double</font><font class="text"> coef_2 = 1.0 ) ;
+
+      </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> add_grad_row( </font><font class="kw3">PDE_LocalEquation</font><font class="text">* leq,
+                                </font><font class="kw3">PDE_LocalFE</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fe,
+                                </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; coef ) ;
+
+      </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> add_grad_row( </font><font class="kw3">PDE_LocalEquation</font><font class="text">* leq,
+                                </font><font class="kw3">PDE_LocalFE</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fe,
+                                </font><font class="kw3">doubleArray2D</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; coef ) ;
+
+      </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> add_div_row( </font><font class="kw3">PDE_LocalEquation</font><font class="text">* leq,
+                               </font><font class="kw3">PDE_LocalFE</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fe,
+                               </font><font class="kw1">double</font><font class="text"> coef ) ;
+
+      </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> add_row_vvgrad_col( </font><font class="kw3">PDE_LocalEquation</font><font class="text">* leq,
+                                      </font><font class="kw3">PDE_LocalFEcell</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fe, 
+                                      </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; aa,
+                                      </font><font class="kw1">double</font><font class="text"> coef ) ;
+
+      </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> add_grad_row_vv_otimes_col( </font><font class="kw3">PDE_LocalEquation</font><font class="text">* leq,
+                                              </font><font class="kw3">PDE_LocalFEcell</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fe,
+                                              </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; aa,
+                                              </font><font class="kw1">double</font><font class="text"> coef ) ;
+
+      </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> add_vvgrad_row_col( </font><font class="kw3">PDE_LocalEquation</font><font class="text">* leq,
+                                      </font><font class="kw3">PDE_LocalFEcell</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fe,
+                                      </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; aa,
+                                      </font><font class="kw1">double</font><font class="text"> coef ) ;
+
+      </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> add_vvgrad_row_vvgrad_col( </font><font class="kw3">PDE_LocalEquation</font><font class="text">* leq,
+                                             </font><font class="kw3">PDE_LocalFEcell</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fe, 
+                                             </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; aa,
+                                             </font><font class="kw1">double</font><font class="text"> coef ) ;
+
+      </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> add_vvgrad_row_lapl_col( </font><font class="kw3">PDE_LocalEquation</font><font class="text">* leq,
+                                           </font><font class="kw3">PDE_LocalFEcell</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fe,
+                                           </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; aa,
+                                           </font><font class="kw1">double</font><font class="text"> coef ) ;
+
+      </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> add_vvgrad_row_div_D_col( </font><font class="kw3">PDE_LocalEquation</font><font class="text">* leq,
+                                            </font><font class="kw3">PDE_LocalFEcell</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fe,
+                                            </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; aa,
+                                            </font><font class="kw1">double</font><font class="text"> coef,
+                                            </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; dcoef ) ;
+
+      </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> add_vvgrad_row( </font><font class="kw3">PDE_LocalEquation</font><font class="text">* leq,
+                                  </font><font class="kw3">PDE_LocalFEcell</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fe,
+                                  </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; aa,
+                                  </font><font class="kw1">double</font><font class="text"> coef ) ;
+
+      </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> add_vvgrad_row( </font><font class="kw3">PDE_LocalEquation</font><font class="text">* leq,
+                                  </font><font class="kw3">PDE_LocalFEcell</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fe,
+                                  </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; aa,
+                                  </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; coef_1,
+                                  </font><font class="kw1">double</font><font class="text"> coef_2 = 1.0 ) ;
+
+      </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> add_row_div_col( </font><font class="kw3">PDE_LocalEquation</font><font class="text">* leq,
+                                   </font><font class="kw3">PDE_LocalFEcell</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fe,
+                                   </font><font class="kw1">double</font><font class="text"> coef ) ;
+
+      </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> add_row_grad_col( </font><font class="kw3">PDE_LocalEquation</font><font class="text">* leq,
+                                    </font><font class="kw3">PDE_LocalFEcell</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fe,
+                                    </font><font class="kw1">double</font><font class="text"> coef ) ;
+
+      </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> add_div_row_div_col( </font><font class="kw3">PDE_LocalEquation</font><font class="text">* leq,
+                                       </font><font class="kw3">PDE_LocalFEcell</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fe,
+                                       </font><font class="kw1">double</font><font class="text"> coef ) ;
+
+      </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> add_row_vv_col( </font><font class="kw3">PDE_LocalEquation</font><font class="text">* leq,
+                                  </font><font class="kw3">PDE_LocalFEcell</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fe,
+                                  </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; aa,
+                                  </font><font class="kw1">double</font><font class="text"> coef ) ;
+
+      </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> add_lapl_row_vvgrad_col( </font><font class="kw3">PDE_LocalEquation</font><font class="text">* leq,
+                                           </font><font class="kw3">PDE_LocalFEcell</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fe,
+                                           </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; aa,
+                                           </font><font class="kw1">double</font><font class="text"> coef ) ;
+
+      </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> add_row_lapl_col( </font><font class="kw3">PDE_LocalEquation</font><font class="text">* leq,
+                                    </font><font class="kw3">PDE_LocalFEcell</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fe,
+                                    </font><font class="kw1">double</font><font class="text"> coef ) ;
+
+      </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> add_lapl_row_lapl_col( </font><font class="kw3">PDE_LocalEquation</font><font class="text">* leq,
+                                         </font><font class="kw3">PDE_LocalFEcell</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fe,
+                                         </font><font class="kw1">double</font><font class="text"> coef ) ;
+
+      </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> add_lapl_row_col( </font><font class="kw3">PDE_LocalEquation</font><font class="text">* leq,
+                                    </font><font class="kw3">PDE_LocalFEcell</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fe,
+                                    </font><font class="kw1">double</font><font class="text"> coef ) ;
+
+      </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> add_lapl_row( </font><font class="kw3">PDE_LocalEquation</font><font class="text">* leq,
+                                </font><font class="kw3">PDE_LocalFE</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fe,
+                                </font><font class="kw1">double</font><font class="text"> coef ) ;
+
+      </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> add_lapl_row( </font><font class="kw3">PDE_LocalEquation</font><font class="text">* leq,
+                                </font><font class="kw3">PDE_LocalFE</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fe,
+                                </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; coef_1,
+                                </font><font class="kw1">double</font><font class="text"> coef_2 = 1.0 ) ;
+
+   </font><font class="comment">//-- Differential operators applied to fields : computation of point values
+</font><font class="text">
+      </font><font class="comment">// `target' += value at the current integration point of `fe' of
+</font><font class="text">      </font><font class="comment">// `coef'*[grad`u'+(grad`u')^t]:[grad`u'+(grad`u')^t] 
+</font><font class="text">      </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> add_D_u_D_u_at_IP( </font><font class="kw1">double</font><font class="text">&amp; target, 
+                                     </font><font class="kw3">PDE_DiscreteField</font><font class="text"> </font><font class="kw1">const</font><font class="text">* u,
+                                     </font><font class="kw2">size_t</font><font class="text"> u_level,
+                                     </font><font class="kw3">PDE_LocalFE</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fe,
+                                     </font><font class="kw1">double</font><font class="text"> coef ) ;
+      
+      </font><font class="comment">// `target' += value at the current calculation point of `fe' of
+</font><font class="text">      </font><font class="comment">// `coef'*[grad`u'+(grad`u')^t]:[grad`u'+(grad`u')^t] 
+</font><font class="text">      </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> add_D_u_D_u_at_pt( </font><font class="kw1">double</font><font class="text">&amp; target,
+                                     </font><font class="kw3">PDE_DiscreteField</font><font class="text"> </font><font class="kw1">const</font><font class="text">* u,
+                                     </font><font class="kw2">size_t</font><font class="text"> u_level,
+                                     </font><font class="kw3">PDE_LocalFE</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fe,
+                                     </font><font class="kw1">double</font><font class="text"> coef ) ;
+
+      </font><font class="comment">// `target' += value at the current integration point of `fe' of
+</font><font class="text">      </font><font class="comment">// `coef'* div`u'            
+</font><font class="text">      </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> add_div_u_at_IP( </font><font class="kw1">double</font><font class="text">&amp; target,
+                                   </font><font class="kw3">PDE_DiscreteField</font><font class="text"> </font><font class="kw1">const</font><font class="text">* u,
+                                   </font><font class="kw2">size_t</font><font class="text"> u_level,
+                                   </font><font class="kw3">PDE_LocalFE</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fe,
+                                   </font><font class="kw1">double</font><font class="text"> coef ) ;
+
+      </font><font class="comment">// `target' += value at the current calculation point of `fe' of
+</font><font class="text">      </font><font class="comment">// `coef'*[div`u']              
+</font><font class="text">      </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> add_div_u_at_pt( </font><font class="kw1">double</font><font class="text">&amp; target,
+                                   </font><font class="kw3">PDE_DiscreteField</font><font class="text"> </font><font class="kw1">const</font><font class="text">* u,
+                                   </font><font class="kw2">size_t</font><font class="text"> u_level,
+                                   </font><font class="kw3">PDE_LocalFE</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fe,
+                                   </font><font class="kw1">double</font><font class="text"> coef ) ;
+
+   </font><font class="kw1">protected</font><font class="text">: </font><font class="comment">//-----------------------------------------------------------
+</font><font class="text">
+   </font><font class="kw1">private</font><font class="text">: </font><font class="comment">//-------------------------------------------------------------
+</font><font class="text">
+   </font><font class="comment">//-- Static attribute :
+</font><font class="text">
+      </font><font class="kw1">static</font><font class="text"> FE_Geometry GEOM ;
+
+} ;
+
+</font><font class="kw2">#endif
+</font><font class="text">
+</font>
+</pre>
+</body>
+</html>

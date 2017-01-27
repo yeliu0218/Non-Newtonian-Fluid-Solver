@@ -1,0 +1,406 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>LA_SeqMatrix.hh</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="LA_SeqMatrix.hh_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="LApack-tree.html"><span>Tree</span></a>
+    <a href="LA_SeqMatrix.html"><span>Class</span></a>
+    <span class=selected>Header</span>
+    <a href="LA_SeqMatrix.cc.html"><span>Implementation</span></a>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="LApack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated
+ *  reusable components, whose purpose is to simplify the task of developing
+ *  softwares of numerical mathematics and scientific computing.
+ *
+ *  This software is governed by the CeCILL-C license under French law and
+ *  abiding by the rules of distribution of free software. You can use, modify
+ *  and/or redistribute the software under the terms of the CeCILL-C license
+ *  as circulated by CEA, CNRS and INRIA at the following URL
+ *  &quot;http://www.cecill.info&quot;.
+ *
+ *  As a counterpart to the access to the source code and rights to copy,
+ *  modify and redistribute granted by the license, users are provided only
+ *  with a limited warranty and the software's author, the holder of the
+ *  economic rights, and the successive licensors have only limited liability.
+ *
+ *  In this respect, the user's attention is drawn to the risks associated
+ *  with loading, using, modifying and/or developing or reproducing the
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also
+ *  therefore means that it is reserved for developers and experienced
+ *  professionals having in-depth computer knowledge. Users are therefore
+ *  encouraged to load and test the software's suitability as regards their
+ *  requirements in conditions enabling the security of their systems and/or
+ *  data to be ensured and, more generally, to use and operate it in the same
+ *  conditions as regards security.
+ *
+ *  The fact that you are presently reading this means that you have had
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#ifndef</font><font class="text"> LA_SEQ_MATRIX_HH
+</font><font class="kw2">#define</font><font class="text"> LA_SEQ_MATRIX_HH
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_Matrix</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_SeqVector</font><font class="text">.hh&gt;
+
+
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">LA_MatrixIterator</font><font class="text"> ;
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> ;
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">PEL_ObjectRegister</font><font class="text"> ;
+
+
+</font><font class="comment">/*
+Sequential matrices belonging to PELICANS framework such that
+   - storage is not necessarily required for all coefficients ;
+   - all the coefficients that are not stored are zero ;
+   - there exist a traversal policy that will visit every stored
+     coefficient exactly once.
+</font><font class="text">
+</font><font class="comment">PUBLISHED
+*/
+</font><font class="text">
+</font><font class="kw1">class</font><font class="text"> PEL_EXPORT </font><font class="kw3">LA_SeqMatrix</font><font class="text"> : </font><font class="kw1">public</font><font class="text"> </font><font class="kw3">LA_Matrix
+</font><font class="text">{
+   </font><font class="kw1">public</font><font class="text">: </font><font class="comment">//-----------------------------------------------------------
+</font><font class="text">
+   </font><font class="comment">//-- Instance delivery and initialization
+</font><font class="text">
+      </font><font class="kw1">static</font><font class="text"> </font><font class="kw3">LA_SeqMatrix</font><font class="text">* make( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                 </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp ) ;
+
+      </font><font class="comment">// Create a copy of `other' (copying all stored coefficients of `other')
+</font><font class="text">      </font><font class="comment">// of the same type of `self'.
+</font><font class="text">      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw3">LA_SeqMatrix</font><font class="text">* create_copy( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                         </font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* other ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> re_initialize(
+                        </font><font class="kw2">size_t</font><font class="text"> a_nb_rows, </font><font class="kw2">size_t</font><font class="text"> a_nb_cols,
+                        </font><font class="kw2">size_t</font><font class="text"> a_nb_local_rows = </font><font class="kw3">PEL</font><font class="text">::bad_index(),
+                        </font><font class="kw2">size_t</font><font class="text"> a_nb_local_cols = </font><font class="kw3">PEL</font><font class="text">::bad_index() ) ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw3">LA_SeqMatrix</font><font class="text">* create_matrix( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner ) </font><font class="kw1">const</font><font class="text">  = 0 ;
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw3">LA_SeqVector</font><font class="text">* create_vector( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner ) </font><font class="kw1">const</font><font class="text"> ;
+
+   </font><font class="comment">//-- Characteristics
+</font><font class="text">
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw3">LA_Implementation</font><font class="text"> </font><font class="kw1">const</font><font class="text">* implementation( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="comment">// memory allocated by `self'
+</font><font class="text">      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw2">size_t</font><font class="text"> allocated_memory( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> = 0 ;
+
+   </font><font class="comment">//-- Distributed processing
+</font><font class="text">
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw3">PEL_DistributedPartition</font><font class="text"> </font><font class="kw1">const</font><font class="text">* row_distribution( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw3">PEL_DistributedPartition</font><font class="text"> </font><font class="kw1">const</font><font class="text">* col_distribution( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+
+   </font><font class="comment">//-- Access
+</font><font class="text">
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw3">LA_MatrixIterator</font><font class="text">* create_stored_item_iterator(
+                                             </font><font class="kw3">PEL_Object</font><font class="text">* a_owner ) </font><font class="kw1">const</font><font class="text"> = 0 ;
+
+      </font><font class="comment">// IMPLEMENTATION : copy of `self'.
+</font><font class="text">      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw3">LA_SeqMatrix</font><font class="text">* create_local_matrix( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw2">size_t</font><font class="text"> nb_stored_items( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> = 0 ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">double</font><font class="text"> item( </font><font class="kw2">size_t</font><font class="text"> i, </font><font class="kw2">size_t</font><font class="text"> j ) </font><font class="kw1">const</font><font class="text"> = 0 ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> extract_diag( </font><font class="kw3">LA_Vector</font><font class="text">* diag ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="comment">// Extract `i'-th row of `self' in vector `row'.
+</font><font class="text">      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> extract_row( </font><font class="kw2">size_t</font><font class="text"> i, </font><font class="kw3">LA_Vector</font><font class="text">* row ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="comment">// Extract `j'-th column of `self' in vector `col'.
+</font><font class="text">      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> extract_col( </font><font class="kw2">size_t</font><font class="text"> j, </font><font class="kw3">LA_Vector</font><font class="text">* col ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="comment">// Assigning the sum of the coefficients absolute value for each line
+</font><font class="text">      </font><font class="comment">// of `self' to the corresponding element of `lump'.
+</font><font class="text">      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> extract_lump( </font><font class="kw3">LA_Vector</font><font class="text">* lump ) </font><font class="kw1">const</font><font class="text"> ;
+
+   </font><font class="comment">//-- Element change
+</font><font class="text">
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> nullify( </font><font class="kw1">void</font><font class="text"> ) ;
+
+      </font><font class="comment">// Make all coefficients of the `i'-th row vanish.
+</font><font class="text">      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> nullify_row( </font><font class="kw2">size_t</font><font class="text"> i ) ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> set_item( </font><font class="kw2">size_t</font><font class="text"> i, </font><font class="kw2">size_t</font><font class="text"> j, </font><font class="kw1">double</font><font class="text"> x ) = 0 ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> add_to_item( </font><font class="kw2">size_t</font><font class="text"> i, </font><font class="kw2">size_t</font><font class="text"> j, </font><font class="kw1">double</font><font class="text"> x ) = 0 ;
+
+      </font><font class="comment">// Assign `val' to all the stored coefficients.
+</font><font class="text">      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> set_stored_items( </font><font class="kw1">double</font><font class="text"> val ) = 0 ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> scale( </font><font class="kw1">double</font><font class="text"> alpha ) ;
+
+   </font><font class="comment">//-- BLAS level 2 : matrix-vector operators
+</font><font class="text">
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> multiply_vec_then_add(
+                           </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* x, </font><font class="kw3">LA_Vector</font><font class="text">* y,
+                           </font><font class="kw1">double</font><font class="text"> alpha = 1.0, </font><font class="kw1">double</font><font class="text"> beta = 0.0 ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> tr_multiply_vec_then_add(
+                           </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* x, </font><font class="kw3">LA_Vector</font><font class="text">* y,
+                           </font><font class="kw1">double</font><font class="text"> alpha = 1.0, </font><font class="kw1">double</font><font class="text"> beta = 0.0 ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> scale_as_diag_mat_mat( </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* lvec ) ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> scale_as_mat_diag_mat( </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* rvec ) ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> add_to_diag( </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* vec ) ;
+
+   </font><font class="comment">//-- BLAS level 3 : matrix-matrix operators
+</font><font class="text">
+      </font><font class="comment">// Reinitialize by copying all stored coefficients of `A'.
+</font><font class="text">      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> </font><font class="kw2">set</font><font class="text">( </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* A, </font><font class="kw1">bool</font><font class="text"> same_pattern=</font><font class="kw1">false</font><font class="text"> ) ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> add_Mat( </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* A,
+                            </font><font class="kw1">double</font><font class="text"> alpha = 1.0,
+                            </font><font class="kw1">bool</font><font class="text"> same_pattern=</font><font class="kw1">false</font><font class="text"> ) ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> add_tMat( </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* A, </font><font class="kw1">double</font><font class="text"> alpha = 1.0 ) ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> add_Mat_Mat( </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* A,
+                                </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* B,
+                                </font><font class="kw1">double</font><font class="text"> alpha = 1.0 ) ;
+
+      </font><font class="comment">// Multiply the transpose of `A' by `B' and `alpha', then add to `self':
+</font><font class="text">      </font><font class="comment">//   `self' &lt;- `self' + `alpha'*transpose(`A')*`B'.
+</font><font class="text">      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> add_tMat_Mat( </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* A, </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* B,
+                                 </font><font class="kw1">double</font><font class="text"> alpha = 1.0 ) ;
+
+      </font><font class="comment">// Multiply `A' by the transpose of `B' and `alpha', then add to `self':
+</font><font class="text">      </font><font class="comment">//   `self' &lt;- `self' + `alpha'*`A'*transpose(`B').
+</font><font class="text">      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> add_Mat_tMat( </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* A, </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* B,
+                                 </font><font class="kw1">double</font><font class="text"> alpha = 1.0 ) ;
+
+      </font><font class="comment">// Multiply the transpose of `A' by the transpose of `B' and `alpha',
+</font><font class="text">      </font><font class="comment">// then add to `self' :
+</font><font class="text">      </font><font class="comment">//   `self' &lt;- `self' + `alpha'*transpose(`A')*transpose(`B').
+</font><font class="text">      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> add_tMat_tMat( </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* A, </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* B,
+                                  </font><font class="kw1">double</font><font class="text"> alpha = 1.0 ) ;
+
+   </font><font class="comment">//-- System factorization(130.)
+</font><font class="text">
+      </font><font class="comment">// Factorize `self' with modified ILU 0 algorithm.
+</font><font class="text">      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> factorize_MILU0( </font><font class="kw1">bool</font><font class="text"> modified, </font><font class="kw1">double</font><font class="text"> piv_min ) ;
+
+      </font><font class="comment">/* Solve a linear system of matrix L.U where L is a lower
+         triangular matrix with ones on the diagonal and where U is an
+         upper triangular matrix. L, appart from its diagonal, and U
+         are stored in `self'. */
+</font><font class="text">      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> solve_LU( </font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* rhs,
+                             </font><font class="kw3">LA_SeqVector</font><font class="text">* sol ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">enum</font><font class="text"> relaxation_mode { forward, backward, symmetric } ;
+
+      </font><font class="comment">/* Approximate the solution `sol' of the linear system:
+                          `self'*`sol'=`rhs'
+         performing the relaxation:
+           - `mode'=forward or `mode'=symmetric
+               `sol'(i) = (1.-`omega')*`sol'(i)+`omega'*r(i) i=1..`::nb_rows'
+           - `mode'=backward or `mode'=symmetric
+               `sol'(i) = (1.-`omega')*`sol'(i)+`omega'*r(i) i=`::nb_rows'..1
+         where r(i) = ( `rhs'(i)-sum(i!=j){`self'(i,j)*`sol'(i)} )/`self'(i,i)
+         The convergence is ensured for `omega' in ]0,2[.
+         For optimization, the vector:
+                   `omega_inv_diag'(i) = `omega'/`self'(i,i)
+         is pre-built. */
+</font><font class="text">      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> relax( </font><font class="kw1">double</font><font class="text"> omega,
+                          </font><font class="kw3">LA_SeqMatrix</font><font class="text">::relaxation_mode mode,
+                          </font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* omega_inv_diag,
+                          </font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* rhs,
+                          </font><font class="kw3">LA_SeqVector</font><font class="text">* sol ) </font><font class="kw1">const</font><font class="text"> ;
+
+   </font><font class="comment">//-- Input - Output
+</font><font class="text">
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> writeMM( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; file ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="comment">// Save `self' in `mod'.
+</font><font class="text">      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> save( </font><font class="kw3">PEL_Module</font><font class="text">* mod ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="comment">// Restore matrix described by `exp'.
+</font><font class="text">      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> restore( </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp ) ;
+
+   </font><font class="kw1">protected</font><font class="text">: </font><font class="comment">//--------------------------------------------------------
+</font><font class="text">
+      </font><font class="kw1">virtual</font><font class="text"> ~</font><font class="kw3">LA_SeqMatrix</font><font class="text">( </font><font class="kw1">void</font><font class="text"> ) ;
+
+      </font><font class="kw3">LA_SeqMatrix</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner, </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_name ) ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> re_initialize_with_global_sizes( </font><font class="kw2">size_t</font><font class="text"> a_nb_rows,
+                                                    </font><font class="kw2">size_t</font><font class="text"> a_nb_cols ) = 0 ;
+
+   </font><font class="comment">//-- Plug in
+</font><font class="text">
+      </font><font class="comment">// for prototype registration only
+</font><font class="text">      </font><font class="kw3">LA_SeqMatrix</font><font class="text">( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_name ) ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw3">LA_SeqMatrix</font><font class="text">* create_replica(
+                                   </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp ) </font><font class="kw1">const</font><font class="text"> = 0 ;
+
+   </font><font class="comment">//-- System factorization
+</font><font class="text">
+      </font><font class="kw1">void</font><font class="text"> raise_MILU0_zero_pivot( </font><font class="kw2">size_t</font><font class="text"> i ) </font><font class="kw1">const</font><font class="text"> ;
+
+   </font><font class="comment">//-- Preconditions, Postconditions, Invariant
+</font><font class="text">
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> invariant( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> create_copy_PRE( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                    </font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* other ) </font><font class="kw1">const</font><font class="text"> ;
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> create_copy_POST( </font><font class="kw3">LA_SeqMatrix</font><font class="text">* result,
+                                     </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                     </font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* other ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> item_PRE( </font><font class="kw2">size_t</font><font class="text"> i, </font><font class="kw2">size_t</font><font class="text"> j ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> extract_row_PRE( </font><font class="kw2">size_t</font><font class="text"> i, </font><font class="kw3">LA_Vector</font><font class="text">* row ) </font><font class="kw1">const</font><font class="text"> ;
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> extract_row_POST( </font><font class="kw2">size_t</font><font class="text"> i, </font><font class="kw3">LA_Vector</font><font class="text">* row ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> extract_col_PRE( </font><font class="kw2">size_t</font><font class="text"> j, </font><font class="kw3">LA_Vector</font><font class="text">* col ) </font><font class="kw1">const</font><font class="text"> ;
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> extract_col_POST( </font><font class="kw2">size_t</font><font class="text"> j, </font><font class="kw3">LA_Vector</font><font class="text">* col ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> extract_lump_PRE( </font><font class="kw3">LA_Vector</font><font class="text">* lump ) </font><font class="kw1">const</font><font class="text"> ;
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> extract_lump_POST( </font><font class="kw3">LA_Vector</font><font class="text">* lump ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> nullify_POST( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> nullify_row_PRE( </font><font class="kw2">size_t</font><font class="text"> i ) </font><font class="kw1">const</font><font class="text"> ;
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> nullify_row_POST( </font><font class="kw2">size_t</font><font class="text"> i ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> add_tMat_Mat_PRE( </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* A, </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* B,
+                                     </font><font class="kw1">double</font><font class="text"> alpha ) </font><font class="kw1">const</font><font class="text"> ;
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> add_tMat_Mat_POST( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> add_Mat_tMat_PRE( </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* A, </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* B,
+                                     </font><font class="kw1">double</font><font class="text"> alpha ) </font><font class="kw1">const</font><font class="text"> ;
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> add_Mat_tMat_POST( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> add_tMat_tMat_PRE( </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* A, </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* B,
+                                      </font><font class="kw1">double</font><font class="text"> alpha ) </font><font class="kw1">const</font><font class="text"> ;
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> add_tMat_tMat_POST( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> set_stored_items_POST( </font><font class="kw1">double</font><font class="text"> val ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> set_PRE( </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* A, </font><font class="kw1">bool</font><font class="text"> same_pattern ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> add_Mat_PRE( </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* A, </font><font class="kw1">double</font><font class="text"> alpha,
+                                </font><font class="kw1">bool</font><font class="text"> same_pattern ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> factorize_MILU0_PRE(
+                                    </font><font class="kw1">bool</font><font class="text"> modified, </font><font class="kw1">double</font><font class="text"> piv_min ) </font><font class="kw1">const</font><font class="text"> ;
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> factorize_MILU0_POST( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> solve_LU_PRE(
+                       </font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* rhs,
+                       </font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* sol ) </font><font class="kw1">const</font><font class="text"> ;
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> solve_LU_POST(
+                       </font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* rhs,
+                       </font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* sol ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> relax_PRE(
+                       </font><font class="kw1">double</font><font class="text"> omega,
+                       </font><font class="kw3">LA_SeqMatrix</font><font class="text">::relaxation_mode mode,
+                       </font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* omega_inv_diag,
+                       </font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* rhs,
+                       </font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* sol ) </font><font class="kw1">const</font><font class="text"> ;
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> relax_POST(
+                       </font><font class="kw1">double</font><font class="text"> omega,
+                       </font><font class="kw3">LA_SeqMatrix</font><font class="text">::relaxation_mode mode,
+                       </font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* omega_inv_diag,
+                       </font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* rhs,
+                       </font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* sol ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> re_initialize_with_global_sizes_PRE(
+                                                    </font><font class="kw2">size_t</font><font class="text"> a_nb_rows,
+                                                    </font><font class="kw2">size_t</font><font class="text"> a_nb_cols ) </font><font class="kw1">const</font><font class="text"> ;
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> re_initialize_with_global_sizes_POST(
+                                                    </font><font class="kw2">size_t</font><font class="text"> a_nb_rows,
+                                                    </font><font class="kw2">size_t</font><font class="text"> a_nb_cols ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> save_PRE( </font><font class="kw3">PEL_Module</font><font class="text"> </font><font class="kw1">const</font><font class="text">* mod ) </font><font class="kw1">const</font><font class="text"> ;
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> save_POST( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> restore_PRE( </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp ) </font><font class="kw1">const</font><font class="text"> ;
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> restore_POST( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+
+    </font><font class="kw1">private</font><font class="text">: </font><font class="comment">//----------------------------------------------------------
+</font><font class="text">
+      </font><font class="kw3">LA_SeqMatrix</font><font class="text">( </font><font class="kw1">void</font><font class="text"> ) ;
+      </font><font class="kw3">LA_SeqMatrix</font><font class="text">( </font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; other ) ;
+      </font><font class="kw3">LA_SeqMatrix</font><font class="text">&amp; </font><font class="kw1">operator</font><font class="text">=( </font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; other ) ;
+
+      </font><font class="kw1">void</font><font class="text"> set_IMP( </font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* A, </font><font class="kw1">bool</font><font class="text"> same_pattern ) ;
+
+      </font><font class="kw1">void</font><font class="text"> add_Mat_IMP( </font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* A, </font><font class="kw1">double</font><font class="text"> alpha,
+                        </font><font class="kw1">bool</font><font class="text"> same_pattern ) ;
+
+      </font><font class="kw1">void</font><font class="text"> add_tMat_IMP( </font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* A, </font><font class="kw1">double</font><font class="text"> alpha ) ;
+
+      </font><font class="kw1">void</font><font class="text"> add_Mat_Mat_IMP( </font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* A, </font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* B,
+                            </font><font class="kw1">double</font><font class="text"> alpha ) ;
+
+      </font><font class="kw1">void</font><font class="text"> add_tMat_Mat_IMP( </font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* A, </font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* B,
+                             </font><font class="kw1">double</font><font class="text"> alpha ) ;
+
+      </font><font class="kw1">void</font><font class="text"> add_Mat_tMat_IMP( </font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* A, </font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* B,
+                             </font><font class="kw1">double</font><font class="text"> alpha ) ;
+
+      </font><font class="kw1">void</font><font class="text"> add_tMat_tMat_IMP( </font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* A, </font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* B,
+                              </font><font class="kw1">double</font><font class="text"> alpha ) ;
+
+      </font><font class="kw1">bool</font><font class="text"> has_same_pattern( </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* A ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">static</font><font class="text"> </font><font class="kw3">PEL_ObjectRegister</font><font class="text">* sparse_mat_pluggin_map( </font><font class="kw1">void</font><font class="text"> ) ;
+
+   </font><font class="comment">//-- Preconditions, Postconditions, Invariant
+</font><font class="text">
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> implementation_POST(
+                                </font><font class="kw3">LA_Implementation</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result ) </font><font class="kw1">const</font><font class="text"> ;
+
+   </font><font class="comment">//-- Attributes
+</font><font class="text">
+      </font><font class="comment">// Distributed partition:
+</font><font class="text">      </font><font class="kw1">mutable</font><font class="text"> </font><font class="kw3">PEL_DistributedPartition</font><font class="text">* ROW_DIST ;
+      </font><font class="kw1">mutable</font><font class="text"> </font><font class="kw3">PEL_DistributedPartition</font><font class="text">* COL_DIST ;
+} ;
+
+</font><font class="kw2">#endif
+</font><font class="text">
+</font>
+</pre>
+</body>
+</html>

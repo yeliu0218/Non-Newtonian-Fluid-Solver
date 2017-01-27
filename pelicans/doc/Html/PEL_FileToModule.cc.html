@@ -1,0 +1,270 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>PEL_FileToModule.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="PEL_FileToModule.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="PELpack-tree.html"><span>Tree</span></a>
+    <a href="PEL_FileToModule.html"><span>Class</span></a>
+    <a href="PEL_FileToModule.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="PELpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_FileToModule</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Iterator</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Module</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ObjectRegister</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Root</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_assertions</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;sstream&gt;
+
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+
+</font><font class="kw1">struct</font><font class="text"> PEL_FileToModule_ERROR
+{
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> n0( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_format,
+                   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_default_motif,
+                   </font><font class="kw3">PEL_FileToModule</font><font class="text"> </font><font class="kw1">const</font><font class="text">* other ) ;
+} ;
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw3">PEL_FileToModule</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">PEL_FileToModule</font><font class="text">:: object( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; format )
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_FileToModule:: object&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw3">PEL_FileToModule</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result =
+      </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">PEL_FileToModule</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;(
+                                    plugins_map()-&gt;item( format ) ) ;
+   
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;is_under_ownership_of( </font><font class="kw3">PEL_Root</font><font class="text">::object() ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw3">PEL_FileToModule</font><font class="text">:: </font><font class="kw3">PEL_FileToModule</font><font class="text">( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_format,
+                                     </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_default_motif )
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_Object</font><font class="text">( plugins_map() )
+   , MY_FORMAT( a_format )
+   , MY_MOTIF( a_default_motif )
+{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_FileToModule:: PEL_FileToModule&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw3">PEL_Iterator</font><font class="text">* it = plugins_map()-&gt;create_iterator( 0 ) ;
+   </font><font class="kw1">for</font><font class="text">( it-&gt;start() ; it-&gt;is_valid() ; it-&gt;go_next() )
+   {
+      </font><font class="kw3">PEL_FileToModule</font><font class="text"> </font><font class="kw1">const</font><font class="text">* oo = 
+                       </font><font class="kw1">static_cast</font><font class="text">&lt; </font><font class="kw3">PEL_FileToModule</font><font class="text"> </font><font class="kw1">const</font><font class="text">* &gt;( it-&gt;item() ) ;
+      </font><font class="kw1">if</font><font class="text">( oo-&gt;default_motif() == a_default_motif )
+         PEL_FileToModule_ERROR::n0( a_format, a_default_motif, oo ) ;
+   }
+   it-&gt;destroy() ; it = 0 ;
+
+   plugins_map()-&gt;register_item( a_format, </font><font class="kw1">this</font><font class="text"> ) ;
+   </font><font class="kw1">if</font><font class="text">( formats().empty() )
+   {
+      formats() = a_format ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      formats() += </font><font class="string">&quot;,&quot;</font><font class="text"> + a_format ;
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw3">PEL_FileToModule</font><font class="text">:: ~</font><font class="kw3">PEL_FileToModule</font><font class="text">( </font><font class="kw1">void</font><font class="text">  )
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">PEL_FileToModule</font><font class="text">:: has( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; format )
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_FileToModule:: has&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw1">bool</font><font class="text"> result = plugins_map()-&gt;has( format ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_FileToModule</font><font class="text">:: find_file_format( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_file_name,
+                                     </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text">&amp; a_format )
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_FileToModule:: find_file_format&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw3">PEL_Iterator</font><font class="text">* it = plugins_map()-&gt;create_iterator( 0 ) ;
+   </font><font class="kw1">for</font><font class="text">( it-&gt;start() ; it-&gt;is_valid() ; it-&gt;go_next() )
+   {
+      </font><font class="kw3">PEL_FileToModule</font><font class="text"> </font><font class="kw1">const</font><font class="text">* oo = 
+                       </font><font class="kw1">static_cast</font><font class="text">&lt; </font><font class="kw3">PEL_FileToModule</font><font class="text"> </font><font class="kw1">const</font><font class="text">* &gt;( it-&gt;item() ) ;
+      </font><font class="kw1">if</font><font class="text">( a_file_name.find( oo-&gt;default_motif() ) &lt; a_file_name.length() )
+      {
+         a_format = oo-&gt;format() ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      }
+   }
+   it-&gt;destroy() ; it = 0 ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp;
+</font><font class="kw3">PEL_FileToModule</font><font class="text">:: list_of_formats( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">return</font><font class="text">( formats() ) ; 
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp;
+</font><font class="kw3">PEL_FileToModule</font><font class="text">:: format( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">return</font><font class="text">( MY_FORMAT ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp;
+</font><font class="kw3">PEL_FileToModule</font><font class="text">:: default_motif( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">return</font><font class="text">( MY_MOTIF ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw3">PEL_ObjectRegister</font><font class="text">*
+</font><font class="kw3">PEL_FileToModule</font><font class="text">:: plugins_map( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw3">PEL_ObjectRegister</font><font class="text">* result =
+      </font><font class="kw3">PEL_ObjectRegister</font><font class="text">::create( </font><font class="kw3">PEL_Root</font><font class="text">::object(),
+                                  </font><font class="string">&quot;PEL_FileToModule descendant&quot;</font><font class="text"> ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text">&amp;
+</font><font class="kw3">PEL_FileToModule</font><font class="text">:: formats( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> result ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">PEL_FileToModule</font><font class="text">:: create_from_file_PRE( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                         </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; module_name,
+                                         </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; file_name ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( !module_name.empty() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( !file_name.empty() ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">PEL_FileToModule</font><font class="text">:: create_from_file_POST( </font><font class="kw3">PEL_Module</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result,
+                                          </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                          </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; module_name,
+                                          </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; file_name ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( result != 0 ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( result-&gt;owner() == a_owner ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( result-&gt;name() == module_name ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//internal--------------------------------------------------------------------
+</font><font class="kw1">void</font><font class="text"> 
+PEL_FileToModule_ERROR:: n0( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_format,
+                             </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_default_motif,
+                             </font><font class="kw3">PEL_FileToModule</font><font class="text"> </font><font class="kw1">const</font><font class="text">* other )
+</font><font class="comment">//internal--------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> mesg ;
+   mesg &lt;&lt; </font><font class="string">&quot;*** PEL_FileToModule error:&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;    Attempt to register the format: \&quot;&quot; &lt;&lt; a_format 
+        &lt;&lt; &quot;</font><font class="text">\</font><font class="string">&quot;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;    associated to the filename motif: \&quot;&quot; 
+        &lt;&lt; a_default_motif &lt;&lt; &quot;</font><font class="text">\</font><font class="string">&quot;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;    The filename motif \&quot;&quot;
+        &lt;&lt; a_default_motif &lt;&lt; &quot;</font><font class="text">\</font><font class="string">&quot; is already handled&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;    by the format: \&quot;&quot; &lt;&lt; other-&gt;format() &lt;&lt; &quot;</font><font class="text">\</font><font class="string">&quot;&quot;</font><font class="text"> ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( mesg.str() ) ;
+}
+
+
+</font>
+</pre>
+</body>
+</html>

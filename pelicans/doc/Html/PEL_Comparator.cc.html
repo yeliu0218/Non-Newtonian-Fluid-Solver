@@ -1,0 +1,769 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>PEL_Comparator.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="PEL_Comparator.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="PELpack-tree.html"><span>Tree</span></a>
+    <a href="PEL_Comparator.html"><span>Class</span></a>
+    <a href="PEL_Comparator.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="PELpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Comparator</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_assertions</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Data</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Double</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_DoubleVector</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Exec</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_FileToModule</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Int</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_KeywordDataPair</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_KeywordDataIterator</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ModuleIterator</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_StringVector</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_System</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;PEL_TICio.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_String</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">doubleArray2D</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">doubleArray3D</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">doubleVector</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;algorithm&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;fstream&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;iostream&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;iomanip&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;iostream&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw2">string</font><font class="text">&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;sstream&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw2">vector</font><font class="text">&gt;
+
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">cout</font><font class="text"> ;
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> ;
+
+</font><font class="kw3">PEL_Comparator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* </font><font class="kw3">PEL_Comparator</font><font class="text">::PROTOTYPE = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_Comparator</font><font class="text">() ;
+
+</font><font class="kw1">struct</font><font class="text"> PEL_Comparator_ERROR
+{
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> n0( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; filename ) ;
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> n1( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; file1, </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; format1,
+                   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; file2, </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; format2 ) ;
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> n2( </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp, 
+                   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; choices ) ;
+} ;
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw3">PEL_Comparator</font><font class="text">:: </font><font class="kw3">PEL_Comparator</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_Application</font><font class="text">( </font><font class="string">&quot;pelcmp&quot;</font><font class="text"> )
+   , FILE1()
+   , FILE2()
+   , FILE_OUT()
+   , EXP( 0 )
+   , IGNORE( 0 )
+{
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw3">PEL_Comparator</font><font class="text">*
+</font><font class="kw3">PEL_Comparator</font><font class="text">:: create_replica( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                 </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_Comparator:: create_replica&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_PRE( a_owner, exp ) ) ;
+   
+   </font><font class="kw3">PEL_Comparator</font><font class="text">* result = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_Comparator</font><font class="text">( a_owner, exp ) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_POST( result, a_owner, exp ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw3">PEL_Comparator</font><font class="text">:: </font><font class="kw3">PEL_Comparator</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner, 
+                                 </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp ) 
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_Application</font><font class="text">( a_owner, exp )
+   , FILE1( exp-&gt;string_data( </font><font class="string">&quot;left_file&quot;</font><font class="text"> ) )
+   , FILE2( exp-&gt;string_data( </font><font class="string">&quot;right_file&quot;</font><font class="text"> ) )
+   , FILE_OUT()
+   , EXP( 0 )
+   , VERBOSE( </font><font class="kw1">false</font><font class="text"> )
+   , MY_DBL_EPS( </font><font class="kw3">PEL</font><font class="text">::bad_double() )
+   , MY_DBL_MIN( </font><font class="kw3">PEL</font><font class="text">::bad_double() )
+   , IGNORE( 0 )
+   , FORMAT( </font><font class="string">&quot;UNKNOWN&quot;</font><font class="text"> )
+{
+   </font><font class="kw1">if</font><font class="text">( exp-&gt;has_entry( </font><font class="string">&quot;output_file&quot;</font><font class="text"> ) )
+      FILE_OUT = exp-&gt;string_data( </font><font class="string">&quot;output_file&quot;</font><font class="text"> ) ;
+   </font><font class="kw1">if</font><font class="text">( exp-&gt;has_entry( </font><font class="string">&quot;verbose&quot;</font><font class="text"> ) )
+      VERBOSE = exp-&gt;bool_data( </font><font class="string">&quot;verbose&quot;</font><font class="text"> ) ;
+   </font><font class="kw1">if</font><font class="text">( exp-&gt;has_module( </font><font class="string">&quot;PEL_ModuleComparator&quot;</font><font class="text"> ) )
+      EXP = exp-&gt;create_subexplorer( </font><font class="kw1">this</font><font class="text">, </font><font class="string">&quot;PEL_ModuleComparator&quot;</font><font class="text"> ) ;
+   </font><font class="kw1">if</font><font class="text">( exp-&gt;has_module( </font><font class="string">&quot;tolerance&quot;</font><font class="text"> ) )
+   {
+      </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ee = 
+                         exp-&gt;create_subexplorer( 0 ,</font><font class="string">&quot;tolerance&quot;</font><font class="text"> ) ;
+      MY_DBL_EPS = ee-&gt;double_data( </font><font class="string">&quot;dbl_eps&quot;</font><font class="text"> ) ;
+      MY_DBL_MIN = ee-&gt;double_data( </font><font class="string">&quot;dbl_min&quot;</font><font class="text"> ) ;
+      ee-&gt;destroy() ;
+   }
+   </font><font class="kw1">if</font><font class="text">( exp-&gt;has_entry( </font><font class="string">&quot;ignore_data&quot;</font><font class="text"> ) )
+      IGNORE = exp-&gt;stringVector_data( </font><font class="string">&quot;ignore_data&quot;</font><font class="text"> ) ;
+   </font><font class="kw1">if</font><font class="text">( exp-&gt;has_entry( </font><font class="string">&quot;format&quot;</font><font class="text"> ) )
+   {
+      FORMAT = exp-&gt;string_data( </font><font class="string">&quot;format&quot;</font><font class="text"> ) ;
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw3">PEL_Comparator</font><font class="text">*
+</font><font class="kw3">PEL_Comparator</font><font class="text">:: create_replica_from_args( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                           </font><font class="kw3">stringVector</font><font class="text">&amp; args ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_Comparator:: create_replica_from_args&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw3">PEL_Comparator</font><font class="text">* result = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_Comparator</font><font class="text">( a_owner, args ) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_from_args_POST( result, a_owner, args ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw3">PEL_Comparator</font><font class="text">:: </font><font class="kw3">PEL_Comparator</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner, </font><font class="kw3">stringVector</font><font class="text">&amp; args )
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_Application</font><font class="text">( a_owner, 0 )
+   , FILE1()
+   , FILE2()
+   , FILE_OUT()
+   , EXP( 0 )
+   , VERBOSE( </font><font class="kw1">false</font><font class="text"> )
+   , MY_DBL_EPS( </font><font class="kw3">PEL</font><font class="text">::bad_double() )
+   , MY_DBL_MIN( </font><font class="kw3">PEL</font><font class="text">::bad_double() )
+   , IGNORE( 0 )
+   , FORMAT( </font><font class="string">&quot;UNKNOWN&quot;</font><font class="text"> )
+{
+   </font><font class="kw2">size_t</font><font class="text"> i_non_opt = 0 ;
+   </font><font class="kw1">while</font><font class="text">( args.size() != 0 )
+   {
+      </font><font class="kw2">string</font><font class="text"> arg = args( 0 ) ;
+      args.remove_at( 0 ) ;
+
+      </font><font class="comment">// no options
+</font><font class="text">      </font><font class="kw1">if</font><font class="text">( arg[0] == </font><font class="string">'-'</font><font class="text"> )
+      {         
+         </font><font class="kw1">if</font><font class="text">( arg == </font><font class="string">&quot;-verbose&quot;</font><font class="text"> )
+         {
+            VERBOSE = </font><font class="kw1">true</font><font class="text"> ;
+         }
+         </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( arg==</font><font class="string">&quot;-dbl_eps&quot;</font><font class="text"> &amp;&amp; args.size()&gt;0 )
+         {
+            </font><font class="kw2">std</font><font class="text">::istringstream is( args(0) ) ;
+            is &gt;&gt; MY_DBL_EPS ;
+            args.remove_at( 0 ) ;
+         }
+         </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( arg==</font><font class="string">&quot;-dbl_min&quot;</font><font class="text"> &amp;&amp; args.size()&gt;0 )
+         {
+            </font><font class="kw2">std</font><font class="text">::istringstream is( args(0) ) ;
+            is &gt;&gt; MY_DBL_MIN ;
+            args.remove_at( 0 ) ;
+         }
+         </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( arg==</font><font class="string">&quot;-ignore_data&quot;</font><font class="text"> &amp;&amp; args.size()&gt;0 )
+         {
+            IGNORE.append( args( 0 ) ) ;
+            args.remove_at( 0 ) ;
+         }
+         </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( arg==</font><font class="string">&quot;-format&quot;</font><font class="text"> &amp;&amp; args.size()&gt;0 )
+         {
+            FORMAT = args( 0 ) ;
+            args.remove_at( 0 ) ;
+         }
+         </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( arg==</font><font class="string">&quot;-output_file&quot;</font><font class="text"> &amp;&amp; args.size()&gt;0 )
+         {
+            FILE_OUT = args( 0 ) ;
+            args.remove_at( 0 ) ;
+         }
+         </font><font class="kw1">else
+</font><font class="text">         {         
+            notify_error_in_arguments() ;
+         }
+      }
+      </font><font class="kw1">else
+</font><font class="text">      {
+         i_non_opt++ ;
+         </font><font class="kw1">if</font><font class="text">( i_non_opt==1 ) 
+            FILE1 = arg ;
+         </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( i_non_opt==2 )
+            FILE2 = arg ;
+         </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( i_non_opt==3 )
+            FILE_OUT = arg ;
+         </font><font class="kw1">else
+</font><font class="text">            notify_error_in_arguments() ;
+      }
+   }
+   </font><font class="kw1">if</font><font class="text">( ! ( ( MY_DBL_EPS==</font><font class="kw3">PEL</font><font class="text">::bad_double() &amp;&amp; MY_DBL_MIN==</font><font class="kw3">PEL</font><font class="text">::bad_double() ) ||
+           ( MY_DBL_EPS!=</font><font class="kw3">PEL</font><font class="text">::bad_double() &amp;&amp; MY_DBL_MIN!=</font><font class="kw3">PEL</font><font class="text">::bad_double() ) ) )
+       notify_error_in_arguments() ;
+   </font><font class="kw1">if</font><font class="text">( FILE1.empty() || FILE2.empty() ) notify_error_in_arguments() ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw3">PEL_Comparator</font><font class="text">:: ~</font><font class="kw3">PEL_Comparator</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_Comparator</font><font class="text">:: set_preferred_motifs_formats( 
+                                          </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp ) 
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_Comparator:: set_preferred_motifs_formats&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( exp != 0 ) ;
+   
+   pref_motifs()  = exp-&gt;stringVector_data( </font><font class="string">&quot;motifs&quot;</font><font class="text"> ) ;
+   pref_formats() = exp-&gt;stringVector_data( </font><font class="string">&quot;formats&quot;</font><font class="text"> ) ;
+   exp-&gt;test_data( </font><font class="string">&quot;formats&quot;</font><font class="text">, </font><font class="string">&quot;size(formats)=size(motifs)&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;pref_formats().size() ; i++ )
+   {
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; frmt = pref_formats()( i ) ;
+      </font><font class="kw1">if</font><font class="text">( ! </font><font class="kw3">PEL_FileToModule</font><font class="text">::has( frmt ) ) 
+         PEL_Comparator_ERROR::n2( exp, </font><font class="kw3">PEL_FileToModule</font><font class="text">::list_of_formats() ) ;
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_Comparator</font><font class="text">:: detect_file_format( </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp,
+                                     </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; file_name,
+                                     </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text">&amp; format )
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_Comparator:: detect_file_format&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">if</font><font class="text">( exp!=0 &amp;&amp; exp-&gt;has_entry( </font><font class="string">&quot;format&quot;</font><font class="text"> ) )
+   {
+      format = exp-&gt;string_data( </font><font class="string">&quot;format&quot;</font><font class="text"> ) ;
+      exp-&gt;test_data_in( </font><font class="string">&quot;format&quot;</font><font class="text">, </font><font class="kw3">PEL_FileToModule</font><font class="text">::list_of_formats() ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      </font><font class="kw1">bool</font><font class="text"> found = </font><font class="kw1">false</font><font class="text"> ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> n=0 ; n&lt;pref_motifs().size() ; n++ )
+      {
+         </font><font class="kw1">if</font><font class="text">( file_name.find( pref_motifs()(n) ) &lt; file_name.length() )
+         {
+            found = </font><font class="kw1">true</font><font class="text"> ;
+            format = pref_formats()(n) ;
+            </font><font class="kw1">break</font><font class="text"> ;
+         }
+      }
+      </font><font class="kw1">if</font><font class="text">( !found ) </font><font class="kw3">PEL_FileToModule</font><font class="text">::find_file_format( file_name, format ) ;
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_Comparator</font><font class="text">:: run( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_Comparator::run&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">std</font><font class="text">::ofstream ofs ;
+   </font><font class="kw1">if</font><font class="text">( !FILE_OUT.empty() )
+   {
+      ofs.open( FILE_OUT.c_str(), </font><font class="kw2">std</font><font class="text">::ios::out|</font><font class="kw2">std</font><font class="text">::ios::trunc ) ;
+      </font><font class="kw1">if</font><font class="text">( ! ofs )
+      {
+         </font><font class="kw2">string</font><font class="text"> mess = </font><font class="string">&quot;PEL_Comparator: unable to open file \&quot;&quot; ;
+         mess += FILE_OUT ;
+         mess += &quot;</font><font class="text">\</font><font class="string">&quot;&quot;</font><font class="text"> ;
+         </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( mess ) ;
+      }
+   }
+   
+   </font><font class="kw1">if</font><font class="text">( FORMAT == </font><font class="string">&quot;UNKNOWN&quot;</font><font class="text"> )
+   {
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> fmt = FORMAT ;
+      detect_file_format( 0, FILE1, fmt ) ;
+      detect_file_format( 0, FILE2, FORMAT ) ;
+      </font><font class="kw1">if</font><font class="text">( FORMAT != fmt ) PEL_Comparator_ERROR::n1( FILE1, fmt, 
+                                                    FILE2, FORMAT ) ;
+   }
+
+   </font><font class="kw1">if</font><font class="text">( VERBOSE ) </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="string">&quot;|    format: &quot;</font><font class="text"> &lt;&lt; FORMAT &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw1">if</font><font class="text">( FORMAT != </font><font class="string">&quot;UNKNOWN&quot;</font><font class="text"> )
+   {
+      </font><font class="kw1">if</font><font class="text">( FILE_OUT.empty() )
+         builtin_compare( </font><font class="kw3">PEL</font><font class="text">::out() ) ;
+      </font><font class="kw1">else
+</font><font class="text">         builtin_compare( ofs ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      </font><font class="kw1">if</font><font class="text">( FILE_OUT.empty() )
+         do_diff( </font><font class="kw3">PEL</font><font class="text">::out() ) ;
+      </font><font class="kw1">else
+</font><font class="text">         builtin_compare( ofs ) ;
+   }
+   
+   </font><font class="kw1">if</font><font class="text">( !FILE_OUT.empty() ) ofs.close() ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_Comparator</font><font class="text">:: builtin_compare( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostream</font><font class="text">&amp; os )
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{  
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_Comparator:: builtin_compare&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw3">PEL_FileToModule</font><font class="text"> </font><font class="kw1">const</font><font class="text">* oo = </font><font class="kw3">PEL_FileToModule</font><font class="text">::object( FORMAT ) ;
+   </font><font class="kw3">PEL_Module</font><font class="text">* mod1 = oo-&gt;create_from_file( 0, </font><font class="string">&quot;left_file&quot;</font><font class="text">,  FILE1 ) ;
+   </font><font class="kw3">PEL_Module</font><font class="text">* mod2 = oo-&gt;create_from_file( 0, </font><font class="string">&quot;right_file&quot;</font><font class="text">, FILE2 ) ;
+
+   </font><font class="kw1">if</font><font class="text">( EXP==0 ) 
+   {
+      </font><font class="kw3">PEL_Module</font><font class="text">* comp = </font><font class="kw3">PEL_Module</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, </font><font class="string">&quot;PEL_ModuleComparator&quot;</font><font class="text"> ) ;
+      
+      </font><font class="kw1">if</font><font class="text">( IGNORE.size()&gt;0  )
+      {
+         comp-&gt;add_entry( </font><font class="string">&quot;ignore_data&quot;</font><font class="text">, 
+                          </font><font class="kw3">PEL_StringVector</font><font class="text">::create( comp, IGNORE ) ) ;
+      }
+      </font><font class="kw1">if</font><font class="text">( MY_DBL_EPS != </font><font class="kw3">PEL</font><font class="text">::bad_double()  )
+      {
+         comp-&gt;add_entry( </font><font class="string">&quot;dbl_eps&quot;</font><font class="text">, </font><font class="kw3">PEL_Double</font><font class="text">::create( comp, MY_DBL_EPS ) ) ;
+      }
+      </font><font class="kw1">if</font><font class="text">( MY_DBL_MIN != </font><font class="kw3">PEL</font><font class="text">::bad_double()  )
+      {
+         comp-&gt;add_entry( </font><font class="string">&quot;dbl_min&quot;</font><font class="text">, </font><font class="kw3">PEL_Double</font><font class="text">::create( comp, MY_DBL_MIN ) ) ;
+      }
+      </font><font class="kw1">if</font><font class="text">( comp!=0 ) EXP = </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, comp ) ;     
+   }
+   
+   </font><font class="kw1">if</font><font class="text">( EXP!=0 &amp;&amp; VERBOSE )
+   {
+      </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="string">&quot;PEL_ModuleComparator configuration : &quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+      EXP-&gt;print( </font><font class="kw3">PEL</font><font class="text">::out(), 2 ) ;
+      </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   }
+   
+   </font><font class="kw3">PEL_Module</font><font class="text">* mdif = </font><font class="kw3">PEL_Module</font><font class="text">::create_as_difference( 
+                                            </font><font class="kw1">this</font><font class="text">, </font><font class="string">&quot;result&quot;</font><font class="text">, mod1, mod2, EXP );
+
+   mdif-&gt;add_entry( </font><font class="string">&quot;left_file&quot;</font><font class="text">,  </font><font class="kw3">PEL_String</font><font class="text">::create( mdif, FILE1 ) ) ;
+   mdif-&gt;add_entry( </font><font class="string">&quot;right_file&quot;</font><font class="text">, </font><font class="kw3">PEL_String</font><font class="text">::create( mdif, FILE2 ) ) ;
+
+   </font><font class="kw1">int</font><font class="text"> nb_errors = mdif-&gt;data_of_entry( </font><font class="string">&quot;nb_differences&quot;</font><font class="text"> )-&gt;to_int() ;   
+   </font><font class="kw1">if</font><font class="text">( nb_errors&gt;0 )
+   {
+      </font><font class="kw1">if</font><font class="text">( FILE_OUT.empty() ) </font><font class="comment">// for consistance with the old versions
+</font><font class="text">      {
+         os &lt;&lt; </font><font class="string">&quot;---&gt; &quot;</font><font class="text"> &lt;&lt; nb_errors &lt;&lt; </font><font class="string">&quot; difference&quot;</font><font class="text"> ;
+         </font><font class="kw1">if</font><font class="text">( nb_errors &gt; 1 ) os &lt;&lt; </font><font class="string">&quot;s&quot;</font><font class="text"> ;
+         os &lt;&lt; </font><font class="kw2">endl</font><font class="text">;
+      }
+      display_glob_info_diff( os, mdif ) ;
+      display_submodule_diff( os, mdif ) ;
+      </font><font class="kw3">PEL_Exec</font><font class="text">::set_exit_code( nb_errors ) ;
+   }
+   
+   mod1-&gt;destroy() ; mod1 = 0 ;
+   mod2-&gt;destroy() ; mod2 = 0 ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_Comparator</font><font class="text">:: do_diff( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostream</font><font class="text">&amp; os ) 
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_Comparator:: do_diff&quot;</font><font class="text"> ) ;
+   </font><font class="kw1">if</font><font class="text">( VERBOSE ) </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="string">&quot;|    do_diff &quot;</font><font class="text"> &lt;&lt; FILE1 
+                       &lt;&lt; </font><font class="string">&quot; and &quot;</font><font class="text"> &lt;&lt; FILE2 &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   
+   </font><font class="kw2">std</font><font class="text">::ifstream ifs1( FILE1.c_str() ) ;
+   </font><font class="kw2">std</font><font class="text">::ifstream ifs2( FILE2.c_str() ) ;
+
+   </font><font class="kw1">bool</font><font class="text"> ok = ifs1.good() &amp;&amp; ifs2.good() ;
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> fline ;
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> line1, line2 ;
+   </font><font class="kw2">size_t</font><font class="text"> iline = 0 ;
+   
+   </font><font class="kw1">while</font><font class="text">( ifs1.good() &amp;&amp; ifs2.good() )
+   {
+      iline++ ;
+      getline( ifs1, line1 ) ;
+      getline( ifs2, line2 ) ;
+      </font><font class="kw1">if</font><font class="text">( line1 != line2 ) 
+      {
+         </font><font class="comment">// For linefeed in files written under windows
+</font><font class="text">         </font><font class="kw3">PEL</font><font class="text">::replace( line1, </font><font class="string">&quot;\r&quot;</font><font class="text">, </font><font class="string">&quot;&quot;</font><font class="text"> ) ;
+         </font><font class="kw3">PEL</font><font class="text">::replace( line2, </font><font class="string">&quot;\r&quot;</font><font class="text">, </font><font class="string">&quot;&quot;</font><font class="text"> ) ;
+         
+         </font><font class="comment">// because windows notation is not the same than linux one...
+</font><font class="text">         </font><font class="kw3">PEL</font><font class="text">::replace( line1, </font><font class="string">&quot;E+00&quot;</font><font class="text">, </font><font class="string">&quot;E+0&quot;</font><font class="text"> ) ;
+         </font><font class="kw3">PEL</font><font class="text">::replace( line2, </font><font class="string">&quot;E+00&quot;</font><font class="text">, </font><font class="string">&quot;E+0&quot;</font><font class="text"> ) ;
+         </font><font class="kw3">PEL</font><font class="text">::replace( line1, </font><font class="string">&quot;E-00&quot;</font><font class="text">, </font><font class="string">&quot;E-0&quot;</font><font class="text"> ) ;
+         </font><font class="kw3">PEL</font><font class="text">::replace( line2, </font><font class="string">&quot;E-00&quot;</font><font class="text">, </font><font class="string">&quot;E-0&quot;</font><font class="text"> ) ;
+         </font><font class="kw3">PEL</font><font class="text">::replace( line1, </font><font class="string">&quot;e+00&quot;</font><font class="text">, </font><font class="string">&quot;e+0&quot;</font><font class="text"> ) ;
+         </font><font class="kw3">PEL</font><font class="text">::replace( line2, </font><font class="string">&quot;e+00&quot;</font><font class="text">, </font><font class="string">&quot;e+0&quot;</font><font class="text"> ) ;
+         </font><font class="kw3">PEL</font><font class="text">::replace( line1, </font><font class="string">&quot;e-00&quot;</font><font class="text">, </font><font class="string">&quot;e-0&quot;</font><font class="text"> ) ;
+         </font><font class="kw3">PEL</font><font class="text">::replace( line2, </font><font class="string">&quot;e-00&quot;</font><font class="text">, </font><font class="string">&quot;e-0&quot;</font><font class="text"> ) ;
+         </font><font class="kw3">PEL</font><font class="text">::replace( line1, </font><font class="string">&quot;  &quot;</font><font class="text">, </font><font class="string">&quot; &quot;</font><font class="text"> ) ;
+         </font><font class="kw3">PEL</font><font class="text">::replace( line2, </font><font class="string">&quot;  &quot;</font><font class="text">, </font><font class="string">&quot; &quot;</font><font class="text"> ) ;
+
+         </font><font class="kw1">if</font><font class="text">( line1 != line2 )
+         {
+            os &lt;&lt; </font><font class="string">&quot;   first difference at line &quot;</font><font class="text"> &lt;&lt; iline &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+            </font><font class="kw1">if</font><font class="text">( line1.length() &lt; 100 &amp;&amp; line2.length() &lt; 100 )
+            {
+               os &lt;&lt; </font><font class="string">&quot;   \&quot;&quot; &lt;&lt; line1 &lt;&lt; &quot;</font><font class="text">\</font><font class="string">&quot;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+               os &lt;&lt; </font><font class="string">&quot;   \&quot;&quot; &lt;&lt; line2 &lt;&lt; &quot;</font><font class="text">\</font><font class="string">&quot;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+            }
+            </font><font class="kw3">PEL_Exec</font><font class="text">::set_exit_code( 12 ) ;
+            ok = </font><font class="kw1">false</font><font class="text"> ;
+            </font><font class="kw1">break</font><font class="text"> ;
+         }
+         
+      }
+   }
+   </font><font class="kw1">if</font><font class="text">( ok &amp;&amp; ( ifs1.good() || ifs2.good() ) ) 
+   {
+      </font><font class="kw3">PEL_Exec</font><font class="text">::set_exit_code( 12 ) ;
+   } 
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_Comparator</font><font class="text">:: print_usage( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; usage_title( </font><font class="string">&quot;pelcmp&quot;</font><font class="text"> )  ;
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="string">&quot;[options...] file1 file2 [file3]&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="string">&quot;     Compare and display differences between pairs of files&quot;
+</font><font class="text">              &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_Comparator</font><font class="text">:: print_operands( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="string">&quot;     -dbl_eps &lt;value&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl
+</font><font class="text">	&lt;&lt; </font><font class="string">&quot;          argument a_dbl_eps in calls to PEL::double_equality&quot;
+</font><font class="text">        &lt;&lt; </font><font class="kw2">endl</font><font class="text"> 
+        &lt;&lt; </font><font class="string">&quot;          when comparing values of type double&quot;</font><font class="text"> 
+        &lt;&lt; </font><font class="kw2">endl</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="string">&quot;     -dbl_min &lt;value&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl
+</font><font class="text">	&lt;&lt; </font><font class="string">&quot;          argument a_dbl_min in calls to PEL::double_equality&quot;
+</font><font class="text">        &lt;&lt; </font><font class="kw2">endl</font><font class="text"> 
+        &lt;&lt; </font><font class="string">&quot;          when comparing values of type double&quot;</font><font class="text"> 
+        &lt;&lt; </font><font class="kw2">endl</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="string">&quot;     -ignore_data &lt;keyword&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl
+</font><font class="text">	&lt;&lt; </font><font class="string">&quot;          Ignore entries of keyword &lt;keyword&gt;&quot;</font><font class="text"> 
+        &lt;&lt; </font><font class="kw2">endl</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="string">&quot;     -format [&quot;</font><font class="text"> &lt;&lt; </font><font class="kw3">PEL_FileToModule</font><font class="text">::list_of_formats() 
+                                  &lt;&lt; </font><font class="string">&quot;]&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl
+</font><font class="text">	&lt;&lt; </font><font class="string">&quot;          Specify the format of file1 and file2&quot;</font><font class="text"> 
+        &lt;&lt; </font><font class="kw2">endl</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; operands_title() ;
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="string">&quot;     file1, file2&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl
+</font><font class="text">	&lt;&lt; </font><font class="string">&quot;          Path names of the two files to be compared&quot;</font><font class="text"> 
+        &lt;&lt; </font><font class="kw2">endl</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="string">&quot;     file3&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl
+</font><font class="text">        &lt;&lt; </font><font class="string">&quot;          Path names of the file containing the difference on exit&quot;
+</font><font class="text">	&lt;&lt; </font><font class="kw2">endl</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_Comparator</font><font class="text">:: print_exit_status( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; exit_status_title() ;
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="string">&quot;     0    The files are identical&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="string">&quot;    &gt;0    Number of differences found&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_Comparator</font><font class="text">:: display_glob_info_diff( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostream</font><font class="text">&amp; os,
+                                         </font><font class="kw3">PEL_Module</font><font class="text"> </font><font class="kw1">const</font><font class="text">* mod ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_Comparator:: display_glob_info_diff&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw3">PEL_KeywordDataIterator</font><font class="text">* it = mod-&gt;create_entry_iterator( 0 ) ;
+   </font><font class="kw1">for</font><font class="text">( it-&gt;start() ; it-&gt;is_valid() ; it-&gt;go_next() )
+   {
+      </font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; keywd  = it-&gt;item()-&gt;keyword() ;
+      </font><font class="kw3">PEL_Data</font><font class="text"> </font><font class="kw1">const</font><font class="text">* data = it-&gt;item()-&gt;data() ;
+      </font><font class="kw1">if</font><font class="text">( keywd!=</font><font class="string">&quot;left_file&quot;</font><font class="text"> &amp;&amp; keywd!=</font><font class="string">&quot;right_file&quot;</font><font class="text"> &amp;&amp;
+          keywd!=</font><font class="string">&quot;nb_differences&quot;</font><font class="text"> )
+      {
+         </font><font class="kw3">PEL_ASSERT</font><font class="text">( data-&gt;data_type() == </font><font class="kw3">PEL_Data</font><font class="text">::String ) ;
+         os &lt;&lt; keywd &lt;&lt; </font><font class="string">&quot;: &quot;</font><font class="text"> &lt;&lt; data-&gt;to_string() &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      }
+   }
+   it-&gt;destroy() ; it = 0 ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_Comparator</font><font class="text">:: display_submodule_diff( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostream</font><font class="text">&amp; os,
+                                         </font><font class="kw3">PEL_Module</font><font class="text"> </font><font class="kw1">const</font><font class="text">* mod ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_Comparator:: display_submodule_diff&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw3">PEL_ModuleIterator</font><font class="text">* it = mod-&gt;create_module_iterator( 0 ) ;
+   </font><font class="kw1">for</font><font class="text">( it-&gt;start() ; it-&gt;is_valid() ; it-&gt;go_next() )
+   {
+      </font><font class="kw3">PEL_Module</font><font class="text"> </font><font class="kw1">const</font><font class="text">* mm = it-&gt;item() ;
+      </font><font class="kw2">string</font><font class="text"> modname =  mm-&gt;absolute_path_name() ;
+      modname.erase( modname.begin(), modname.begin()+8 ) ; 
+      </font><font class="kw3">PEL_KeywordDataIterator</font><font class="text">* kwit = mm-&gt;create_entry_iterator( 0 ) ;
+      </font><font class="kw1">bool</font><font class="text"> first_diff = </font><font class="kw1">true</font><font class="text"> ;
+      </font><font class="kw1">for</font><font class="text">( kwit-&gt;start() ; kwit-&gt;is_valid() ; kwit-&gt;go_next() )
+      {
+         </font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; str = kwit-&gt;item()-&gt;keyword() ;
+         </font><font class="kw3">PEL_Data</font><font class="text"> </font><font class="kw1">const</font><font class="text">* data = kwit-&gt;item()-&gt;data() ;
+         </font><font class="kw1">if</font><font class="text">( first_diff &amp;&amp; data-&gt;data_type()!=</font><font class="kw3">PEL_Data</font><font class="text">::DoubleVector )
+         {
+            os &lt;&lt; modname &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+            first_diff=</font><font class="kw1">false</font><font class="text"> ;
+         }
+         </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ios_base</font><font class="text">::</font><font class="kw2">fmtflags</font><font class="text"> original_flags = os.flags() ;
+         os.setf( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ios_base</font><font class="text">::</font><font class="kw2">uppercase</font><font class="text"> | </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ios_base</font><font class="text">::</font><font class="kw2">scientific</font><font class="text"> ) ;
+         </font><font class="kw2">std</font><font class="text">::streamsize p = os.precision() ;
+         os &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">setprecision</font><font class="text">( 5 ) ;
+         </font><font class="kw1">switch</font><font class="text">( data-&gt;data_type() )
+         {
+            </font><font class="kw1">case</font><font class="text"> </font><font class="kw3">PEL_Data</font><font class="text">::DoubleArray2D :
+            {
+               </font><font class="comment">// the compared data is of type PEL_Data::DoubleVector
+</font><font class="text">               </font><font class="kw1">double</font><font class="text"> max = -</font><font class="kw3">PEL</font><font class="text">::max_double() ;
+               </font><font class="kw3">doubleArray2D</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; stat = data-&gt;to_double_array2D() ;
+               </font><font class="kw2">size_t</font><font class="text"> i_max = </font><font class="kw3">PEL</font><font class="text">::bad_index() ;
+               </font><font class="kw2">size_t</font><font class="text"> i_other = </font><font class="kw3">PEL</font><font class="text">::bad_index() ;
+               </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;stat.index_bound( 0 ) ; ++i )
+               {
+                  </font><font class="kw1">if</font><font class="text">( ( stat( i, 0 ) &lt; 0.0 ) &amp;&amp; ( i_other == </font><font class="kw3">PEL</font><font class="text">::bad_index() ) )
+                  {
+                     i_other = i ;
+                  }
+                  </font><font class="kw1">if</font><font class="text">( stat( i,0 ) &gt; max )
+                  {
+                     i_max = i ;
+                     max = stat( i, 0 ) ;
+                  }
+               }
+               </font><font class="kw1">if</font><font class="text">( i_max != </font><font class="kw3">PEL</font><font class="text">::bad_index() &amp;&amp;  max &gt; 0.0 )
+               {  
+                  os &lt;&lt; </font><font class="string">&quot;    relative error max : &quot;</font><font class="text"> &lt;&lt; max &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+                  os &lt;&lt; </font><font class="string">&quot;    obtained for -&gt; &quot;</font><font class="text"> &lt;&lt; stat( i_max, 1 ) &lt;&lt; </font><font class="string">&quot; &lt;!!&gt; &quot;</font><font class="text">;
+                  os &lt;&lt; stat( i_max, 2 ) &lt;&lt; </font><font class="string">&quot; &lt;-&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+               }
+               </font><font class="kw1">else
+</font><font class="text">               {
+                  os &lt;&lt; </font><font class="string">&quot;    first difference at index &quot;</font><font class="text"> &lt;&lt; i_other &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+                  os &lt;&lt; </font><font class="string">&quot;    -&gt; &quot;</font><font class="text"> &lt;&lt; stat( i_other, 1 ) &lt;&lt; </font><font class="string">&quot; &lt;!!&gt; &quot;</font><font class="text">;
+                  os &lt;&lt; stat( i_other, 2 ) &lt;&lt; </font><font class="string">&quot; &lt;-&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+               }
+            }
+            </font><font class="kw1">break</font><font class="text"> ;
+            </font><font class="kw1">case</font><font class="text"> </font><font class="kw3">PEL_Data</font><font class="text">::DoubleArray3D :
+            {
+               </font><font class="comment">// the compared data is of type PEL_Data::DoubleArray2D
+</font><font class="text">               </font><font class="kw1">double</font><font class="text"> max = -</font><font class="kw3">PEL</font><font class="text">::max_double() ;
+               </font><font class="kw3">doubleArray3D</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; stat = data-&gt;to_double_array3D() ;
+               </font><font class="kw2">size_t</font><font class="text"> i_max = </font><font class="kw3">PEL</font><font class="text">::bad_index() ;
+               </font><font class="kw2">size_t</font><font class="text"> j_max = </font><font class="kw3">PEL</font><font class="text">::bad_index() ;
+               </font><font class="kw2">size_t</font><font class="text"> i_other = </font><font class="kw3">PEL</font><font class="text">::bad_index() ;
+               </font><font class="kw2">size_t</font><font class="text"> j_other = </font><font class="kw3">PEL</font><font class="text">::bad_index() ;
+               </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;stat.index_bound( 0 ) ; ++i )
+               {
+                  </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; j&lt;stat.index_bound( 1 ) ; ++j )
+                  {
+                     </font><font class="kw1">if</font><font class="text">( ( stat( i, j, 0 ) &lt; 0.0 ) &amp;&amp; 
+                         ( i_other == </font><font class="kw3">PEL</font><font class="text">::bad_index() ) )
+                     {
+                        i_other = i ;
+                        j_other = j ;
+                     }
+                     </font><font class="kw1">if</font><font class="text">( stat( i, j , 0 ) &gt; max ) 
+                     {
+                        i_max = i ;
+                        j_max = j ;
+                        max = stat( i, j, 0 ) ;
+                     }
+                  }
+               }
+               </font><font class="kw1">if</font><font class="text">( i_max != </font><font class="kw3">PEL</font><font class="text">::bad_index() &amp;&amp;  max &gt; 0.0 )
+               {  
+                  os &lt;&lt; </font><font class="string">&quot;    relative error max : &quot;</font><font class="text"> &lt;&lt; max &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+                  os &lt;&lt; </font><font class="string">&quot;    obtained for -&gt; &quot;</font><font class="text"> &lt;&lt; stat( i_max, j_max, 1 ) 
+                     &lt;&lt; </font><font class="string">&quot; &lt;!!&gt; &quot;</font><font class="text"> &lt;&lt; stat( i_max, j_max, 2 ) &lt;&lt; </font><font class="string">&quot; &lt;-&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+               }
+               </font><font class="kw1">else
+</font><font class="text">               {
+                  os &lt;&lt; </font><font class="string">&quot;    first difference at indices (&quot;</font><font class="text"> 
+                     &lt;&lt; i_other &lt;&lt; </font><font class="string">&quot;,&quot;</font><font class="text"> &lt;&lt; j_other &lt;&lt; </font><font class="string">&quot;)&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+                  os &lt;&lt; </font><font class="string">&quot;    -&gt; &quot;</font><font class="text"> &lt;&lt; stat( i_other, j_other, 1 ) &lt;&lt; </font><font class="string">&quot; &lt;!!&gt; &quot;</font><font class="text">;
+                  os &lt;&lt; stat( i_other, j_other, 2 ) &lt;&lt; </font><font class="string">&quot; &lt;-&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+               }
+            }
+            </font><font class="kw1">break</font><font class="text"> ;
+            </font><font class="kw1">case</font><font class="text"> </font><font class="kw3">PEL_Data</font><font class="text">::String :
+            {
+               os &lt;&lt; </font><font class="string">&quot; &quot;</font><font class="text"> &lt;&lt; str &lt;&lt; </font><font class="string">&quot; : &quot;</font><font class="text"> &lt;&lt; data-&gt;to_string() &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+            }
+            </font><font class="kw1">default</font><font class="text">:
+            {
+            }
+         }
+         os &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">setprecision</font><font class="text">(p) ;
+         os.</font><font class="kw2">flags</font><font class="text">( original_flags ) ;
+      }
+      kwit-&gt;destroy() ;
+      display_submodule_diff( os, mm ) ; 
+   }
+   it-&gt;destroy() ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">stringVector</font><font class="text">&amp;
+</font><font class="kw3">PEL_Comparator</font><font class="text">:: pref_motifs( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw3">stringVector</font><font class="text"> result( 0 ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">stringVector</font><font class="text">&amp;
+</font><font class="kw3">PEL_Comparator</font><font class="text">:: pref_formats( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw3">stringVector</font><font class="text"> result( 0 ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="kw1">void</font><font class="text"> 
+PEL_Comparator_ERROR:: n0( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; filename )
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> mesg ;
+   mesg &lt;&lt; </font><font class="string">&quot;*** PEL_Comparator error:&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;    unable to open file \&quot;&quot; &lt;&lt;  filename &lt;&lt; &quot;</font><font class="text">\</font><font class="string">&quot;&quot;</font><font class="text"> ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( mesg.str() ) ;
+}
+
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="kw1">void</font><font class="text"> 
+PEL_Comparator_ERROR:: n1( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; file1,
+                           </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; format1,
+                           </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; file2,
+                           </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; format2 )
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> mesg ;
+   mesg &lt;&lt; </font><font class="string">&quot;*** PEL_Comparator error:&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;the two files should have the same format&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; file1 &lt;&lt; </font><font class="kw2">endl</font><font class="text"> &lt;&lt; </font><font class="string">&quot;   detected format: &quot;</font><font class="text"> &lt;&lt; format1 &lt;&lt; </font><font class="kw2">endl</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; file2 &lt;&lt; </font><font class="kw2">endl</font><font class="text"> &lt;&lt; </font><font class="string">&quot;   detected format: &quot;</font><font class="text"> &lt;&lt; format2 &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( mesg.str() ) ;
+}
+
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="kw1">void</font><font class="text"> 
+PEL_Comparator_ERROR:: n2( </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp,
+                           </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; choices )
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> mesg ;
+   mesg &lt;&lt; </font><font class="string">&quot;In module: &quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> &lt;&lt; </font><font class="string">&quot;   &quot;</font><font class="text"> &lt;&lt; exp-&gt;absolute_path_name() &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;the data of keyword \&quot;</font><font class="text">formats\</font><font class="string">&quot;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;should contains strings with one of the following values: &quot;</font><font class="text"> ;
+   </font><font class="kw3">stringVector</font><font class="text"> liste( 0 ) ;
+   liste.build_from_string( choices, </font><font class="string">','</font><font class="text"> ) ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;liste.size() ; i++ )
+   {
+      mesg &lt;&lt; </font><font class="kw2">endl</font><font class="text"> &lt;&lt; </font><font class="string">&quot;   - \&quot;&quot; &lt;&lt; liste(i) &lt;&lt; &quot;</font><font class="text">\</font><font class="string">&quot;&quot;</font><font class="text"> ;
+   }
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( mesg.str() ) ;
+}
+
+
+
+
+</font>
+</pre>
+</body>
+</html>

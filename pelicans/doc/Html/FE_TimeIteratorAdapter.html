@@ -1,0 +1,1353 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>FE_TimeIteratorAdapter</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="FE_TimeIteratorAdapter_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="FEpack-tree.html"><span>Tree</span></a>
+    <span class=selected>Class</span>
+    <a href="FE_TimeIteratorAdapter.hh.html"><span>Header</span></a>
+    <a href="FE_TimeIteratorAdapter.cc.html"><span>Implementation</span></a>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="FEpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<br />
+<div class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></div>
+<br />
+
+
+<!-- ====== START OF CLASS DATA ======== -->
+<div id=classtitle>
+  <span class=classpath>FrameFE / </span><br />
+  <span class=classname>Class  FE_TimeIteratorAdapter</span>
+</div>
+
+<br />
+
+<div id=hierarchy>
+<ul class=rootclass><li><a href="PEL_Object.html#" target="classFrame">PEL_Object</a></li>
+  <ul class=self><li>FE_TimeIteratorAdapter</li>
+</ul>
+</div>
+
+<!-- ========== DERIVED CLASSES ========== -->
+<dl><dt><b>Direct Known Derived Classes:</b>
+<dd><a href="FE_SteadyStateAdapter.html#" target="classFrame">FE_SteadyStateAdapter</a></dd>
+</dl>
+<hr />
+<pre>
+Servers for adaptation of the time iterations managed by <a href="FE_TimeIterator.html#" target="classFrame">FE_TimeIterator</a>
+objects.
+
+Available adaptations are:
+   - modification of the time step:
+       * several external objects can propose a new time step calling
+         the function <a href="FE_TimeIteratorAdapter.html#propose_next_time_step" target="classFrame">propose_next_time_step</a>
+       * the resulting new time step is set to <a href="FE_TimeIteratorAdapter.html#time_iterator" target="classFrame">time_iterator</a> by calling
+         the function <a href="FE_TimeIteratorAdapter.html#adapt_time_iterator" target="classFrame">adapt_time_iterator</a>
+
+   - normal end of the time iterations (for example when steady state is
+     reached before the final time of <a href="FE_TimeIteratorAdapter.html#time_iterator" target="classFrame">time_iterator</a>) by calling
+     the function <a href="FE_TimeIteratorAdapter.html#propose_to_finish_iterations" target="classFrame">propose_to_finish_iterations</a> and then applying
+     this change to <a href="FE_TimeIteratorAdapter.html#time_iterator" target="classFrame">time_iterator</a>
+
+   - failure of the time iterations (for example after no convergence of an
+     inner solver) by calling <a href="FE_TimeIteratorAdapter.html#set_time_iteration_failed" target="classFrame">set_time_iteration_failed</a>
+
+Remarks:
+   - A pluggable factory allows the user to define adapters that
+     are dynamically choosen according to the data deck.
+   - A default behavior is proposed.
+
+FRAMEWORK INSTANTIATION
+
+   1. Derive a concrete subclass, say MyTimeIteratorAdapter.
+   2. Choose a name for MyTimeIteratorAdapter, say "MyTimeIteratorAdapter".
+   3. Implement a private destructor.
+   4. Declare all constructors private.
+   5. Define the prototype to be registered :
+      5.1 Implement a default constructor that initializes the
+          <a href="FE_TimeIteratorAdapter.html#" target="classFrame">FE_TimeIteratorAdapter</a> subobject by calling
+               <a href="FE_TimeIteratorAdapter.html#FE_TimeIteratorAdapter" target="classFrame">FE_TimeIteratorAdapter( std::string const& )</a>
+          with "MyTimeIteratorAdapter" as argument.
+      5.2 Define and initialize a static instance by calling the default
+          constructor.
+   6. Implement a private constructor that initializes the 
+      <a href="FE_TimeIteratorAdapter.html#" target="classFrame">FE_TimeIteratorAdapter</a> by calling
+                     <a href="FE_TimeIteratorAdapter.html#FE_TimeIteratorAdapter" target="classFrame">FE_TimeIteratorAdapter( FE_TimeIterator* )</a>
+   7. Implement the <a href="FE_TimeIteratorAdapter.html#create_replica" target="classFrame">create_replica</a> methods that allocate an object
+      of type <span class="uid1">MyTimeIteratorAdapter</span> initialized using the private constructor
+      described above, and subsequently return a pointer to that object.
+   8. Implement relevant virtual functions.
+
+PUBLISHED</pre>
+<hr />
+<a name="method_summary"></a>
+
+<!-- ========== NEW CATEGORY ========== -->
+<table class=category cellpadding=2 cellspacing=0 rules=rows>
+  <tr class=heading><th class=name>Instance delivery and initialization</th><th class=protection>public</th></tr>
+  <tr><td colspan="2"><a href="FE_TimeIteratorAdapter.html#make" target="classFrame">static FE_TimeIteratorAdapter* make( FE_TimeIterator* t_it, PDE_DomainAndFields const* dom, FE_SetOfParameters const* prms, PEL_ModuleExplorer const* exp )</a></td></tr>
+  <tr><td colspan="2"><a href="FE_TimeIteratorAdapter.html#make_" target="classFrame">static FE_TimeIteratorAdapter* make( FE_TimeIterator* t_it, PDE_SetOfDomains const* sdoms, FE_SetOfParameters const* prms, PEL_ModuleExplorer const* exp )</a></td></tr>
+  <tr><td colspan="2"><a href="FE_TimeIteratorAdapter.html#make_default" target="classFrame">static FE_TimeIteratorAdapter* make_default( FE_TimeIterator* t_it, PDE_DomainAndFields const* dom, FE_SetOfParameters const* prms )</a></td></tr>
+  <tr><td colspan="2"><a href="FE_TimeIteratorAdapter.html#make_default_" target="classFrame">static FE_TimeIteratorAdapter* make_default( FE_TimeIterator* t_it, PDE_SetOfDomains const* sdoms, FE_SetOfParameters const* prms )</a></td></tr>
+</table>
+
+<!-- ========== NEW CATEGORY ========== -->
+<table class=category cellpadding=2 cellspacing=0 rules=rows>
+  <tr class=heading><th class=name>Associated FE_TimeIterator object</th><th class=protection>public</th></tr>
+  <tr><td colspan="2"><a href="FE_TimeIteratorAdapter.html#time_iterator" target="classFrame">FE_TimeIterator const* time_iterator( void ) const</a></td></tr>
+</table>
+
+<!-- ========== NEW CATEGORY ========== -->
+<table class=category cellpadding=2 cellspacing=0 rules=rows>
+  <tr class=heading><th class=name>Adaptation of the associated FE_TimeIterator object</th><th class=protection>public</th></tr>
+  <tr><td colspan="2"><a href="FE_TimeIteratorAdapter.html#initialize_time_step" target="classFrame">void initialize_time_step( void )</a></td></tr>
+  <tr><td colspan="2"><a href="FE_TimeIteratorAdapter.html#adapt_time_iterator" target="classFrame">void adapt_time_iterator( void )</a></td></tr>
+  <tr><td colspan="2"><a href="FE_TimeIteratorAdapter.html#set_time_iteration_failed" target="classFrame">virtual void set_time_iteration_failed( void )</a></td></tr>
+</table>
+
+<!-- ========== NEW CATEGORY ========== -->
+<table class=category cellpadding=2 cellspacing=0 rules=rows>
+  <tr class=heading><th class=name>Proposed modifications to the associated FE_TimeIterator object</th><th class=protection>public</th></tr>
+  <tr><td colspan="2"><a href="FE_TimeIteratorAdapter.html#propose_next_time_step" target="classFrame">void propose_next_time_step( double dt )</a></td></tr>
+  <tr><td colspan="2"><a href="FE_TimeIteratorAdapter.html#next_time_step" target="classFrame">double next_time_step( void ) const</a></td></tr>
+  <tr><td colspan="2"><a href="FE_TimeIteratorAdapter.html#propose_to_finish_iterations" target="classFrame">void propose_to_finish_iterations( void )</a></td></tr>
+  <tr><td colspan="2"><a href="FE_TimeIteratorAdapter.html#iterations_are_finished" target="classFrame">bool iterations_are_finished( void ) const</a></td></tr>
+</table>
+
+<!-- ========== NEW CATEGORY ========== -->
+<table class=category cellpadding=2 cellspacing=0 rules=rows>
+  <tr class=heading><th class=name>Persistence</th><th class=protection>public</th></tr>
+  <tr><td colspan="2"><a href="FE_TimeIteratorAdapter.html#save_state" target="classFrame">virtual void save_state( PEL_ObjectWriter* writer ) const</a></td></tr>
+  <tr><td colspan="2"><a href="FE_TimeIteratorAdapter.html#restore_state" target="classFrame">virtual void restore_state( PEL_ObjectReader* reader )</a></td></tr>
+</table>
+
+<!-- ========== NEW CATEGORY ========== -->
+<table class=category cellpadding=2 cellspacing=0 rules=rows>
+  <tr class=heading><th class=name>Adaptation of the associated FE_TimeIterator object</th><th class=protection>protected</th></tr>
+  <tr><td colspan="2"><a href="FE_TimeIteratorAdapter.html#initialize_inner" target="classFrame">virtual void initialize_inner( void )</a></td></tr>
+  <tr><td colspan="2"><a href="FE_TimeIteratorAdapter.html#define_parameters_for_next_iteration" target="classFrame">virtual void define_parameters_for_next_iteration( bool& finished, bool& restart, double& next_dt )</a></td></tr>
+  <tr><td colspan="2"><a href="FE_TimeIteratorAdapter.html#next_time_step_from_proposed_one" target="classFrame">virtual double next_time_step_from_proposed_one( double dt ) const</a></td></tr>
+  <tr><td colspan="2"><a href="FE_TimeIteratorAdapter.html#restart_iteration_with_new_time_step" target="classFrame">void restart_iteration_with_new_time_step( double dt )</a></td></tr>
+</table>
+
+<!-- ========== NEW CATEGORY ========== -->
+<table class=category cellpadding=2 cellspacing=0 rules=rows>
+  <tr class=heading><th class=name>Default adaptator</th><th class=protection>protected</th></tr>
+  <tr><td colspan="2"><a href="FE_TimeIteratorAdapter.html#FE_TimeIteratorAdapter" target="classFrame"> FE_TimeIteratorAdapter( void )</a></td></tr>
+  <tr><td colspan="2"><a href="FE_TimeIteratorAdapter.html#create_replica" target="classFrame">virtual FE_TimeIteratorAdapter* create_replica( FE_TimeIterator* t_it, PDE_DomainAndFields const* dom, FE_SetOfParameters const* prms ) const</a></td></tr>
+  <tr><td colspan="2"><a href="FE_TimeIteratorAdapter.html#create_replica_" target="classFrame">virtual FE_TimeIteratorAdapter* create_replica( FE_TimeIterator* t_it, PDE_SetOfDomains const* sdoms, FE_SetOfParameters const* prms ) const</a></td></tr>
+</table>
+
+<!-- ========== NEW CATEGORY ========== -->
+<table class=category cellpadding=2 cellspacing=0 rules=rows>
+  <tr class=heading><th class=name>Plug in</th><th class=protection>protected</th></tr>
+  <tr><td colspan="2"><a href="FE_TimeIteratorAdapter.html#~FE_TimeIteratorAdapter" target="classFrame">virtual  ~FE_TimeIteratorAdapter( void )</a></td></tr>
+  <tr><td colspan="2"><a href="FE_TimeIteratorAdapter.html#FE_TimeIteratorAdapter_" target="classFrame"> FE_TimeIteratorAdapter( std::string const& a_concrete_name )</a></td></tr>
+  <tr><td colspan="2"><a href="FE_TimeIteratorAdapter.html#FE_TimeIteratorAdapter__" target="classFrame"> FE_TimeIteratorAdapter( FE_TimeIterator* t_it )</a></td></tr>
+  <tr><td colspan="2"><a href="FE_TimeIteratorAdapter.html#create_replica" target="classFrame">virtual FE_TimeIteratorAdapter* create_replica( FE_TimeIterator* t_it, PDE_DomainAndFields const* dom, FE_SetOfParameters const* prms, PEL_ModuleExplorer const* exp ) const</a></td></tr>
+  <tr><td colspan="2"><a href="FE_TimeIteratorAdapter.html#create_replica__" target="classFrame">virtual FE_TimeIteratorAdapter* create_replica( FE_TimeIterator* t_it, PDE_SetOfDomains const* sdoms, FE_SetOfParameters const* prms, PEL_ModuleExplorer const* exp ) const</a></td></tr>
+  <tr><td colspan="2"><a href="FE_TimeIteratorAdapter.html#is_a_prototype" target="classFrame">bool is_a_prototype( void ) const</a></td></tr>
+</table>
+
+<!-- ========== NEW CATEGORY ========== -->
+<table class=category cellpadding=2 cellspacing=0 rules=rows>
+  <tr class=heading><th class=name>Preconditions, Postconditions, Invariant</th><th class=protection>protected</th></tr>
+  <tr><td colspan="2"><a href="FE_TimeIteratorAdapter.html#invariant" target="classFrame">virtual bool invariant( void ) const</a></td></tr>
+  <tr><td colspan="2"><a href="FE_TimeIteratorAdapter.html#set_time_iteration_failed_PRE" target="classFrame">virtual bool set_time_iteration_failed_PRE( void ) const</a></td></tr>
+  <tr><td colspan="2"><a href="FE_TimeIteratorAdapter.html#set_time_iteration_failed_POST" target="classFrame">virtual bool set_time_iteration_failed_POST( void ) const</a></td></tr>
+  <tr><td colspan="2"><a href="FE_TimeIteratorAdapter.html#initialize_inner_PRE" target="classFrame">virtual bool initialize_inner_PRE( void ) const</a></td></tr>
+  <tr><td colspan="2"><a href="FE_TimeIteratorAdapter.html#initialize_inner_POST" target="classFrame">virtual bool initialize_inner_POST( void ) const</a></td></tr>
+  <tr><td colspan="2"><a href="FE_TimeIteratorAdapter.html#define_parameters_for_next_iteration_PRE" target="classFrame">virtual bool define_parameters_for_next_iteration_PRE( bool finished, bool restart, double next_dt ) const</a></td></tr>
+  <tr><td colspan="2"><a href="FE_TimeIteratorAdapter.html#define_parameters_for_next_iteration_POST" target="classFrame">virtual bool define_parameters_for_next_iteration_POST( bool finished, bool restart, double next_dt ) const</a></td></tr>
+  <tr><td colspan="2"><a href="FE_TimeIteratorAdapter.html#next_time_step_from_proposed_one_PRE" target="classFrame">virtual bool next_time_step_from_proposed_one_PRE( double dt ) const</a></td></tr>
+  <tr><td colspan="2"><a href="FE_TimeIteratorAdapter.html#next_time_step_from_proposed_one_POST" target="classFrame">virtual bool next_time_step_from_proposed_one_POST( double result, double dt ) const</a></td></tr>
+  <tr><td colspan="2"><a href="FE_TimeIteratorAdapter.html#create_replica_PRE" target="classFrame">virtual bool create_replica_PRE( FE_TimeIterator const* t_it, PDE_DomainAndFields const* dom, FE_SetOfParameters const* prms, PEL_ModuleExplorer const* exp ) const</a></td></tr>
+  <tr><td colspan="2"><a href="FE_TimeIteratorAdapter.html#create_replica_POST" target="classFrame">virtual bool create_replica_POST( FE_TimeIteratorAdapter const* result, FE_TimeIterator const* t_it, PDE_DomainAndFields const* dom, FE_SetOfParameters const* prms, PEL_ModuleExplorer const* exp ) const</a></td></tr>
+  <tr><td colspan="2"><a href="FE_TimeIteratorAdapter.html#create_replica_PRE_" target="classFrame">virtual bool create_replica_PRE( FE_TimeIterator const* t_it, PDE_SetOfDomains const* sdoms, FE_SetOfParameters const* prms, PEL_ModuleExplorer const* exp ) const</a></td></tr>
+  <tr><td colspan="2"><a href="FE_TimeIteratorAdapter.html#create_replica_POST_" target="classFrame">virtual bool create_replica_POST( FE_TimeIteratorAdapter const* result, FE_TimeIterator const* t_it, PDE_SetOfDomains const* sdoms, FE_SetOfParameters const* prms, PEL_ModuleExplorer const* exp ) const</a></td></tr>
+  <tr><td colspan="2"><a href="FE_TimeIteratorAdapter.html#create_replica_PRE__" target="classFrame">virtual bool create_replica_PRE( FE_TimeIterator const* t_it, PDE_DomainAndFields const* dom, FE_SetOfParameters const* prms ) const</a></td></tr>
+  <tr><td colspan="2"><a href="FE_TimeIteratorAdapter.html#create_replica_POST__" target="classFrame">virtual bool create_replica_POST( FE_TimeIteratorAdapter const* result, FE_TimeIterator const* t_it, PDE_DomainAndFields const* dom, FE_SetOfParameters const* prms ) const</a></td></tr>
+  <tr><td colspan="2"><a href="FE_TimeIteratorAdapter.html#create_replica_PRE___" target="classFrame">virtual bool create_replica_PRE( FE_TimeIterator const* t_it, PDE_SetOfDomains const* sdoms, FE_SetOfParameters const* prms ) const</a></td></tr>
+  <tr><td colspan="2"><a href="FE_TimeIteratorAdapter.html#create_replica_POST___" target="classFrame">virtual bool create_replica_POST( FE_TimeIteratorAdapter const* result, FE_TimeIterator const* t_it, PDE_SetOfDomains const* sdoms, FE_SetOfParameters const* prms ) const</a></td></tr>
+</table>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="make"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>static <a href="FE_TimeIteratorAdapter.html#" target="classFrame">FE_TimeIteratorAdapter</a>* make(</code></td><td><code><a href="FE_TimeIterator.html#" target="classFrame">FE_TimeIterator</a>* <span class="uid1">t_it</span>,</tr>
+  <tr><td /><td><code> <a href="PDE_DomainAndFields.html#" target="classFrame">PDE_DomainAndFields</a> const* <span class="uid1">dom</span>,</tr>
+  <tr><td /><td><code> <a href="FE_SetOfParameters.html#" target="classFrame">FE_SetOfParameters</a> const* <span class="uid1">prms</span>,</tr>
+  <tr><td /><td><code> <a href="PEL_ModuleExplorer.html#" target="classFrame">PEL_ModuleExplorer</a> const* <span class="uid1">exp</span> ) </code></td></tr>
+</table>
+<pre>Create and return the concrete instance of <a href="FE_TimeIteratorAdapter.html#" target="classFrame">FE_TimeIteratorAdapter</a>
+linked to <span class="uid1">t_it</span> and of name <span class="uid1">exp</span>->string_data( "concrete_name" )
+for single domain applications.</pre>
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">t_it</span></span> != 0</code></li>
+    <li><code>!<span class="uid1"><span class="uid1">t_it</span></span>->is_started()</code></li>
+    <li><code><span class="uid1"><span class="uid1">dom</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">prms</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">exp</span></span> != 0</code></li>
+  </ul>
+<br />
+  <span class=postcondition>Postcondition</span>
+  <ul>
+    <li><code>result != 0</code></li>
+    <li><code>result-><a href="PEL_Object.html#owner" target="classFrame">owner</a>() == <span class="uid1"><span class="uid1">t_it</span></span></code></li>
+    <li><code>result-><a href="FE_TimeIteratorAdapter.html#time_iterator" target="classFrame">time_iterator</a>() == <span class="uid1"><span class="uid1">t_it</span></span></code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="make_"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>static <a href="FE_TimeIteratorAdapter.html#" target="classFrame">FE_TimeIteratorAdapter</a>* make(</code></td><td><code><a href="FE_TimeIterator.html#" target="classFrame">FE_TimeIterator</a>* <span class="uid1">t_it</span>,</tr>
+  <tr><td /><td><code> <a href="PDE_SetOfDomains.html#" target="classFrame">PDE_SetOfDomains</a> const* <span class="uid1">sdoms</span>,</tr>
+  <tr><td /><td><code> <a href="FE_SetOfParameters.html#" target="classFrame">FE_SetOfParameters</a> const* <span class="uid1">prms</span>,</tr>
+  <tr><td /><td><code> <a href="PEL_ModuleExplorer.html#" target="classFrame">PEL_ModuleExplorer</a> const* <span class="uid1">exp</span> ) </code></td></tr>
+</table>
+<pre>Create and return the concrete instance of <a href="FE_TimeIteratorAdapter.html#" target="classFrame">FE_TimeIteratorAdapter</a>
+linked to <span class="uid1">t_it</span> and of name <span class="uid1">exp</span>->string_data( "concrete_name" )
+for multi domains applications.</pre>
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">t_it</span></span> != 0</code></li>
+    <li><code>!<span class="uid1"><span class="uid1">t_it</span></span>->is_started()</code></li>
+    <li><code><span class="uid1"><span class="uid1">sdoms</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">prms</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">exp</span></span> != 0</code></li>
+  </ul>
+<br />
+  <span class=postcondition>Postcondition</span>
+  <ul>
+    <li><code>result != 0</code></li>
+    <li><code>result-><a href="PEL_Object.html#owner" target="classFrame">owner</a>() == <span class="uid1"><span class="uid1">t_it</span></span></code></li>
+    <li><code>result-><a href="FE_TimeIteratorAdapter.html#time_iterator" target="classFrame">time_iterator</a>() == <span class="uid1"><span class="uid1">t_it</span></span></code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="make_default"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>static <a href="FE_TimeIteratorAdapter.html#" target="classFrame">FE_TimeIteratorAdapter</a>* make_default(</code></td><td><code><a href="FE_TimeIterator.html#" target="classFrame">FE_TimeIterator</a>* <span class="uid1">t_it</span>,</tr>
+  <tr><td /><td><code> <a href="PDE_DomainAndFields.html#" target="classFrame">PDE_DomainAndFields</a> const* <span class="uid1">dom</span>,</tr>
+  <tr><td /><td><code> <a href="FE_SetOfParameters.html#" target="classFrame">FE_SetOfParameters</a> const* <span class="uid1">prms</span> ) </code></td></tr>
+</table>
+<pre>Create and return the default <a href="FE_TimeIteratorAdapter.html#" target="classFrame">FE_TimeIteratorAdapter</a>
+linked to <span class="uid1">t_it</span> for single domain applications.</pre>
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">t_it</span></span> != 0</code></li>
+    <li><code>!<span class="uid1"><span class="uid1">t_it</span></span>->is_started()</code></li>
+    <li><code><span class="uid1"><span class="uid1">dom</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">prms</span></span> != 0</code></li>
+  </ul>
+<br />
+  <span class=postcondition>Postcondition</span>
+  <ul>
+    <li><code>result != 0</code></li>
+    <li><code>result-><a href="PEL_Object.html#owner" target="classFrame">owner</a>() == <span class="uid1"><span class="uid1">t_it</span></span></code></li>
+    <li><code>result-><a href="FE_TimeIteratorAdapter.html#time_iterator" target="classFrame">time_iterator</a>() == <span class="uid1"><span class="uid1">t_it</span></span></code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="make_default_"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>static <a href="FE_TimeIteratorAdapter.html#" target="classFrame">FE_TimeIteratorAdapter</a>* make_default(</code></td><td><code><a href="FE_TimeIterator.html#" target="classFrame">FE_TimeIterator</a>* <span class="uid1">t_it</span>,</tr>
+  <tr><td /><td><code> <a href="PDE_SetOfDomains.html#" target="classFrame">PDE_SetOfDomains</a> const* <span class="uid1">sdoms</span>,</tr>
+  <tr><td /><td><code> <a href="FE_SetOfParameters.html#" target="classFrame">FE_SetOfParameters</a> const* <span class="uid1">prms</span> ) </code></td></tr>
+</table>
+<pre>Create and return the default <a href="FE_TimeIteratorAdapter.html#" target="classFrame">FE_TimeIteratorAdapter</a>
+linked to <span class="uid1">t_it</span> for multi domains applications.</pre>
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">t_it</span></span> != 0</code></li>
+    <li><code>!<span class="uid1"><span class="uid1">t_it</span></span>->is_started()</code></li>
+    <li><code><span class="uid1"><span class="uid1">sdoms</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">prms</span></span> != 0</code></li>
+  </ul>
+<br />
+  <span class=postcondition>Postcondition</span>
+  <ul>
+    <li><code>result != 0</code></li>
+    <li><code>result-><a href="PEL_Object.html#owner" target="classFrame">owner</a>() == <span class="uid1"><span class="uid1">t_it</span></span></code></li>
+    <li><code>result-><a href="FE_TimeIteratorAdapter.html#time_iterator" target="classFrame">time_iterator</a>() == <span class="uid1"><span class="uid1">t_it</span></span></code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="time_iterator"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code><a href="FE_TimeIterator.html#" target="classFrame">FE_TimeIterator</a> const* time_iterator(</code></td><td><code>void ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+  <span class=postcondition>Postcondition</span>
+  <ul>
+    <li><code>result != 0</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="initialize_time_step"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>void initialize_time_step(</code></td><td><code>void ) </code></td></tr>
+</table>
+<pre>Initialize for a new time step.</pre>
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><a href="FE_TimeIteratorAdapter.html#time_iterator" target="classFrame">time_iterator</a>()->is_started()</code></li>
+    <li><code>!<a href="FE_TimeIteratorAdapter.html#time_iterator" target="classFrame">time_iterator</a>()->is_finished()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="adapt_time_iterator"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>void adapt_time_iterator(</code></td><td><code>void ) </code></td></tr>
+</table>
+<pre>Adapt new time iterator.</pre>
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><a href="FE_TimeIteratorAdapter.html#time_iterator" target="classFrame">time_iterator</a>()->is_started()</code></li>
+  </ul>
+<br />
+  <span class=postcondition>Postcondition</span>
+  <ul>
+    <li><code><a href="FE_TimeIteratorAdapter.html#iterations_are_finished" target="classFrame">iterations_are_finished</a>() &lt;==&gt; <a href="FE_TimeIteratorAdapter.html#time_iterator" target="classFrame">time_iterator</a>()->is_finished()</code></li>
+    <li><code>!<a href="FE_TimeIteratorAdapter.html#iterations_are_finished" target="classFrame">iterations_are_finished</a>() && !<a href="FE_TimeIteratorAdapter.html#time_iterator" target="classFrame">time_iterator</a>()->time_step_is_fixed() ==&gt; <a href="FE_TimeIteratorAdapter.html#time_iterator" target="classFrame">time_iterator</a>()-><a href="FE_TimeIteratorAdapter.html#next_time_step" target="classFrame">next_time_step</a>() == <a href="FE_TimeIteratorAdapter.html#next_time_step" target="classFrame">next_time_step</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="set_time_iteration_failed"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual void set_time_iteration_failed(</code></td><td><code>void ) </code></td></tr>
+</table>
+<pre>IMPLEMENTATION : raise error and terminate program.</pre>
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><a href="FE_TimeIteratorAdapter.html#time_iterator" target="classFrame">time_iterator</a>()->is_started()</code></li>
+    <li><code>!<a href="FE_TimeIteratorAdapter.html#time_iterator" target="classFrame">time_iterator</a>()->is_finished()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="propose_next_time_step"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>void propose_next_time_step(</code></td><td><code>double <span class="uid1">dt</span> ) </code></td></tr>
+</table>
+<pre>Propose <span class="uid1">dt</span> for the next time step of <a href="FE_TimeIteratorAdapter.html#time_iterator" target="classFrame">time_iterator</a>
+(<a href="FE_TimeIteratorAdapter.html#time_iterator" target="classFrame">time_iterator</a> is not modified and the proposed modification
+will be effective only after calling <a href="FE_TimeIteratorAdapter.html#adapt_time_iterator" target="classFrame">adapt_time_iterator</a>).</pre>
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><a href="FE_TimeIteratorAdapter.html#time_iterator" target="classFrame">time_iterator</a>()->is_started()</code></li>
+    <li><code>!<a href="FE_TimeIteratorAdapter.html#time_iterator" target="classFrame">time_iterator</a>()->is_finished()</code></li>
+    <li><code><span class="uid1"><span class="uid1">dt</span></span> > 0.</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="next_time_step"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>double next_time_step(</code></td><td><code>void ) const</code></td></tr>
+</table>
+<pre>value currently proposed for the next time step of <a href="FE_TimeIteratorAdapter.html#time_iterator" target="classFrame">time_iterator</a></pre>
+<br />
+<div class=conditions>
+  <span class=postcondition>Postcondition</span>
+  <ul>
+    <li><code>result > 0.</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="propose_to_finish_iterations"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>void propose_to_finish_iterations(</code></td><td><code>void ) </code></td></tr>
+</table>
+<pre>Propose to terminate current time iterations
+(<a href="FE_TimeIteratorAdapter.html#time_iterator" target="classFrame">time_iterator</a> is not modified and the proposed modification
+will be effective only after calling <a href="FE_TimeIteratorAdapter.html#adapt_time_iterator" target="classFrame">adapt_time_iterator</a>).</pre>
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><a href="FE_TimeIteratorAdapter.html#time_iterator" target="classFrame">time_iterator</a>()->is_started()</code></li>
+    <li><code>!<a href="FE_TimeIteratorAdapter.html#time_iterator" target="classFrame">time_iterator</a>()->is_finished()</code></li>
+  </ul>
+<br />
+  <span class=postcondition>Postcondition</span>
+  <ul>
+    <li><code><a href="FE_TimeIteratorAdapter.html#iterations_are_finished" target="classFrame">iterations_are_finished</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="iterations_are_finished"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>bool iterations_are_finished(</code></td><td><code>void ) const</code></td></tr>
+</table>
+<pre>Are the current time iterations terminated ?</pre>
+<br />
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="save_state"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual void save_state(</code></td><td><code><a href="PEL_ObjectWriter.html#" target="classFrame">PEL_ObjectWriter</a>* <span class="uid1">writer</span> ) const</code></td></tr>
+</table>
+<pre>Use <span class="uid1">writer</span> to store <span class="uid1">self</span> so that ist can be retrieved
+with <a href="FE_TimeIteratorAdapter.html#restore_state" target="classFrame">restore_state</a>.
+
+</pre>
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">writer</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">writer</span></span>->has_an_opened_cycle()</code></li>
+  </ul>
+<br />
+  <span class=postcondition>Postcondition</span>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">writer</span></span>->has_an_opened_cycle()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=overrides> Overridden from <a href="PEL_Object.html#" target="classFrame">PEL_Object</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="restore_state"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual void restore_state(</code></td><td><code><a href="PEL_ObjectReader.html#" target="classFrame">PEL_ObjectReader</a>* <span class="uid1">reader</span> ) </code></td></tr>
+</table>
+<pre>Retrieve <span class="uid1">self</span> from <span class="uid1">reader</span>.
+
+</pre>
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">reader</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">reader</span></span>->positioned_in_a_valid_cycle()</code></li>
+  </ul>
+<br />
+  <span class=postcondition>Postcondition</span>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">reader</span></span>->positioned_in_a_valid_cycle()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=overrides> Overridden from <a href="PEL_Object.html#" target="classFrame">PEL_Object</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="initialize_inner"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual void initialize_inner(</code></td><td><code>void ) </code></td></tr>
+</table>
+<pre>Inner initialization called by <a href="FE_TimeIteratorAdapter.html#initialize_time_step" target="classFrame">initialize_time_step</a>().
+IMPLEMENTATION : do nothing.</pre>
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><a href="FE_TimeIteratorAdapter.html#time_iterator" target="classFrame">time_iterator</a>()->is_started()</code></li>
+    <li><code>!<a href="FE_TimeIteratorAdapter.html#time_iterator" target="classFrame">time_iterator</a>()->is_finished()</code></li>
+    <li><code><a href="FE_TimeIteratorAdapter.html#next_time_step" target="classFrame">next_time_step</a>() == <a href="FE_TimeIteratorAdapter.html#time_iterator" target="classFrame">time_iterator</a>()->time_step()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="define_parameters_for_next_iteration"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual void define_parameters_for_next_iteration(</code></td><td><code>bool& <span class="uid1">finished</span>,</tr>
+  <tr><td /><td><code> bool& <span class="uid1">restart</span>,</tr>
+  <tr><td /><td><code> double& <span class="uid1">next_dt</span> ) </code></td></tr>
+</table>
+<pre>
+      Indicate the desired parameters for the next time iteration.
+      On exit, the meaning of the arguments is the following :
+         - <span class="uid1">restart</span>=true: restart current iteration with 
+                          <span class="uid1">next_dt</span> as time step
+         - <span class="uid1">finished</span>=true: time iterations are finished
+         - <span class="uid1">finished</span>=false: perform next iteration with time step <span class="uid1">next_dt</span>.
+      IMPLEMENTATION : arguments are unchanged.
+</pre>
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><a href="FE_TimeIteratorAdapter.html#time_iterator" target="classFrame">time_iterator</a>()->is_started()</code></li>
+    <li><code>!<a href="FE_TimeIteratorAdapter.html#time_iterator" target="classFrame">time_iterator</a>()->is_finished()</code></li>
+    <li><code><span class="uid1"><span class="uid1">finished</span></span> == false</code></li>
+    <li><code><span class="uid1"><span class="uid1">restart</span></span> == false</code></li>
+    <li><code><span class="uid1"><span class="uid1">next_dt</span></span> == <a href="FE_TimeIteratorAdapter.html#next_time_step" target="classFrame">next_time_step</a>()</code></li>
+  </ul>
+<br />
+  <span class=postcondition>Postcondition</span>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">finished</span></span> ==&gt; !<span class="uid1"><span class="uid1">restart</span></span></code></li>
+    <li><code><span class="uid1"><span class="uid1">restart</span></span> ==&gt; !<span class="uid1"><span class="uid1">finished</span></span></code></li>
+    <li><code><a href="FE_TimeIteratorAdapter.html#time_iterator" target="classFrame">time_iterator</a>()->time_step_is_fixed() ==&gt; !<span class="uid1"><span class="uid1">restart</span></span></code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="next_time_step_from_proposed_one"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual double next_time_step_from_proposed_one(</code></td><td><code>double <span class="uid1">dt</span> ) const</code></td></tr>
+</table>
+<pre>new time step from the one proposed by the client
+IMPLEMENTATION : <span class="uid1">dt</span> is returned without modification</pre>
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><a href="FE_TimeIteratorAdapter.html#time_iterator" target="classFrame">time_iterator</a>()->is_started()</code></li>
+    <li><code>!<a href="FE_TimeIteratorAdapter.html#time_iterator" target="classFrame">time_iterator</a>()->is_finished()</code></li>
+    <li><code><span class="uid1"><span class="uid1">dt</span></span> > 0.</code></li>
+  </ul>
+<br />
+  <span class=postcondition>Postcondition</span>
+  <ul>
+    <li><code>result > 0.</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="restart_iteration_with_new_time_step"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>void restart_iteration_with_new_time_step(</code></td><td><code>double <span class="uid1">dt</span> ) </code></td></tr>
+</table>
+<pre>Restart time iteration with <span class="uid1">dt</span> as new time step :
+should be called by <a href="FE_TimeIteratorAdapter.html#set_time_iteration_failed" target="classFrame">set_time_iteration_failed</a>().</pre>
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><a href="FE_TimeIteratorAdapter.html#time_iterator" target="classFrame">time_iterator</a>()->is_started()</code></li>
+    <li><code>!<a href="FE_TimeIteratorAdapter.html#time_iterator" target="classFrame">time_iterator</a>()->is_finished()</code></li>
+    <li><code>!<a href="FE_TimeIteratorAdapter.html#time_iterator" target="classFrame">time_iterator</a>()->time_step_is_fixed()</code></li>
+    <li><code>!<a href="FE_TimeIteratorAdapter.html#time_iterator" target="classFrame">time_iterator</a>()->just_went_back()</code></li>
+    <li><code><span class="uid1"><span class="uid1">dt</span></span> > 0.</code></li>
+  </ul>
+<br />
+  <span class=postcondition>Postcondition</span>
+  <ul>
+    <li><code><a href="FE_TimeIteratorAdapter.html#time_iterator" target="classFrame">time_iterator</a>()->just_went_back()</code></li>
+    <li><code><a href="FE_TimeIteratorAdapter.html#time_iterator" target="classFrame">time_iterator</a>()-><a href="FE_TimeIteratorAdapter.html#next_time_step" target="classFrame">next_time_step</a>() == <span class="uid1"><span class="uid1">dt</span></span></code></li>
+    <li><code><a href="FE_TimeIteratorAdapter.html#next_time_step" target="classFrame">next_time_step</a>() == <span class="uid1"><span class="uid1">dt</span></span></code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="FE_TimeIteratorAdapter"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code> FE_TimeIteratorAdapter(</code></td><td><code>void ) </code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+  <span class=postcondition>Postcondition</span>
+  <ul>
+    <li><code><a href="FE_TimeIteratorAdapter.html#is_a_prototype" target="classFrame">is_a_prototype</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="create_replica"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual <a href="FE_TimeIteratorAdapter.html#" target="classFrame">FE_TimeIteratorAdapter</a>* create_replica(</code></td><td><code><a href="FE_TimeIterator.html#" target="classFrame">FE_TimeIterator</a>* <span class="uid1">t_it</span>,</tr>
+  <tr><td /><td><code><a href="PDE_DomainAndFields.html#" target="classFrame">PDE_DomainAndFields</a> const* <span class="uid1">dom</span>,</tr>
+  <tr><td /><td><code><a href="FE_SetOfParameters.html#" target="classFrame">FE_SetOfParameters</a> const* <span class="uid1">prms</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><a href="FE_TimeIteratorAdapter.html#is_a_prototype" target="classFrame">is_a_prototype</a>()</code></li>
+    <li><code><span class="uid1"><span class="uid1">t_it</span></span> != 0</code></li>
+    <li><code>!<span class="uid1"><span class="uid1">t_it</span></span>->is_started()</code></li>
+    <li><code><span class="uid1"><span class="uid1">dom</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">prms</span></span> != 0</code></li>
+  </ul>
+<br />
+  <span class=postcondition>Postcondition</span>
+  <ul>
+    <li><code>result != 0</code></li>
+    <li><code>result-><a href="PEL_Object.html#owner" target="classFrame">owner</a>() == <span class="uid1"><span class="uid1">t_it</span></span></code></li>
+    <li><code>!result-><a href="FE_TimeIteratorAdapter.html#is_a_prototype" target="classFrame">is_a_prototype</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="create_replica_"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual <a href="FE_TimeIteratorAdapter.html#" target="classFrame">FE_TimeIteratorAdapter</a>* create_replica(</code></td><td><code><a href="FE_TimeIterator.html#" target="classFrame">FE_TimeIterator</a>* <span class="uid1">t_it</span>,</tr>
+  <tr><td /><td><code><a href="PDE_SetOfDomains.html#" target="classFrame">PDE_SetOfDomains</a> const* <span class="uid1">sdoms</span>,</tr>
+  <tr><td /><td><code><a href="FE_SetOfParameters.html#" target="classFrame">FE_SetOfParameters</a> const* <span class="uid1">prms</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><a href="FE_TimeIteratorAdapter.html#is_a_prototype" target="classFrame">is_a_prototype</a>()</code></li>
+    <li><code><span class="uid1"><span class="uid1">t_it</span></span> != 0</code></li>
+    <li><code>!<span class="uid1"><span class="uid1">t_it</span></span>->is_started()</code></li>
+    <li><code><span class="uid1"><span class="uid1">sdoms</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">prms</span></span> != 0</code></li>
+  </ul>
+<br />
+  <span class=postcondition>Postcondition</span>
+  <ul>
+    <li><code>result != 0</code></li>
+    <li><code>result-><a href="PEL_Object.html#owner" target="classFrame">owner</a>() == <span class="uid1"><span class="uid1">t_it</span></span></code></li>
+    <li><code>!result-><a href="FE_TimeIteratorAdapter.html#is_a_prototype" target="classFrame">is_a_prototype</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="~FE_TimeIteratorAdapter"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual~FE_TimeIteratorAdapter(</code></td><td><code>void ) </code></td></tr>
+</table>
+<br />
+<br />
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="FE_TimeIteratorAdapter_"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code> FE_TimeIteratorAdapter(</code></td><td><code>std::string const& <span class="uid1">a_concrete_name</span> ) </code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+  <span class=postcondition>Postcondition</span>
+  <ul>
+    <li><code><a href="FE_TimeIteratorAdapter.html#is_a_prototype" target="classFrame">is_a_prototype</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="FE_TimeIteratorAdapter__"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code> FE_TimeIteratorAdapter(</code></td><td><code><a href="FE_TimeIterator.html#" target="classFrame">FE_TimeIterator</a>* <span class="uid1">t_it</span> ) </code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+  <span class=postcondition>Postcondition</span>
+  <ul>
+    <li><code>!<a href="FE_TimeIteratorAdapter.html#is_a_prototype" target="classFrame">is_a_prototype</a>()</code></li>
+    <li><code><a href="PEL_Object.html#owner" target="classFrame">owner</a>() == <span class="uid1"><span class="uid1">t_it</span></span></code></li>
+    <li><code><a href="FE_TimeIteratorAdapter.html#time_iterator" target="classFrame">time_iterator</a>() == <span class="uid1"><span class="uid1">t_it</span></span></code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="create_replica"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual <a href="FE_TimeIteratorAdapter.html#" target="classFrame">FE_TimeIteratorAdapter</a>* create_replica(</code></td><td><code><a href="FE_TimeIterator.html#" target="classFrame">FE_TimeIterator</a>* <span class="uid1">t_it</span>,</tr>
+  <tr><td /><td><code><a href="PDE_DomainAndFields.html#" target="classFrame">PDE_DomainAndFields</a> const* <span class="uid1">dom</span>,</tr>
+  <tr><td /><td><code><a href="FE_SetOfParameters.html#" target="classFrame">FE_SetOfParameters</a> const* <span class="uid1">prms</span>,</tr>
+  <tr><td /><td><code><a href="PEL_ModuleExplorer.html#" target="classFrame">PEL_ModuleExplorer</a> const* <span class="uid1">exp</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><a href="FE_TimeIteratorAdapter.html#is_a_prototype" target="classFrame">is_a_prototype</a>()</code></li>
+    <li><code><span class="uid1"><span class="uid1">t_it</span></span> != 0</code></li>
+    <li><code>!<span class="uid1"><span class="uid1">t_it</span></span>->is_started()</code></li>
+    <li><code><span class="uid1"><span class="uid1">dom</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">prms</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">exp</span></span> != 0</code></li>
+  </ul>
+<br />
+  <span class=postcondition>Postcondition</span>
+  <ul>
+    <li><code>result != 0</code></li>
+    <li><code>result-><a href="PEL_Object.html#owner" target="classFrame">owner</a>() == <span class="uid1"><span class="uid1">t_it</span></span></code></li>
+    <li><code>!result-><a href="FE_TimeIteratorAdapter.html#is_a_prototype" target="classFrame">is_a_prototype</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="create_replica__"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual <a href="FE_TimeIteratorAdapter.html#" target="classFrame">FE_TimeIteratorAdapter</a>* create_replica(</code></td><td><code><a href="FE_TimeIterator.html#" target="classFrame">FE_TimeIterator</a>* <span class="uid1">t_it</span>,</tr>
+  <tr><td /><td><code><a href="PDE_SetOfDomains.html#" target="classFrame">PDE_SetOfDomains</a> const* <span class="uid1">sdoms</span>,</tr>
+  <tr><td /><td><code><a href="FE_SetOfParameters.html#" target="classFrame">FE_SetOfParameters</a> const* <span class="uid1">prms</span>,</tr>
+  <tr><td /><td><code><a href="PEL_ModuleExplorer.html#" target="classFrame">PEL_ModuleExplorer</a> const* <span class="uid1">exp</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><a href="FE_TimeIteratorAdapter.html#is_a_prototype" target="classFrame">is_a_prototype</a>()</code></li>
+    <li><code><span class="uid1"><span class="uid1">t_it</span></span> != 0</code></li>
+    <li><code>!<span class="uid1"><span class="uid1">t_it</span></span>->is_started()</code></li>
+    <li><code><span class="uid1"><span class="uid1">sdoms</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">prms</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">exp</span></span> != 0</code></li>
+  </ul>
+<br />
+  <span class=postcondition>Postcondition</span>
+  <ul>
+    <li><code>result != 0</code></li>
+    <li><code>result-><a href="PEL_Object.html#owner" target="classFrame">owner</a>() == <span class="uid1"><span class="uid1">t_it</span></span></code></li>
+    <li><code>!result-><a href="FE_TimeIteratorAdapter.html#is_a_prototype" target="classFrame">is_a_prototype</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="is_a_prototype"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>bool is_a_prototype(</code></td><td><code>void ) const</code></td></tr>
+</table>
+<br />
+<br />
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="invariant"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual bool invariant(</code></td><td><code>void ) const</code></td></tr>
+</table>
+<br />
+<br />
+<table class=footer>
+<tr>
+  <td class=overrides> Overridden from <a href="PEL_Object.html#" target="classFrame">PEL_Object</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="set_time_iteration_failed_PRE"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual bool set_time_iteration_failed_PRE(</code></td><td><code>void ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the precondition of method <a href="FE_TimeIteratorAdapter.html#set_time_iteration_failed" target="classFrame">set_time_iteration_failed</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code><a href="FE_TimeIteratorAdapter.html#time_iterator" target="classFrame">time_iterator</a>()->is_started()</code></li>
+    <li><code>!<a href="FE_TimeIteratorAdapter.html#time_iterator" target="classFrame">time_iterator</a>()->is_finished()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="set_time_iteration_failed_POST"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual bool set_time_iteration_failed_POST(</code></td><td><code>void ) const</code></td></tr>
+</table>
+<br />
+<br />
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="initialize_inner_PRE"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual bool initialize_inner_PRE(</code></td><td><code>void ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the precondition of method <a href="FE_TimeIteratorAdapter.html#initialize_inner" target="classFrame">initialize_inner</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code><a href="FE_TimeIteratorAdapter.html#time_iterator" target="classFrame">time_iterator</a>()->is_started()</code></li>
+    <li><code>!<a href="FE_TimeIteratorAdapter.html#time_iterator" target="classFrame">time_iterator</a>()->is_finished()</code></li>
+    <li><code><a href="FE_TimeIteratorAdapter.html#next_time_step" target="classFrame">next_time_step</a>() == <a href="FE_TimeIteratorAdapter.html#time_iterator" target="classFrame">time_iterator</a>()->time_step()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="initialize_inner_POST"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual bool initialize_inner_POST(</code></td><td><code>void ) const</code></td></tr>
+</table>
+<br />
+<br />
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="define_parameters_for_next_iteration_PRE"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual bool define_parameters_for_next_iteration_PRE(</code></td><td><code>bool <span class="uid1">finished</span>,</tr>
+  <tr><td /><td><code> bool <span class="uid1">restart</span>,</tr>
+  <tr><td /><td><code> double <span class="uid1">next_dt</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the precondition of method <a href="FE_TimeIteratorAdapter.html#define_parameters_for_next_iteration" target="classFrame">define_parameters_for_next_iteration</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code><a href="FE_TimeIteratorAdapter.html#time_iterator" target="classFrame">time_iterator</a>()->is_started()</code></li>
+    <li><code>!<a href="FE_TimeIteratorAdapter.html#time_iterator" target="classFrame">time_iterator</a>()->is_finished()</code></li>
+    <li><code><span class="uid1"><span class="uid1">finished</span></span> == false</code></li>
+    <li><code><span class="uid1"><span class="uid1">restart</span></span> == false</code></li>
+    <li><code><span class="uid1"><span class="uid1">next_dt</span></span> == <a href="FE_TimeIteratorAdapter.html#next_time_step" target="classFrame">next_time_step</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="define_parameters_for_next_iteration_POST"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual bool define_parameters_for_next_iteration_POST(</code></td><td><code>bool <span class="uid1">finished</span>,</tr>
+  <tr><td /><td><code>bool <span class="uid1">restart</span>,</tr>
+  <tr><td /><td><code>double <span class="uid1">next_dt</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the postcondition of method <a href="FE_TimeIteratorAdapter.html#define_parameters_for_next_iteration" target="classFrame">define_parameters_for_next_iteration</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">finished</span></span> ==&gt; !<span class="uid1"><span class="uid1">restart</span></span></code></li>
+    <li><code><span class="uid1"><span class="uid1">restart</span></span> ==&gt; !<span class="uid1"><span class="uid1">finished</span></span></code></li>
+    <li><code><a href="FE_TimeIteratorAdapter.html#time_iterator" target="classFrame">time_iterator</a>()->time_step_is_fixed() ==&gt; !<span class="uid1"><span class="uid1">restart</span></span></code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="next_time_step_from_proposed_one_PRE"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual bool next_time_step_from_proposed_one_PRE(</code></td><td><code>double <span class="uid1">dt</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the precondition of method <a href="FE_TimeIteratorAdapter.html#next_time_step_from_proposed_one" target="classFrame">next_time_step_from_proposed_one</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code><a href="FE_TimeIteratorAdapter.html#time_iterator" target="classFrame">time_iterator</a>()->is_started()</code></li>
+    <li><code>!<a href="FE_TimeIteratorAdapter.html#time_iterator" target="classFrame">time_iterator</a>()->is_finished()</code></li>
+    <li><code><span class="uid1"><span class="uid1">dt</span></span> > 0.</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="next_time_step_from_proposed_one_POST"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual bool next_time_step_from_proposed_one_POST(</code></td><td><code>double <span class="uid1">result</span>,</tr>
+  <tr><td /><td><code>double <span class="uid1">dt</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the postcondition of method <a href="FE_TimeIteratorAdapter.html#next_time_step_from_proposed_one" target="classFrame">next_time_step_from_proposed_one</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">result</span></span> > 0.</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="create_replica_PRE"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual bool create_replica_PRE(</code></td><td><code><a href="FE_TimeIterator.html#" target="classFrame">FE_TimeIterator</a> const* <span class="uid1">t_it</span>,</tr>
+  <tr><td /><td><code> <a href="PDE_DomainAndFields.html#" target="classFrame">PDE_DomainAndFields</a> const* <span class="uid1">dom</span>,</tr>
+  <tr><td /><td><code> <a href="FE_SetOfParameters.html#" target="classFrame">FE_SetOfParameters</a> const* <span class="uid1">prms</span>,</tr>
+  <tr><td /><td><code> <a href="PEL_ModuleExplorer.html#" target="classFrame">PEL_ModuleExplorer</a> const* <span class="uid1">exp</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the precondition of method <a href="FE_TimeIteratorAdapter.html#create_replica" target="classFrame">create_replica</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code><a href="FE_TimeIteratorAdapter.html#is_a_prototype" target="classFrame">is_a_prototype</a>()</code></li>
+    <li><code><span class="uid1"><span class="uid1">t_it</span></span> != 0</code></li>
+    <li><code>!<span class="uid1"><span class="uid1">t_it</span></span>->is_started()</code></li>
+    <li><code><span class="uid1"><span class="uid1">dom</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">prms</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">exp</span></span> != 0</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="create_replica_POST"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual bool create_replica_POST(</code></td><td><code><a href="FE_TimeIteratorAdapter.html#FE_TimeIteratorAdapter" target="classFrame">FE_TimeIteratorAdapter const*</a> <span class="uid1">result</span>,</tr>
+  <tr><td /><td><code><a href="FE_TimeIterator.html#" target="classFrame">FE_TimeIterator</a> const* <span class="uid1">t_it</span>,</tr>
+  <tr><td /><td><code><a href="PDE_DomainAndFields.html#" target="classFrame">PDE_DomainAndFields</a> const* <span class="uid1">dom</span>,</tr>
+  <tr><td /><td><code><a href="FE_SetOfParameters.html#" target="classFrame">FE_SetOfParameters</a> const* <span class="uid1">prms</span>,</tr>
+  <tr><td /><td><code><a href="PEL_ModuleExplorer.html#" target="classFrame">PEL_ModuleExplorer</a> const* <span class="uid1">exp</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the postcondition of method <a href="FE_TimeIteratorAdapter.html#create_replica" target="classFrame">create_replica</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">result</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">result</span></span>-><a href="PEL_Object.html#owner" target="classFrame">owner</a>() == <span class="uid1"><span class="uid1">t_it</span></span></code></li>
+    <li><code>!<span class="uid1"><span class="uid1">result</span></span>-><a href="FE_TimeIteratorAdapter.html#is_a_prototype" target="classFrame">is_a_prototype</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="create_replica_PRE_"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual bool create_replica_PRE(</code></td><td><code><a href="FE_TimeIterator.html#" target="classFrame">FE_TimeIterator</a> const* <span class="uid1">t_it</span>,</tr>
+  <tr><td /><td><code> <a href="PDE_SetOfDomains.html#" target="classFrame">PDE_SetOfDomains</a> const* <span class="uid1">sdoms</span>,</tr>
+  <tr><td /><td><code> <a href="FE_SetOfParameters.html#" target="classFrame">FE_SetOfParameters</a> const* <span class="uid1">prms</span>,</tr>
+  <tr><td /><td><code> <a href="PEL_ModuleExplorer.html#" target="classFrame">PEL_ModuleExplorer</a> const* <span class="uid1">exp</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the precondition of method <a href="FE_TimeIteratorAdapter.html#create_replica__" target="classFrame">create_replica</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code><a href="FE_TimeIteratorAdapter.html#is_a_prototype" target="classFrame">is_a_prototype</a>()</code></li>
+    <li><code><span class="uid1"><span class="uid1">t_it</span></span> != 0</code></li>
+    <li><code>!<span class="uid1"><span class="uid1">t_it</span></span>->is_started()</code></li>
+    <li><code><span class="uid1"><span class="uid1">sdoms</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">prms</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">exp</span></span> != 0</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="create_replica_POST_"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual bool create_replica_POST(</code></td><td><code><a href="FE_TimeIteratorAdapter.html#FE_TimeIteratorAdapter" target="classFrame">FE_TimeIteratorAdapter const*</a> <span class="uid1">result</span>,</tr>
+  <tr><td /><td><code><a href="FE_TimeIterator.html#" target="classFrame">FE_TimeIterator</a> const* <span class="uid1">t_it</span>,</tr>
+  <tr><td /><td><code><a href="PDE_SetOfDomains.html#" target="classFrame">PDE_SetOfDomains</a> const* <span class="uid1">sdoms</span>,</tr>
+  <tr><td /><td><code><a href="FE_SetOfParameters.html#" target="classFrame">FE_SetOfParameters</a> const* <span class="uid1">prms</span>,</tr>
+  <tr><td /><td><code><a href="PEL_ModuleExplorer.html#" target="classFrame">PEL_ModuleExplorer</a> const* <span class="uid1">exp</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the postcondition of method <a href="FE_TimeIteratorAdapter.html#create_replica__" target="classFrame">create_replica</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">result</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">result</span></span>-><a href="PEL_Object.html#owner" target="classFrame">owner</a>() == <span class="uid1"><span class="uid1">t_it</span></span></code></li>
+    <li><code>!<span class="uid1"><span class="uid1">result</span></span>-><a href="FE_TimeIteratorAdapter.html#is_a_prototype" target="classFrame">is_a_prototype</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="create_replica_PRE__"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual bool create_replica_PRE(</code></td><td><code><a href="FE_TimeIterator.html#" target="classFrame">FE_TimeIterator</a> const* <span class="uid1">t_it</span>,</tr>
+  <tr><td /><td><code> <a href="PDE_DomainAndFields.html#" target="classFrame">PDE_DomainAndFields</a> const* <span class="uid1">dom</span>,</tr>
+  <tr><td /><td><code> <a href="FE_SetOfParameters.html#" target="classFrame">FE_SetOfParameters</a> const* <span class="uid1">prms</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the precondition of method <a href="FE_TimeIteratorAdapter.html#create_replica" target="classFrame">create_replica</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code><a href="FE_TimeIteratorAdapter.html#is_a_prototype" target="classFrame">is_a_prototype</a>()</code></li>
+    <li><code><span class="uid1"><span class="uid1">t_it</span></span> != 0</code></li>
+    <li><code>!<span class="uid1"><span class="uid1">t_it</span></span>->is_started()</code></li>
+    <li><code><span class="uid1"><span class="uid1">dom</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">prms</span></span> != 0</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="create_replica_POST__"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual bool create_replica_POST(</code></td><td><code><a href="FE_TimeIteratorAdapter.html#FE_TimeIteratorAdapter" target="classFrame">FE_TimeIteratorAdapter const*</a> <span class="uid1">result</span>,</tr>
+  <tr><td /><td><code><a href="FE_TimeIterator.html#" target="classFrame">FE_TimeIterator</a> const* <span class="uid1">t_it</span>,</tr>
+  <tr><td /><td><code><a href="PDE_DomainAndFields.html#" target="classFrame">PDE_DomainAndFields</a> const* <span class="uid1">dom</span>,</tr>
+  <tr><td /><td><code><a href="FE_SetOfParameters.html#" target="classFrame">FE_SetOfParameters</a> const* <span class="uid1">prms</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the postcondition of method <a href="FE_TimeIteratorAdapter.html#create_replica" target="classFrame">create_replica</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">result</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">result</span></span>-><a href="PEL_Object.html#owner" target="classFrame">owner</a>() == <span class="uid1"><span class="uid1">t_it</span></span></code></li>
+    <li><code>!<span class="uid1"><span class="uid1">result</span></span>-><a href="FE_TimeIteratorAdapter.html#is_a_prototype" target="classFrame">is_a_prototype</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="create_replica_PRE___"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual bool create_replica_PRE(</code></td><td><code><a href="FE_TimeIterator.html#" target="classFrame">FE_TimeIterator</a> const* <span class="uid1">t_it</span>,</tr>
+  <tr><td /><td><code> <a href="PDE_SetOfDomains.html#" target="classFrame">PDE_SetOfDomains</a> const* <span class="uid1">sdoms</span>,</tr>
+  <tr><td /><td><code> <a href="FE_SetOfParameters.html#" target="classFrame">FE_SetOfParameters</a> const* <span class="uid1">prms</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the precondition of method <a href="FE_TimeIteratorAdapter.html#create_replica_" target="classFrame">create_replica</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code><a href="FE_TimeIteratorAdapter.html#is_a_prototype" target="classFrame">is_a_prototype</a>()</code></li>
+    <li><code><span class="uid1"><span class="uid1">t_it</span></span> != 0</code></li>
+    <li><code>!<span class="uid1"><span class="uid1">t_it</span></span>->is_started()</code></li>
+    <li><code><span class="uid1"><span class="uid1">sdoms</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">prms</span></span> != 0</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="create_replica_POST___"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual bool create_replica_POST(</code></td><td><code><a href="FE_TimeIteratorAdapter.html#FE_TimeIteratorAdapter" target="classFrame">FE_TimeIteratorAdapter const*</a> <span class="uid1">result</span>,</tr>
+  <tr><td /><td><code><a href="FE_TimeIterator.html#" target="classFrame">FE_TimeIterator</a> const* <span class="uid1">t_it</span>,</tr>
+  <tr><td /><td><code><a href="PDE_SetOfDomains.html#" target="classFrame">PDE_SetOfDomains</a> const* <span class="uid1">sdoms</span>,</tr>
+  <tr><td /><td><code><a href="FE_SetOfParameters.html#" target="classFrame">FE_SetOfParameters</a> const* <span class="uid1">prms</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the postcondition of method <a href="FE_TimeIteratorAdapter.html#create_replica_" target="classFrame">create_replica</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">result</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">result</span></span>-><a href="PEL_Object.html#owner" target="classFrame">owner</a>() == <span class="uid1"><span class="uid1">t_it</span></span></code></li>
+    <li><code>!<span class="uid1"><span class="uid1">result</span></span>-><a href="FE_TimeIteratorAdapter.html#is_a_prototype" target="classFrame">is_a_prototype</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+</body>
+</html>

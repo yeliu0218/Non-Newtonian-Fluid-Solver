@@ -1,0 +1,164 @@
+MODULE PEL_ObjectTest#CFV_IterationWithJacobian_TEST
+   
+   MODULE CFV_IterationWithJacobian_1
+
+      $DS_x = component( $DV_X, 0 )
+      $DS_y = component( $DV_X, 1 )
+      
+      $DS_Re = 10.
+      $DS_NU = 1./$DS_Re
+      $DS_TIME_STEP = 0.1
+
+      $DS_T = 0.0 
+   
+      MODULE FE_TimeIterator
+         time_initial = 0.0
+         time_end = 1.99
+         time_step = 0.5
+      END MODULE FE_TimeIterator
+            
+      MODULE PDE_DomainAndFields
+         
+         verbose_level = 0
+         nb_space_dimensions = 2
+         type = "finite_element"
+         
+         MODULE GE_Meshing
+            concrete_name = "GE_RefinedMeshing"
+            mesh_polyhedron = < "GE_Segment" "GE_Triangle" >
+            MODULE list_of_GE_ReferencePolyhedronRefiner
+               MODULE GE_ReferencePolyhedronRefiner#1
+                  concrete_name = "GE_ReferenceSquareWithTriangles"
+                  strategy = "26_acute_triangles"
+               END MODULE GE_ReferencePolyhedronRefiner#1
+            END MODULE list_of_GE_ReferencePolyhedronRefiner
+            MODULE GE_Meshing
+               concrete_name = "GE_BoxWithBoxes"
+               vertices_coordinate_0 = regular_vector( 0.0, 1, 1.0 )
+               vertices_coordinate_1 = regular_vector( 0.0, 1, 1.0 )
+               mesh_polyhedron = < "GE_Segment" "GE_Rectangle" >
+            END MODULE GE_Meshing
+         END MODULE GE_Meshing
+         
+         MODULE interior_fields
+            
+            MODULE velocity
+               name = "velocity"
+               nb_components = 2
+               element_name = "PDE_2D_P0_1node"
+               storage_depth = 2
+               MODULE DOFs_values
+                  type = "uniformly_defined"
+                  value = GreenTaylor_velocity( $DV_X, $DS_T, $DS_NU )
+               END MODULE DOFs_values
+            END MODULE velocity
+            
+            MODULE pressure
+               name = "pressure"
+               nb_components = 1
+               element_name = "PDE_2D_P0_1node"
+               storage_depth = 1
+               MODULE DOFs_values
+                  type = "uniformly_defined"
+                  value = GreenTaylor_pressure( $DV_X, $DS_T, $DS_NU )
+               END MODULE DOFs_values
+            END MODULE pressure
+            
+         END MODULE interior_fields
+         
+         MODULE boundary_conditions
+            MODULE adherence
+               field = "velocity"
+               type = "Dirichlet"
+               imposed_value = GreenTaylor_velocity( $DV_X, $DS_T, $DS_NU )
+            END MODULE adherence
+         END MODULE boundary_conditions
+         
+      END MODULE PDE_DomainAndFields
+      
+      MODULE FE_SetOfParameters
+         MODULE FE_Parameter#source
+            concrete_name = "FE_SpaceTimeParameter"
+            name = "pi"
+            nb_components = 2
+            value = vector( $DS_x*$DS_y*$DS_y, sqrt($DS_x)*($DS_y-8.0) )
+         END MODULE FE_Parameter#source
+      END MODULE FE_SetOfParameters
+      
+      MODULE FE_OneStepIteration
+         
+         concrete_name = "FE_SplitSystem"
+         
+         MODULE list_of_FE_OneStepIteration
+            
+            MODULE FE_OneStepIteration#test
+               
+               concrete_name = "AP_NavierStokes2CFV"
+
+               name = "ns"
+
+               verbose_level = 1
+               
+               velocity = "velocity"
+               velocity_level_to_update = 0
+               
+               pressure = "pressure"
+               pressure_level_to_update = 0
+               
+               MODULE unsteady
+                  coef_dt_v = 2.0
+                  level_of_explicit_velocity = 1
+               END MODULE unsteady
+
+               coef_vgrad_v = 3.0
+               coef_viscous = $DS_NU
+               param_source = "pi"
+               
+               lambda_in_pressure_stabilization = 0.02
+               h_exponent_in_infsup_stabilization = 1.0
+               
+               quadrature_rule_provider_for_source = "GE_QRprovider_1"
+
+               nb_iterations_max = 10
+               newton_tolerance = 1.e-4
+               
+               MODULE LA_Matrix
+                  concrete_name = "LA_PelMatrix"
+               END MODULE LA_Matrix
+
+               MODULE LA_Solver
+                  concrete_name = "LA_PreconditionedSolver"
+                  MODULE LA_IterativeSolver
+                     concrete_name = "LA_GMRES_IS"
+                     nb_iterations_max = 2000
+                     MODULE LA_ConvergenceTest
+                        concrete_name = "LA_DefaultConvergenceTest"
+                        relative_tolerance = 1.e-8
+                        absolute_tolerance = 1.e-30
+                     END MODULE LA_ConvergenceTest
+                     restart = 50 
+                     verbose = false
+                  END MODULE LA_IterativeSolver
+                  MODULE LA_Preconditioner
+                     concrete_name = "LA_Jacobi_PC"
+                     smallest_inverted_item = 1.e-30
+                  END MODULE LA_Preconditioner
+               END MODULE LA_Solver
+            END MODULE FE_OneStepIteration#test
+
+         END MODULE list_of_FE_OneStepIteration
+         
+      END MODULE FE_OneStepIteration
+
+      MODULE jacobian_test         
+         hh = 1.e-7
+         dbl_epsilon = 1.e-4
+         dbl_minimum = 1.e-8
+         one_step_iteration_with_jacobian = "ns"
+      END MODULE jacobian_test
+      
+   END MODULE CFV_IterationWithJacobian_1
+   
+END MODULE PEL_ObjectTest#CFV_IterationWithJacobian_TEST
+            
+            

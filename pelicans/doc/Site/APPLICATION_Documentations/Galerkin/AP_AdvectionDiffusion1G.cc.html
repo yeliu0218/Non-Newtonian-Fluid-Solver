@@ -1,0 +1,642 @@
+<html>
+<head>
+<title>AP_AdvectionDiffusion1G.cc</title>
+<link rel=stylesheet type="text/css" href="stylesheet.css">
+</head>
+<body>
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;AP_AdvectionDiffusion1G.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Timer</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_Matrix</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_SeqVector</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_Solver</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">GE_Mpolyhedron</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">GE_QRprovider</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">GE_Point</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_DiscreteField</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_DomainAndFields</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_GeometricMultilevel_PC</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_LocalEquation</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_LocalFEbound</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_LocalFEcell</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_ResultSaver</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_SetOfBCs</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_SetOfDiscreteFields</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_SystemNumbering</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE_LocalBCsBuilder</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE_Parameter</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE_SetOfParameters</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE_TauStab</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE_TimeIterator</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;iostream&gt;
+
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> ;
+
+</font><font class="kw3">PDE_LocalFE</font><font class="text">::field_id </font><font class="kw1">const</font><font class="text"> row = </font><font class="kw3">PDE_LocalFE</font><font class="text">::row ;
+</font><font class="kw3">PDE_LocalFE</font><font class="text">::field_id </font><font class="kw1">const</font><font class="text"> col = </font><font class="kw3">PDE_LocalFE</font><font class="text">::col ;
+
+AP_AdvectionDiffusion1G </font><font class="kw1">const</font><font class="text">* 
+AP_AdvectionDiffusion1G::PROTOTYPE = </font><font class="kw1">new</font><font class="text"> AP_AdvectionDiffusion1G() ;
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">AP_AdvectionDiffusion1G:: AP_AdvectionDiffusion1G( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">FE_OneStepIteration</font><font class="text">( </font><font class="string">&quot;AP_AdvectionDiffusion1G&quot;</font><font class="text"> )
+{
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">AP_AdvectionDiffusion1G*
+AP_AdvectionDiffusion1G:: create_replica( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                          </font><font class="kw3">PDE_DomainAndFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dom,
+                                          </font><font class="kw3">FE_SetOfParameters</font><font class="text"> </font><font class="kw1">const</font><font class="text">* prms,
+                                          </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* exp ) </font><font class="kw1">const
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;AP_AdvectionDiffusion1G:: create_replica&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_PRE( a_owner, dom, prms, exp ) ) ;
+
+   AP_AdvectionDiffusion1G* result = 
+               </font><font class="kw1">new</font><font class="text"> AP_AdvectionDiffusion1G( a_owner, dom, prms, exp ) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_POST( result, a_owner, dom, prms, exp ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">AP_AdvectionDiffusion1G:: AP_AdvectionDiffusion1G( 
+                                               </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                               </font><font class="kw3">PDE_DomainAndFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dom,
+                                               </font><font class="kw3">FE_SetOfParameters</font><font class="text"> </font><font class="kw1">const</font><font class="text">* prms,
+                                               </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">FE_OneStepIteration</font><font class="text">( a_owner, dom, exp )
+   , NB_DIMS( dom-&gt;nb_space_dimensions() )
+   , UU( dom-&gt;set_of_discrete_fields()-&gt;item( exp-&gt;string_data( </font><font class="string">&quot;field&quot;</font><font class="text"> ) ) )
+   , L_UU( exp-&gt;int_data( </font><font class="string">&quot;level_of_field&quot;</font><font class="text"> ) )
+   , UU_EXP( 0 )
+   , L_UU_EXP( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+   , UU_EXP_EXP( 0 )
+   , L_UU_EXP_EXP( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+   , TDISC( NoTime )
+   , AA( 0 )
+   , ALPHA( 0 )
+   , GAMMA( 0 )
+   , KAPPA( prms-&gt;item( exp-&gt;string_data( </font><font class="string">&quot;param_diffusion&quot;</font><font class="text"> ) ) )
+   , PI( 0 )
+   , BCs( dom-&gt;set_of_boundary_conditions() )
+   , LOCAL_BC( 0 )
+   , ELEMENT_EQ( </font><font class="kw3">PDE_LocalEquation</font><font class="text">::create( </font><font class="kw1">this</font><font class="text"> ) )
+   , TAU( 0 )
+   , STAB( NoStab )
+   , SGNTAU( 0.0 )
+   , QRP( </font><font class="kw3">GE_QRprovider</font><font class="text">::object( 
+                            exp-&gt;string_data( </font><font class="string">&quot;quadrature_rule_provider&quot;</font><font class="text"> ) ) )
+   , cFE( dom-&gt;create_LocalFEcell( </font><font class="kw1">this</font><font class="text"> ) )
+   , bFE( dom-&gt;create_LocalFEbound( </font><font class="kw1">this</font><font class="text"> ) )
+   , NMB( 0 )
+   , X_LOC( </font><font class="kw3">LA_SeqVector</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, 0 ) )
+   , PREC( 0 )
+   , TIMER_SET_MATRIX( </font><font class="kw3">PEL_Timer</font><font class="text">::create( </font><font class="kw1">this</font><font class="text"> ) )
+   , TIMER_ELM( </font><font class="kw3">PEL_Timer</font><font class="text">::create( </font><font class="kw1">this</font><font class="text"> ) )
+   , TIMER_GLOB( </font><font class="kw3">PEL_Timer</font><font class="text">::create( </font><font class="kw1">this</font><font class="text"> ) )
+{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;AP_AdvectionDiffusion1G:: AP_AdvectionDiffusion1G&quot;</font><font class="text"> ) ;
+   
+   check_field_storage_depth( UU, L_UU ) ;
+   
+   </font><font class="kw2">size_t</font><font class="text"> nb_c = UU-&gt;nb_components() ;
+
+   cFE-&gt;require_field_calculation( UU, </font><font class="kw3">PDE_LocalFE</font><font class="text">::N )  ;
+   cFE-&gt;require_field_calculation( UU, </font><font class="kw3">PDE_LocalFE</font><font class="text">::dN ) ;
+   bFE-&gt;require_field_calculation( UU, </font><font class="kw3">PDE_LocalFE</font><font class="text">::N )  ;
+
+   check_param_nb_components( KAPPA, </font><font class="string">&quot;param_diffusion&quot;</font><font class="text">, 1 ) ;
+   KAPPA-&gt;transfer_cell_calculation_requirements( cFE, </font><font class="kw3">FE_Parameter</font><font class="text">::Val ) ;
+   
+   </font><font class="kw1">if</font><font class="text">( exp-&gt;has_entry( </font><font class="string">&quot;param_source&quot;</font><font class="text"> ) )
+   {
+      PI = prms-&gt;item( exp-&gt;string_data( </font><font class="string">&quot;param_source&quot;</font><font class="text"> ) ) ;
+      check_param_nb_components( PI, </font><font class="string">&quot;param_source&quot;</font><font class="text">, nb_c ) ;
+      PI-&gt;transfer_cell_calculation_requirements( cFE, </font><font class="kw3">FE_Parameter</font><font class="text">::Val ) ;
+   }
+   
+   </font><font class="kw1">if</font><font class="text">( exp-&gt;has_entry( </font><font class="string">&quot;param_reaction&quot;</font><font class="text"> ) )
+   {
+      GAMMA = prms-&gt;item( exp-&gt;string_data( </font><font class="string">&quot;param_reaction&quot;</font><font class="text"> ) ) ;
+      check_param_nb_components( GAMMA, </font><font class="string">&quot;param_reaction&quot;</font><font class="text">, 1 ) ;
+      GAMMA-&gt;transfer_cell_calculation_requirements( cFE, </font><font class="kw3">FE_Parameter</font><font class="text">::Val ) ;
+   }
+
+   </font><font class="kw3">PDE_SetOfDiscreteFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* sdf = dom-&gt;set_of_discrete_fields() ;
+   </font><font class="kw1">if</font><font class="text">( exp-&gt;has_module( </font><font class="string">&quot;time_discretization&quot;</font><font class="text">) )
+   {
+      </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* se = 
+                         exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;time_discretization&quot;</font><font class="text">) ;
+      UU_EXP = sdf-&gt;item( se-&gt;string_data( </font><font class="string">&quot;field_explicit&quot;</font><font class="text"> ) ) ;
+      L_UU_EXP = se-&gt;int_data( </font><font class="string">&quot;level_of_field_explicit&quot;</font><font class="text"> ) ;      
+      check_field_nb_components( UU_EXP, nb_c ) ;
+      check_field_storage_depth( UU_EXP, L_UU_EXP ) ;
+      
+      cFE-&gt;require_field_calculation( UU_EXP, </font><font class="kw3">PDE_LocalFE</font><font class="text">::N )  ;
+      
+      ALPHA = prms-&gt;item( se-&gt;string_data( </font><font class="string">&quot;param_unsteady&quot;</font><font class="text"> ) ) ;
+      check_param_nb_components( ALPHA, </font><font class="string">&quot;param_unsteady&quot;</font><font class="text">, 1 ) ;
+      ALPHA-&gt;transfer_cell_calculation_requirements( cFE, </font><font class="kw3">FE_Parameter</font><font class="text">::Val ) ;
+      
+      </font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; tt = se-&gt;string_data( </font><font class="string">&quot;type&quot;</font><font class="text"> ) ;
+      </font><font class="kw1">if</font><font class="text">( tt == </font><font class="string">&quot;Euler&quot;</font><font class="text"> )
+      {
+         TDISC = Euler ;
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( tt == </font><font class="string">&quot;BDF2&quot;</font><font class="text"> )
+      {
+         TDISC = BDF2 ;
+         UU_EXP_EXP = sdf-&gt;item( 
+                           se-&gt;string_data( </font><font class="string">&quot;field_explicit_explicit&quot;</font><font class="text"> ) ) ;
+         check_field_nb_components( UU_EXP_EXP, nb_c ) ;
+         L_UU_EXP_EXP = se-&gt;int_data( </font><font class="string">&quot;level_of_field_explicit_explicit&quot;</font><font class="text"> ) ;      
+         check_field_storage_depth( UU_EXP_EXP, L_UU_EXP_EXP ) ;
+         cFE-&gt;require_field_calculation( UU_EXP_EXP, </font><font class="kw3">PDE_LocalFE</font><font class="text">::N )  ;
+      }
+      </font><font class="kw1">else
+</font><font class="text">      {
+         </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_bad_data_value( se, </font><font class="string">&quot;type&quot;</font><font class="text">,
+                                                    </font><font class="string">&quot;\&quot;</font><font class="text">Euler\</font><font class="string">&quot; or \&quot;</font><font class="text">BDF2\</font><font class="string">&quot;&quot;</font><font class="text"> ) ;
+      }
+      se-&gt;destroy() ; se = 0 ;
+   }
+   
+   </font><font class="kw1">if</font><font class="text">( exp-&gt;has_module( </font><font class="string">&quot;advection&quot;</font><font class="text"> ) )
+   {
+      </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* e = exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;advection&quot;</font><font class="text"> ) ;
+      AA = prms-&gt;item( e-&gt;string_data( </font><font class="string">&quot;param_advective_velocity&quot;</font><font class="text"> ) ) ;
+      check_param_nb_components( AA, </font><font class="string">&quot;param_advective_velocity&quot;</font><font class="text">, NB_DIMS ) ;
+      AA-&gt;transfer_cell_calculation_requirements( cFE, </font><font class="kw3">FE_Parameter</font><font class="text">::Val ) ;
+      
+      </font><font class="kw1">if</font><font class="text">( e-&gt;has_module( </font><font class="string">&quot;stabilization&quot;</font><font class="text"> ) )
+      {
+         </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* se = e-&gt;create_subexplorer( 0, </font><font class="string">&quot;stabilization&quot;</font><font class="text"> ) ;
+         </font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; type = se-&gt;string_data( </font><font class="string">&quot;type&quot;</font><font class="text"> ) ;
+         </font><font class="kw1">if</font><font class="text">( type == </font><font class="string">&quot;SUPG&quot;</font><font class="text"> ) 
+         {
+            STAB = SUPG ;
+         }
+         </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( type == </font><font class="string">&quot;GLS&quot;</font><font class="text"> )
+         {
+            STAB = GLS ;
+            SGNTAU = 1.0 ;      
+         }
+         </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( type == </font><font class="string">&quot;USFEM&quot;</font><font class="text"> )
+         {
+            STAB = USFEM ;
+            SGNTAU = -1.0 ; 
+         }
+         </font><font class="kw1">else
+</font><font class="text">         {
+            </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_bad_data_value( se, </font><font class="string">&quot;type&quot;</font><font class="text">,
+                                 </font><font class="string">&quot;\&quot;</font><font class="text">SUPG\</font><font class="string">&quot; or \&quot;</font><font class="text">GLS\</font><font class="string">&quot; or \&quot;</font><font class="text">USFEM\</font><font class="string">&quot;&quot;</font><font class="text"> ) ;
+         }
+
+         </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* sse = 
+                            se-&gt;create_subexplorer( se, </font><font class="string">&quot;MI_TauStab&quot;</font><font class="text"> ) ;
+         TAU = </font><font class="kw3">FE_TauStab</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, sse ) ;
+         cFE-&gt;require_field_calculation( UU, </font><font class="kw3">PDE_LocalFE</font><font class="text">::d2N ) ;
+         se-&gt;destroy() ;
+      }
+      e-&gt;destroy() ;
+   }
+
+   </font><font class="kw1">if</font><font class="text">( exp-&gt;has_entry( </font><font class="string">&quot;boundary_conditions_types&quot;</font><font class="text"> ) )
+   {
+      </font><font class="kw3">stringVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; bt = 
+                     exp-&gt;stringVector_data( </font><font class="string">&quot;boundary_conditions_types&quot;</font><font class="text"> ) ;
+      </font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; fname = exp-&gt;string_data( </font><font class="string">&quot;velocity&quot;</font><font class="text"> ) ;
+      LOCAL_BC = </font><font class="kw3">FE_LocalBCsBuilder</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, dom, fname, bt, prms ) ;
+      LOCAL_BC-&gt;transfer_calculation_requirements( bFE ) ;
+   }
+   
+   </font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text">* uu_link = </font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text">::create( 0, UU,
+                                          </font><font class="string">&quot;sequence_of_the_components&quot;</font><font class="text">,
+                                          </font><font class="kw1">true</font><font class="text"> ) ;
+   NMB = </font><font class="kw3">PDE_SystemNumbering</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, uu_link ) ;
+   
+   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ee = exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;LA_Matrix&quot;</font><font class="text"> ) ;
+   A = </font><font class="kw3">LA_Matrix</font><font class="text">::make( </font><font class="kw1">this</font><font class="text">, ee ) ;
+   ee-&gt;destroy() ; ee = 0 ;
+
+   F = A-&gt;create_vector( </font><font class="kw1">this</font><font class="text"> ) ;
+   X = A-&gt;create_vector( </font><font class="kw1">this</font><font class="text"> ) ;
+
+   ee = exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;LA_Solver&quot;</font><font class="text"> ) ;
+   SOLVER = </font><font class="kw3">LA_Solver</font><font class="text">::make( </font><font class="kw1">this</font><font class="text">, ee ) ;
+   ee-&gt;destroy() ; ee = 0 ;
+   
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> nn = </font><font class="string">&quot;multilevel_preconditioner_name&quot;</font><font class="text"> ;
+   configure_multilevel_preconditioner( exp, nn, dom, NMB ) ;
+
+   </font><font class="comment">// only for saving the number of iterations
+</font><font class="text">   </font><font class="kw1">if</font><font class="text">( exp-&gt;has_entry( </font><font class="string">&quot;multilevel_preconditioner_name&quot;</font><font class="text"> ) )
+   {
+      PREC = </font><font class="kw3">PDE_GeometricMultilevel_PC</font><font class="text">::object(
+                 exp-&gt;string_data( </font><font class="string">&quot;multilevel_preconditioner_name&quot;</font><font class="text"> ) ) ;
+   }
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">AP_AdvectionDiffusion1G:: ~AP_AdvectionDiffusion1G( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">void</font><font class="text"> 
+AP_AdvectionDiffusion1G:: do_one_inner_iteration( </font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* t_it ) 
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;AP_AdvectionDiffusion1G:: do_one_inner_iteration&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( do_one_inner_iteration_PRE( t_it ) ) ;
+
+   start_total_timer( </font><font class="string">&quot;AP_AdvectionDiffusion1G:: do_one_inner_iteration&quot;</font><font class="text"> ) ;
+   </font><font class="comment">// --------------
+</font><font class="text">
+   NMB-&gt;reset() ;
+   
+   </font><font class="kw2">size_t</font><font class="text"> n_glob = NMB-&gt;nb_global_unknowns() ;
+   </font><font class="kw2">size_t</font><font class="text"> n_loc  = NMB-&gt;nb_unknowns_on_current_process() ;
+
+   A-&gt;re_initialize( n_glob, n_glob, n_loc, n_loc ) ;
+   F-&gt;re_initialize( n_glob, n_loc ) ;
+   X-&gt;re_initialize( n_glob, n_loc ) ;
+   
+   X_LOC-&gt;re_initialize( NMB-&gt;link()-&gt;unknown_vector_size() ) ;
+   
+   NMB-&gt;define_scatters( X ) ;
+   
+   start_assembling_timer() ;
+   </font><font class="comment">// -------------------
+</font><font class="text">   
+   loop_on_cells( t_it ) ;
+   loop_on_bounds( t_it ) ;
+   
+   stop_assembling_timer() ;
+   start_solving_timer() ;
+   </font><font class="comment">// ----------------
+</font><font class="text">   
+   SOLVER-&gt;set_initial_guess_nonzero( </font><font class="kw1">false</font><font class="text"> ) ;
+   A-&gt;synchronize() ;
+   F-&gt;synchronize() ;
+   
+   SOLVER-&gt;set_matrix( A ) ;
+   SOLVER-&gt;solve( F, X ) ;
+   SOLVER-&gt;unset_matrix() ;
+   
+   stop_solving_timer() ;
+   </font><font class="comment">// ---------------
+</font><font class="text">   
+   </font><font class="kw1">if</font><font class="text">( ! SOLVER-&gt;solution_is_achieved() )
+   {
+      </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;display_info(
+         </font><font class="string">&quot;*** AP_AdvectionDiffusion1G error\n&quot;
+</font><font class="text">         </font><font class="string">&quot;    No convergence of the linear solver&quot;</font><font class="text"> ) ;
+      notify_inner_iterations_stage_failure() ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      </font><font class="kw3">LA_Scatter</font><font class="text"> </font><font class="kw1">const</font><font class="text">* sca = NMB-&gt;scatter() ;
+      sca-&gt;get( X, X_LOC ) ;
+      UU-&gt;update_free_DOFs_value( L_UU, X_LOC, NMB-&gt;link() ) ;
+      UU-&gt;enforce_constraints_for_DOFs( L_UU ) ;
+   }
+   
+   stop_total_timer() ;
+   </font><font class="comment">// -------------
+</font><font class="text">}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">AP_AdvectionDiffusion1G:: save_other_than_time_and_fields(
+                                            </font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* t_it,
+                                            </font><font class="kw3">PDE_ResultSaver</font><font class="text">* rs )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;AP_AdvectionDiffusion1G:: save_other_than_time_and_fields&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( save_other_than_time_and_fields_PRE( t_it, rs ) ) ;
+
+   </font><font class="kw1">if</font><font class="text">( PREC != 0 )
+   {
+      start_total_timer(
+        </font><font class="string">&quot;FE_RefinementAdvectionDiffusion:: save_other_than_time_and_fields&quot;</font><font class="text"> ) ;
+
+      rs-&gt;save_variable( (</font><font class="kw1">double</font><font class="text">)PREC-&gt;nb_cycles_performed(), </font><font class="string">&quot;XNBC&quot;</font><font class="text"> ) ;
+
+      stop_total_timer() ;
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">AP_AdvectionDiffusion1G:: print_additional_times( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostream</font><font class="text">&amp; os,
+                                                  </font><font class="kw2">size_t</font><font class="text"> indent_width ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;AP_AdvectionDiffusion1G:: print_additional_times&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> space( indent_width, </font><font class="string">' '</font><font class="text"> ) ;
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; space &lt;&lt; </font><font class="string">&quot;FE_RefinementAdvectionDiffusion&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+  
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; space &lt;&lt; </font><font class="string">&quot;   build local systems : &quot;</font><font class="text"> ;
+   TIMER_ELM-&gt;print( </font><font class="kw3">PEL</font><font class="text">::out(), 0 ) ;
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; space &lt;&lt; </font><font class="string">&quot;   assemble in global  : &quot;</font><font class="text"> ;
+   TIMER_GLOB-&gt;print( </font><font class="kw3">PEL</font><font class="text">::out(), 0 ) ;
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; space &lt;&lt; </font><font class="string">&quot;   set_matrix          : &quot;</font><font class="text"> ;
+   TIMER_SET_MATRIX-&gt;print( </font><font class="kw3">PEL</font><font class="text">::out(), 0 ) ;
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+}
+
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">AP_AdvectionDiffusion1G:: loop_on_cells( </font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* t_it )
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;AP_AdvectionDiffusion1G:: loop_on_cells&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw1">double</font><font class="text"> m_xx, norm_aa, kappa ;
+   </font><font class="kw2">size_t</font><font class="text"> nb_c = UU-&gt;nb_components() ;
+   </font><font class="kw3">doubleVector</font><font class="text"> rhs( nb_c ) ;
+   </font><font class="kw3">doubleVector</font><font class="text"> aa( NB_DIMS ) ;
+
+   </font><font class="kw1">for</font><font class="text">( cFE-&gt;start() ; cFE-&gt;is_valid() ; cFE-&gt;go_next() )
+   {
+      TIMER_ELM-&gt;start() ;
+      cFE-&gt;set_row_and_col_fields( UU, UU ) ;
+      ELEMENT_EQ-&gt;initialize( cFE-&gt;row_field_node_connectivity(), nb_c,
+                              cFE-&gt;col_field_node_connectivity(), nb_c ) ;
+
+      cFE-&gt;start_IP_iterator( QRP ) ;
+      </font><font class="kw1">for</font><font class="text">( ; cFE-&gt;valid_IP() ; cFE-&gt;go_next_IP() )
+      {
+         compute_coefs_at_IP( t_it, m_xx, aa, norm_aa, kappa, rhs );
+         
+         </font><font class="kw1">if</font><font class="text">( AA != 0 )
+         {
+            </font><font class="kw3">FE</font><font class="text">::add_row_vvgrad_col( ELEMENT_EQ, cFE, aa, 1.0 ) ;
+         }
+         
+         </font><font class="comment">// *** assembly optimization
+</font><font class="text">         </font><font class="comment">// the following calls to FE member functions is replaced by
+</font><font class="text">         </font><font class="comment">// a fully reimplemented version which is more efficient
+</font><font class="text">         </font><font class="comment">//
+</font><font class="text">         </font><font class="comment">// FE::add_row_col_S( ELEMENT_EQ, cFE, m_xx ) ;
+</font><font class="text">         </font><font class="comment">// FE::add_row( ELEMENT_EQ, cFE, rhs ) ;
+</font><font class="text">         </font><font class="comment">// FE::add_grad_row_grad_col_S( ELEMENT_EQ, cFE, kappa ) ;
+</font><font class="text">         
+         </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; N_row = cFE-&gt;Ns_at_IP( </font><font class="kw3">PDE_LocalFE</font><font class="text">::row ) ;
+         </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; N_col = cFE-&gt;Ns_at_IP( </font><font class="kw3">PDE_LocalFE</font><font class="text">::col ) ;
+         </font><font class="kw3">doubleArray2D</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; dN_row = cFE-&gt;dNs_at_IP( </font><font class="kw3">PDE_LocalFE</font><font class="text">::row ) ;
+         </font><font class="kw3">doubleArray2D</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; dN_col = cFE-&gt;dNs_at_IP( </font><font class="kw3">PDE_LocalFE</font><font class="text">::col ) ;
+         </font><font class="kw2">size_t</font><font class="text"> nb_nodes = cFE-&gt;nb_basis_functions( </font><font class="kw3">PDE_LocalFE</font><font class="text">::row ) ;
+         
+         </font><font class="kw1">double</font><font class="text"> ww = cFE-&gt;weight_of_IP() ;
+         </font><font class="kw1">double</font><font class="text"> m_xx_w  = ww * m_xx ;
+         </font><font class="kw1">double</font><font class="text"> kappa_w = ww * kappa ;
+         
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;nb_nodes ; ++i )
+         {
+            </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=i ; j&lt;nb_nodes ; ++j )
+            {
+               </font><font class="kw1">double</font><font class="text"> xx = m_xx_w * N_row( i ) * N_col( j ) ;
+               </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> d=0 ; d&lt;NB_DIMS ; ++d )
+               {
+                  xx += kappa_w * dN_row( i, d ) * dN_col( j, d ) ;
+               }
+
+               </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> ic=0 ; ic&lt;nb_c ; ++ic )
+               {
+                  ELEMENT_EQ-&gt;add_to_matrix( xx, i, j, ic, ic ) ;
+                  </font><font class="kw1">if</font><font class="text">( i!=j ) ELEMENT_EQ-&gt;add_to_matrix( xx, j, i, ic, ic ) ;
+               }
+            }
+            </font><font class="kw1">double</font><font class="text"> yy = ww * N_row( i ) ;
+            </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> ic=0 ; ic&lt;nb_c ; ++ic )
+            {
+               ELEMENT_EQ-&gt;add_to_vector( yy*rhs( ic ), i, ic ) ;
+            }
+         }
+         
+         </font><font class="comment">// *** end of assembly optimization
+</font><font class="text">         
+         </font><font class="kw1">double</font><font class="text"> taustab = </font><font class="kw3">PEL</font><font class="text">::bad_double() ;
+         </font><font class="kw1">if</font><font class="text">( TAU != 0 ) 
+         {
+            </font><font class="kw1">double</font><font class="text"> h = cFE-&gt;polyhedron()-&gt;inter_vertices_maximum_distance() ;
+            taustab = TAU-&gt;tau( h, m_xx, norm_aa, kappa ) ;
+         }
+         </font><font class="kw1">if</font><font class="text">( STAB == SUPG || STAB == GLS || STAB == USFEM )
+         {
+            </font><font class="kw3">FE</font><font class="text">::add_vvgrad_row_col( ELEMENT_EQ, cFE, aa, taustab*m_xx ) ;
+
+            </font><font class="kw3">FE</font><font class="text">::add_vvgrad_row_vvgrad_col( ELEMENT_EQ, cFE, aa, taustab ) ;
+
+            </font><font class="kw1">if</font><font class="text">( </font><font class="kw3">FE</font><font class="text">::geometry() != </font><font class="kw3">FE</font><font class="text">::axisymmetrical )
+               </font><font class="kw3">FE</font><font class="text">::add_vvgrad_row_lapl_col( ELEMENT_EQ, cFE, aa,
+                                            - taustab*kappa ) ;
+
+            </font><font class="kw3">FE</font><font class="text">::add_vvgrad_row( ELEMENT_EQ, cFE, aa, rhs, taustab ) ;
+         }
+
+         </font><font class="kw1">if</font><font class="text">( STAB == GLS || STAB == USFEM  )
+         {
+            </font><font class="kw3">FE</font><font class="text">::add_row_col_S( ELEMENT_EQ, cFE,
+                                SGNTAU * taustab * m_xx * m_xx ) ;
+
+            </font><font class="kw3">FE</font><font class="text">::add_row( ELEMENT_EQ, cFE, rhs, SGNTAU * taustab * m_xx ) ;
+
+            </font><font class="kw3">FE</font><font class="text">::add_row_vvgrad_col( ELEMENT_EQ, cFE, aa,
+                                    SGNTAU * taustab * m_xx  ) ;
+
+            </font><font class="kw3">FE</font><font class="text">::add_lapl_row_vvgrad_col( ELEMENT_EQ, cFE, aa,
+                                         SGNTAU * taustab * kappa* m_xx  ) ; 
+
+            </font><font class="kw3">FE</font><font class="text">::add_row_lapl_col( ELEMENT_EQ, cFE, 
+                                  - SGNTAU * taustab * kappa* m_xx   ) ;
+
+            </font><font class="kw3">FE</font><font class="text">::add_lapl_row_col( ELEMENT_EQ, cFE, 
+                                  - SGNTAU * taustab * kappa* m_xx  ) ;
+
+            </font><font class="kw3">FE</font><font class="text">::add_lapl_row_lapl_col( ELEMENT_EQ, cFE, 
+                                       SGNTAU * taustab * kappa* kappa  ) ;
+
+            </font><font class="kw3">FE</font><font class="text">::add_lapl_row( ELEMENT_EQ, cFE, rhs, -SGNTAU *taustab * m_xx ) ;
+         }
+      }
+      TIMER_ELM-&gt;stop() ;
+      
+      TIMER_GLOB-&gt;start() ;
+      </font><font class="kw3">PDE</font><font class="text">::assemble_in_matrix_vector_0( A, F, ELEMENT_EQ, NMB ) ;
+      TIMER_GLOB-&gt;stop() ;
+   }
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">AP_AdvectionDiffusion1G:: loop_on_bounds( </font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* t_it )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;AP_AdvectionDiffusion1G:: loop_on_bounds&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw1">if</font><font class="text">( LOCAL_BC != 0 )
+   {
+      </font><font class="kw1">for</font><font class="text">( bFE-&gt;start() ; bFE-&gt;is_valid() ; bFE-&gt;go_next() )
+      {
+         </font><font class="kw3">GE_Color</font><font class="text"> </font><font class="kw1">const</font><font class="text">* color = bFE-&gt;color() ;
+         </font><font class="kw1">if</font><font class="text">( BCs-&gt;has_BC( color, UU ) )
+         {
+            </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ee = BCs-&gt;BC_explorer( color, UU ) ;
+            LOCAL_BC-&gt;set_current_BC_type( ee-&gt;string_data( </font><font class="string">&quot;type&quot;</font><font class="text"> ) ) ;
+            </font><font class="kw1">if</font><font class="text">( LOCAL_BC-&gt;current_BC_type_is_ok() )
+            {
+               bFE-&gt;set_row_and_col_fields( UU, UU ) ;
+               ELEMENT_EQ-&gt;initialize( bFE-&gt;row_field_node_connectivity(), 1,
+                                       bFE-&gt;col_field_node_connectivity(), 1 );
+
+               LOCAL_BC-&gt;build_current_BC( ELEMENT_EQ, bFE, t_it, QRP ) ;
+ 
+               </font><font class="kw3">PDE</font><font class="text">::assemble_in_matrix_vector_0( A, F, ELEMENT_EQ, NMB ) ;
+            }
+         }
+      }
+   }
+}
+
+</font><font class="comment">// coefs for the equation
+//    m_xx u + aa.grad u - div( kappa grad u ) = rhs
+//---------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">AP_AdvectionDiffusion1G:: compute_coefs_at_IP( </font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* t_it, 
+                                               </font><font class="kw1">double</font><font class="text">&amp; m_xx,
+                                               </font><font class="kw3">doubleVector</font><font class="text">&amp; aa,
+                                               </font><font class="kw1">double</font><font class="text">&amp; norm_aa,
+                                               </font><font class="kw1">double</font><font class="text">&amp; kappa, 
+                                               </font><font class="kw3">doubleVector</font><font class="text">&amp; rhs ) </font><font class="kw1">const
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;AP_AdvectionDiffusion1G:: compute_coefs_at_IP&quot;</font><font class="text"> ) ;
+      
+   </font><font class="kw2">size_t</font><font class="text"> nb_c = UU-&gt;nb_components() ;
+   
+   m_xx = 0.0 ;
+   kappa  = KAPPA-&gt;cell_value_at_IP( t_it, cFE ) ;
+   rhs.</font><font class="kw2">set</font><font class="text">( 0.0 ) ;
+   
+   </font><font class="kw1">if</font><font class="text">( PI != 0 )
+   {
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> ic=0 ; ic&lt;nb_c ; ++ic )
+      {
+         rhs( ic ) += PI-&gt;cell_value_at_IP( t_it, cFE, ic ) ;
+      }
+   }
+   
+   </font><font class="kw1">if</font><font class="text">( ALPHA != 0 )
+   {
+      </font><font class="kw1">double</font><font class="text"> dt = t_it-&gt;time_step() ;   
+      </font><font class="kw3">doubleVector</font><font class="text"> uu_exp( nb_c, </font><font class="kw3">PEL</font><font class="text">::bad_double() ) ;
+      </font><font class="kw1">if</font><font class="text">( TDISC == Euler || ( TDISC == BDF2 &amp;&amp; t_it-&gt;iteration_number() == 1 ) )
+      {
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> ic=0 ; ic&lt;nb_c ; ++ic )
+         {
+            uu_exp( ic ) = cFE-&gt;value_at_IP( UU_EXP, L_UU_EXP, ic ) ;
+         }
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( TDISC == BDF2 &amp;&amp; t_it-&gt;iteration_number() != 1 )
+      {
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> ic=0 ; ic&lt;nb_c ; ++ic )
+         {
+            uu_exp( ic ) = 
+               2.0 * cFE-&gt;value_at_IP( UU_EXP, L_UU_EXP, ic )
+             - 0.5 * cFE-&gt;value_at_IP( UU_EXP_EXP, L_UU_EXP_EXP, ic ) ;
+         }
+      }
+      </font><font class="kw1">double</font><font class="text"> alpha = ALPHA-&gt;cell_value_at_IP( t_it, cFE ) ;
+      m_xx += alpha/dt ;
+      </font><font class="kw1">if</font><font class="text">( TDISC == BDF2 &amp;&amp; t_it-&gt;iteration_number() != 1 ) m_xx *= 1.5 ;
+    
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> ic=0 ; ic&lt;nb_c ; ++ic )
+      {
+         </font><font class="kw3">PEL_ASSERT</font><font class="text">( uu_exp( ic ) != </font><font class="kw3">PEL</font><font class="text">::bad_double() ) ;
+         rhs( ic ) += alpha * uu_exp( ic ) / dt ;
+      }
+   }
+   
+   </font><font class="kw1">if</font><font class="text">( GAMMA != 0 )
+   {
+      m_xx += GAMMA-&gt;cell_value_at_IP( t_it, cFE ) ;
+   }
+   
+   </font><font class="kw1">if</font><font class="text">( AA != 0 )
+   {
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> d=0 ; d&lt;aa.size() ; ++d )
+      {
+         aa( d ) = AA-&gt;cell_value_at_IP( t_it, cFE, d ) ;
+      }
+
+      norm_aa = 0.0 ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> d=0 ; d&lt;aa.size() ; ++d )
+      {
+         norm_aa += aa( d ) * aa( d ) ;
+      }
+      norm_aa = </font><font class="kw3">PEL</font><font class="text">::sqrt( norm_aa ) ;
+   }
+}
+
+</font>
+</pre>
+</body>
+</html>

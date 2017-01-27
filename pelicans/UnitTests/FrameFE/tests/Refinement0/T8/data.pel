@@ -1,0 +1,185 @@
+MODULE PEL_Application
+
+   concrete_name = "FE_RefinementAppli"
+
+   $DS_T = 0.0
+
+   $DS_x = component( $DV_X, 0 )
+   $DS_y = component( $DV_X, 1 )
+
+   $DS_rhs = 2.0*pi()*pi() * sin( pi()*$DS_x ) * sin( pi()*$DS_y ) *
+             ( sin( 2.0*pi()*pi()*$DS_T ) + cos( 2.0*pi()*pi()*$DS_T) )
+
+   MODULE FE_TimeIterator
+      time_initial = 0.0
+      time_end = 0.316
+      time_step = 0.01
+   END MODULE FE_TimeIterator
+
+   MODULE PDE_DomainAndFields
+      
+      verbose_level = 1
+      nb_space_dimensions = 2
+      type = "finite_element"
+      
+      MODULE GE_Meshing
+         
+         concrete_name = "GE_BoxWithBoxes"
+         
+         vertices_coordinate_0 = regular_vector( 0.0, 5, 1.0 )
+         vertices_coordinate_1 = regular_vector( 0.0, 5, 1.0 )
+         mesh_polyhedron = < "GE_Segment" "GE_Rectangle" >
+         
+      END MODULE GE_Meshing
+
+      MODULE interior_fields
+         
+         MODULE uu
+            name = "uu"
+            nb_components = 1
+            element_name = "PDE_2D_Q1_4nodes"
+            storage_depth = 1
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = vector( 0.0 )
+            END MODULE DOFs_values
+            MODULE DOFs_imposed_value
+               MODULE xxx
+                  location = "on_bounds"
+                  type = "uniformly_defined"
+                  value = < 0.0 >
+               END MODULE xxx
+            END MODULE DOFs_imposed_value
+         END MODULE uu
+
+         MODULE uu_explicit
+            name = "uu_explicit"
+            nb_components = 1
+            element_name = "PDE_2D_Q1_4nodes"
+            storage_depth = 1
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = vector( 0.0 )
+            END MODULE DOFs_values
+            MODULE DOFs_imposed_value
+               MODULE xxx
+                  location = "on_bounds"
+                  type = "uniformly_defined"
+                  value = < 0.0 >
+               END MODULE xxx
+            END MODULE DOFs_imposed_value
+         END MODULE uu_explicit
+
+         MODULE field_test
+            name = "field_test"
+            nb_components = 1
+            element_name = "PDE_2D_Q1_4nodes"
+            storage_depth = 2
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = vector( 3.0 + $DS_x + $DS_y + $DS_x*$DS_y )
+            END MODULE DOFs_values
+         END MODULE field_test
+
+      END MODULE interior_fields
+
+      MODULE PDE_ResultSaver
+         writers = < "PEL_TICwriter" >
+         writing_mode = "text"
+         files_basename = "save"
+         MODULE uu
+            where_to_save = "at_vertices"
+            entry_name = "U"
+            field = "uu"
+         END MODULE uu
+      END MODULE PDE_ResultSaver
+
+      MODULE PDE_AdapterCHARMS
+         verbose_level = 0
+         type = "hierarchical_basis"
+         MODULE PDE_AdaptationIndicator
+            concrete_name = "PDE_FluxCellIndicator"
+            field = "uu"
+            level_of_field = 0
+            quadrature_rule_provider = "GE_QRprovider_5"
+            maximum_error = 0.005
+            minimum_error = 0.001
+         END MODULE PDE_AdaptationIndicator
+      END MODULE PDE_AdapterCHARMS
+   
+   END MODULE PDE_DomainAndFields
+
+   MODULE FE_SetOfParameters
+      force_rhs_null = < 0.0 >
+
+//      MODULE FE_Parameter#explicit_value
+//         concrete_name = "FE_SpaceTimeParameter"
+//         name = "explicit_value"
+//         nb_components = 1
+//         value = vector( $DS_sol )
+//      END MODULE FE_Parameter#explicit_value
+
+      MODULE FE_Parameter#check
+        concrete_name = "FE_SpaceTimeParameter"
+        name = "prm_check"
+        nb_components = 1
+        value = vector( 3.0 + $DS_x + $DS_y + $DS_x*$DS_y )
+      END MODULE FE_Parameter#check
+
+      MODULE FE_Parameter#rhs
+         concrete_name = "FE_SpaceTimeParameter"      
+         name = "force_rhs"
+         nb_components = 1
+         value = vector( $DS_rhs )
+      END MODULE FE_Parameter#rhs
+      
+   END MODULE FE_SetOfParameters
+   
+   MODULE FE_RefinementAppli
+      
+      // param_init = "explicit_value"
+      
+      alpha = 1.0
+      lambda = 1.0
+      param_force = "force_rhs"
+      
+      level_of_current = 0
+      level_of_explicit = 0
+      
+      // param_explicit_value = "explicit_value"
+      
+      quadrature_rule_provider = "GE_QRprovider_5"
+      
+      MODULE check_prolongation
+         param_expected = "prm_check"
+         field_test = "field_test"
+         dbl_epsilon = 1.e-10
+         dbl_minimum = 1.e-30
+      END MODULE check_prolongation
+      
+      MODULE LA_Matrix
+         concrete_name = "LA_PelMatrix"
+      END MODULE LA_Matrix
+      
+      MODULE LA_Solver
+         concrete_name = "LA_PreconditionedSolver"
+         MODULE LA_IterativeSolver
+            concrete_name = "LA_GMRES_IS"
+            nb_iterations_max = 2000
+            restart = 50
+            MODULE LA_ConvergenceTest
+               concrete_name = "LA_DefaultConvergenceTest"
+               relative_tolerance = 1.e-12
+               absolute_tolerance = 1.e-20
+            END MODULE LA_ConvergenceTest
+            verbose = false
+         END MODULE LA_IterativeSolver
+         MODULE LA_Preconditioner
+            concrete_name = "LA_Jacobi_PC"
+            smallest_inverted_item = 1.e-20
+         END MODULE LA_Preconditioner
+      END MODULE LA_Solver
+      
+   END MODULE FE_RefinementAppli
+
+END MODULE PEL_Application

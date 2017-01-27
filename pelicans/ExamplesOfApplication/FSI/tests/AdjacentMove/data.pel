@@ -1,0 +1,356 @@
+MODULE PEL_Application
+   
+   concrete_name = "AP_FluidStructureMaster"
+   
+   MODULE FE_TimeIterator
+      time_initial = 0.0
+      time_end = 1.
+      time_step = 0.1
+   END MODULE FE_TimeIterator
+   
+   graphics_output_times = regular_vector( 0., 10, 1. )
+
+   $IS_NEW = 0
+   $IS_EXPLICIT = 1
+   $IS_EXPLICIT_EXPLICIT = 2
+   $IS_OLD = 2
+
+   $DS_T = 0.0
+   $DS_x = component( $DV_X, 0 )
+   $DS_y = component( $DV_X, 1 )
+   
+   $DV_structure_displacement = vector( 0.5 *(1.0-$DS_y)*sin( 2.0*pi()*$DS_T ),
+                                        0.0 )
+   $DV_structure_velocity     = vector( pi()*(1.0-$DS_y)*cos( 2.0*pi()*$DS_T ),
+                                        0.0 )
+
+   MODULE fluid_structure_coupling
+      color_of_fluid_interface_with_structure = "right"
+      level_of_new      = $IS_NEW
+      level_of_explicit = $IS_EXPLICIT
+      level_of_explicit_explicit = $IS_EXPLICIT_EXPLICIT
+      level_of_old_in_internal_iteration = $IS_OLD
+      boundary_condition_of_fluid_velocity_at_interface = 1
+      MODULE strategy
+         type = "fixed_point"
+         tol_epsilon = 1.E-6  // 1.E-6
+         tol_minimum = 1.E-6  // 1.E-6
+         relaxation_coefficient = 1.
+      END MODULE strategy
+   END MODULE fluid_structure_coupling
+   
+   MODULE PDE_SetOfDomains
+
+      verbose_level = 1
+      
+      MODULE list_of_PDE_DomainAndFields
+         
+         MODULE PDE_DomainAndFields#fluid
+
+            name = "fluid"
+            
+            verbose_level = 1
+            nb_space_dimensions = 2
+            type = "finite_element"
+            
+//            MODULE GE_Meshing
+//               
+//               concrete_name = "GE_RectangleWithTriangles"
+//               
+//               mesh_polyhedron = < "GE_Segment" "GE_Triangle" >
+//               
+//               MODULE GE_Meshing
+//                  concrete_name = "GE_BoxWithBoxes"
+//                  vertices_coordinate_0 = regular_vector( 0.0, 3, 1.0 )
+//                  vertices_coordinate_1 = regular_vector( 0.0, 2, 1.0 )
+//                  mesh_polyhedron = < "GE_Segment" "GE_Rectangle" >
+//               END MODULE GE_Meshing
+//               
+//               MODULE refinement_strategy 
+//                  default  = "X"
+//               END MODULE refinement_strategy
+//               
+//            END MODULE GE_Meshing
+            
+            MODULE GE_Meshing
+               
+               concrete_name = "GE_BoxWithBoxes"
+               vertices_coordinate_0 = regular_vector( 0.0, 3, 1.0 )
+               vertices_coordinate_1 = regular_vector( 0.0, 2, 1.0 )
+               mesh_polyhedron = < "GE_Segment" "GE_Quadrilateral" >
+               
+            END MODULE GE_Meshing
+
+            MODULE macro_colors
+               Wall1     = < "bottom" "top" >
+            END MODULE macro_colors
+            
+            MODULE interior_fields
+               
+               MODULE fluid_velocity
+                  name = "fluid_velocity"
+                  nb_components = 2
+                  element_name = "PDE_2D_Q2_9nodes"
+                  storage_depth = 3
+                  MODULE DOFs_values
+                     type = "uniformly_defined"
+                     value = < 0.0 0.0 >
+                  END MODULE DOFs_values
+                  MODULE DOFs_imposed_value
+                     MODULE right
+                        location = "on_bounds"
+                        color = "right"
+                        type = "uniformly_defined"
+                        value = < 0.0 0.0 >
+                     END MODULE right
+                  END MODULE DOFs_imposed_value
+               END MODULE fluid_velocity
+               
+               MODULE pressure
+                  name = "fluid_pressure"
+                  nb_components = 1
+                  element_name = "PDE_2D_Q1_4nodes"
+                  storage_depth = 2
+                  MODULE DOFs_values
+                     type = "uniformly_defined"
+                     value = < 0.0 >
+                  END MODULE DOFs_values
+               END MODULE pressure
+
+               MODULE fluid_grid_displacement
+                  name = "fluid_grid_displacement"
+                  nb_components = 2
+                  element_name = "PDE_2D_Q1_4nodes"
+                  storage_depth = 3
+                  MODULE DOFs_values
+                     type = "uniformly_defined"
+                     value = vector( 0.0, 0.0 )
+                  END MODULE DOFs_values
+                  MODULE DOFs_imposed_value
+                     MODULE Wall1
+                        location = "on_bounds"
+                        color = "Wall1"
+                        component = 1
+                        type = "uniformly_defined"
+                        value = < 0.0 >
+                     END MODULE Wall1
+                     MODULE left
+                        location = "on_bounds"
+                        color = "left"
+                        type = "uniformly_defined"
+                        value = vector( 0.0, 0.0 )
+                     END MODULE left
+                     MODULE right
+                        location = "on_bounds"
+                        color = "right"
+                        type = "uniformly_defined"
+                        value = < 0.0 0.0 >
+                     END MODULE right
+                  END MODULE DOFs_imposed_value
+               END MODULE fluid_grid_displacement
+               
+            END MODULE interior_fields
+            
+            MODULE PDE_ResultSaver
+               
+               writers = < "PEL_TICwriter" >
+               
+               writing_mode = "text"
+               files_basename = "save_fluid"
+               
+               MODULE velocity
+                  where_to_save = "at_vertices"
+                  entry_name = "FV"
+                  field = "fluid_velocity"
+               END MODULE velocity
+
+               MODULE pressure
+                  where_to_save = "at_vertices"
+                  entry_name = "FP"
+                  field = "fluid_pressure"
+               END MODULE pressure
+
+               MODULE fluid_grid_displacement
+                  field = "fluid_grid_displacement"
+                  where_to_save = "at_vertices"
+                  entry_name = "FGD"
+               END MODULE fluid_grid_displacement
+               
+            END MODULE PDE_ResultSaver
+            
+         END MODULE PDE_DomainAndFields#fluid
+
+         MODULE PDE_DomainAndFields#structure
+            
+            name = "structure"
+            
+            verbose_level = 1
+            nb_space_dimensions = 2
+            type = "finite_element"
+            
+            MODULE GE_Meshing                  
+               concrete_name = "GE_BoxWithBoxes"                  
+               vertices_coordinate_0 = regular_vector( 1.0, 1, 1.1 )
+               vertices_coordinate_1 = regular_vector( 0.0, 2, 1.0 )
+               mesh_polyhedron = < "GE_Segment" "GE_Rectangle" >
+            END MODULE GE_Meshing
+            
+            MODULE interior_fields
+               
+               MODULE displacement
+                  name = "structure_displacement"
+                  nb_components = 2
+                  element_name = "PDE_2D_Q1_4nodes"
+                  storage_depth = 3
+                  MODULE DOFs_values
+                     type = "uniformly_defined"
+                     value = $DV_structure_displacement
+                  END MODULE DOFs_values
+               END MODULE displacement
+               
+               MODULE velocity
+                  name = "structure_velocity"
+                  nb_components = 2
+                  element_name = "PDE_2D_Q1_4nodes"
+                  storage_depth = 3
+                  MODULE DOFs_values
+                     type = "uniformly_defined"
+                     value = $DV_structure_velocity
+                  END MODULE DOFs_values
+               END MODULE velocity
+               
+            END MODULE interior_fields
+            
+            MODULE PDE_ResultSaver
+               writers = < "PEL_TICwriter" >
+                  
+               writing_mode = "text"
+               files_basename = "save_structure"
+               
+               MODULE displacement
+                  where_to_save = "at_vertices"
+                  entry_name = "SD"
+                  field = "structure_displacement"
+               END MODULE displacement
+
+               MODULE velocity
+                  where_to_save ="at_vertices"
+                  entry_name = "SV"
+                  field = "structure_velocity"
+               END MODULE velocity
+
+            END MODULE PDE_ResultSaver
+               
+         END MODULE PDE_DomainAndFields#structure
+
+      END MODULE list_of_PDE_DomainAndFields
+      
+      MODULE list_of_conformal_adjacencies
+            
+         MODULE adjacency#0
+            adjacent_domain_0 = "fluid"
+            adjacent_domain_1 = "structure"
+         END MODULE adjacency#0
+            
+      END MODULE list_of_conformal_adjacencies
+         
+   END MODULE PDE_SetOfDomains
+
+   MODULE FE_SetOfParameters
+      mu = < 1.0 >
+   END MODULE FE_SetOfParameters
+         
+   MODULE fluid_grid_solver
+      
+      concrete_name = "AP_AdvectionDiffusion1G"
+      
+      domain = "fluid"
+      
+      field = "fluid_grid_displacement"
+      level_of_field = $IS_NEW
+
+      param_diffusion = "mu"
+      
+      quadrature_rule_provider = "GE_QRprovider_5"
+      
+      MODULE LA_Matrix
+         concrete_name = "LA_PelMatrix"
+      END MODULE LA_Matrix
+      
+      MODULE LA_Solver
+         concrete_name = "LA_PreconditionedSolver"
+         MODULE LA_IterativeSolver
+            concrete_name = "LA_CG_IS"
+            verbose = false
+            nb_iterations_max = 2000
+            MODULE LA_ConvergenceTest
+               concrete_name = "LA_DefaultConvergenceTest"
+               relative_tolerance = 1.E-07
+               absolute_tolerance = 1.E-20
+            END MODULE LA_ConvergenceTest
+         END MODULE LA_IterativeSolver
+         MODULE LA_Preconditioner
+            concrete_name = "LA_Jacobi_PC"
+            smallest_inverted_item = 1.0e-20
+         END MODULE LA_Preconditioner
+      END MODULE LA_Solver
+            
+   END MODULE fluid_grid_solver
+
+   MODULE fluid_solver // permet de vérifier la modif des CL de FV
+      concrete_name = "FE_DOFsCopy"
+      domain = "fluid"
+      MODULE xxx
+         field = "fluid_velocity"
+         source = $IS_NEW
+         target = $IS_EXPLICIT
+      END MODULE xxx
+   END MODULE fluid_solver
+
+   MODULE load_calculator
+      concrete_name = "AP_LoadCalculator"
+      
+      name = "lcalc"
+      
+      domain_of_fluid = "fluid"
+      fluid_velocity = "fluid_velocity"
+      level_of_fluid_velocity = $IS_NEW
+      fluid_pressure = "fluid_pressure"
+      level_of_fluid_pressure = $IS_NEW
+      param_viscous = "mu"
+      
+      domain_of_structure = "structure"
+      structure_displacement = "structure_displacement"
+      
+      color_of_fluid_interface_with_structure = "right"
+      
+      quadrature_rule_provider = "GE_QRprovider_5" 
+   END MODULE load_calculator
+         
+   MODULE structure_solver
+      concrete_name = "FE_SplitSystem"
+      MODULE list_of_FE_OneStepIteration
+         MODULE FE_OneStepIteration#displacement
+            concrete_name = "FE_DiscreteFieldUpdate"
+            domain = "structure"
+            field_name = "structure_displacement"
+            field_level = $IS_NEW
+            MODULE DOFs_values
+               type = "from_analytic"
+               value = $DV_structure_displacement
+            END MODULE DOFs_values
+         END MODULE FE_OneStepIteration#displacement
+         MODULE FE_OneStepIteration#velocity
+            concrete_name = "FE_DiscreteFieldUpdate"
+            domain = "structure"
+            field_name = "structure_velocity"
+            field_level = $IS_NEW
+            MODULE DOFs_values
+               type = "from_analytic"
+               value = $DV_structure_velocity
+            END MODULE DOFs_values
+         END MODULE FE_OneStepIteration#velocity
+      END MODULE list_of_FE_OneStepIteration
+   END MODULE structure_solver
+            
+END MODULE PEL_Application

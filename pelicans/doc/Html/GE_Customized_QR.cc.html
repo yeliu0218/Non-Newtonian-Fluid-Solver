@@ -1,0 +1,186 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>GE_Customized_QR.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="GE_Customized_QR.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="GEpack-tree.html"><span>Tree</span></a>
+    <a href="GE_Customized_QR.html"><span>Class</span></a>
+    <a href="GE_Customized_QR.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="GEpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">GE_Customized_QR</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_assertions</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">GE_Point</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">GE_ReferencePolyhedron</font><font class="text">.hh&gt;
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw3">GE_Customized_QR</font><font class="text">*
+</font><font class="kw3">GE_Customized_QR</font><font class="text">:: create( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                           </font><font class="kw3">GE_ReferencePolyhedron</font><font class="text"> </font><font class="kw1">const</font><font class="text">* a_poly,
+                           </font><font class="kw2">size_t</font><font class="text"> a_order )
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_Customized_QR:: create&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw3">GE_Customized_QR</font><font class="text">* result =</font><font class="kw1">new</font><font class="text"> </font><font class="kw3">GE_Customized_QR</font><font class="text">( a_owner, a_poly, a_order ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;owner() == a_owner ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;nb_points() == 0 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;order() == a_order ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;reference_polyhedron() == a_poly ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( !result-&gt;has_been_finalized() ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw3">GE_Customized_QR</font><font class="text">:: </font><font class="kw3">GE_Customized_QR</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                     </font><font class="kw3">GE_ReferencePolyhedron</font><font class="text"> </font><font class="kw1">const</font><font class="text">* a_poly,
+                                     </font><font class="kw2">size_t</font><font class="text"> a_order )
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">GE_QuadratureRule</font><font class="text">( a_owner, a_poly, a_order )
+   , FINALIZED( </font><font class="kw1">false</font><font class="text"> )
+{
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">GE_Customized_QR</font><font class="text">:: ~</font><font class="kw3">GE_Customized_QR</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">GE_Customized_QR</font><font class="text">:: reset_points( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_Customized_QR:: reset_points&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( has_been_finalized() ) ;
+
+   clear_points() ;
+   FINALIZED = </font><font class="kw1">false</font><font class="text"> ;
+   
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( nb_points() == 0 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( !has_been_finalized() ) ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">GE_Customized_QR</font><font class="text">:: insert_point( </font><font class="kw3">GE_Point</font><font class="text"> </font><font class="kw1">const</font><font class="text">* pt, </font><font class="kw1">double</font><font class="text"> pt_weight )
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_Customized_QR:: insert_point&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( !has_been_finalized() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( pt != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( pt-&gt;nb_coordinates()==reference_polyhedron()-&gt;dimension() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( reference_polyhedron()-&gt;contains( pt ) ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( </font><font class="kw3">FORALL</font><font class="text">( ( </font><font class="kw2">size_t</font><font class="text"> i=0; i&lt;nb_points(); ++i ),
+                          !pt-&gt;is_equal( point(i) ) ) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_SAVEOLD</font><font class="text">( </font><font class="kw2">size_t</font><font class="text">, nb_points, nb_points() ) ;
+
+   append_point( pt-&gt;create_clone( </font><font class="kw1">this</font><font class="text"> ), pt_weight ) ;
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( nb_points() == </font><font class="kw3">OLD</font><font class="text">(nb_points) + 1 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( point( nb_points()-1 )-&gt;is_equal( pt ) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( point( nb_points()-1 )-&gt;owner() == </font><font class="kw1">this</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( weight( nb_points()-1 ) == pt_weight ) ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">GE_Customized_QR</font><font class="text">:: finalize( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_Customized_QR:: finalize&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( !has_been_finalized() ) ;
+
+   </font><font class="kw1">double</font><font class="text"> sum = 0.0 ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;nb_points() ; ++i )
+   {
+      sum += weight( i ) ;
+   }
+   set_sum_of_weights( sum ) ;
+
+   FINALIZED = </font><font class="kw1">true</font><font class="text"> ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( has_been_finalized() ) ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">GE_Customized_QR</font><font class="text">:: has_been_finalized( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">return</font><font class="text">( FINALIZED ) ;
+}
+
+</font>
+</pre>
+</body>
+</html>

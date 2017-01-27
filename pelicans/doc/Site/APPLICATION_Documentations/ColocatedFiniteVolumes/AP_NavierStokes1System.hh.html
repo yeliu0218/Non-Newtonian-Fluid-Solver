@@ -1,0 +1,219 @@
+<html>
+<head>
+<title>AP_NavierStokes1System.hh</title>
+<link rel=stylesheet type="text/css" href="stylesheet.css">
+</head>
+<body>
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#ifndef</font><font class="text"> CFV_NAVIER_STOKES_SYSTEM_HH
+</font><font class="kw2">#define</font><font class="text"> CFV_NAVIER_STOKES_SYSTEM_HH
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Object</font><font class="text">.hh&gt;
+
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> ;
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">PEL_Timer</font><font class="text"> ;
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">size_t_vector</font><font class="text"> ;
+
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">LA_Matrix</font><font class="text"> ;
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">LA_SeqVector</font><font class="text"> ;
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">LA_Solver</font><font class="text"> ;
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">LA_TwoBlocksMethod</font><font class="text"> ;
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">LA_Vector</font><font class="text"> ;
+
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">PDE_DiscreteField</font><font class="text"> ;
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text"> ;
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">PDE_LocalEquation</font><font class="text"> ;
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">PDE_SystemNumbering</font><font class="text"> ;
+
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">FE_TimeIterator</font><font class="text"> ;
+
+</font><font class="comment">/*
+PUBLISHED
+*/
+</font><font class="text">
+</font><font class="kw1">class</font><font class="text"> AP_NavierStokes1System : </font><font class="kw1">public</font><font class="text"> </font><font class="kw3">PEL_Object
+</font><font class="text">{
+   </font><font class="kw1">public</font><font class="text">: </font><font class="comment">//-----------------------------------------------------------
+</font><font class="text">
+   </font><font class="comment">//-- Instance delivery and initialization
+</font><font class="text">
+      </font><font class="kw1">static</font><font class="text"> AP_NavierStokes1System* create( 
+                                        </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                        </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp,
+                                        </font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text">* uu_link,
+                                        </font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text">* pp_link ) ;
+
+      </font><font class="kw1">void</font><font class="text"> re_initialize( </font><font class="kw1">void</font><font class="text"> ) ;
+
+      </font><font class="kw1">bool</font><font class="text"> is_initialized( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+
+   </font><font class="comment">//-- Access
+</font><font class="text">
+      </font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text"> </font><font class="kw1">const</font><font class="text">* linkDOF2Unknown_U( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text"> </font><font class="kw1">const</font><font class="text">* linkDOF2Unknown_P( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* unknown_vector_U( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* unknown_vector_P( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+
+   </font><font class="comment">//-- Element Change
+</font><font class="text">
+      </font><font class="kw2">size_t</font><font class="text"> global_unknown_for_DOF_of_U( </font><font class="kw2">size_t</font><font class="text"> n,
+                                          </font><font class="kw2">size_t</font><font class="text"> ic ) </font><font class="kw1">const</font><font class="text"> ;
+      
+      </font><font class="kw2">size_t</font><font class="text"> global_unknown_for_DOF_of_P( </font><font class="kw2">size_t</font><font class="text"> n ) </font><font class="kw1">const</font><font class="text"> ;
+      
+      </font><font class="kw1">void</font><font class="text"> set_leading_BDF_over_dt( </font><font class="kw1">double</font><font class="text"> value ) ;
+
+      </font><font class="kw1">void</font><font class="text"> add_to_A_item( </font><font class="kw2">size_t</font><font class="text"> i_row, </font><font class="kw2">size_t</font><font class="text"> j_col, </font><font class="kw1">double</font><font class="text"> xx ) ;
+
+      </font><font class="kw1">void</font><font class="text"> add_to_F_item( </font><font class="kw2">size_t</font><font class="text"> i_row, </font><font class="kw1">double</font><font class="text"> xx ) ;
+
+      </font><font class="kw1">void</font><font class="text"> add_to_B_item( </font><font class="kw2">size_t</font><font class="text"> i_row, </font><font class="kw2">size_t</font><font class="text"> j_col, </font><font class="kw1">double</font><font class="text"> xx ) ;
+
+      </font><font class="kw1">void</font><font class="text"> add_to_G_item( </font><font class="kw2">size_t</font><font class="text"> i_row, </font><font class="kw1">double</font><font class="text"> xx ) ;
+
+      </font><font class="kw1">bool</font><font class="text"> MPl_is_required( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">void</font><font class="text"> add_to_MPl_item( </font><font class="kw2">size_t</font><font class="text"> i_row, </font><font class="kw1">double</font><font class="text"> xx ) ;
+
+      </font><font class="kw1">void</font><font class="text"> add_to_C_item( </font><font class="kw2">size_t</font><font class="text"> i_row, </font><font class="kw2">size_t</font><font class="text"> j_col, </font><font class="kw1">double</font><font class="text"> xx ) ;
+
+   </font><font class="comment">//-- Solution
+</font><font class="text">
+      </font><font class="kw1">void</font><font class="text"> set_initial_guess_U( </font><font class="kw3">PDE_DiscreteField</font><font class="text"> </font><font class="kw1">const</font><font class="text">* uu,
+                                </font><font class="kw2">size_t</font><font class="text"> level ) ;
+
+      </font><font class="kw1">bool</font><font class="text"> initial_guess_U_is_set( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">void</font><font class="text"> set_initial_guess_P( </font><font class="kw3">PDE_DiscreteField</font><font class="text"> </font><font class="kw1">const</font><font class="text">* pp,
+                                </font><font class="kw2">size_t</font><font class="text"> level ) ;
+
+      </font><font class="kw1">bool</font><font class="text"> initial_guess_P_is_set( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">void</font><font class="text"> estimate_unknowns( </font><font class="kw1">void</font><font class="text"> ) ;
+
+      </font><font class="kw1">bool</font><font class="text"> unknowns_are_solution( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+
+   </font><font class="comment">//-- Input - Output
+</font><font class="text">
+      </font><font class="kw1">void</font><font class="text"> set_indent( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; indent ) ;
+
+   </font><font class="kw1">protected</font><font class="text">: </font><font class="comment">//--------------------------------------------------------
+</font><font class="text">
+   </font><font class="kw1">private</font><font class="text">: </font><font class="comment">//----------------------------------------------------------
+</font><font class="text">
+      AP_NavierStokes1System( </font><font class="kw1">void</font><font class="text"> ) ;
+     ~AP_NavierStokes1System( </font><font class="kw1">void</font><font class="text"> ) ;
+      AP_NavierStokes1System( AP_NavierStokes1System </font><font class="kw1">const</font><font class="text">&amp; other ) ;
+      AP_NavierStokes1System&amp; </font><font class="kw1">operator</font><font class="text">=( AP_NavierStokes1System </font><font class="kw1">const</font><font class="text">&amp; other ) ;
+
+      AP_NavierStokes1System( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                              </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp,
+                              </font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text">* uu_link,
+                              </font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text">* pp_link  ) ;
+
+   </font><font class="comment">//-- Internals
+</font><font class="text">
+      </font><font class="kw1">enum</font><font class="text"> MethodType{ AL, MONO, invalid } ;
+
+      </font><font class="kw1">void</font><font class="text"> inverseP( </font><font class="kw1">void</font><font class="text"> ) ;
+
+      </font><font class="kw1">void</font><font class="text"> estimate_unknowns_AL( </font><font class="kw1">void</font><font class="text"> ) ;
+
+      </font><font class="kw1">void</font><font class="text"> estimate_unknowns_MONO( </font><font class="kw1">void</font><font class="text"> ) ;
+
+      </font><font class="kw1">void</font><font class="text"> augment_system( </font><font class="kw1">double</font><font class="text"> augmentation_parameter )  ;
+
+   </font><font class="comment">//-- Input - Output
+</font><font class="text">
+      </font><font class="kw1">void</font><font class="text"> print_errors_AL( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; indent, </font><font class="kw2">size_t</font><font class="text"> n,
+                            </font><font class="kw1">double</font><font class="text"> err1, </font><font class="kw1">double</font><font class="text"> err2, 
+                            </font><font class="kw2">size_t</font><font class="text"> nit_1, </font><font class="kw2">size_t</font><font class="text"> nit_2 ) ;
+
+      </font><font class="kw1">void</font><font class="text"> print_end_errors_AL( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; indent, </font><font class="kw2">size_t</font><font class="text"> n,
+                                </font><font class="kw1">double</font><font class="text"> err1, </font><font class="kw1">double</font><font class="text"> err2 ) ;
+
+   </font><font class="comment">//-- Attributes
+</font><font class="text">
+      MethodType METH ;
+
+      </font><font class="kw1">bool</font><font class="text"> HAS_INIT_U ;
+      </font><font class="kw1">bool</font><font class="text"> HAS_INIT_P ;
+
+      </font><font class="kw1">double</font><font class="text"> BoverDT ;
+      </font><font class="kw1">double</font><font class="text"> RR ;
+      </font><font class="kw1">double</font><font class="text"> DESC ;
+      </font><font class="kw1">bool</font><font class="text"> CONVERGED ;
+
+      </font><font class="kw1">double</font><font class="text"> TOL_VELO ;
+      </font><font class="kw1">double</font><font class="text"> TOL_DIV ;
+
+      </font><font class="kw2">size_t</font><font class="text"> VERBOSE ;
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> INDENT ;
+      
+      </font><font class="kw1">bool</font><font class="text"> INIT ;
+      
+      </font><font class="kw3">PDE_SystemNumbering</font><font class="text">* NMB;
+      </font><font class="kw3">PDE_SystemNumbering</font><font class="text">* NMB_U ;
+      </font><font class="kw3">PDE_SystemNumbering</font><font class="text">* NMB_P ;
+      </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> idx_U ;
+      </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> idx_P ;
+      
+      </font><font class="kw3">LA_Vector</font><font class="text">* P ;
+      </font><font class="kw3">LA_Matrix</font><font class="text">* A ;
+      </font><font class="kw3">LA_Vector</font><font class="text">* F ;
+      </font><font class="kw3">LA_Matrix</font><font class="text">* B ;
+      </font><font class="kw3">LA_Vector</font><font class="text">* G ;
+      </font><font class="kw3">LA_Vector</font><font class="text">* S ;
+      </font><font class="kw3">LA_Matrix</font><font class="text">* C ;
+      </font><font class="kw3">LA_Vector</font><font class="text">* U ;
+      
+      </font><font class="kw3">LA_SeqVector</font><font class="text">* U_LOC ;
+      </font><font class="kw3">LA_SeqVector</font><font class="text">* P_LOC ;
+      
+      </font><font class="kw3">LA_Solver</font><font class="text">* SOLVER ;
+      
+      </font><font class="kw3">LA_TwoBlocksMethod</font><font class="text">* SOLVER_TB ;
+} ; 
+
+</font><font class="kw2">#endif
+</font><font class="text">
+</font>
+</pre>
+</body>
+</html>

@@ -1,0 +1,208 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>PEL_ApplicationRestorer.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="PEL_ApplicationRestorer.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="PELpack-tree.html"><span>Tree</span></a>
+    <a href="PEL_ApplicationRestorer.html"><span>Class</span></a>
+    <a href="PEL_ApplicationRestorer.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="PELpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ApplicationRestorer</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Exec</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Module</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ObjectReader</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Root</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_assertions</font><font class="text">.hh&gt;
+
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> ;
+
+</font><font class="kw3">PEL_ApplicationRestorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">PEL_ApplicationRestorer</font><font class="text">:: PROTOTYPE = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_ApplicationRestorer</font><font class="text">() ;
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw3">PEL_ApplicationRestorer</font><font class="text">:: </font><font class="kw3">PEL_ApplicationRestorer</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_Application</font><font class="text">( </font><font class="string">&quot;PEL_ApplicationRestorer&quot;</font><font class="text"> )
+   , READER( 0 )
+   , APPLI( 0 )
+{
+}
+   
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw3">PEL_ApplicationRestorer</font><font class="text">*
+</font><font class="kw3">PEL_ApplicationRestorer</font><font class="text">:: create_replica( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                          </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp ) </font><font class="kw1">const
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_ApplicationRestorer:: create_replica&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_PRE( a_owner, exp ) ) ;
+   
+   </font><font class="kw3">PEL_ApplicationRestorer</font><font class="text">* result = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_ApplicationRestorer</font><font class="text">( a_owner,
+                                                                  exp ) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_POST( result, a_owner, exp ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw3">PEL_ApplicationRestorer</font><font class="text">:: </font><font class="kw3">PEL_ApplicationRestorer</font><font class="text">( 
+                                             </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                             </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_Application</font><font class="text">( a_owner, exp )
+   , READER( 0 )
+   , APPLI(0)
+{
+   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* ee = 0 ;
+
+   ee = exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;PEL_ObjectReader&quot;</font><font class="text"> ) ;
+   READER = </font><font class="kw3">PEL_ObjectReader</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, ee ) ;
+   ee-&gt;destroy() ;
+
+   </font><font class="kw2">string</font><font class="text"> appendum_file ;
+   </font><font class="kw1">if</font><font class="text">( exp-&gt;has_entry( </font><font class="string">&quot;appendum_file_name&quot;</font><font class="text"> ) )
+   {
+      appendum_file = exp-&gt;string_data( </font><font class="string">&quot;appendum_file_name&quot;</font><font class="text"> ) ;
+   }
+
+   </font><font class="kw2">size_t</font><font class="text"> cycle_number = 0 ;
+   </font><font class="kw1">if</font><font class="text">( exp-&gt;has_entry( </font><font class="string">&quot;cycle_number&quot;</font><font class="text"> ) )
+   {
+      cycle_number = exp-&gt;int_data( </font><font class="string">&quot;cycle_number&quot;</font><font class="text"> ) ;
+   }
+      
+   </font><font class="kw3">PEL_Module</font><font class="text">* mod = create_modified_data_deck_module( appendum_file ) ;
+   ee = </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">::create( 0, mod ) ;
+   APPLI = </font><font class="kw3">PEL_Application</font><font class="text">::make( </font><font class="kw1">this</font><font class="text">, ee ) ;
+   ee-&gt;destroy() ;
+
+   READER-&gt;seek_cycle( cycle_number ) ;
+   APPLI-&gt;restore_registered_objects( READER ) ;
+   READER-&gt;close_cycle() ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( APPLI!=0 ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw3">PEL_ApplicationRestorer</font><font class="text">:: ~</font><font class="kw3">PEL_ApplicationRestorer</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_ApplicationRestorer</font><font class="text">:: run( </font><font class="kw1">void</font><font class="text"> ) 
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_ApplicationRestorer:: run&quot;</font><font class="text"> ) ;
+
+   APPLI-&gt;run() ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw3">PEL_Module</font><font class="text">*
+</font><font class="kw3">PEL_ApplicationRestorer</font><font class="text">:: create_modified_data_deck_module( 
+                                            </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; appendum_file )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_ApplicationRestorer:: create_modified_data_deck_module&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw3">PEL_Module</font><font class="text">* m = 0 ;
+
+   </font><font class="kw3">PEL_Module</font><font class="text">* header = READER-&gt;header_module() ;
+   </font><font class="kw1">if</font><font class="text">( header-&gt;has_module( </font><font class="string">&quot;PEL_Application&quot;</font><font class="text"> ) )
+   {
+      m = header-&gt;module( </font><font class="string">&quot;PEL_Application&quot;</font><font class="text"> ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( </font><font class="string">&quot;invalid restart file&quot;</font><font class="text"> ) ; 
+   }
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( m != 0 ) ;
+   </font><font class="kw3">PEL_Module</font><font class="text">* result = m-&gt;create_clone( </font><font class="kw1">this</font><font class="text"> ) ;
+
+   result-&gt;remove_module( </font><font class="string">&quot;PEL_ObjectWriter&quot;</font><font class="text"> ) ;
+   change_owner( </font><font class="kw3">PEL_Root</font><font class="text">::object(), result ) ;
+
+   </font><font class="kw1">if</font><font class="text">( !appendum_file.empty() )
+   {
+      </font><font class="kw3">PEL_Module</font><font class="text">* appendum =
+         </font><font class="kw3">PEL_Module</font><font class="text">::create( 0, </font><font class="string">&quot;ROOT&quot;</font><font class="text">, appendum_file,
+                             </font><font class="kw3">PEL_Exec</font><font class="text">::execution_context() ) ;
+      </font><font class="kw3">PEL_Module</font><font class="text">* o = appendum-&gt;module( </font><font class="string">&quot;PEL_Application&quot;</font><font class="text"> ) ;
+      result-&gt;merge_module( o ) ;
+      appendum-&gt;destroy() ; appendum = 0 ;
+   }
+   
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( result != 0 ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( result-&gt;owner() == </font><font class="kw3">PEL_Root</font><font class="text">::object() ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font>
+</pre>
+</body>
+</html>

@@ -1,0 +1,198 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>PEL_InterpolExp.hh</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="PEL_InterpolExp.hh_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="PELpack-tree.html"><span>Tree</span></a>
+    <a href="PEL_InterpolExp.html"><span>Class</span></a>
+    <span class=selected>Header</span>
+    <a href="PEL_InterpolExp.cc.html"><span>Implementation</span></a>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="PELpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#ifndef</font><font class="text"> PEL_INTERPOL_EXP_HH
+</font><font class="kw2">#define</font><font class="text"> PEL_INTERPOL_EXP_HH
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Expression</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">doubleVector</font><font class="text">.hh&gt;
+
+</font><font class="comment">/*
+Expressions interpolating between given values.
+</font><font class="text">
+</font><font class="comment">---
+name      : interpol
+arguments : DoubleVector, DoubleVector, Double 
+type      : double
+</font><font class="text">
+</font><font class="comment">interpol( x_values, fx_values, x ) computes at x the linear interpolation 
+between the data points (x_values, fx_values).
+More precisely:
+   * x_values and fx_values are two vectors of the same size, say N
+   * the elements of x_values are ordered by increasing values
+        x_values(0) &lt; x_values(1) &lt; ... &lt; x_values(N-1)
+   * if x is smaller than x_values(0) then return fx_values(0)
+     else if x is greater than x_values(N-1) then return fx_values(N-1)
+     else find j such that x is between x_values(j) and x_values(j+1)
+          return the linear interpolation between 
+                 fx_values(j) and fx_values(j+1)
+</font><font class="text">
+</font><font class="comment">example :
+   $DV_Xval = &lt; 1. 2. 5. &gt;
+   $DV_Yval = &lt; 1. 4. 2. &gt;
+   interpol( $DV_Xval, $DV_Yval, 3. ) : value is y given by 
+                                        (y-4.0)/(3.0-2.0)=(2.0-4.0)/(5.0-2.0)
+</font><font class="text">
+</font><font class="comment">---
+name      : interpol
+arguments : String, Double 
+type      : double
+</font><font class="text">
+</font><font class="comment">interpol( filename, x ) computes at x the linear interpolation between the
+data points stored in file of name filename.
+the value is identical as that of interpol( x_values, fx_values, x )
+(see above) where filename stores in sequence x_values(0), fx_values(0), 
+x_values(1), fx_values(1), ... , x_values(N-1), fx_values(N-1)
+</font><font class="text">
+</font><font class="comment">example :
+   file &quot;values.txt&quot;:
+      1. 1.
+      2. 4.
+      5. 2.
+   interpol( join( this_file_dir(), &quot;values.txt&quot; ), 3. ) : same value as above
+      ie y given by (y-4.0)/(3.0-2.0)=(2.0-4.0)/(5.0-2.0)
+   
+PUBLISHED
+*/
+</font><font class="text">
+</font><font class="kw1">class</font><font class="text"> PEL_EXPORT </font><font class="kw3">PEL_InterpolExp</font><font class="text"> : </font><font class="kw1">public</font><font class="text"> </font><font class="kw3">PEL_Expression
+</font><font class="text">{
+   </font><font class="kw1">public</font><font class="text">: </font><font class="comment">//-------------------------------------------------------
+</font><font class="text">      
+   </font><font class="comment">//-- Type
+</font><font class="text">      
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw3">PEL_Data</font><font class="text">::Type data_type( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+      
+   </font><font class="comment">//-- Value
+</font><font class="text">      
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">double</font><font class="text"> to_double( </font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ct = 0 ) </font><font class="kw1">const</font><font class="text"> ;
+      
+   </font><font class="kw1">protected</font><font class="text">: </font><font class="comment">//-------------------------------------------------------
+</font><font class="text">      
+   </font><font class="kw1">private</font><font class="text">: </font><font class="comment">//-------------------------------------------------------
+</font><font class="text">
+      </font><font class="kw3">PEL_InterpolExp</font><font class="text">( </font><font class="kw1">void</font><font class="text"> ) ;
+     ~</font><font class="kw3">PEL_InterpolExp</font><font class="text">( </font><font class="kw1">void</font><font class="text"> ) ;
+      </font><font class="kw3">PEL_InterpolExp</font><font class="text">( </font><font class="kw3">PEL_InterpolExp</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; other ) ;
+      </font><font class="kw3">PEL_InterpolExp</font><font class="text">&amp; </font><font class="kw1">operator</font><font class="text">=( </font><font class="kw3">PEL_InterpolExp</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; other ) ;
+
+      </font><font class="kw1">enum</font><font class="text"> PEL_InterpolOp { lin_inter_1D } ;
+
+      </font><font class="kw3">PEL_InterpolExp</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                       </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_name,
+                       </font><font class="kw3">PEL_Sequence</font><font class="text"> </font><font class="kw1">const</font><font class="text">* argument_list,
+                       PEL_InterpolOp a_op ) ;
+
+      </font><font class="kw1">void</font><font class="text"> read_tables_1D( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; filename,
+                           </font><font class="kw3">doubleVector</font><font class="text">&amp; X_table,
+                           </font><font class="kw3">doubleVector</font><font class="text">&amp; FX_table ) </font><font class="kw1">const</font><font class="text"> ;
+      
+      </font><font class="kw1">double</font><font class="text"> linear_interpol_1D( </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; X_table,
+                                 </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; FX_table,
+                                 </font><font class="kw1">double</font><font class="text"> x ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">void</font><font class="text"> check_tables_1D( </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; X_table,
+                            </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; FX_table ) </font><font class="kw1">const</font><font class="text"> ;
+
+   </font><font class="comment">//-- Plug in
+</font><font class="text">
+      </font><font class="kw3">PEL_InterpolExp</font><font class="text">( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_name,
+                       PEL_InterpolOp a_op ) ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw3">PEL_Expression</font><font class="text">* create_replica( 
+                                   </font><font class="kw3">PEL_Object</font><font class="text"> * a_owner,
+                                   </font><font class="kw3">PEL_Sequence</font><font class="text"> </font><font class="kw1">const</font><font class="text">* argument_list ) </font><font class="kw1">const</font><font class="text"> ;
+      
+   </font><font class="comment">//-- Characteristics
+</font><font class="text">
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; usage( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> valid_arguments( </font><font class="kw3">PEL_Sequence</font><font class="text"> </font><font class="kw1">const</font><font class="text">* some_arguments ) </font><font class="kw1">const</font><font class="text"> ;
+      
+   </font><font class="comment">//-- Class attributes
+</font><font class="text">
+      </font><font class="kw1">static</font><font class="text"> </font><font class="kw3">PEL_InterpolExp</font><font class="text"> </font><font class="kw1">const</font><font class="text">* PROTOTYPE_LIN_1D ;
+      
+   </font><font class="comment">//-- Attributes
+</font><font class="text">
+      PEL_InterpolOp </font><font class="kw1">const</font><font class="text"> OP ;
+      </font><font class="kw1">bool</font><font class="text"> FROM_FILE ;
+      </font><font class="kw1">mutable</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> X1_IS_SET ;
+      </font><font class="kw1">mutable</font><font class="text"> </font><font class="kw3">doubleVector</font><font class="text"> X1 ;
+      </font><font class="kw1">mutable</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> F_IS_SET ;
+      </font><font class="kw1">mutable</font><font class="text"> </font><font class="kw3">doubleVector</font><font class="text"> FX1 ;
+      </font><font class="kw1">mutable</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> CHECK ;
+} ;
+
+</font><font class="kw2">#endif
+</font><font class="text">
+</font>
+</pre>
+</body>
+</html>
