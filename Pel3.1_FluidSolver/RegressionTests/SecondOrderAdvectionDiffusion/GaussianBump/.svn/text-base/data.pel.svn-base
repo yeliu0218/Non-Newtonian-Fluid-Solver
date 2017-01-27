@@ -1,0 +1,159 @@
+MODULE PEL_Application
+   
+   concrete_name = "FE_StepByStepProgression"
+   
+   geometry = "cartesian"
+   
+   $IS_N = 50
+   $DS_TS = 0.01
+   
+   $DS_Tend = 1.25
+   $DS_Ux = 0.8
+   $DS_Uy = 0.8
+   $DV_V = vector( $DS_Ux, $DS_Uy )
+   $DS_X = component( $DV_X, 0 )
+   $DS_Y = component( $DV_X, 1 )
+   $DS_X0 = 0.5
+   $DS_Y0 = 0.5
+   $DS_Xt = ( $DS_X - $DS_X0 - $DS_Ux*$DS_T )
+   $DS_Yt = ( $DS_Y - $DS_Y0 - $DS_Uy*$DS_T )
+   $DS_Kx = 0.01
+   $DS_Ky = $DS_Kx
+   $DS_Sol = exp(-1.*($DS_Xt*$DS_Xt/$DS_Kx + $DS_Yt*$DS_Yt/$DS_Ky )/(4.*$DS_T+1.))/(4.*$DS_T+1.)
+   
+   MODULE FE_TimeIterator
+      time_initial = 0.0
+      time_end = $DS_Tend
+      time_step = $DS_TS
+   END MODULE FE_TimeIterator
+   
+   graphics_output_times = regular_vector( 0., 5, $DS_Tend )
+   
+   MODULE PDE_DomainAndFields
+      
+      verbose_level = 1
+      nb_space_dimensions = 2
+      type = "finite_element"
+      
+      MODULE GE_Meshing
+         concrete_name = "GE_BoxWithBoxes"
+         mesh_polyhedron = < "GE_Segment" "GE_Rectangle" >
+         vertices_coordinate_1 = regular_vector( 0., $IS_N, 2.0 )
+         vertices_coordinate_0 = regular_vector( 0., $IS_N, 2.0 )
+      END MODULE GE_Meshing
+      
+      MODULE macro_colors
+         default = < "bottom" "bottom_left" "bottom_right" "left" "null color" "right" "top" "top_left" "top_right" >
+      END MODULE macro_colors
+      
+      MODULE interior_fields
+         MODULE field#concentration
+            name = "CC"
+            nb_components = 1
+            element_name = "PDE_2D_Q0_1node"
+            storage_depth = 2
+            $DS_T = 0.
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = vector( $DS_Sol )
+            END MODULE DOFs_values
+         END MODULE field#concentration
+         MODULE field#velocity
+            name = "velocity"
+            nb_components = 2
+            element_name = "PDE_2D_Q1_4nodes"
+            storage_depth = 2
+            $DS_T = 0.
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = $DV_V
+            END MODULE DOFs_values
+         END MODULE field#velocity
+      END MODULE interior_fields
+      
+      MODULE boundary_conditions
+         MODULE Dirichlet
+            field = "CC"
+            color = "default"
+            type = "Dirichlet"
+            value = 0.
+         END MODULE Dirichlet
+      END MODULE boundary_conditions
+      
+      MODULE PDE_ResultSaver
+         writers = < "PEL_VTKwriter" >
+         writing_mode = "text"
+         files_basename = "save"
+         MODULE field#CC
+            where_to_save = "at_cell_centers"
+            entry_name = "C"
+            field = "CC"
+         END MODULE field#CC
+      END MODULE PDE_ResultSaver
+      
+   END MODULE PDE_DomainAndFields
+   
+   MODULE FE_SetOfParameters
+      source = < 0. >
+      density = < 1. >
+      diffusivity = vector( $DS_Ky )
+   END MODULE FE_SetOfParameters
+   
+   MODULE FE_OneStepIteration
+      concrete_name = "FE_SplitSystem"
+      MODULE list_of_FE_OneStepIteration
+         MODULE FE_OneStepIteration#concentration
+            concrete_name = "MY_AdvectionDiffusion"
+            AD_unknown_field="CC" 
+            AD_coeff_diffusion="diffusivity"
+            AD_coeff_unsteady ="density" 
+            AD_param_source="source"
+            
+            MODULE convective_scheme
+               concrete_name = "MY_MUSCL_Scheme"
+               AD_param_advective_velocity="velocity"
+               AD_coeff_unsteady ="density" 
+            END MODULE convective_scheme
+            
+            MODULE LA_Matrix
+               concrete_name = "LA_PelMatrix"
+            END MODULE LA_Matrix
+            
+            MODULE LA_Solver
+               concrete_name = "LA_PreconditionedSolver"
+               MODULE LA_IterativeSolver
+                  concrete_name = "LA_GMRES_IS"
+                  nb_iterations_max = 2000
+                  restart = 50
+                  MODULE LA_ConvergenceTest
+                     concrete_name = "LA_DefaultConvergenceTest"
+                     relative_tolerance = 1.e-12
+                     absolute_tolerance = 1.e-20
+                  END MODULE LA_ConvergenceTest
+                  verbose = false
+               END MODULE LA_IterativeSolver
+               MODULE LA_Preconditioner
+                  concrete_name = "LA_Jacobi_PC"
+                  smallest_inverted_item = 1.e-20
+               END MODULE LA_Preconditioner
+            END MODULE LA_Solver
+            
+         END MODULE FE_OneStepIteration#concentration
+         
+         MODULE FE_OneStepIteration#comparator_with_analytic
+            concrete_name = "FE_ComparatorWithAnalytic"
+            field = "CC"
+            level = 0
+            quadrature_rule_provider = "GE_QRprovider_1"
+            norms = vector( "L2_error_D_norm", "L2_solution_norm",
+            "L2_interpolation_error_norm" )
+            norm_saving_names = vector( "VLDE", "VLDS", "VLDI" )
+            solution = vector( $DS_Sol )
+            output_file="NormFile.dat"
+         END MODULE FE_OneStepIteration#comparator_with_analytic
+         
+      END MODULE list_of_FE_OneStepIteration
+   END MODULE FE_OneStepIteration
+   
+   
+END MODULE PEL_Application

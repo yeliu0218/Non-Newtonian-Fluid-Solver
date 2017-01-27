@@ -1,0 +1,205 @@
+MODULE PEL_Application
+   
+   concrete_name = "FE_StepByStepProgression"
+   $DS_etaP=0.5
+   $DS_etaS=0.5
+   $DS_Lambda=0.1
+   $DS_dPdL= -0.5
+
+   $DS_X = component($DV_X,0)
+   $DS_Y = component($DV_X,1)
+   
+   MODULE FE_TimeIterator
+      time_initial = 0.
+      time_end = 1.
+      time_step = 1.E+8
+   END MODULE FE_TimeIterator
+   
+   MODULE PDE_DomainAndFields 
+      
+      nb_space_dimensions = 2
+      type = "finite_element"
+      verbose_level = 1
+      
+      
+      MODULE GE_Meshing
+         concrete_name = "GE_BoxWithBoxes"
+         vertices_coordinate_0 = regular_vector( 0.0, 160, 8.0 )
+         vertices_coordinate_1 = regular_vector( 0.0, 20, 1.0 )
+         mesh_polyhedron = < "GE_Segment" "GE_Rectangle" >
+      END MODULE GE_Meshing
+      
+      MODULE macro_colors
+         symmetry_xleft = < "left"  >
+         symmetry_xright = < "right" >
+         symmetry_y = < "bottom" >
+         no_slip  = < "top" >
+      END MODULE macro_colors
+      
+      MODULE interior_fields         
+         MODULE ss
+            name="uu"
+            nb_components = 3
+            element_name = "PDE_2D_Q1_4nodes"
+            storage_depth = 2
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = Channel_flow($DV_X,$DS_etaP,$DS_etaS,$DS_Lambda,$DS_dPdL)
+            END MODULE DOFs_values
+            MODULE DOFs_imposed_value
+               MODULE inlet
+                  location = "on_bounds"
+                  color = "symmetry_xleft"
+                  type = "uniformly_defined"
+                  value =Channel_flow($DV_X,$DS_etaP,$DS_etaS,$DS_Lambda,$DS_dPdL) 
+               END MODULE inlet
+               MODULE bottom
+                  location = "on_bounds"
+                  color = "symmetry_y"
+                  type = "uniformly_defined"
+                  value =Channel_flow($DV_X,$DS_etaP,$DS_etaS,$DS_Lambda,$DS_dPdL) // vector( 0., 0., 0.)
+               END MODULE bottom
+               MODULE noslip
+                  location = "on_bounds"
+                  color = "no_slip"
+                  type = "uniformly_defined"
+                  value =Channel_flow($DV_X,$DS_etaP,$DS_etaS,$DS_Lambda,$DS_dPdL) //  vector( 0.003744, -0.049916, -0.00124 )
+               END MODULE noslip
+            END MODULE DOFs_imposed_value
+         END MODULE ss
+         
+         MODULE tau
+            name = "tau"
+            nb_components = 3
+            element_name = "PDE_2D_Q1_4nodes"
+            storage_depth = 1
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = vector(2.*$DS_Lambda*$DS_etaP*($DS_dPdL/($DS_etaP+$DS_etaS))*($DS_dPdL/($DS_etaP+$DS_etaS))*$DS_Y*$DS_Y,0.0, $DS_Y*$DS_dPdL*($DS_etaP/($DS_etaP+$DS_etaS))) 
+            END MODULE DOFs_values
+         END MODULE tau         
+         
+         MODULE velocity
+            name="velocity"
+            nb_components = 2
+            element_name = "PDE_2D_Q2_9nodes"
+            storage_depth = 1
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = vector(1./(2.*($DS_etaP+$DS_etaS))*$DS_dPdL*($DS_Y*$DS_Y-1.), 0.0 )
+            END MODULE DOFs_values
+         END MODULE velocity
+         
+      END MODULE interior_fields
+      
+      MODULE PDE_ResultSaver
+         writers = < "PEL_VTKwriter" >
+         writing_mode = "text"
+         files_basename = "save"
+         
+         MODULE ss
+            where_to_save = "at_vertices"
+            entry_name = "SS"
+            field="uu"
+         END MODULE ss
+         MODULE velocity
+            where_to_save = "at_vertices"
+            entry_name = "velocity"
+            field="velocity"
+         END MODULE velocity
+         
+         MODULE tau
+            where_to_save = "at_vertices"
+            entry_name = "tau"
+            field="tau"
+         END MODULE tau
+         
+      END MODULE PDE_ResultSaver
+      
+   END MODULE PDE_DomainAndFields
+   
+   MODULE FE_SetOfParameters
+      $DS_alpha = 1.0
+      alpha = vector( $DS_alpha )
+      kappa = < 1.E-6 >
+      MODULE FE_Parameter#adv
+         concrete_name = "FE_FieldParameter"
+         name = "advective_velocity"
+         field_name  = "velocity"
+         field_level = 0
+         coefficient = $DS_alpha
+      END MODULE FE_Parameter#adv
+   END MODULE FE_SetOfParameters
+   
+   MODULE FE_OneStepIteration
+      
+      concrete_name = "MI_ElasticStress"
+      
+      field = "uu"
+      level_of_field = 0
+      stress_field = "tau"
+      
+      MODULE time_discretization
+         type = "Euler"
+         field_explicit = "uu"
+         level_of_field_explicit = 0 
+         param_unsteady  = "alpha"
+      END MODULE time_discretization
+      
+      param_diffusion = "kappa"
+      
+      MODULE advection
+         param_advective_velocity = "advective_velocity"
+         MODULE stabilization
+            type = "SUPG"
+            MODULE MI_TauStab
+               concrete_name = "FE_OptimalTauSUPG"
+               upwind_factor = 1.
+            END MODULE MI_TauStab
+         END MODULE stabilization
+      END MODULE advection
+      
+      quadrature_rule_provider = "GE_QRprovider_5"
+      
+      MODULE LA_Matrix
+         concrete_name = "LA_PelMatrix"
+      END MODULE LA_Matrix
+      MODULE solver_STRESS
+         concrete_name = "LA_PreconditionedSolver"
+         MODULE LA_IterativeSolver
+            concrete_name = "LA_CG_IS"
+            nb_iterations_max = 10000
+            MODULE LA_ConvergenceTest
+               concrete_name = "LA_DefaultConvergenceTest"
+               relative_tolerance = 1.e-8 //1.e-12
+               absolute_tolerance = 1.E-20
+            END MODULE LA_ConvergenceTest
+            verbose = false
+         END MODULE LA_IterativeSolver
+         MODULE LA_Preconditioner
+            concrete_name = "LA_Jacobi_PC"
+            smallest_inverted_item = 1.e-40
+         END MODULE LA_Preconditioner
+      END MODULE solver_STRESS
+      MODULE solver_A
+         concrete_name = "LA_PreconditionedSolver"
+         MODULE LA_IterativeSolver
+            concrete_name = "LA_GMRES_IS"
+            restart = 50
+            MODULE LA_ConvergenceTest
+               concrete_name = "LA_DefaultConvergenceTest"
+               relative_tolerance = 1.e-8
+               absolute_tolerance = 1.e-15
+            END MODULE LA_ConvergenceTest
+            nb_iterations_max = 10000
+            verbose = false
+         END MODULE LA_IterativeSolver
+         MODULE LA_Preconditioner
+            concrete_name = "LA_Jacobi_PC"
+            smallest_inverted_item = 1.0e-20
+         END MODULE LA_Preconditioner
+      END MODULE solver_A
+      
+   END MODULE FE_OneStepIteration
+   
+END MODULE PEL_Application

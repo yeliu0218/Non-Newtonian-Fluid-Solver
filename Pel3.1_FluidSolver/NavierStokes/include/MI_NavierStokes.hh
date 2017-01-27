@@ -1,0 +1,289 @@
+#ifndef MI_NavierStokes_HH
+#define MI_NavierStokes_HH
+
+#include <FE_OneStepIteration.hh>
+
+#include <vector>
+class PEL_ContextSimple ;
+class PEL_DoubleVector ;
+class PEL_Double ;
+
+class GE_QRprovider ;
+
+class PDE_DiscreteField ;
+class PDE_DomainAndFields ;
+class PDE_LinkDOF2Unknown ;
+class PDE_LocalEquation ;
+class PDE_LocalFEbound ;
+class PDE_LocalFEcell ;
+class PDE_SetOfBCs ;
+
+class FE_LocalBCsBuilder ;
+class MI_NavierStokesSystem ;
+class FE_Parameter ;
+
+/** \class MI_NavierStokes
+    \brief
+ *  Solve the incompressible Navier-Stokes equations for two phase flows without surface tension.
+ * 
+ *  Adjusted version of 
+ *  pelicans-3.1.0/ExamplesOfApplication/FSI/src/AP_FSINavierStokes
+ * 
+ *  
+    Solve the incompressible two phase Navier-Stokes equtions subject to a concentration field. Any surface tension is disregarded.
+    Solve the Stokes equation :
+    \f{eqnarray}
+        Re(c)  \left[ \frac{\partial u}{\partial t} + (u \cdot \nabla) u \right] &=& -\nabla p + \nabla^T \cdot \tau (u) + Ri(c) g \\ 
+        \nabla \cdot u &=& 0
+    \f}
+
+    with Dirichlet boundary conditions,
+    \f$ U = U_D \f$ on \f$ \Gamma_D \in \partial\Omega \f$
+    
+    and Neumann homogeneous boundary conditions,
+    \f$ \nabla U . N = 0 \f$  on \f$ \Gamma_N \in \partial\Omega \f$,
+    where N is the
+    outward normal to the domain boundary.
+    
+ * The physical parameters are:
+ * - Reynolds number:
+ *   \f[
+ *     Re(c):= \phi(c) \frac{\rho1 U_0 D}{\mu_1}
+ *   \f]
+ * - Richardson number:
+ *   \f[
+ *    Ri:= \phi(c) \frac{\rho_1 g_0 D^2}{\mu_1 U_0}
+ *   \f]
+ * - Density ratio
+ *   \f[
+ *      \phi(c):= c+ (1-c)\frac{\rho_2}{\rho_1}
+ *   \f]
+ * - Consistency
+ *    \f[
+ *      \kappa(c):= c+(1-c) \frac{\hat \mu_2}{\hat \mu_1}
+ *    \f]
+ * - Power Law index
+ *    \f[
+ *      c \ n_1 + (1-c) n_2
+ *    \f]
+ * - Bingham number:
+ *    \f[
+ *      c \ Bn_1 + (1-c) Bn_2
+ *    \f]
+ * 
+ * 
+    Corresponding weak equation:
+ *  \f{eqnarray}
+ *      \int_\Omega \frac{\beta_q \ Re}{\Delta t} u \cdot v \ dV
+ *      + \int_\Omega Re \ (u^{\star,n+1} \cdot \nabla) u \cdot v \ dV \\
+ *      \nonumber
+ *      + \int_\Omega \mu(\dot \gamma(u)) (\nabla u + \nabla u^T ):\nabla v \ dV
+ *      - \int_\Omega p \nabla\cdot v
+ *      &=&
+ *      \int_\Omega g\cdot v \ dV
+ *      + \int_{\Gamma_N} \tau_n^{n+1} \cdot v  \ dV \\
+ *      & & \nonumber
+ *      + \int_\Omega \sum_{j=0}^{q-1}\frac{\beta_j \ Re}{\Delta t} \ u^{n-j} v \ dV \\
+ *      \int_\Omega q \ \nabla \cdot u &=& 0
+ *  \f}
+ 
+ *   \note For mor details on time discretization, the weak formulation, and the used notation see page 100f of document:
+ *   pelicans-3.1.0/doc/Papers/ImplementaionPDEsSolvers.pdf
+ 
+    \f{eqnarray}
+        \frac{\beta_q}{\Delta t} m(u,v) + c(u^{\star,n+1},u,v) + k(u,v) + b(v,p) &=& f(v) \\
+        b(u,q) &=& 0
+    \f}
+ 
+    The algebraic system : 
+    \f{eqnarray*}  
+    \left| \begin{array}{cc}A & B^T\\ B & 0\end{array}
+    \right| \cdot 
+    \left| \begin{array}{c} U\\ P\end{array}
+    \right| = 
+    \left| \begin{array}{c} F\\ G\end{array}\right|
+    \f}
+    
+ *   is solved by an Uzawa/Lagrangian iterative algorithm.
+ * 
+ * \note
+ * For the implementation structure see
+ * <a href="../../NavierStokes/doc/ImplStructure_MI_NavierStokes.html"> ImplStructure_MI_NavierStokes.html </a>
+ * 
+ * The necessary entries for the parameters are:
+ *  
+ *   - HSD:
+ *   - Flowrate constraint:
+ *     Unchecked requirements: 
+ *     - Forceterm only pressuredrop
+ *     HDS
+ *     @code
+ *      MODULE flowrate
+ *          target = 1.
+ *          maxiter = 100
+ *          residual = 1.e-10
+ *          component = 0
+ *          dPdL0 = 0.          // Pressures
+ *          dPdL1 = 10.
+ *          Fl0  = 0.       // Corresponding initial flowrate
+ *          Method = "secant"   // Method 
+ *          scale = 1/L     // correct lengthscale for the flowrate
+ *      END MODULE flowrate
+ *     @endcode
+ *   - Stress Boundary Condition: \f$\sigma\cdot\mathbf{n}=\mathbf{g}(\mathbf{x})\f$
+ *     @code 
+ *     MODULE boundary_conditions
+ *        MODULE Outflow
+ *           field = "velocity"
+ *           color = "right"
+ *           type = "Stress"
+ *           value = vector(g1(x), g2(x))
+ *        END MODULE Outflow
+ *     END MODULE boundary_conditions
+ *     @endcode
+ *
+ * @todo 
+ *   - Reimplement advective term (perhaps using the advective parameter class)
+ *   - Implement Piccard iteration
+ *  
+PUBLISHED
+*/
+
+class MI_NavierStokes : public FE_OneStepIteration
+{
+   public: //-----------------------------------------------------------------
+
+   //-- Substeps of the step by step progression
+   ///@name Substeps of the step by step progression
+   //@{
+      virtual void do_before_time_stepping( FE_TimeIterator const* t_it ) ;
+      virtual void do_before_inner_iterations_stage( FE_TimeIterator const* t_it ) ;
+      virtual void do_inner_iterations_stage( FE_TimeIterator const* t_it );
+      virtual void do_one_inner_iteration( FE_TimeIterator const* t_it ) ;
+      virtual bool inner_iterations_are_completed( FE_TimeIterator const* t_it ) const;
+
+      double compute_L2_norm( PDE_DiscreteField const * FIELD, size_t level1, size_t level2) const;
+      double compute_flowrate( PDE_DiscreteField const * FIELD, size_t level1 ) const;
+      void update_pressuredrop();
+   //@}
+
+   protected: //--------------------------------------------------------------
+
+   private: //----------------------------------------------------------------
+
+   ///@name Constructors, Destructors
+   //@{
+     ~MI_NavierStokes( void ) ;
+      MI_NavierStokes( MI_NavierStokes const& other ) ;
+      MI_NavierStokes& operator=( MI_NavierStokes const& other ) ;
+
+      MI_NavierStokes( PEL_Object* a_owner, 
+                          PDE_DomainAndFields const* dom,
+                          FE_SetOfParameters const* prms,
+                          PEL_ModuleExplorer const* exp ) ;
+   //@}
+
+   //-- Plug in
+   ///@name Plug In
+   //@{
+      MI_NavierStokes( void ) ;
+
+      virtual MI_NavierStokes* create_replica( 
+                                   PEL_Object* a_owner,
+                                   PDE_DomainAndFields const* dom,
+                                   FE_SetOfParameters const* prms,
+                                   PEL_ModuleExplorer* exp ) const ;
+   //@}
+
+   //-- Discrete system building
+   ///@name Discrete System
+   //@{
+      void loop_on_cells_Outer( FE_TimeIterator const* t_it ) ;
+      void loop_on_bounds_Outer( FE_TimeIterator const* t_it ) ;
+	
+      void loop_on_cells_Inner( FE_TimeIterator const* t_it ) ;
+      void loop_on_bounds_Inner( FE_TimeIterator const* t_it ) ;
+	
+      void setup_Outer( FE_TimeIterator const* t_it ) ;	
+      void setup_Inner( FE_TimeIterator const* t_it ) ;	
+      void setup_Flowrate( FE_TimeIterator const* t_it ) ;	
+   //@}
+
+   //-- Class attributes
+
+      static MI_NavierStokes const* PROTOTYPE ;
+
+   //-- Attributes
+   //@name Discrete Fields
+   //@{
+      PDE_DiscreteField* UU ;   ///< @brief Velocity discrete field
+      size_t L_UU ;             ///< @brief Level of explicite velocity
+      size_t L_UPDATE_UU ;      ///< @brief Level of velocity term to update
+
+      PDE_DiscreteField* PP ;   ///< @brief Pressure discrete field
+      size_t L_PP ;             ///< @brief Level of explicite pressure
+      size_t L_UPDATE_PP ;      ///< @brief Level of pressure to update
+
+      std::vector< PDE_DiscreteField const* > AAs ; ///< @brief forms for the advective term to calculate \f$ u^\star \f$
+      std::vector< size_t > L_AAs ;				    ///< @brief Levels of the advective terms
+      std::vector< FE_Parameter* > COEF_AAs ;		///< @brief Coefficient of the advective terms -> \f$ \gamma_j\f $
+   //@}
+      bool ADV ;				///< @brief Advective term true?false
+
+      size_t ORDER ;			///< @brief Order of the time discretisation
+
+	///@name Parameters
+	//@{
+      FE_Parameter* ALPHA ;		///< @brief Advection parameter 0?1
+      FE_Parameter* RE ;		///< @brief Reynolds number
+      FE_Parameter* RHSU ;		///< @brief RHS of the momentum equation
+      FE_Parameter* VISC;		///< @brief nondimensional viscosity term.
+	//@}
+      bool LAPL_UU ;
+      
+   ///@name Nonstandard Boundary Conditions:
+   //@{
+      PDE_SetOfBCs const* BCs ;
+      bool BC_STRESS ;
+      FE_Parameter* BC_STRESS_VALUE;
+      FE_LocalBCsBuilder* LOCAL_BC ;
+   //@}
+	
+   ///@name Discrete system builder
+   //@{
+      PDE_LocalEquation* ELEMENT_EQ ;
+      GE_QRprovider const* QRP ;
+      PDE_LocalFEcell* cFE ;
+      PDE_LocalFEbound* bFE ;
+
+      MI_NavierStokesSystem* GLOBAL_EQ ;
+   //@}
+
+    ///@name Piccard Iteration Parameters
+	//@{
+	bool Nonlin; 				///< @brief Nonlinearity ?
+	std::string NonlinType; 	///< @brief Type of the nonlinearity
+	int NonlinMaxiter; 			///< @brief Maximum number of inner iterations
+	double NonlinResidual; 		///< @brief Residual of the inner iterations
+	int NonlinIter; 			///< @brief Nonlinear iteration counter
+	size_t L_NonlinU;	 		///< @brief Storage level of the velocity field where the old solution is stored for convergence analysis.
+	//@}
+	///@name Flowrate Parameters:
+	//@{
+	bool Flowrate;				///< @brief Flowrate ?
+	size_t FlowrateCP;			///< @brief Component to be used.
+	size_t FlowrateMaxiter;		///< @brief Maximal number of iterations
+	double FlowrateTarget;		///< @brief Target flowrate
+	double FlowrateResidual;	///< @brief Residual
+	std::vector<double> FlowratedPdL;	///< @brief Vector containing the pressuredrops
+	std::vector<double>  FlowrateFr;	///< @brief Vector containing the flowrates.
+	double FlowrateScale;		///< @brief Scale for the flowrate calculation
+	std::string FlowrateMethod;	///< @brief Method for flowrate calculation
+	//@}
+	PEL_Communicator const* const COM ; ///< @brief PEL communicator
+	PEL_ContextSimple* CONTEXT ;///< @brief Context used to determine the value of the stress BC
+	PEL_DoubleVector* COORDS; 	///< @brief Coordinate coefficients for calculating the norms.
+        PEL_Double* TT ;
+} ;
+
+#endif

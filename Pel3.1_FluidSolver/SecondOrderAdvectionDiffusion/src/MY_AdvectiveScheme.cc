@@ -1,0 +1,291 @@
+#include <MY_AdvectiveScheme.hh>
+
+// PELICANS tools :
+
+#include <FE.hh>
+#include <FE_Parameter.hh>
+#include <FE_SetOfParameters.hh>
+#include <FE_TimeIterator.hh>
+
+#include <GE_Mpolyhedron.hh>
+#include <GE_Vector.hh>
+
+#include <PDE_CursorFEside.hh>
+#include <PDE_DiscreteField.hh>
+#include <PDE_SetOfDiscreteFields.hh>
+#include <PDE_DomainAndFields.hh>
+#include <PDE_LocalFEcell.hh>
+#include <PDE_LocalFEbound.hh>
+#include <PDE_LocalEquation.hh>
+
+#include <PEL.hh>
+#include <PEL_assertions.hh>
+#include <PEL_Error.hh>
+#include <PEL_ModuleExplorer.hh>
+#include <PEL_ObjectRegister.hh>
+#include <PEL_Root.hh>
+
+#include <doubleVector.hh>
+
+// C++ tools
+
+#include <algorithm>
+
+//----------------------------------------------------------------------
+MY_AdvectiveScheme*
+MY_AdvectiveScheme:: make( PEL_Object* a_owner,
+                            PDE_DomainAndFields const* dom,
+                            FE_SetOfParameters const* prms,
+                            PDE_DiscreteField const* field,
+                            PEL_ModuleExplorer const* exp )
+//----------------------------------------------------------------------
+{
+   PEL_LABEL( "MY_AdvectiveScheme:: make" ) ;
+   PEL_CHECK_PRE( dom != 0 ) ;
+   PEL_CHECK_PRE( prms != 0 ) ;
+   PEL_CHECK_PRE( field != 0 ) ;
+   PEL_CHECK_PRE( field->nb_components() == 1 ) ;
+   PEL_CHECK_PRE( exp != 0 ) ;
+
+   std::string const& name = exp->string_data( "concrete_name" ) ;
+   MY_AdvectiveScheme const* proto =
+      static_cast<MY_AdvectiveScheme const*>(
+                                          plugins_map()->item( name ) ) ;
+   PEL_ASSERT( proto->is_a_prototype() ) ;
+   
+   MY_AdvectiveScheme* result =
+                proto->create_replica( a_owner, dom, prms, field, exp ) ;
+   
+   PEL_CHECK_POST( result != 0 ) ;
+   PEL_CHECK_POST( result->owner() == a_owner ) ;
+   return( result ) ;
+}
+
+//----------------------------------------------------------------------
+MY_AdvectiveScheme:: MY_AdvectiveScheme( PEL_Object* a_owner,
+					 PDE_DomainAndFields const* dom,
+					 FE_SetOfParameters const* prms,
+					 PDE_DiscreteField const* field,
+                     PEL_ModuleExplorer const* exp )
+//----------------------------------------------------------------------
+   : PEL_Object( a_owner )
+   , IS_PROTO( false )
+   , FIELD( field )
+   , UU( dom->set_of_discrete_fields()->item( exp->string_data("AD_param_advective_velocity") )) 
+   , DENSITY( prms->item( exp->string_data("AD_coeff_unsteady" ) ) )
+{
+   PEL_LABEL( "MY_AdvectiveScheme:: MY_AdvectiveScheme" ) ;
+   PEL_CHECK_POST( owner() == a_owner ) ;
+   PEL_CHECK_POST( !is_a_prototype() ) ;
+}
+
+//----------------------------------------------------------------------
+MY_AdvectiveScheme:: MY_AdvectiveScheme( std::string const& name )
+//----------------------------------------------------------------------
+   : PEL_Object( plugins_map() )
+   , IS_PROTO( true )
+   , FIELD( 0 )
+   , UU( 0 )
+   , DENSITY( 0 )
+{
+   PEL_LABEL( "MY_AdvectiveScheme:: MY_AdvectiveScheme" ) ;
+
+   plugins_map()->register_item( name, this ) ;
+
+   PEL_CHECK_POST( owner() == plugins_map() ) ;
+   PEL_CHECK_POST( is_a_prototype() ) ;
+}
+
+//----------------------------------------------------------------------
+MY_AdvectiveScheme:: ~MY_AdvectiveScheme( void )
+//----------------------------------------------------------------------
+{
+}
+
+//-------------------------------------------------------------------------
+double
+MY_AdvectiveScheme:: pour_rate( FE_TimeIterator const* t_it,
+                                PDE_CursorFEside* fe ) const
+//-------------------------------------------------------------------------
+{
+   PEL_LABEL( "MY_AdvectiveScheme:: pour_rate(side)" ) ;
+   PEL_CHECK_PRE( t_it != 0 ) ;
+   PEL_CHECK_PRE( fe != 0 ) ;
+   PEL_CHECK_PRE( fe->is_valid() ) ;
+   PEL_CHECK_PRE( fe->field_is_handled( UU ) ) ;
+   PEL_CHECK_PRE( DENSITY->ok_for_side_calculations( fe, FE_Parameter::Val ) ) ;
+
+   double result = 0. ;
+   fe->set_calculation_point( fe->polyhedron()->center() ) ;
+   PDE_LocalFEcell const* cFE0 = fe->adjacent_localFEcell( 0 ) ;
+   GE_Vector const* normal = fe->normal() ;
+   for( size_t ic=0; ic<normal->nb_components(); ++ic )
+   {
+       result += cFE0->value_at_pt( UU, 0, ic )
+	         *normal->component( ic ) ;
+   }
+   //if( cFE0->is_on_bound( UU, 0, 1) > 1){
+   //    result *= 2.0;
+   //}
+   result *= FE::side_measure( fe )*DENSITY->side_value( t_it, fe ) ;
+
+   // To replace by a real integration of rho U over the face ?
+
+   return( result ) ;
+}
+
+
+//-------------------------------------------------------------------------
+double
+MY_AdvectiveScheme:: pour_rate( FE_TimeIterator const* t_it,
+                                PDE_LocalFEbound* fe ) const
+//-------------------------------------------------------------------------
+{
+   PEL_LABEL( "MY_AdvectiveScheme:: pour_rate(bound)" ) ;
+   PEL_CHECK_PRE( t_it != 0 ) ;
+   PEL_CHECK_PRE( fe != 0 ) ;
+   PEL_CHECK_PRE( fe->is_valid() ) ;
+   PEL_CHECK_PRE( fe->field_is_handled( UU ) ) ;
+   PEL_CHECK_PRE( DENSITY->ok_for_bound_calculations( fe, FE_Parameter::Val ) ) ;
+   
+   double result = 0. ;
+   fe->set_calculation_point( fe->polyhedron()->center() ) ;
+   GE_Vector const* normal = fe->outward_normal() ;
+   for( size_t ic=0; ic<normal->nb_components(); ++ic )
+   {
+      result += fe->value_at_pt( UU, 0, ic )
+	 *normal->component( ic ) ;
+   }
+   result *= FE::bound_measure( fe )*DENSITY->bound_value( t_it, fe ) ;
+
+   // To replace by a real integration of rho U over the face ?
+
+   return( result ) ;
+}
+
+//----------------------------------------------------------------------
+void
+MY_AdvectiveScheme:: initialize( PDE_LocalFEcell* cfe,
+                                 PDE_CursorFEside* sfe, 
+                                 PDE_LocalFEbound* bfe )
+//----------------------------------------------------------------------
+{
+   cfe->require_field_calculation( UU, PDE_LocalFE::N ) ;
+   sfe->require_field_calculation( UU, PDE_LocalFE::N ) ;
+   bfe->require_field_calculation( UU, PDE_LocalFE::N ) ;
+   DENSITY->transfer_side_calculation_requirements( sfe, 
+                                                    FE_Parameter::Val ) ;
+   DENSITY->transfer_bound_calculation_requirements( bfe, 
+                                                     FE_Parameter::Val ) ;
+}
+
+//----------------------------------------------------------------------
+PDE_DiscreteField const*
+MY_AdvectiveScheme:: discrete_field( void ) const
+//----------------------------------------------------------------------
+{
+   return( FIELD ) ;
+}
+
+//----------------------------------------------------------------------
+bool
+MY_AdvectiveScheme:: create_replica_PRE(
+                         PEL_Object const* a_owner,
+                         PDE_DomainAndFields const* dom,
+                         FE_SetOfParameters const* prms, 
+                         PDE_DiscreteField const* field,
+                         PEL_ModuleExplorer const* exp ) const
+//----------------------------------------------------------------------
+{
+   PEL_ASSERT( is_a_prototype() ) ;
+   PEL_ASSERT( dom != 0 ) ;
+   PEL_ASSERT( prms != 0 ) ;
+   PEL_ASSERT( field != 0 ) ;
+   PEL_ASSERT( field->nb_components() == 1 ) ;
+   PEL_ASSERT( exp != 0 ) ;
+   return( true ) ;
+}
+
+//----------------------------------------------------------------------
+bool
+MY_AdvectiveScheme:: create_replica_POST(
+                         MY_AdvectiveScheme const* result,
+                         PEL_Object const* a_owner,
+                         PDE_DomainAndFields const* dom,
+                         FE_SetOfParameters const* prms, 
+                         PDE_DiscreteField const* field,
+                         PEL_ModuleExplorer const* exp ) const
+//----------------------------------------------------------------------
+{
+   PEL_ASSERT( result != 0 ) ;
+   PEL_ASSERT( result->owner() == a_owner ) ;
+   PEL_ASSERT( !result->is_a_prototype() ) ;
+   return( true ) ;
+}
+
+//----------------------------------------------------------------------
+bool
+MY_AdvectiveScheme:: assemble_convection_on_side_PRE(
+                         FE_TimeIterator const* t_it,
+                         PDE_CursorFEside const* fe,
+                         PDE_LocalEquation const* leq ) const 
+//----------------------------------------------------------------------
+{
+   PEL_ASSERT( t_it != 0 ) ;
+   PEL_ASSERT( fe != 0 ) ;
+   PEL_ASSERT( fe->is_valid() ) ;
+   PEL_ASSERT( leq != 0 ) ;
+   PEL_ASSERT( leq->nb_rows() == 2 ) ;
+   PEL_ASSERT( leq->nb_columns() == 2 ) ;
+   PEL_ASSERT( leq->nb_row_sub_indices() == 1 ) ;
+   PEL_ASSERT( leq->nb_column_sub_indices() == 1 ) ;
+   return( true ) ;
+}
+
+//----------------------------------------------------------------------
+bool
+MY_AdvectiveScheme:: assemble_convection_on_bound_PRE(
+                         FE_TimeIterator const* t_it,
+                         PDE_LocalFEbound const* fe,
+                         double const bound_value,
+                         PDE_LocalEquation const* leq ) const 
+//----------------------------------------------------------------------
+{
+   PEL_ASSERT( t_it != 0 ) ;
+   PEL_ASSERT( fe != 0 ) ;
+   PEL_ASSERT( fe->is_valid() ) ;
+   PEL_ASSERT( leq != 0 ) ;
+   PEL_ASSERT( leq->nb_rows() == 1 ) ;
+   PEL_ASSERT( leq->nb_columns() == 1 ) ;
+   PEL_ASSERT( leq->nb_row_sub_indices() == 1 ) ;
+   PEL_ASSERT( leq->nb_column_sub_indices() == 1 ) ;
+   return( true ) ;
+}
+
+//----------------------------------------------------------------------
+bool
+MY_AdvectiveScheme:: invariant( void ) const
+//----------------------------------------------------------------------
+{
+   PEL_ASSERT( PEL_Object::invariant() ) ;
+   return( true ) ;
+}
+
+//----------------------------------------------------------------------
+bool
+MY_AdvectiveScheme:: is_a_prototype( void ) const
+//----------------------------------------------------------------------
+{
+   return( IS_PROTO ) ;
+}
+
+//----------------------------------------------------------------------
+PEL_ObjectRegister*
+MY_AdvectiveScheme:: plugins_map( void )
+//----------------------------------------------------------------------
+{
+   static PEL_ObjectRegister* result =
+      PEL_ObjectRegister::create( PEL_Root::object(),
+                                  "MY_AdvectiveScheme descendant" ) ;
+   return( result ) ;
+}

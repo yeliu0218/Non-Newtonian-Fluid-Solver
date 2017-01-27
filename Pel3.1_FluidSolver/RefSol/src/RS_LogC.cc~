@@ -1,0 +1,225 @@
+#include <RS_LogC.hh>
+
+#include <PEL_assertions.hh>
+#include <PEL_Error.hh>
+#include <PEL_Root.hh>
+#include <PEL_Sequence.hh>
+#include <PEL.hh>
+#include <LA_SymmetricMatrix.hh>
+#include <LA_DenseMatrix.hh>
+#include <LA_SeqVector.hh>
+
+#include <doubleVector.hh>
+
+#include <iostream>
+using std::endl ; 
+
+RS_LogC const* 
+RS_LogC::PROTOTYPE_Chan = 
+             new RS_LogC( "Channel_flow", Chan ) ;
+RS_LogC const* 
+RS_LogC::PROTOTYPE_Pipe = 
+             new RS_LogC( "Pipe_flow", Pipe ) ;
+
+//--------------------------------------------------------------------------
+RS_LogC:: RS_LogC( std::string const& a_name,
+                           Func an_expr) 
+//--------------------------------------------------------------------------
+   : PEL_Expression( a_name )
+   , EXPR(an_expr)
+   , DV_result_3( 3 )
+{
+   PEL_LABEL( "RS_LogC:: RS_LogC" ) ;
+}
+
+//--------------------------------------------------------------------------
+RS_LogC*
+RS_LogC:: create_replica( PEL_Object* a_owner,
+                              PEL_Sequence const* argument_list ) const
+//--------------------------------------------------------------------------
+{
+   PEL_LABEL( "RS_LogC:: create_replica" ) ;
+   PEL_CHECK( create_replica_PRE( a_owner, argument_list ) ) ;
+   
+   RS_LogC* result = new RS_LogC( a_owner, 
+                                          name(), 
+                                          argument_list, 
+                                          EXPR ) ;
+
+   PEL_CHECK( create_replica_POST( result, a_owner, argument_list ) ) ;
+   return( result ) ;
+}
+
+//--------------------------------------------------------------------------
+RS_LogC:: RS_LogC( PEL_Object* a_owner,
+                           std::string const& a_name,
+                           PEL_Sequence const* argument_list,
+                           Func an_expr ) 
+//--------------------------------------------------------------------------
+   : PEL_Expression( a_owner, a_name, argument_list )
+   , EXPR( an_expr )
+   , DV_result_3( 3 )
+{
+   PEL_LABEL( "RS_LogC:: RS_LogC" ) ;
+
+   PEL_CHECK_INV( invariant() ) ;
+}
+
+//--------------------------------------------------------------------------
+RS_LogC:: ~RS_LogC( void ) 
+//--------------------------------------------------------------------------
+{
+   PEL_LABEL( "RS_LogC:: ~RS_LogC" ) ;
+   PEL_CHECK_INV( invariant() ) ;   
+}
+
+//--------------------------------------------------------------------------
+PEL_Data::Type
+RS_LogC:: data_type( void ) const
+//--------------------------------------------------------------------------
+{
+   PEL_LABEL( "RS_LogC:: data_type" ) ;
+   PEL_Data::Type my_type = PEL_Data::Undefined ;
+   switch( EXPR )
+   {
+      case Chan : my_type = DoubleVector ;
+         break ;
+      case Pipe : my_type = DoubleVector ; 
+         break ;
+      default :
+	 PEL_Error::object()->raise_plain( "Choose:  Chan OR Pipe " ) ;
+   }
+   return my_type ;
+}
+
+//----------------------------------------------------------------------
+doubleVector const&
+RS_LogC:: to_double_vector( PEL_Context const* ct ) const 
+//----------------------------------------------------------------------
+{
+   PEL_LABEL( "RS_LogC:: to_double_vector" ) ;
+   PEL_CHECK_PRE( to_double_vector_PRE( ct ) ) ;
+
+   doubleVector const& xx  = arg( 0 )->to_double_vector( ct ) ; 
+   double etaP             = arg( 1 )->to_double( ct ) ;
+   double etaS             = arg( 2 )->to_double( ct ) ; 
+   double lambda           = arg( 3 )->to_double( ct ) ;
+   double dPdL             = arg( 4 )->to_double( ct ) ;
+   doubleVector& result = DV_result_3 ;
+   double y= xx(1);
+   
+   switch(EXPR)
+   {
+      case Chan :  
+      {  
+        LA_SymmetricMatrix* tau_matrix = LA_SymmetricMatrix::create(0, 2);
+        LA_DenseMatrix* S_matrix = LA_DenseMatrix::create(0, 2, 2);
+        LA_SeqVector* I_unit = LA_SeqVector::create(0, 2);
+        LA_SeqVector* eigenvals_C = LA_SeqVector::create(0, 2);
+        LA_SeqVector* eigenvals_S = LA_SeqVector::create(0, 2);
+        LA_DenseMatrix* R_matrix = LA_DenseMatrix::create(0, 2, 2); //R = eigenvectors
+        LA_SymmetricMatrix* Diag_S = LA_SymmetricMatrix::create(0, 2);
+        LA_DenseMatrix* Right_matrix = LA_DenseMatrix::create(0, 2, 2);
+      
+        bool OK = false;
+        double value1 = 2.*lambda*etaP* PEL::pow(dPdL/(etaS+etaP),2) *PEL::pow(y,2);
+        double value2 = etaP* dPdL/(etaS+etaP)*y;
+      
+        tau_matrix->set_item(0,0, value1 );
+        tau_matrix->set_item(1,1, 0.0 );
+        tau_matrix->set_item(0,1, value2);
+      
+        double value3 = lambda/etaP;
+        tau_matrix->scale(value3) ;
+        for( size_t i=0 ; i<I_unit->nb_rows(); i++)
+            I_unit->set_item(i,1);
+
+        tau_matrix->add_to_diag( I_unit );
+        tau_matrix->eigen_reduce(2, eigenvals_C, R_matrix, OK);
+
+        if (!OK) {
+              PEL::out()<<"Error: Computation of eigenvalues/ eigenvectors in RS_LogC:tau_matrix" << std::endl;
+              PEL_Error:: exit();
+        }
+
+        for( size_t i=0 ; i<eigenvals_S->nb_rows(); i++)
+            eigenvals_S->set_item(i,PEL::log(eigenvals_C->item(i)));
+
+        Right_matrix->nullify() ;
+        S_matrix->nullify() ;
+        Diag_S->nullify() ;
+        Diag_S->add_to_diag( eigenvals_S );
+        Right_matrix->add_Mat_tMat(Diag_S, R_matrix, 1.0);
+        S_matrix->add_Mat_Mat(R_matrix, Right_matrix, 1.0); 
+
+        result( 0 ) = S_matrix->item(0,0);
+        result( 1 ) = S_matrix->item(1,1);
+        result( 2 ) = S_matrix->item(0,1);
+
+        Right_matrix->destroy();
+        S_matrix->destroy();
+        Diag_S->destroy();
+        tau_matrix->destroy();
+        eigenvals_S->destroy();
+        eigenvals_C->destroy();
+        I_unit->destroy();
+        R_matrix->destroy();
+      }
+      break;       
+      case Pipe:
+      {
+//          result ( 0 ) = 0 ;
+//          result ( 1 ) = 0 ;
+//          result ( 2 ) = 0 ;
+          PEL::out()<<"Error: Pipe_flow() NOT implemented !!" << std::endl;
+          PEL_Error::exit() ;
+      }      
+      break;
+      default:
+      {
+          PEL::out()<<"Error in RS_LogC: NOT implemented !!" << std::endl;
+          PEL_Error::exit() ;
+      }      
+      break;     
+   }
+   
+   return result ;
+}
+
+//----------------------------------------------------------------------
+std::string const& 
+RS_LogC:: usage( void ) const
+//----------------------------------------------------------------------
+{
+   PEL_LABEL( "RS_LogC:: usage" ) ;
+
+   static std::string result ;
+   switch(EXPR)
+   {
+      case Chan : 
+	       result = "Channel_flow($DV_X,$DS_etaP,$DS_etaS,$DS_Lambda,$DS_dPdL)" ; 
+      break ;
+      case Pipe : 
+	       result = "Pipe_flow($DV_X,$DS_etaP,$DS_etaS,$DS_Lambda,$DS_dPdL)" ; 
+      break ;
+   }
+   
+   return result ;
+}
+
+//----------------------------------------------------------------------
+bool
+RS_LogC:: valid_arguments( PEL_Sequence const* some_arguments ) const
+//----------------------------------------------------------------------
+{
+   PEL_LABEL( "RS_LogC:: valid_arguments" ) ;
+   bool result = ( some_arguments->count() == 5 ) &&
+             ( extract_arg( some_arguments, 0 )->data_type() == PEL_Data::DoubleVector ) &&
+             ( extract_arg( some_arguments, 1 )->data_type() == PEL_Data::Double ) &&
+             ( extract_arg( some_arguments, 2 )->data_type() == PEL_Data::Double ) &&
+             ( extract_arg( some_arguments, 3 )->data_type() == PEL_Data::Double ) &&
+             ( extract_arg( some_arguments, 4 )->data_type() == PEL_Data::Double ) ;
+
+   return result ; 
+}
+
