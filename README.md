@@ -157,7 +157,7 @@ where result is the log file.
 Below is a simulation result of the spreading of viscoplastic fluid under gravity.
 ![](http://www.math.ubc.ca/~yliu0218/images/profi.jpg) 
 
-
+More simulations can be found in my <a href="http://www.math.ubc.ca/~yliu0218/">website</a>
 
 
 
