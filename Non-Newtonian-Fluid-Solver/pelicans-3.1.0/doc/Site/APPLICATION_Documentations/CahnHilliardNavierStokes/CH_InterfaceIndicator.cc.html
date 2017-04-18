@@ -1,0 +1,235 @@
+<html>
+<head>
+<title>CH_InterfaceIndicator.cc</title>
+<link rel=stylesheet type="text/css" href="stylesheet.css">
+</head>
+<body>
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated
+ *  reusable components, whose purpose is to simplify the task of developing
+ *  softwares of numerical mathematics and scientific computing.
+ *
+ *  This software is governed by the CeCILL-C license under French law and
+ *  abiding by the rules of distribution of free software. You can use, modify
+ *  and/or redistribute the software under the terms of the CeCILL-C license
+ *  as circulated by CEA, CNRS and INRIA at the following URL
+ *  &quot;http://www.cecill.info&quot;.
+ *
+ *  As a counterpart to the access to the source code and rights to copy,
+ *  modify and redistribute granted by the license, users are provided only
+ *  with a limited warranty and the software's author, the holder of the
+ *  economic rights, and the successive licensors have only limited liability.
+ *
+ *  In this respect, the user's attention is drawn to the risks associated
+ *  with loading, using, modifying and/or developing or reproducing the
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also
+ *  therefore means that it is reserved for developers and experienced
+ *  professionals having in-depth computer knowledge. Users are therefore
+ *  encouraged to load and test the software's suitability as regards their
+ *  requirements in conditions enabling the security of their systems and/or
+ *  data to be ensured and, more generally, to use and operate it in the same
+ *  conditions as regards security.
+ *
+ *  The fact that you are presently reading this means that you have had
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;CH_InterfaceIndicator.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">GE_Color</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">GE_Mpolyhedron</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">GE_Point</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">GE_QRprovider</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_DiscreteField</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_DomainAndFields</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_LocalFEcell</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_SetOfDiscreteFields</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;iostream&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw2">string</font><font class="text">&gt;
+
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> ;
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">cout</font><font class="text"> ; </font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+
+CH_InterfaceIndicator </font><font class="kw1">const</font><font class="text">*
+CH_InterfaceIndicator:: PROTOTYPE = </font><font class="kw1">new</font><font class="text"> CH_InterfaceIndicator() ;
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">CH_InterfaceIndicator:: CH_InterfaceIndicator( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PDE_AdaptationIndicator</font><font class="text">( </font><font class="string">&quot;CH_InterfaceIndicator&quot;</font><font class="text"> )
+   , CELL_INTERF( 0 )
+{
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">CH_InterfaceIndicator*
+CH_InterfaceIndicator:: create_replica( 
+                                  </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                  </font><font class="kw3">PDE_DomainAndFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dom,
+                                  </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp,
+                                  </font><font class="kw2">size_t</font><font class="text"> a_verbose_level ) </font><font class="kw1">const
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;CH_InterfaceIndicator:: create_replica&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_PRE( a_owner, dom, exp, a_verbose_level ) ) ;
+
+   CH_InterfaceIndicator* result = 
+       </font><font class="kw1">new</font><font class="text"> CH_InterfaceIndicator( a_owner, dom, exp, a_verbose_level ) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_POST( result,
+                                   a_owner, dom, exp, a_verbose_level ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">CH_InterfaceIndicator:: CH_InterfaceIndicator( 
+                                           </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                           </font><font class="kw3">PDE_DomainAndFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dom,
+                                           </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp,
+                                           </font><font class="kw2">size_t</font><font class="text"> a_verbose_level  )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PDE_AdaptationIndicator</font><font class="text">( a_owner, a_verbose_level )
+   , C1( dom-&gt;set_of_discrete_fields()-&gt;item( 
+                              exp-&gt;string_data( </font><font class="string">&quot;phase_field_1&quot;</font><font class="text"> ) ) )
+   , C2( 0 )
+   , LL( exp-&gt;int_data( </font><font class="string">&quot;level&quot;</font><font class="text"> ) )
+   , cFE( dom-&gt;create_LocalFEcell( </font><font class="kw1">this</font><font class="text"> ) )
+   , QRP( </font><font class="kw3">GE_QRprovider</font><font class="text">::object( 
+                           exp-&gt;string_data( </font><font class="string">&quot;quadrature_rule_provider&quot;</font><font class="text"> ) ) )
+   , CELL_INTERF( 0 )
+   , H_INTERF( exp-&gt;double_data( </font><font class="string">&quot;h_for_interface&quot;</font><font class="text"> ) )
+   , VAL_REFI( exp-&gt;double_data( </font><font class="string">&quot;refinement_limit&quot;</font><font class="text"> ) )
+   , VAL_UNREFI( exp-&gt;double_data( </font><font class="string">&quot;unrefinement_limit&quot;</font><font class="text"> ) )
+{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( C1-&gt;nb_components() == 1 ) ; </font><font class="comment">//??????????
+</font><font class="text">
+   cFE-&gt;include_color( </font><font class="kw3">GE_Color</font><font class="text">::halo_color() ) ;
+
+   cFE-&gt;require_field_calculation( C1, </font><font class="kw3">PDE_LocalFE</font><font class="text">::N ) ;
+
+   </font><font class="kw1">if</font><font class="text">( exp-&gt;has_entry( </font><font class="string">&quot;phase_field_2&quot;</font><font class="text"> ) )
+   {
+      C2 = dom-&gt;set_of_discrete_fields()-&gt;item( 
+                                exp-&gt;string_data( </font><font class="string">&quot;phase_field_2&quot;</font><font class="text"> ) ) ;
+      </font><font class="kw3">PEL_ASSERT</font><font class="text">( C2-&gt;nb_components() == 1 ) ; </font><font class="comment">//??????????
+</font><font class="text">      cFE-&gt;require_field_calculation( C2, </font><font class="kw3">PDE_LocalFE</font><font class="text">::N ) ;
+   }
+
+   CELL_INTERF.re_initialize( cFE-&gt;nb_meshes() ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">CH_InterfaceIndicator:: ~CH_InterfaceIndicator( </font><font class="kw1">void</font><font class="text">  )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">CH_InterfaceIndicator:: reset( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">CH_InterfaceIndicator:: build( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;CH_InterfaceIndicator:: build&quot;</font><font class="text"> ) ;
+
+   CELL_INTERF.</font><font class="kw2">set</font><font class="text">( 0.0 ) ;
+
+   </font><font class="kw1">for</font><font class="text">( cFE-&gt;start() ; cFE-&gt;is_valid() ; cFE-&gt;go_next() )
+   { 
+      </font><font class="kw2">size_t</font><font class="text"> id = cFE-&gt;mesh_id() ;
+      </font><font class="kw1">if</font><font class="text">( id &gt;= CELL_INTERF.size() )
+      {
+         CELL_INTERF.resize( id+1 ) ;
+      }
+      cFE-&gt;start_IP_iterator( QRP ) ;
+      </font><font class="kw1">double</font><font class="text"> ss_1 = 0.0 ;
+      </font><font class="kw1">double</font><font class="text"> ss_2 = 0.0 ;
+      </font><font class="kw1">for</font><font class="text">( ; cFE-&gt;valid_IP() ; cFE-&gt;go_next_IP() )
+      {
+         ss_1 += cFE-&gt;value_at_IP( C1, LL, 0 ) * cFE-&gt;weight_of_IP() ;
+         </font><font class="kw1">if</font><font class="text">( C2 != 0 )
+            ss_2 += cFE-&gt;value_at_IP( C2, LL, 0 ) * cFE-&gt;weight_of_IP() ;
+      }
+      </font><font class="kw1">double</font><font class="text"> meas = cFE-&gt;polyhedron()-&gt;measure() ;
+      CELL_INTERF( id ) = 
+           </font><font class="kw3">PEL</font><font class="text">::max( meas-ss_1-ss_2, </font><font class="kw3">PEL</font><font class="text">::max( ss_1, ss_2 ) ) / meas ;
+   }
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="text">CH_InterfaceIndicator:: to_be_refined( </font><font class="kw1">double</font><font class="text"> bf_indicator,
+                                       </font><font class="kw3">GE_Mpolyhedron</font><font class="text"> </font><font class="kw1">const</font><font class="text">* poly,
+                                       </font><font class="kw3">PDE_ReferenceElement</font><font class="text"> </font><font class="kw1">const</font><font class="text">* elm,
+                                       </font><font class="kw2">size_t</font><font class="text"> local_node ) </font><font class="kw1">const
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;CH_InterfaceIndicator:: to_be_refined&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( to_be_refined_PRE( bf_indicator, poly, elm, local_node ) ) ;
+
+   </font><font class="kw1">bool</font><font class="text"> result = </font><font class="kw1">false</font><font class="text"> ;
+
+   </font><font class="kw1">if</font><font class="text">( bf_indicator &lt; VAL_REFI )
+   {
+      </font><font class="kw1">double</font><font class="text"> h = poly-&gt;inter_vertices_maximum_distance() ;
+      </font><font class="kw1">if</font><font class="text">( h &gt; H_INTERF ) result = </font><font class="kw1">true</font><font class="text"> ;
+   }
+
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="text">CH_InterfaceIndicator:: to_be_unrefined( </font><font class="kw1">double</font><font class="text"> bf_indicator,
+                                         </font><font class="kw3">GE_Mpolyhedron</font><font class="text"> </font><font class="kw1">const</font><font class="text">* poly,
+                                         </font><font class="kw3">PDE_ReferenceElement</font><font class="text"> </font><font class="kw1">const</font><font class="text">* elm,
+                                         </font><font class="kw2">size_t</font><font class="text"> local_node ) </font><font class="kw1">const
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;CH_InterfaceIndicator:: to_be_unrefined&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( to_be_unrefined_PRE( bf_indicator, poly, elm, local_node ) );
+
+   </font><font class="kw1">bool</font><font class="text"> result = </font><font class="kw1">false</font><font class="text"> ;
+
+   </font><font class="kw1">if</font><font class="text">( bf_indicator &gt; VAL_UNREFI )
+   {
+      result = </font><font class="kw1">true</font><font class="text"> ;
+   }
+
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw1">double
+</font><font class="text">CH_InterfaceIndicator:: cell_indicator( </font><font class="kw2">size_t</font><font class="text"> cell_id ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;CH_InterfaceIndicator:: cell_indicator&quot;</font><font class="text"> ) ;
+
+   cFE-&gt;go_i_th( cell_id ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( cFE-&gt;is_valid() ) ;
+
+   </font><font class="kw1">double</font><font class="text"> result = CELL_INTERF( cell_id ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font>
+</pre>
+</body>
+</html>

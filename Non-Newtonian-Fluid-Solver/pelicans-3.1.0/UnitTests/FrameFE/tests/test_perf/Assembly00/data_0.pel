@@ -1,0 +1,341 @@
+MODULE PEL_Application
+   
+   concrete_name = "FE_StepByStepProgression"
+
+   $DS_x = component( $DV_X, 0 )
+   $DS_y = component( $DV_X, 1 )
+
+   MODULE FE_TimeIterator
+      time_initial = 0.0
+      time_end = 0.01
+      time_step = 1.
+   END MODULE FE_TimeIterator
+   
+   graphics_output_times = regular_vector( 0.0, 1, 0.01 )
+
+   MODULE PDE_DomainAndFields
+
+      $IS_nb_dims = value( "IS_nb_space_dimensions", 2 )
+      
+      verbose_level = 1
+      nb_space_dimensions = $IS_nb_dims
+      type = "finite_element"
+      
+      if( $IS_nb_dims=2 && ! is_defined( "SS_SquareWithTriangles" ) )
+      MODULE GE_Meshing
+         concrete_name = "GE_BoxWithBoxes"
+         vertices_coordinate_0 = regular_vector( 0.0, $IS_nb_m, 1.0 )
+         vertices_coordinate_1 = regular_vector( 0.0, $IS_nb_m, 1.0 )
+         mesh_polyhedron = < "GE_Segment" "GE_Rectangle" >
+      END MODULE GE_Meshing
+
+      if( $IS_nb_dims=2 && is_defined( "SS_SquareWithTriangles" ) )
+      MODULE GE_Meshing      
+         concrete_name = "GE_RefinedMeshing"
+         mesh_polyhedron = < "GE_Segment" "GE_Triangle" >
+         MODULE list_of_GE_ReferencePolyhedronRefiner
+            MODULE GE_ReferencePolyhedronRefiner#1
+               concrete_name = "GE_ReferenceSquareWithTriangles"
+               strategy = $SS_SquareWithTriangles
+            END MODULE GE_ReferencePolyhedronRefiner#1
+         END MODULE list_of_GE_ReferencePolyhedronRefiner
+         MODULE GE_Meshing
+            concrete_name = "GE_BoxWithBoxes"
+            vertices_coordinate_0 = regular_vector( 0.0, $IS_nb_m, 1.0 )
+            vertices_coordinate_1 = regular_vector( 0.0, $IS_nb_m, 1.0 )
+            mesh_polyhedron = < "GE_Segment" "GE_Rectangle" >
+
+         END MODULE GE_Meshing
+      END MODULE GE_Meshing
+
+      if( $IS_nb_dims=3 && ! is_defined( "BS_CubeWithTetrahedra" ) )
+      MODULE GE_Meshing
+         concrete_name = "GE_BoxWithBoxes"
+         vertices_coordinate_0 = regular_vector( 0.0, $IS_nb_m, 1.0 )
+         vertices_coordinate_1 = regular_vector( 0.0, $IS_nb_m, 1.0 )
+         vertices_coordinate_2 = regular_vector( 0.0, $IS_nb_m, 1.0 )
+         mesh_polyhedron = < "GE_Rectangle" "GE_Cuboid" >
+      END MODULE GE_Meshing
+
+      if( $IS_nb_dims=3 && is_defined( "BS_CubeWithTetrahedra" ) )
+      MODULE GE_Meshing
+         concrete_name = "GE_RefinedMeshing"
+         mesh_polyhedron = < "GE_Triangle" "GE_Tetrahedron" >
+         MODULE GE_Meshing
+            concrete_name = "GE_BoxWithBoxes"
+            vertices_coordinate_0 = regular_vector( 0.0, $IS_nb_m, 1.0 )
+            vertices_coordinate_1 = regular_vector( 0.0, $IS_nb_m, 1.0 )
+            vertices_coordinate_2 = regular_vector( 0.0, $IS_nb_m, 1.0 )
+            mesh_polyhedron = < "GE_Rectangle" "GE_Cuboid" >
+         END MODULE GE_Meshing
+         MODULE list_of_GE_ReferencePolyhedronRefiner
+            MODULE GE_ReferencePolyhedronRefiner#1
+               concrete_name = "GE_ReferenceCubeWithTetrahedra"
+            END MODULE GE_ReferencePolyhedronRefiner#1
+         END MODULE list_of_GE_ReferencePolyhedronRefiner
+      END MODULE GE_Meshing
+
+      if( is_defined( "SV_Dirichlet_colors" ) )
+      MODULE macro_colors
+         Dirichlet = $SV_Dirichlet_colors
+      END MODULE macro_colors
+      
+      MODULE interior_fields
+         
+         MODULE uu
+            name = "uu"
+            nb_components = 1
+            element_name = $SS_element_name
+            storage_depth = 1
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value =  < 0.0 >
+            END MODULE DOFs_values
+            
+            if( is_defined( "SV_Dirichlet_colors" ) )
+            MODULE DOFs_imposed_value
+               MODULE xxx
+                  location = "on_bounds"
+                  type = "uniformly_defined"
+                  color = "Dirichlet"
+                  value = $DV_Dirichlet_value
+               END MODULE xxx
+            END MODULE DOFs_imposed_value
+            
+         END MODULE uu
+         
+      END MODULE interior_fields
+            
+      MODULE PDE_ResultSaver
+         
+         writers = value( "SV_writers", < "PEL_TICwriter" > )
+
+         writing_mode = "text"
+         files_basename = "save"
+         MODULE uu
+            where_to_save = "at_vertices"
+            entry_name = "U"
+            field = "uu"
+         END MODULE uu
+         
+      END MODULE PDE_ResultSaver
+      
+   END MODULE PDE_DomainAndFields
+   
+   MODULE FE_SetOfParameters
+
+      alpha = vector( $DS_alpha )
+
+      kappa = vector( $DS_kappa )
+
+      MODULE FE_Parameter#pi
+         concrete_name = "FE_SpaceTimeParameter"
+         name = "pi"
+         nb_components = 1
+         value = $DV_f
+      END MODULE FE_Parameter#pi
+
+      if( is_defined( "DV_aa" ) )
+      MODULE FE_Parameter#aa
+         concrete_name = "FE_SpaceTimeParameter"
+         name = "advective_velocity"
+         nb_components = 2
+         value = $DV_aa
+      END MODULE FE_Parameter#aa
+      
+   END MODULE FE_SetOfParameters
+
+   MODULE FE_OneStepIteration
+      
+      concrete_name = "FE_SplitSystem"
+      
+      MODULE list_of_FE_OneStepIteration
+         
+         MODULE FE_OneStepIteration#advdiff
+            
+            concrete_name = "FE_PerfAssembly00"
+            
+            field = "uu"
+            level_of_field = 0
+            
+            param_reaction  = "alpha"
+            param_diffusion = "kappa"
+            param_source    = "pi"
+
+            quadrature_rule_provider = $SS_quadrature_rule_provider
+
+            loop_on_cells = $IS_loop_on_cells
+
+            $DS_absolute_tolerance = 1.0e-80
+            $DS_relative_tolerance = 1.0e-10
+            $BS_verbose_solver = true
+
+            MODULE LA_Matrix
+               concrete_name = value( "SS_matrix", "LA_PelMatrix" )
+            END MODULE LA_Matrix
+
+            if( $SS_solver = "LA_Identity_IS" )
+            MODULE LA_Solver
+               concrete_name = "LA_PreconditionedSolver"
+               MODULE LA_IterativeSolver
+                  concrete_name = "LA_Identity_IS"
+                  verbose = $BS_verbose_solver
+                  nb_iterations_max = 2000
+                  MODULE LA_ConvergenceTest
+                     concrete_name = "LA_DefaultConvergenceTest"
+                     absolute_tolerance = $DS_absolute_tolerance
+                     relative_tolerance = $DS_relative_tolerance
+                  END MODULE LA_ConvergenceTest
+               END MODULE LA_IterativeSolver
+            END MODULE LA_Solver
+            
+            if( $SS_solver = "LA_CG_IS" )
+            MODULE LA_Solver
+               concrete_name = "LA_PreconditionedSolver"
+               MODULE LA_IterativeSolver
+                  concrete_name = "LA_CG_IS"
+                  verbose = $BS_verbose_solver
+                  nb_iterations_max = 2000
+                  MODULE LA_ConvergenceTest
+                     concrete_name = "LA_DefaultConvergenceTest"
+                     absolute_tolerance = $DS_absolute_tolerance
+                     relative_tolerance = $DS_relative_tolerance
+                  END MODULE LA_ConvergenceTest
+               END MODULE LA_IterativeSolver
+            END MODULE LA_Solver
+
+            if( $SS_solver = "LA_GMRES_IS" )
+            MODULE LA_Solver
+               concrete_name = "LA_PreconditionedSolver"
+               MODULE LA_IterativeSolver
+                  concrete_name = "LA_GMRES_IS"
+                  verbose = $BS_verbose_solver
+                  restart = 30
+                  nb_iterations_max = 2000
+                  MODULE LA_ConvergenceTest
+                     concrete_name = "LA_DefaultConvergenceTest"
+                     absolute_tolerance = $DS_absolute_tolerance
+                     relative_tolerance = $DS_relative_tolerance
+                  END MODULE LA_ConvergenceTest
+               END MODULE LA_IterativeSolver
+            END MODULE LA_Solver
+
+            if( $SS_solver = "LA_BiCGSTAB_IS" )
+            MODULE LA_Solver
+               concrete_name = "LA_PreconditionedSolver"
+               MODULE LA_IterativeSolver
+                  concrete_name = "LA_BiCGSTAB_IS"
+                  verbose = $BS_verbose_solver
+                  nb_iterations_max = 2000
+                  MODULE LA_ConvergenceTest
+                     concrete_name = "LA_DefaultConvergenceTest"
+                     absolute_tolerance = $DS_absolute_tolerance
+                     relative_tolerance = $DS_relatibe_tolerance
+                  END MODULE LA_ConvergenceTest
+               END MODULE LA_IterativeSolver
+            END MODULE LA_Solver
+               
+            if( $SS_solver = "PETSc_cg" )
+            MODULE LA_Solver
+               concrete_name = "EXT_PETScSolver"
+               MODULE PETSc_Krylov_subspace_method
+                  type = "cg"
+                  ksp_max_it = 2000
+                  ksp_atol = $DS_absolute_tolerance
+                  ksp_rtol = $DS_relavite_tolerance
+                  verbose = $BS_verbose_solver
+               END MODULE PETSc_Krylov_subspace_method
+               //  MODULE LA_Matrix
+               //     concrete_name = "PETSc_SeqAIJ"
+               //  END MODULE LA_Matrix
+            END MODULE LA_Solver
+            
+            if( $SS_solver = "PETSc_gmres" )
+            MODULE LA_Solver
+               concrete_name = "EXT_PETScSolver"
+               MODULE PETSc_Krylov_subspace_method
+                  type = "gmres"
+                  ksp_max_it = 2000
+                  ksp_atol = $DS_absolute_tolerance
+                  ksp_rtol = $DS_relative_tolerance
+                  ksp_gmres_restart = 30
+                  verbose = true
+               END MODULE PETSc_Krylov_subspace_method
+               //  MODULE LA_Matrix
+               //     concrete_name = "PETSc_SeqAIJ"
+               //  END MODULE LA_Matrix
+            END MODULE LA_Solver
+
+            if( $SS_solver = "PETSc_bcgs" )
+            MODULE LA_Solver
+               concrete_name = "EXT_PETScSolver"
+               MODULE PETSc_Krylov_subspace_method
+                  type = "bcgs"
+                  ksp_max_it = 2000
+                  ksp_atol = $DS_absolute_tolerance
+                  ksp_rtol = $DS_absolute_tolerance
+                  verbose = $BS_verbose_solver
+               END MODULE PETSc_Krylov_subspace_method
+               //  MODULE LA_Matrix
+               //     concrete_name = "PETSc_SeqAIJ"
+               //  END MODULE LA_Matrix
+            END MODULE LA_Solver
+               
+            if( $SS_solver = "PETSc_BCG" )
+            MODULE LA_Solver
+               concrete_name = "EXT_PETScSolver"
+               MODULE PETSc_Krylov_subspace_method
+                  type = "bicg"
+                  ksp_max_it = 2000
+                  ksp_atol = $DS_absolute_tolerance
+                  ksp_rtol = $DS_relative_tolerance
+                  verbose = $BS_verbose_solver
+               END MODULE PETSc_Krylov_subspace_method
+               // MODULE LA_Matrix
+               //    concrete_name = "PETSc_SeqAIJ"
+               // END MODULE LA_Matrix
+            END MODULE LA_Solver
+
+            if( $SS_preconditioner = "LA_Jacobi_PC" )
+            MODULE LA_Solver
+               MODULE LA_Preconditioner
+                  concrete_name = "LA_Jacobi_PC"
+                  smallest_inverted_item = 1.e-300
+               END MODULE LA_Preconditioner
+            END MODULE LA_Solver
+            
+            if( $SS_preconditioner = "LA_Identity_PC" )
+            MODULE LA_Solver
+               MODULE LA_Preconditioner
+                  concrete_name = "LA_Identity_PC"
+               END MODULE LA_Preconditioner
+            END MODULE LA_Solver
+
+            if( $SS_preconditioner = "PETSc_jacobi" )
+            MODULE LA_Solver
+               MODULE PETSc_preconditioner
+                  type = "jacobi"
+               END MODULE PETSc_preconditioner
+            END MODULE LA_Solver
+            
+         END MODULE FE_OneStepIteration#advdiff
+   
+//         MODULE FE_OneStepIteration#ca
+//            concrete_name = "FE_ComparatorWithAnalytic"
+//            field = "uu"
+//            level = 0
+//            norms = vector( "L2_solution_norm", "L2_error_norm",
+//                            "H1_solution_norm", "H1_error_norm"  )
+//            norm_saving_names = vector( "XLDE", "XLD", "XHUE", "XHU"  )
+//            solution = $DV_sol
+//            d_solution = $DA_grad_sol
+//            quadrature_rule_provider = $SS_quadrature_rule_provider
+//            output_file = "error_norms.txt"
+//            saving_times = < 0.01 >
+//         END MODULE FE_OneStepIteration#ca
+         
+      END MODULE list_of_FE_OneStepIteration
+      
+   END MODULE FE_OneStepIteration
+         
+END MODULE PEL_Application

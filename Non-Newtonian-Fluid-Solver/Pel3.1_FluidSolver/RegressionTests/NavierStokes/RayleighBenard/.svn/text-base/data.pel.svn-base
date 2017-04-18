@@ -1,0 +1,557 @@
+// Rayleigh Benard Convection (Oct 2008)
+// =====================================
+// One fluid
+// Compare paper: Zhang, Vola, Frigaard (2006)
+//    Yield stress effects on Rayleigh-Benard convection
+// Section 2.1: Steady state solution (Bn=0 Newtonian)
+
+// Section 4 (Bn=0.01)
+
+// Aug 2010
+// If TT_Pertubation = 0.0 velocity field seems to be shifted (eccentric)
+// if TT_Pertubation = y(1-y)(0.8+0.2 sin(x^2)) velocity field is centered
+
+MODULE PEL_Application
+   
+   concrete_name = "FE_StepByStepProgression"
+   $IS_N = 50
+   
+   // Fluid Parameters:
+   // Pr = Cp*mue / kappa
+   // Cp = specific heat, kappa = thermal conductivity
+   // mu(u) = kappa*gamma^(n-1)(u) + Bn/(gamma(u))
+   
+   $DS_Pr = 1. // Prandtl number
+   $DS_Ra = 1800. // Rayleigh number 
+   $DS_Bn = 0.0 // Bingham number
+   $DS_kappa = 1.
+   $DS_n = 1. 
+   
+   $DS_X = component( $DV_X, 0 )
+   $DS_Y = component( $DV_X, 1 )
+   
+   $DS_INFLOW = 0.0
+   
+   $DS_TTpertubation = $DS_Y*(1.-$DS_Y)*(0.8+0.2*sin($DS_X*$DS_X))
+   //$DS_TTpertubation = 0.0
+   
+   $DS_Length = 2.*pi()/3.
+   
+   // Time Stepping
+   $DS_DT = 0.005
+   $DS_TEND = 2.5
+   
+   $IS_SteadyStateAdaptor = 1 // Apply steady state break criterion
+   $IS_Advection = 1 // Consider advection term: 0 false, 1 true
+   $IS_Nonlinear = 0 // Consider nonlinear viscosity term: 0 false, 1 true
+   
+   
+   // Field Level for time dependent fields
+   $IS_CURRENT = 0 // storage of the current field
+   $IS_INITIAL = 1 // storage of the previous field
+   $IS_NONLIN = 2 // storage of the nonlinear contribution
+   // + storage for convergence between time steps
+   
+   // Analytical Solution if u=v=0
+   $DS_Psol = 250. - $DS_Ra/2. * (1. - $DS_Y) * (1. - $DS_Y)
+   $DS_Tsol = 1. - $DS_Y
+   $DV_Usol = vector(0., 0.)
+   
+   MODULE FE_TimeIterator
+      time_initial = 0.0
+      time_end = $DS_TEND
+      time_step = $DS_DT 
+   END MODULE FE_TimeIterator
+   
+   graphics_output_times = regular_vector( 0., 25, $DS_TEND )
+   
+   
+   if( $IS_SteadyStateAdaptor = 1 )
+   MODULE FE_TimeIteratorAdapter
+      // Stop when :
+      // max( u_current-u_initial )/max( u_current, 1. ) < 1.E-5
+      // max( p_current-p_initial )/max( p_current, 1. ) < 1.E-5
+      // max( t_current-t_initial )/max( t_current, 1. ) < 1.E-5
+      concrete_name = "FE_SteadyStateAdapter"
+      initial_level = $IS_NONLIN
+      current_level = $IS_CURRENT 
+      discrete_fields = < "velocity" "pressure" "temperature" >
+      minimal_error = < 1.E-5 1.E-5 1.E-5>
+      MODULE post_processing
+         banner = true
+         file_name = "convergence.txt"
+      END MODULE post_processing
+   END MODULE FE_TimeIteratorAdapter
+   
+   
+///////////////////////////////////////////////////////////////////
+   // PDE_DomainAndFields
+///////////////////////////////////////////////////////////////////
+   MODULE PDE_DomainAndFields
+      verbose_level = 1
+      nb_space_dimensions = 2
+      type = "finite_element"
+      
+      // Periodicity
+      MODULE domain_periodicity
+         MODULE GE_Transform#horizontal
+            concrete_name = "GE_Translation"
+            translation_vector = vector( $DS_Length, 0.0 )
+            source_color = "left"
+            target_color = "right"
+         END MODULE GE_Transform#horizontal
+      END MODULE domain_periodicity
+      
+      // Define meshing
+      MODULE GE_Meshing
+         concrete_name = "GE_BoxWithBoxes"
+         mesh_polyhedron = < "GE_Segment" "GE_Rectangle" >
+         vertices_coordinate_0 = regular_vector( -$DS_Length/2., $IS_N, $DS_Length/2. )
+         vertices_coordinate_1 = regular_vector( 0., $IS_N/2, 1.0 )
+      END MODULE GE_Meshing
+      
+      MODULE macro_colors
+         symmetry_x = < "left" "right" >
+         tops = < "top" "top_left" "top_right" >
+         bottoms = < "bottom" "bottom_left" "bottom_right" > 
+         no_slip = < "top" "bottom" "top_left" "top_right" "bottom_left" "bottom_right" >
+      END MODULE macro_colors
+      
+      MODULE interior_fields
+         
+         MODULE uu
+            name = "velocity"
+            nb_components = 2
+//            element_name = "PDE_2D_Q1_4nodes"
+            element_name = "PDE_2D_Q2_9nodes"
+            storage_depth = 3
+            
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = vector( $DS_INFLOW, 0.0 )
+            END MODULE DOFs_values
+            MODULE DOFs_imposed_value
+               MODULE Dirichlet
+                  location = "on_bounds"
+                  type = "uniformly_defined"
+                  color = "no_slip"
+                  value = vector( 0.0, 0.0 )
+               END MODULE Dirichlet
+               
+            END MODULE DOFs_imposed_value
+         END MODULE uu
+         
+         MODULE pp
+            name = "pressure"
+            nb_components = 1
+            element_name = "PDE_2D_Q0_1node"
+//            element_name = "PDE_2D_Q1_4nodes"
+            storage_depth = 3
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = vector( 0.0 )
+            END MODULE DOFs_values
+         END MODULE pp
+         
+         MODULE tt
+            name = "temperature"
+            nb_components = 1
+            element_name = "PDE_2D_Q0_1node"
+            storage_depth = 3
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = vector( $DS_TTpertubation )
+            END MODULE DOFs_values
+            MODULE DOFs_imposed_value
+               MODULE xxx#top
+                  location = "on_bounds"
+                  type = "uniformly_defined"
+                  color = "tops"
+                  value = vector( $DS_TTpertubation )
+               END MODULE xxx#top
+               MODULE xxx#bottom
+                  location = "on_bounds"
+                  type = "uniformly_defined"
+                  color = "bottoms"
+                  $DS_HELP = 1.0 + $DS_TTpertubation
+                  value = vector ( $DS_HELP ) 
+               END MODULE xxx#bottom
+            END MODULE DOFs_imposed_value
+         END MODULE tt
+         
+      END MODULE interior_fields
+      
+      MODULE boundary_conditions
+         MODULE Dirichlet#temperatureTOP
+            field = "temperature"
+            color = "tops"
+            type = "Dirichlet"
+            value = 0.0 
+         END MODULE Dirichlet#temperatureTOP
+         MODULE Dirichlet#temperatureBOTTOM
+            field = "temperature"
+            color = "bottoms"
+            type = "Dirichlet"
+            value = 1.0 
+         END MODULE Dirichlet#temperatureBOTTOM
+      END MODULE boundary_conditions
+      
+      MODULE PDE_ResultSaver
+         writers = < "PEL_VTKwriter" >
+         writing_mode = "text"
+         files_basename = "saveBn"
+         MODULE uu
+            where_to_save = "at_vertices"
+            entry_name = "UU"
+            field = "velocity"
+         END MODULE uu
+         MODULE pp
+            where_to_save = "at_cell_centers"
+            entry_name = "PP"
+            field = "pressure"
+         END MODULE pp
+         MODULE tt
+            where_to_save = "at_cell_centers"
+            entry_name = "TT"
+            field = "temperature"
+         END MODULE tt
+      END MODULE PDE_ResultSaver
+   END MODULE PDE_DomainAndFields
+   
+   
+///////////////////////////////////////////////////////////////////
+   // FE_Parameters
+///////////////////////////////////////////////////////////////////
+   MODULE FE_SetOfParameters
+      // Advection-Diffusion Eq (Temperature)
+      sourceTemp = < 0. >
+      diffusivityTemp = < 1. >
+      
+      density = < 1. >
+      
+      // Navier-Stokes
+      alpha = < 1.0 >
+      Reynolds = vector(1./$DS_Pr)
+      
+      // Ra*T
+      MODULE FE_Parameter#RayleighTemp
+         concrete_name = "FE_LinearParameter" // name = slope * field - refvalue
+         name = "RayTemp"
+         field_name = "temperature"
+         field_level = $IS_CURRENT
+         reference_field_value = 0.0
+         slope = $DS_Ra
+      END MODULE FE_Parameter#RayleighTemp
+      
+      // need + Ra*T < 0 1 > instead of + Ri < gx, gy >
+      MODULE FE_Parameter#Gravity
+         concrete_name = "FE_GravityParameter"
+         name = "ExtForce"
+         gravity = < 0.0 1.0 >
+         rho_shift = 0.
+         rho = "RayTemp"
+      END MODULE FE_Parameter#Gravity
+      
+///////////////////////////////////////////////////////////////////
+      // Viscosity Term
+///////////////////////////////////////////////////////////////////
+      MODULE FE_Parameter#ViscHB
+         concrete_name = "FE_ViscosityHBParameterNew"
+         name = "Viscosity"
+         MODULE list_of_parameters
+            MODULE param#Bn
+               type = "to_be_defined"
+               MODULE FE_Parameter
+                  concrete_name = "FE_UniformParameter"
+                  name = "Bn"
+                  value = vector($DS_Bn)
+               END MODULE FE_Parameter
+            END MODULE param#Bn
+            MODULE param#kappa
+               type = "to_be_defined"
+               MODULE FE_Parameter
+                  concrete_name = "FE_UniformParameter"
+                  name = "kappa"
+                  value = vector($DS_kappa)
+               END MODULE FE_Parameter
+            END MODULE param#kappa
+            MODULE param#n
+               type = "to_be_defined"
+               MODULE FE_Parameter
+                  concrete_name = "FE_UniformParameter"
+                  name = "n"
+                  value = vector($DS_n)
+               END MODULE FE_Parameter
+            END MODULE param#n
+            MODULE param#eps
+               type = "to_be_defined"
+               MODULE FE_Parameter
+                  concrete_name = "FE_SpaceTimeParameter"
+                  name = "Reg"
+                  nb_components = 1
+                  value = vector( 0.0001 )
+               END MODULE FE_Parameter
+            END MODULE param#eps
+         END MODULE list_of_parameters
+         reg = "Second"
+         // Link to velocity
+         vel_name = "velocity" // Link to the velocity field
+         vel_level = 0 // Level of the velocity field 
+      END MODULE FE_Parameter#ViscHB
+      
+      MODULE FE_Parameter#secinvgamma
+         concrete_name = "FE_DuDuFieldParameter"
+         name = "secinvgammadot"
+         field_name = "velocity"
+         field_level = 0
+         coef = 0.5
+         power = 0.5
+      END MODULE FE_Parameter#secinvgamma
+   END MODULE FE_SetOfParameters
+   
+///////////////////////////////////////////////////////////////////
+   // One Step Iteration Stage
+///////////////////////////////////////////////////////////////////
+   MODULE FE_OneStepIteration
+      concrete_name = "FE_SplitSystem" 
+      MODULE list_of_FE_OneStepIteration
+         
+         // --------------------
+         // Advection Diffusion
+         // --------------------
+         MODULE FE_OneStepIteration#temperature
+            concrete_name = "MY_AdvectionDiffusion"
+            AD_unknown_field="temperature" 
+            AD_coeff_diffusion="diffusivityTemp"
+            AD_coeff_unsteady ="density" 
+            AD_param_source="sourceTemp"
+            
+            MODULE convective_scheme
+               concrete_name = "MY_MUSCL_Scheme"
+               AD_param_advective_velocity="velocity"
+               AD_coeff_unsteady ="density" 
+            END MODULE convective_scheme
+            
+            MODULE LA_Matrix
+               concrete_name = "LA_PelMatrix"
+            END MODULE LA_Matrix
+            
+//            MODULE LA_Solver
+//               concrete_name = "LA_PreconditionedSolver"
+//               MODULE LA_IterativeSolver
+//                  concrete_name = "LA_GMRES_IS"
+//                  nb_iterations_max = 2000
+//                  restart = 50
+//                  MODULE LA_ConvergenceTest
+//                     concrete_name = "LA_DefaultConvergenceTest"
+//                     relative_tolerance = 1.e-12
+//                     absolute_tolerance = 1.e-20
+//                  END MODULE LA_ConvergenceTest
+//                  verbose = false
+//               END MODULE LA_IterativeSolver
+//               MODULE LA_Preconditioner
+//                  concrete_name = "LA_Jacobi_PC"
+//                  smallest_inverted_item = 1.e-20
+//               END MODULE LA_Preconditioner
+//            END MODULE LA_Solver
+            
+            MODULE LA_Solver
+               concrete_name = "EXT_UMFsolver_DS"
+            END MODULE LA_Solver
+            
+         END MODULE FE_OneStepIteration#temperature
+         
+         // --------------------
+         // Navier Stokes
+         // --------------------
+         MODULE FE_OneStepIteration#Navier_Stokes
+            concrete_name = "MI_NavierStokes"
+            
+            viscosity_term = "div_mu_D_uu"
+             
+            MODULE FE_PrintVariables 
+               names=<"Prandtl" "Rayleigh" "Bingham">
+               values=vector($DS_Pr, $DS_Ra, $DS_Bn)
+            END MODULE FE_PrintVariables
+            
+            // Nonlinear Term (optional)
+            if( $IS_Nonlinear = 1 )
+            MODULE NonlinearTerm
+               type = "viscosity"
+               residual = 1.E-8
+               maxiter = 100
+               storage_level = $IS_NONLIN // Make sure that the velocity has enough storage levels
+            END MODULE NonlinearTerm
+            
+            // Discrete Fields
+            velocity = "velocity"
+            velocity_level_to_update = $IS_CURRENT
+            level_of_explicit_velocity = $IS_CURRENT 
+            
+            pressure = "pressure"
+            pressure_level_to_update = $IS_CURRENT
+            level_of_explicit_pressure = $IS_CURRENT 
+            
+            quadrature_rule_provider = "GE_QRprovider_5" 
+            time_order = 1
+            
+            //Parameters and advection term 
+            param_unsteady = "alpha" // Is the equation unsteady 0?1
+            param_Reynolds = "Reynolds" // Reynolds number
+            param_viscous = "Viscosity" // viscosity term
+            param_source = "ExtForce" // Source parameter
+            
+            // Advection term (optional)
+            // - replace this with the advective parameter
+            if ( $IS_Advection = 1 )
+            MODULE advection // -> replace with advective parameter
+               MODULE advective_field
+                  MODULE xx1
+                     field = "velocity"
+                     level = $IS_CURRENT
+                     param_coef = "alpha"
+                  END MODULE xx1
+               END MODULE advective_field
+            END MODULE advection
+            
+            MODULE MI_NavierStokesSystem
+               verbose_level = 1
+               MODULE method
+                  type = "augmented_Lagrangian"
+                  augmentation_parameter = 1000.0
+                  tolerance_on_divergence = 1.e-4
+                  tolerance_on_velocity_increment = 5.e-4 
+               END MODULE method
+               
+///////////////////////////////////////////////////////////////////
+               // Block Assembled System
+               // - nb_ranks > 1: PETSC routines
+               // - nb_ranks = 1: PEL internal solver
+///////////////////////////////////////////////////////////////////
+               MODULE LA_Matrix
+                  concrete_name = "LA_PelMatrix"
+               END MODULE LA_Matrix
+               
+//               MODULE solver_A
+//                  concrete_name = "LA_PreconditionedSolver"
+//                  MODULE LA_IterativeSolver
+//                     concrete_name = "LA_GMRES_IS"
+//                     nb_iterations_max = 10000
+//                     restart = 50
+//                     MODULE LA_ConvergenceTest
+//                        concrete_name = "LA_DefaultConvergenceTest"
+//                        relative_tolerance = 1.e-08 // 1.e-8 
+//                        absolute_tolerance = 1.E-20
+//                     END MODULE LA_ConvergenceTest
+//                     verbose = false
+//                  END MODULE LA_IterativeSolver
+//                  MODULE LA_Preconditioner
+//                     concrete_name = "LA_Jacobi_PC"
+//                     smallest_inverted_item = 1.e-22
+//                  END MODULE LA_Preconditioner
+//               END MODULE solver_A
+               
+               MODULE solver_A
+                  concrete_name = "EXT_UMFsolver_DS"
+               END MODULE solver_A
+               
+            END MODULE MI_NavierStokesSystem
+         END MODULE FE_OneStepIteration#Navier_Stokes
+         
+         MODULE FE_OneStepIteration#ComparatorAnalyticPressure
+            concrete_name = "FE_ComparatorWithAnalytic"
+            field = "pressure"
+            level = 0
+            quadrature_rule_provider = "GE_QRprovider_1"
+            norms = vector( "Infinity_error_norm", "L2_error_D_norm","L2_interpolation_error_norm" )
+            norm_saving_names = vector( "P_InfE", "P_VLDE", "P_VLDI" )
+            output_file = "NormFilePres.dat"
+            solution = vector( $DS_Psol )
+            nullify_integral = true
+         END MODULE FE_OneStepIteration#ComparatorAnalyticPressure
+         
+         MODULE FE_OneStepIteration#ComparatorAnalyticTemperature
+            concrete_name = "FE_ComparatorWithAnalytic"
+            field = "temperature"
+            level = 0
+            quadrature_rule_provider = "GE_QRprovider_1"
+            norms = vector( "Infinity_error_norm", "L2_error_D_norm","L2_interpolation_error_norm" )
+            norm_saving_names = vector( "T_InfE", "T_VLDE", "T_VLDI" )
+            output_file = "NormFileTemp.dat"
+            solution = vector( $DS_Tsol )
+         END MODULE FE_OneStepIteration#ComparatorAnalyticTemperature
+
+         MODULE FE_OneStepIteration#ComparatorAnalyticVelocity
+            concrete_name = "FE_ComparatorWithAnalytic"
+            field = "velocity"
+            level = 0
+            quadrature_rule_provider = "GE_QRprovider_1"
+            norms = vector( "L2_error_norm")
+            norm_saving_names = vector( "U_VLE" )
+            output_file = "NormFileVelo.dat"
+            solution = $DV_Usol
+         END MODULE FE_OneStepIteration#ComparatorAnalyticVelocity
+         
+         // ------------------------------------
+         // FE_OneStepIteration: postprocessing
+         // ------------------------------------
+         MODULE FE_OneStepIteration#parameters_postprocessing
+            concrete_name = "FE_ParameterSaver"
+            MODULE parameters
+               MODULE param#1
+                  type = "at_cell_centers"
+                  parameter_name = "Viscosity"
+                  entry_name = "viscosity"
+               END MODULE param#1
+               MODULE param#2
+                  type = "at_cell_centers"
+                  parameter_name = "secinvgammadot"
+                  entry_name = "SecInvGammaDot"
+               END MODULE param#2
+            END MODULE parameters
+         END MODULE FE_OneStepIteration#parameters_postprocessing
+         
+         // ----------------------------------------------------------
+         // FE_OeStepIteration: FE_DOFsCopy (Setup of the new timestep)
+         // - If another solver needs the correct $IS_INITIAL 
+         // at the new time step during the execution of 
+         // "do_before_inner_iteration_stage", this part has to be
+         // called after the other one step iterations.
+         // ----------------------------------------------------------
+         MODULE FE_OneStepIteration#DOF_copy
+            concrete_name = "FE_DOFsCopy"
+            MODULE uu#1
+               field = "velocity"
+               source = $IS_INITIAL
+               target = $IS_NONLIN
+            END MODULE uu#1
+            MODULE uu#2
+               field = "velocity"
+               source = $IS_CURRENT
+               target = $IS_INITIAL
+            END MODULE uu#2
+            MODULE pp#1
+               field = "pressure"
+               source = $IS_INITIAL
+               target = $IS_NONLIN
+            END MODULE pp#1
+            MODULE pp#2
+               field = "pressure"
+               source = $IS_CURRENT
+               target = $IS_INITIAL
+            END MODULE pp#2
+            MODULE cc#1
+               field = "temperature"
+               source = $IS_INITIAL
+               target = $IS_NONLIN
+            END MODULE cc#1
+            MODULE cc#2
+               field = "temperature"
+               source = $IS_CURRENT
+               target = $IS_INITIAL
+            END MODULE cc#2
+         END MODULE FE_OneStepIteration#DOF_copy
+         
+      END MODULE list_of_FE_OneStepIteration
+   END MODULE FE_OneStepIteration
+END MODULE PEL_Application

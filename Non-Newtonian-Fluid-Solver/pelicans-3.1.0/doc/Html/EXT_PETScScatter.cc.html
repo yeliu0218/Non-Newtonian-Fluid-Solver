@@ -1,0 +1,296 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>EXT_PETScScatter.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="EXT_PETScScatter.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="LApack-tree.html"><span>Tree</span></a>
+    <a href="EXT_PETScScatter.html"><span>Class</span></a>
+    <a href="EXT_PETScScatter.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="LApack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">EXT_PETScScatter</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_assertions</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_DistributedPartition</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_SeqVector</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">EXT_PETScImplementation</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">EXT_PETScVector</font><font class="text">.hh&gt;
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">EXT_PETScScatter</font><font class="text">*
+</font><font class="kw3">EXT_PETScScatter</font><font class="text">:: create( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                           </font><font class="kw3">EXT_PETScVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* global_vector,
+                           </font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_repatriated_items_table,
+                           </font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_local_indices_table ) 
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;EXT_PETScScatter:: create&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">(
+      </font><font class="kw3">FORALL</font><font class="text">(
+         ( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;a_repatriated_items_table.size() ; ++i ),
+         a_repatriated_items_table(i)&lt;global_vector-&gt;nb_rows() ) ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">(
+      a_repatriated_items_table.size()==a_local_indices_table.size() ) ;
+   
+   </font><font class="kw3">EXT_PETScScatter</font><font class="text">* result = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">EXT_PETScScatter</font><font class="text">( a_owner,
+                                                    global_vector,
+                                                    a_repatriated_items_table,
+                                                    a_local_indices_table ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;owner() == a_owner ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">(
+      </font><font class="kw3">IMPLIES</font><font class="text">( global_vector-&gt;is_desynchronizable(),
+               result-&gt;distribution() != 0 ) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">(
+      </font><font class="kw3">IMPLIES</font><font class="text">( result-&gt;distribution() != 0,
+               result-&gt;distribution()-&gt;is_compatible(
+                               global_vector-&gt;row_distribution() ) ) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;size() == a_repatriated_items_table.size() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;repatriated_items() ==
+                                            a_repatriated_items_table ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;local_indices() == a_local_indices_table ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">EXT_PETScScatter</font><font class="text">:: </font><font class="kw3">EXT_PETScScatter</font><font class="text">(
+                           </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                           </font><font class="kw3">EXT_PETScVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* global_vector,
+                           </font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_repatriated_items_table,
+                           </font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_local_indices_table )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">LA_Scatter</font><font class="text">( a_owner )
+   , SIZE( a_repatriated_items_table.size() )
+   , DIST( </font><font class="kw3">PEL_DistributedPartition</font><font class="text">::create( </font><font class="kw1">this</font><font class="text"> ) )
+   , NEEDED( a_repatriated_items_table )
+   , LOCAL( a_local_indices_table )
+{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;EXT_PETScScatter:: EXT_PETScScatter&quot;</font><font class="text"> ) ;
+
+   DIST-&gt;</font><font class="kw2">set</font><font class="text">( global_vector-&gt;row_distribution() ) ;
+   
+   </font><font class="kw2">size_t</font><font class="text"> s = 0 ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;SIZE ; ++i ) </font><font class="kw1">if</font><font class="text">( s&lt;=LOCAL(i) ) s = LOCAL(i) ;
+   
+   </font><font class="kw1">int</font><font class="text">* idx_from = </font><font class="kw1">new</font><font class="text"> </font><font class="kw1">int</font><font class="text"> [ SIZE ] ;
+   </font><font class="kw1">int</font><font class="text">* idx_to = </font><font class="kw1">new</font><font class="text"> </font><font class="kw1">int</font><font class="text"> [ SIZE ] ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;SIZE ; ++i )
+   {
+      idx_from[i] = NEEDED(i) ;
+      idx_to[i] = LOCAL(i) ;
+   }
+   IS from, to ;
+   PETSc_do( ISCreateGeneral( PETSC_COMM_SELF, SIZE, idx_from, &amp;from ) ) ;
+   PETSc_do( ISCreateGeneral( PETSC_COMM_SELF, SIZE, idx_to, &amp;to ) ) ;
+   
+   PETSc_do( VecCreateSeq( PETSC_COMM_SELF, s+1, &amp;SEQ ) ) ;
+   PETSc_do( VecScatterCreate(
+                global_vector-&gt;vector(), from, SEQ, to, &amp;SCATTER ) ) ;
+   
+   </font><font class="kw1">delete</font><font class="text"> [] idx_from ;
+   </font><font class="kw1">delete</font><font class="text"> [] idx_to ;
+   PETSc_do( ISDestroy( from ) ) ;
+   PETSc_do( ISDestroy( to ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">EXT_PETScScatter</font><font class="text">:: ~</font><font class="kw3">EXT_PETScScatter</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   PETSc_do( VecScatterDestroy( SCATTER ) ) ;
+   PETSc_do( VecDestroy( SEQ ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_Implementation</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">EXT_PETScScatter</font><font class="text">:: implementation( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;EXT_PETScScatter:: implementation&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw3">LA_Implementation</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result = </font><font class="kw3">EXT_PETScImplementation</font><font class="text">::object() ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( implementation_POST( result ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw2">size_t
+</font><font class="kw3">EXT_PETScScatter</font><font class="text">:: size( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">return</font><font class="text">( SIZE ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp;
+</font><font class="kw3">EXT_PETScScatter</font><font class="text">:: repatriated_items( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;EXT_PETScScatter:: repatriated_items&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; result = NEEDED ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( repatriated_items_POST( result ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp;
+</font><font class="kw3">EXT_PETScScatter</font><font class="text">:: local_indices( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;EXT_PETScScatter:: local_indices&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; result = LOCAL ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( local_indices_POST( result ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_DistributedPartition</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">EXT_PETScScatter</font><font class="text">:: distribution( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;EXT_PETScScatter:: distribution&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw3">PEL_DistributedPartition</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result = DIST ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( distribution_POST( result ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">EXT_PETScScatter</font><font class="text">:: get( </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* source,
+                        </font><font class="kw3">LA_SeqVector</font><font class="text">* dest ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;EXT_PETScScatter:: get&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( get_PRE( source, dest) ) ;
+
+   </font><font class="kw3">EXT_PETScVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* psource =
+                        </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">EXT_PETScVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;( source ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( </font><font class="kw1">dynamic_cast</font><font class="text">&lt;</font><font class="kw3">EXT_PETScVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;( source ) != 0 ) ;
+
+   PETSc_do( VecScatterBegin( SCATTER, psource-&gt;</font><font class="kw2">vector</font><font class="text">(),
+                              SEQ, INSERT_VALUES, SCATTER_FORWARD ) ) ;
+   PETSc_do( VecScatterEnd( SCATTER, psource-&gt;</font><font class="kw2">vector</font><font class="text">(),
+                            SEQ, INSERT_VALUES, SCATTER_FORWARD ) ) ;
+   PetscScalar *ptr_x ;
+
+   PETSc_do( VecGetArray( SEQ, &amp;ptr_x ) ) ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;SIZE ; i++ )
+   {
+      dest-&gt;set_item( LOCAL(i), ptr_x[LOCAL(i)] ) ;
+   }
+   PETSc_do( VecRestoreArray(SEQ,&amp;ptr_x) ) ;
+   dest-&gt;synchronize() ;
+   
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( get_POST( source, dest) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">EXT_PETScScatter</font><font class="text">:: </font><font class="kw2">set</font><font class="text">( </font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* source,
+                        </font><font class="kw3">LA_Vector</font><font class="text">* dest ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;EXT_PETScScatter:: set&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( set_PRE( source, dest) ) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( </font><font class="kw1">dynamic_cast</font><font class="text">&lt;</font><font class="kw3">EXT_PETScVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;( dest ) != 0 ) ;
+   </font><font class="kw3">EXT_PETScVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* pdest = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">EXT_PETScVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;( dest ) ;
+
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;SIZE ; i++ )
+   {
+      VecSetValue( SEQ, LOCAL(i), source-&gt;item(LOCAL(i)), INSERT_VALUES ) ;
+   }
+   PETSc_do( VecScatterBegin( SCATTER, SEQ, pdest-&gt;</font><font class="kw2">vector</font><font class="text">(),
+                              INSERT_VALUES, SCATTER_REVERSE ) ) ;
+   PETSc_do( VecScatterEnd( SCATTER, SEQ, pdest-&gt;</font><font class="kw2">vector</font><font class="text">(),
+                            INSERT_VALUES, SCATTER_REVERSE ) ) ;
+   </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">LA_Vector</font><font class="text">*&gt;(dest)-&gt;synchronize() ;
+   
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( set_POST( source, dest) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">EXT_PETScScatter</font><font class="text">:: implementation_POST(
+                                 </font><font class="kw3">LA_Implementation</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( </font><font class="kw3">LA_Scatter</font><font class="text">::implementation_POST( result ) ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( result == </font><font class="kw3">EXT_PETScImplementation</font><font class="text">::object() ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font>
+</pre>
+</body>
+</html>

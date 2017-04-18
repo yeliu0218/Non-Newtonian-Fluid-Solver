@@ -1,0 +1,254 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>PDE_DomainVisu</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="PDE_DomainVisu_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="PDEpack-tree.html"><span>Tree</span></a>
+    <span class=selected>Class</span>
+    <a href="PDE_DomainVisu.hh.html"><span>Header</span></a>
+    <a href="PDE_DomainVisu.cc.html"><span>Implementation</span></a>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="PDEpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<br />
+<div class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></div>
+<br />
+
+
+<!-- ====== START OF CLASS DATA ======== -->
+<div id=classtitle>
+  <span class=classpath>PDEsolver / </span><br />
+  <span class=classname>Class  PDE_DomainVisu</span>
+</div>
+
+<br />
+
+<div id=hierarchy>
+<ul class=rootclass><li><a href="PEL_Object.html#" target="classFrame">PEL_Object</a></li>
+  <ul class=parentclass><li><a href="PEL_Application.html#" target="classFrame">PEL_Application</a></li>
+  <ul class=self><li>PDE_DomainVisu</li>
+</ul></ul>
+</div>
+<hr />
+<pre>
+Application that creates an instance of <span class="uid1">PDE_DomainAndFields</span>
+and saves, for subsequent post-processing:
+   1. the meshing and the fields, as requested in the MODULE PDE_ResultSaver
+      of the associated <span class="uid1">PDE_DomainAndFields</span> instance creational process ;
+   2. a GMV file called "cells.gmv" that makes possible the visualization
+      of the colors of the cells.
+   3. a GMV file called "faces.gmv" that makes possible the visualization
+      of the colors of the sides and of the bounds.
+   4. a GMV file called "bounds.gmv" that makes possible the visualization
+      of the colors of the bounds.
+
+Example
+
+   Consider the following data deck (only the relevant parts are shown):
+
+   MODULE PEL_Application
+      concrete_name = "PDE_DomainVisu"
+      MODULE PDE_DomainAndFields
+         ...
+         MODULE GE_Meshing
+            concrete_name = "GE_MefistoMeshing"
+            mesh_polyhedron = < "GE_Triangle" "GE_Tetrahedron" >
+            filename = "xyznpef.COQUE"
+         END MODULE GE_Meshing
+         MODULE interior_fields
+            ...
+         END MODULE interior_fields
+         MODULE PDE_ResultSaver      
+            writers = < "PEL_TICwriter" >
+            files_basename = "save"
+            ...
+         END MODULE PDE_ResultSaver
+      END MODULE PDE_DomainAndFields
+   END MODULE PEL_Application
+      
+   Three files will be created:
+      * "save.gene" for visualization of the fields initialization
+      * "cells.gmv" for visualization of the colors of the cells
+      * "faces.gmv" for visualization of the colors 
+                    of the sides and of the bounds
+      * "bound.gmv" for visualization of the colors of the bounds
+                              
+   In "faces.gmv", a surface (GMV notion) is created that contains 
+   all the faces (either sides or bounds). Moreover, for each face color, a 
+   surface field (GMV notion) is created, whose value is the identifier
+   of that color (given by GE_Color::identifier) on the faces of that 
+   color and -1 on all other faces. Finally, a surface field called
+   all?colors (where ? is the number of face colors) is created, whose
+   value is, on each face, the identifier of the color of that face.
+   
+   Typical steps to visualize faces of a given color, say "ma_jolie_couleur:
+      1. Execute PDE_DomainVisu to produce the file "faces.gmv".
+      2. Open the file "faces.gmv" with GMV.
+      3. In the Display menu, choose Surfaces .
+      4. In the Surfaces menu, choose Faces and Color by the Surf Field
+         called ma_jolie_couleur. The faces whose color is "ma_jolie_couleur"
+         will be displayed with the field value equal to the identifier of
+         "ma_jolie_couleur", and the other faces with the field value -1.
+         
+   The file "bounds.gmv" is similar to "faces.gmv" except that it contains
+   only informations relatives to the bounds (and is thus much smaller).
+
+   In "cells.gmv",  for each cell color, a cell field (GMV notion) is created,
+   whose value is the identifier of that color (given by GE_Color::identifier)
+   on the cells of that color and -1 on all other cells. Finally, a cell field
+   called all?colors (where ? is the number of cell colors) is created, whose
+   value is, on each cell, the identifier of the color of that cell.
+   
+   Typical steps to visualize cells of a given color, say "ma_jolie_couleur:
+      1. Execute PDE_DomainVisu to produce the file "cells.gmv".
+      2. Open the file "cells.gmv" with GMV.
+      3. In the Display menu, choose Cells .
+      4. In the Cells menu, choose Color By: , then Cell Field
+         and select ma_jolie_couleur. The cells whose color is 
+         "ma_jolie_couleur" will be displayed with the field value equal to 
+         the identifier of "ma_jolie_couleur", and the other cells with the 
+         field value -1.
+
+PUBLISHED
+</pre>
+<hr />
+<a name="method_summary"></a>
+
+<!-- ========== NEW CATEGORY ========== -->
+<table class=category cellpadding=2 cellspacing=0 rules=rows>
+  <tr class=heading><th class=name>Instance delivery and initialization</th><th class=protection>public</th></tr>
+  <tr><td colspan="2"><a href="PDE_DomainVisu.html#create" target="classFrame">static PDE_DomainVisu* create( PEL_Object* a_owner, PEL_ModuleExplorer const* exp )</a></td></tr>
+</table>
+
+<!-- ========== NEW CATEGORY ========== -->
+<table class=category cellpadding=2 cellspacing=0 rules=rows>
+  <tr class=heading><th class=name>Program core execution</th><th class=protection>public</th></tr>
+  <tr><td colspan="2"><a href="PDE_DomainVisu.html#run" target="classFrame">virtual void run( void )</a></td></tr>
+</table>
+
+<!-- ========== NEW CATEGORY ========== -->
+<table class=category cellpadding=2 cellspacing=0 rules=rows>
+  <tr class=heading><th class=name>Persistence</th><th class=protection>public</th></tr>
+  <tr><td colspan="2"><a href="PDE_DomainVisu.html#register_storable_objects" target="classFrame">void register_storable_objects( void )</a></td></tr>
+  <tr><td colspan="2"><a href="PDE_DomainVisu.html#write_storable_objects" target="classFrame">void write_storable_objects( void ) const</a></td></tr>
+  <tr><td colspan="2"><a href="PDE_DomainVisu.html#restore_registered_objects" target="classFrame">void restore_registered_objects( PEL_ObjectReader* ret ) const</a></td></tr>
+</table>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="create"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>static <a href="PDE_DomainVisu.html#" target="classFrame">PDE_DomainVisu</a>* create(</code></td><td><code><a href="PEL_Object.html#PEL_Object" target="classFrame">PEL_Object*</a> <span class="uid1">a_owner</span>,</tr>
+  <tr><td /><td><code> <a href="PEL_ModuleExplorer.html#" target="classFrame">PEL_ModuleExplorer</a> const* <span class="uid1">exp</span> ) </code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">exp</span></span> != 0</code></li>
+  </ul>
+<br />
+  <span class=postcondition>Postcondition</span>
+  <ul>
+    <li><code>result != 0</code></li>
+    <li><code>result-><a href="PEL_Object.html#owner" target="classFrame">owner</a>() == <span class="uid1"><span class="uid1">a_owner</span></span></code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="run"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual void run(</code></td><td><code>void ) </code></td></tr>
+</table>
+<pre>Perform the specific tasks of the application (Called by main()).
+</pre>
+<br />
+<table class=footer>
+<tr>
+  <td class=overrides> Overridden from <a href="PEL_Application.html#" target="classFrame">PEL_Application</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="register_storable_objects"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>void register_storable_objects(</code></td><td><code>void ) </code></td></tr>
+</table>
+<br />
+<br />
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="PEL_Application.html#" target="classFrame">PEL_Application</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="write_storable_objects"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>void write_storable_objects(</code></td><td><code>void ) const</code></td></tr>
+</table>
+<br />
+<br />
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="PEL_Application.html#" target="classFrame">PEL_Application</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="restore_registered_objects"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>void restore_registered_objects(</code></td><td><code><a href="PEL_ObjectReader.html#" target="classFrame">PEL_ObjectReader</a>* <span class="uid1">ret</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="PEL_Application.html#" target="classFrame">PEL_Application</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+</body>
+</html>

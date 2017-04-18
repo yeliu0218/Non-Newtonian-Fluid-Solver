@@ -1,0 +1,176 @@
+MODULE PEL_ObjectTest#S
+   
+   //
+   // TESTS ON CG
+   //
+   MODULE CG_Jacobi_Distributed
+      tested_matrix = < "bcsstk14.mtx"
+      "diag5x5.mtx" >
+      error_bound = 1.E-6
+      MODULE LA_Solver
+         concrete_name = "LA_PreconditionedSolver"
+         MODULE LA_IterativeSolver
+            concrete_name = "LA_CG_IS"
+            nb_iterations_max = 2000
+            MODULE LA_ConvergenceTest
+               concrete_name = "LA_DefaultConvergenceTest"
+               relative_tolerance = 1.0e-7
+               absolute_tolerance = 1.0e-50
+            END MODULE LA_ConvergenceTest
+            verbose = true
+         END MODULE LA_IterativeSolver
+         MODULE LA_Preconditioner
+            concrete_name = "LA_Jacobi_PC"
+            smallest_inverted_item = 1.0e-20
+         END MODULE LA_Preconditioner
+      END MODULE LA_Solver
+      is_iterative = true
+      MODULE LA_Matrix
+         concrete_name = "LA_DistMatrix"
+      END MODULE LA_Matrix
+   END MODULE CG_Jacobi_Distributed
+   
+   MODULE CG_BlockJacobi_Distributed
+      tested_matrix = < "bcsstk03.mtx"
+      "diag5x5.mtx" >
+      error_bound = 1.E-6
+      MODULE LA_Solver
+         concrete_name = "LA_PreconditionedSolver"
+         MODULE LA_IterativeSolver
+            concrete_name = "LA_CG_IS"
+            nb_iterations_max = 2000
+            MODULE LA_ConvergenceTest
+               concrete_name = "LA_DefaultConvergenceTest"
+               relative_tolerance = 1.0e-7
+               absolute_tolerance = 1.0e-50
+            END MODULE LA_ConvergenceTest
+            verbose = true
+         END MODULE LA_IterativeSolver
+         MODULE LA_Preconditioner
+            concrete_name = "LA_BlockJacobi_DPC"
+            MODULE LA_Solver
+               concrete_name = "LA_GaussLU_DS"
+               pivot_minimal_value = 1.E-30
+            END MODULE LA_Solver
+         END MODULE LA_Preconditioner
+      END MODULE LA_Solver
+      is_iterative = true
+      MODULE LA_Matrix
+         concrete_name = "LA_DistMatrix"
+      END MODULE LA_Matrix
+   END MODULE CG_BlockJacobi_Distributed
+   
+   //
+   // TESTS ON GMRES
+   //
+   MODULE GMRES_Identity_Distributed
+      tested_matrix = < "gmres_M1.4.mtx"
+      "gmres_M4.1.mtx"
+      "gmres_M1.mtx"
+      "diag5x5.mtx" >
+      error_bound = 1.E-6
+      MODULE LA_Solver
+         concrete_name = "LA_PreconditionedSolver"
+         MODULE LA_IterativeSolver
+            concrete_name = "LA_GMRES_IS"
+            restart = 50
+            nb_iterations_max = 200
+            MODULE LA_ConvergenceTest
+               concrete_name = "LA_DefaultConvergenceTest"
+               absolute_tolerance = 1.0e-10
+               relative_tolerance = 1.e-7
+            END MODULE LA_ConvergenceTest
+            verbose = false
+         END MODULE LA_IterativeSolver
+         MODULE LA_Preconditioner
+            concrete_name = "LA_Identity_PC"
+         END MODULE LA_Preconditioner
+      END MODULE LA_Solver
+      is_iterative = true
+      MODULE LA_Matrix
+         concrete_name = "LA_DistMatrix"
+      END MODULE LA_Matrix
+   END MODULE GMRES_Identity_Distributed
+   
+   MODULE GMRES_Jacobi_Distributed
+      tested_matrix = < "gmres_M1.4.mtx"
+      "gmres_M4.1.mtx"
+      "gmres_M1.mtx"
+      "diag5x5.mtx" >
+      error_bound = 1.E-6
+      MODULE LA_Solver
+         concrete_name = "LA_PreconditionedSolver"
+         MODULE LA_IterativeSolver
+            concrete_name = "LA_GMRES_IS"
+            restart = 50
+            nb_iterations_max = 200
+            MODULE LA_ConvergenceTest
+               concrete_name = "LA_DefaultConvergenceTest"
+               absolute_tolerance = 1.0e-10
+               relative_tolerance = 1.e-7
+            END MODULE LA_ConvergenceTest
+            verbose = false
+         END MODULE LA_IterativeSolver
+         MODULE LA_Preconditioner
+            concrete_name = "LA_Jacobi_PC"
+            smallest_inverted_item = 1.0e-40
+         END MODULE LA_Preconditioner
+      END MODULE LA_Solver
+      is_iterative = true
+      MODULE LA_Matrix
+         concrete_name = "LA_DistMatrix"
+      END MODULE LA_Matrix
+   END MODULE GMRES_Jacobi_Distributed
+   
+   MODULE GMRES_BlockJacobi_Distributed
+      tested_matrix = <
+                         "gmres_M1.mtx"
+                         "gmres_M4.1.mtx"
+                         "diag5x5.mtx"
+                         "gmres_M1.4.mtx"
+                       >
+      error_bound = 1.E-6
+      MODULE LA_Solver
+         concrete_name = "LA_PreconditionedSolver"
+         MODULE LA_IterativeSolver
+            concrete_name = "LA_GMRES_IS"
+            restart = 50
+            nb_iterations_max = 200
+            MODULE LA_ConvergenceTest
+               concrete_name = "LA_DefaultConvergenceTest"
+               absolute_tolerance = 1.0e-10
+               relative_tolerance = 1.0e-8
+            END MODULE LA_ConvergenceTest
+            verbose = true
+            name = "."
+         END MODULE LA_IterativeSolver
+         MODULE LA_Preconditioner
+            concrete_name = "LA_BlockJacobi_DPC"
+            MODULE LA_Solver
+               concrete_name = "LA_PreconditionedSolver"
+               MODULE LA_IterativeSolver
+                  concrete_name = "LA_GMRES_IS"
+                  restart = 50
+                  nb_iterations_max = 200
+                  MODULE LA_ConvergenceTest
+                     concrete_name = "LA_DefaultConvergenceTest"
+                     absolute_tolerance = 1.0e-12
+                     relative_tolerance = 1.0e-10
+                  END MODULE LA_ConvergenceTest
+                  verbose = false
+                  name = "***"
+               END MODULE LA_IterativeSolver
+               MODULE LA_Preconditioner
+                  concrete_name = "LA_Jacobi_PC"
+                  smallest_inverted_item = 1.0e-100
+               END MODULE LA_Preconditioner
+            END MODULE LA_Solver
+         END MODULE LA_Preconditioner
+      END MODULE LA_Solver
+      is_iterative = true
+      MODULE LA_Matrix
+         concrete_name = "LA_DistMatrix"
+      END MODULE LA_Matrix
+   END MODULE GMRES_BlockJacobi_Distributed
+
+END MODULE PEL_ObjectTest#S

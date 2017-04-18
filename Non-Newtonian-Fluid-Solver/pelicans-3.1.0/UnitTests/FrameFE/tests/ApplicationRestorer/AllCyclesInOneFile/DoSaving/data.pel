@@ -1,0 +1,129 @@
+MODULE PEL_Application
+   
+   concrete_name = "FE_StepByStepProgression"
+
+   $IS_CURRENT = 0
+   $IS_EXPLICIT = 1
+   
+   $BS_DummyForRestartTest = false
+   $BS_DummyForRestartTest1 = true
+   $BS_DummyForRestartTest2 = $BS_DummyForRestartTest ||
+                              $BS_DummyForRestartTest1
+
+   $DS_dt = 0.004
+   MODULE FE_TimeIterator
+      time_initial = 0.
+      time_end = 0.04
+      time_step = value( "DS_dt", 0.0 )
+   END MODULE FE_TimeIterator
+   
+   graphics_output_times = regular_vector( 0.002, 4, 0.04 )
+   
+   state_saving_times = regular_vector( 0.0, 4, 0.04 )
+   
+   MODULE PEL_ObjectWriter
+      type = "all_cycles_in_one_file"
+      file_name = join( getcwd() , "saving.pel" )
+      output_format = "hybrid"
+   END MODULE PEL_ObjectWriter
+
+   $IS_N = 2
+   
+   MODULE PDE_DomainAndFields
+      
+      verbose_level = 1
+      nb_space_dimensions = 2
+      type = "finite_element"
+      
+      MODULE GE_Meshing
+         concrete_name = "GE_BoxWithBoxes"
+         vertices_coordinate_1 = regular_vector( 0.0, 2, 0.012 )
+                              << regular_vector( 0.012, $IS_N, 0.015 )
+         vertices_coordinate_0 = regular_vector( 0.0, 3, 0.300 )
+         mesh_polyhedron = < "GE_Segment" "GE_Rectangle" >
+      END MODULE GE_Meshing
+      
+      MODULE interior_fields
+         
+         MODULE velocity
+            name = "velocity"
+            nb_components = 2
+            element_name = "PDE_2D_Q1_4nodes"
+            storage_depth = 2
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = < 0.0 0.0 >
+            END MODULE DOFs_values
+            MODULE DOFs_imposed_value
+               MODULE left_component0
+                  location = "on_bounds"
+                  color = "left"
+                  type = "uniformly_defined"
+                  component = 0
+                  value = < 0.0 >
+               END MODULE left_component0
+               MODULE bottom_component1
+                  location = "on_bounds"
+                  color = "bottom"
+                  type = "uniformly_defined"
+                  component = 1
+                  value = < 0.0 >
+               END MODULE bottom_component1
+            END MODULE DOFs_imposed_value
+         END MODULE velocity
+         
+         MODULE pressure
+            name = "pressure"
+            nb_components = 1
+            element_name = "PDE_2D_Q0_1node"
+            storage_depth = 1
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = < 0.0 >
+            END MODULE DOFs_values
+         END MODULE pressure
+         
+      END MODULE interior_fields
+      MODULE PDE_ResultSaver
+         
+         writers = < "PEL_TICwriter" >
+         
+         writing_mode = "text"
+         files_basename = "save"
+         
+         MODULE velocity
+            where_to_save = "at_vertices"
+            entry_name = "V"
+            field = "velocity"
+         END MODULE velocity
+         
+         MODULE pressure
+            where_to_save = "at_cell_centers"
+            entry_name = "P"
+            field = "pressure"
+         END MODULE pressure
+         
+      END MODULE PDE_ResultSaver
+      
+   END MODULE PDE_DomainAndFields
+      
+   MODULE FE_SetOfParameters
+   END MODULE FE_SetOfParameters
+   
+   MODULE FE_OneStepIteration
+      
+      concrete_name = "FE_SplitSystem"
+      
+      MODULE list_of_FE_OneStepIteration
+         
+         MODULE FE_OneStepIteration#1
+            concrete_name = "FE_HelperRestartTest"
+            field_name  = "velocity"
+            field_level = 0 
+         END MODULE FE_OneStepIteration#1
+         
+      END MODULE list_of_FE_OneStepIteration
+         
+   END MODULE FE_OneStepIteration
+      
+END MODULE PEL_Application

@@ -1,0 +1,47 @@
+BATCH
+
+FRAME WHITE 24. 24.
+
+ANAL
+   i  = 0
+   xa = SR1
+   xb = SR1
+   xc = SR1
+END-ANAL
+
+LOOP
+
+   FILE ('save_'//CHAR(i)//'.gene') FORM END
+
+   CYCLE 2
+   PHYS XNBC TABL XNBC
+   PHYS XLDU TABL XLDU
+   PHYS XLDI TABL XLDI
+
+   ANAL XNBC XLDU XLDI
+      xxa = XNBC:1
+      xxb = XLDU:1
+      xxc = XLDI:1
+      xa(0) <- xxa
+      xb(0) <- xxb
+      xc(0) <- xxc
+   END-ANAL xa xb xc
+
+   ( i = i+1 )
+   IF( i > 4 ) EXIT
+
+ENDLOOP
+
+LIST TABL xa 0
+LIST TABL xb 0
+LIST TABL xc 0
+
+MARK '*' 0. 
+CURV xa xb 'L2-error'
+MARK 'x' 0. 
+CURV xa xc 'L2-int-error'
+
+VMIN 1. VMAX 5. CUTT 4 SCUTT 0 LABEL "number of V-cycles" AXIS X1
+VMIN 1.E-2 VMAX 6.E-2 CUTT 1 SCUTT 4 LABEL "norm of error"  AXIS Y1
+
+DRAW CURV

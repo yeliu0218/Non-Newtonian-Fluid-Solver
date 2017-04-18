@@ -1,0 +1,152 @@
+MODULE Base
+   MODULE PEL_Application
+      MODULE concrete_name
+         _name = "concrete_name"
+         _type = "String"
+         _access = "mandatory"
+         _in = < "SYL_Application" >
+      END MODULE concrete_name
+      MODULE test_var
+         _name = "test_var"
+         _type = "Bool"
+         _access = "mandatory"
+      END MODULE test_var
+      $SS_AbsTest = "#(/test_var)"
+      $SS_AbsTest2 = "#(/DUMMY/test_var,'titi')='titi'"
+      MODULE SYL_Application
+         MODULE DUMMY
+            MODULE test_var
+               _name = "test_var"
+               _type = "String"
+               _access = "optional"
+               _in = < "titi" "toto" >
+            END MODULE test_var
+            
+            MODULE LIST_OF_ITEMS
+               MODULE ITEM
+                  MODULE name
+                     _name = "name"
+                     _type = "String"
+                     _access = "mandatory"
+                  END MODULE name
+                  MODULE type
+                     _name = "type"
+                     _type = "String"
+                     _access = "mandatory"
+                     _in = < "A" "B" >
+                  END MODULE type
+                  MODULE cond_sub_typeA1
+                     MODULE sub_type
+                        _name = "sub_type"
+                        _type = "Int"
+                        _access = "mandatory"
+                        _in = < "1" "3" >
+                     END MODULE sub_type
+                     _type = "C"
+                     _if = "#(type)='A'"
+                  END MODULE cond_sub_typeA1
+                  MODULE cond_sub_sub_typeA1
+                     MODULE sub_type
+                        _name = "sub_sub_type"
+                        _type = "Int"
+                        _access = "mandatory"
+                        _in = < "1" >
+                     END MODULE sub_type
+                     _type = "C"
+                     _if = "#(sub_type)=1"
+                  END MODULE cond_sub_sub_typeA1
+                  MODULE cond_sub_sub_typeA3
+                     MODULE sub_sub_type
+                        _name = "sub_sub_type"
+                        _type = "Int"
+                        _access = "mandatory"
+                        _in = < "3" >
+                     END MODULE sub_sub_type
+                     _type = "C"
+                     _if = "#(sub_type)=3"
+                  END MODULE cond_sub_sub_typeA3
+                  MODULE cond_sub_typeA2
+                     MODULE sub_type
+                        _name = "sub_type"
+                        _type = "Int"
+                        _access = "mandatory"
+                        _in = < "2" "4" >
+                     END MODULE sub_type
+                     _type = "C"
+                     _if = "#(type)='B'"
+                  END MODULE cond_sub_typeA2
+                  MODULE A1
+                     MODULE A1
+                        _type = "S"
+                        _access = "mandatory"
+                        _name = "A1"
+                        MODULE COND_ON_REL_PATH
+                           MODULE COND_REL
+                              _name = "COND_REL"
+                              _type = "S"
+                              _access = "mandatory"
+                           END MODULE COND_REL
+                           _type = "C"
+                           _if = "#(../../../../test_var)"
+                        END MODULE COND_ON_REL_PATH
+                        MODULE COND_ON_REL_PATH2
+                           MODULE COND_REL2
+                              _name = "COND_REL2"
+                              _type = "S"
+                              _access = "mandatory"
+                           END MODULE COND_REL2
+                           _type = "C"
+                           _if = "#(../../../test_var,'titi')='titi'"
+                        END MODULE COND_ON_REL_PATH2
+                     END MODULE A1
+                     _type = "C"
+                     _if = "#(type)='A' && #(sub_type)=1"
+                  END MODULE A1
+                  MODULE B2
+                     MODULE B2
+                        _type = "S"
+                        _access = "mandatory"
+                        _name = "B2"
+                        MODULE COND_ON_ABS_PATH
+                           MODULE COND_ABS
+                              _name = "COND_ABS"
+                              _type = "S"
+                              _access = "mandatory"
+                           END MODULE COND_ABS
+                           _type = "C"
+                           _if = $SS_AbsTest
+                        END MODULE COND_ON_ABS_PATH
+                        MODULE COND_ON_ABS_PATH2
+                           MODULE COND_ABS2
+                              _name = "COND_ABS2"
+                              _type = "S"
+                              _access = "mandatory"
+                           END MODULE COND_ABS2
+                           _type = "C"
+                           _if = $SS_AbsTest2
+                        END MODULE COND_ON_ABS_PATH2
+                     END MODULE B2
+                     _type = "C"
+                     _if = "#(type)='B' && #(sub_type)=2"
+                  END MODULE B2
+                  _type = "S"
+                  _access = "generic"
+                  _name = "ITEM"
+               END MODULE ITEM
+               _type = "S"
+               _access = "mandatory"
+               _name = "LIST_OF_ITEMS"
+            END MODULE LIST_OF_ITEMS
+            _type = "S"
+            _access = "mandatory"
+            _name = "DUMMY"
+         END MODULE DUMMY
+         _type = "C"
+         _if = "#(/concrete_name)='SYL_Application'"
+      END MODULE SYL_Application
+      _type = "S"
+      _access = "mandatory"
+      _name = "PEL_Application"
+   END MODULE PEL_Application
+   revision = "2.0"
+END MODULE Base

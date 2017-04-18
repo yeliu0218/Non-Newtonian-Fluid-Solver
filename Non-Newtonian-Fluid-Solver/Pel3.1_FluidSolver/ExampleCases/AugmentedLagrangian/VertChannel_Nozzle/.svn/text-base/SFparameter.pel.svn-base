@@ -1,0 +1,197 @@
+// -----------------------------------------------   
+   // FE_Parameters
+// -----------------------------------------------   
+MODULE FE_SetOfParameters
+   // Advection-Diffusion Eq (PhaseField)
+   sourcePhase = < 0. >
+   diffusivityPhase = < 0. >
+   
+   // we need density = densityPhase
+   density = < 1. > 
+   
+   // Navier-Stokes
+   alpha = < 1.0 >
+   
+   //Reynolds = vector($DS_Re)
+   MODULE FE_Parameter#Reynolds
+      concrete_name = "FE_ConvexParameter"
+      name = "Reynolds"
+      MODULE list_of_parameters
+         MODULE param#c_1
+            type = "to_be_defined"
+            MODULE FE_Parameter
+               concrete_name = "FE_UniformParameter"
+               name = "c_1"
+               value = vector( $DS_phi1 )
+            END MODULE FE_Parameter
+         END MODULE param#c_1
+         MODULE param#c_2
+            type = "to_be_defined"
+            MODULE FE_Parameter
+               concrete_name = "FE_UniformParameter"
+               name = "c_2"
+               value = vector( $DS_phi2 )
+            END MODULE FE_Parameter
+         END MODULE param#c_2
+         MODULE param#c_s
+            type = "to_be_defined"
+            MODULE FE_Parameter
+               concrete_name = "FE_UniformParameter"
+               name = "c_s"
+               value = vector( $DS_Re )
+            END MODULE FE_Parameter
+         END MODULE param#c_s
+         MODULE param#lambda
+            type = "to_be_defined"
+            MODULE FE_Parameter
+               concrete_name = "FE_FieldParameter"
+               name = "lambda"
+               field_level = 0
+               field_name = "CC"
+            END MODULE FE_Parameter
+         END MODULE param#lambda
+      END MODULE list_of_parameters
+   END MODULE FE_Parameter#Reynolds
+   
+   MODULE FE_Parameter#Stokes
+      concrete_name = "FE_ConvexParameter"
+      name = "Stokes"
+      MODULE list_of_parameters
+         MODULE param#c_1
+            type = "to_be_defined"
+            MODULE FE_Parameter
+               concrete_name = "FE_UniformParameter"
+               name = "c_1"
+               value = vector( $DS_phi1 ) //I changed 1 to $DS_phi1
+            END MODULE FE_Parameter
+         END MODULE param#c_1
+         MODULE param#c_2
+            type = "to_be_defined"
+            MODULE FE_Parameter
+               concrete_name = "FE_UniformParameter"
+               name = "c_2"
+               value = vector( $DS_phi2 )//I changed $DS_phi to  $DS_phi2
+            END MODULE FE_Parameter
+         END MODULE param#c_2
+         MODULE param#c_s
+            type = "to_be_defined"
+            MODULE FE_Parameter
+               concrete_name = "FE_UniformParameter"
+               name = "c_s"
+               value = vector(1./$DS_St)
+            END MODULE FE_Parameter
+         END MODULE param#c_s
+         MODULE param#lambda
+            type = "to_be_defined"
+            MODULE FE_Parameter
+               concrete_name = "FE_FieldParameter"
+               name = "lambda"
+               field_level = 0
+               field_name = "CC"
+            END MODULE FE_Parameter
+         END MODULE param#lambda
+      END MODULE list_of_parameters
+   END MODULE FE_Parameter#Stokes
+   
+   // vertical pipe
+   MODULE FE_Parameter#Gravity
+      concrete_name = "FE_GravityParameter"
+      name = "ExtForce"
+      gravity = vector( 0.0 ,  -1.0 )
+      rho_shift = 0.
+      rho = "Stokes"
+   END MODULE FE_Parameter#Gravity
+      
+/////////////////////////////////////////////////////////////////////
+   // Bingham number (ML_NSsolver)
+/////////////////////////////////////////////////////////////////////
+   MODULE FE_Parameter#Bn
+      concrete_name = "FE_ConvexParameter"
+      name = "Bn"
+      MODULE list_of_parameters
+         MODULE param#c_1
+            type = "to_be_defined"
+            MODULE FE_Parameter
+               concrete_name = "FE_UniformParameter"
+               name = "c_1"
+               value = vector( $DS_Bn1 )
+            END MODULE FE_Parameter
+         END MODULE param#c_1
+         MODULE param#c_2
+            type = "to_be_defined"
+            MODULE FE_Parameter
+               concrete_name = "FE_UniformParameter"
+               name = "c_2"
+               value = vector( $DS_Bn2 )
+            END MODULE FE_Parameter
+         END MODULE param#c_2
+         MODULE param#c_s
+            type = "to_be_defined"
+            MODULE FE_Parameter
+               concrete_name = "FE_UniformParameter"
+               name = "c_s"
+               value = < 1. >
+            END MODULE FE_Parameter
+         END MODULE param#c_s
+         MODULE param#lambda
+            type = "to_be_defined"
+            MODULE FE_Parameter
+               concrete_name = "FE_FieldParameter"
+               name = "lambda"
+               field_level = 0
+               field_name = "CC"
+            END MODULE FE_Parameter
+         END MODULE param#lambda
+      END MODULE list_of_parameters
+   END MODULE FE_Parameter#Bn
+
+   MODULE FE_Parameter#Consistency
+      concrete_name = "FE_ConvexParameter"
+      name = "consistency"
+      MODULE list_of_parameters
+         MODULE param#c_1
+            type = "to_be_defined"
+            MODULE FE_Parameter
+               concrete_name = "FE_UniformParameter"
+               name = "c_1"
+               value = vector( $DS_kappa1 )
+            END MODULE FE_Parameter
+         END MODULE param#c_1
+         MODULE param#c_2
+            type = "to_be_defined"
+            MODULE FE_Parameter
+               concrete_name = "FE_UniformParameter"
+               name = "c_2"
+               value = vector( $DS_kappa2 )
+            END MODULE FE_Parameter
+         END MODULE param#c_2
+         MODULE param#c_s
+            type = "to_be_defined"
+            MODULE FE_Parameter
+               concrete_name = "FE_UniformParameter"
+               name = "c_s"
+               value = < 1. >
+            END MODULE FE_Parameter
+         END MODULE param#c_s
+         MODULE param#lambda
+            type = "to_be_defined"
+            MODULE FE_Parameter
+               concrete_name = "FE_FieldParameter"
+               name = "lambda"
+               field_level = 0
+               field_name = "CC"
+            END MODULE FE_Parameter
+         END MODULE param#lambda
+      END MODULE list_of_parameters
+   END MODULE FE_Parameter#Consistency
+   
+   MODULE FE_Parameter#secinvgamma
+      concrete_name = "FE_DuDuFieldParameter"
+      name = "secinvgammadot"
+      field_name = "velocity"
+      field_level = 0
+      coef = 0.5
+      power = 0.5
+   END MODULE FE_Parameter#secinvgamma
+
+END MODULE FE_SetOfParameters

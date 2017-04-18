@@ -1,0 +1,318 @@
+%option noyywrap
+%{
+
+ // Docify.fl
+ // Description et identification des symbols terminaux
+ // Ce file est compile par flex
+ 
+#include <stdio.h>
+#include <string>
+#include <DOC_Tools.hh>
+#include <DOC_Text.hh>
+#include <DOC_Docify.hh>
+#include <PEL_Root.hh>
+#ifdef _WIN32
+
+/* Windows doesn't define the isatty() function.
+   This function is implemented in PELbase/grammar */
+
+int isatty (int fd) ;
+#endif
+
+/* Mots clef */
+#define IDENTIFICATEUR(id) { yylval = 0 ; \
+			     DOC_Tools::record( &yytext[0] ) ; \
+			     return( id ) ; }
+
+/* DOC_Text de charactere */
+#define TEXT(id) { yylval = DOC_Text::create( PEL_Root::object(), yytext,\
+					  DOC_Tools::current_line_number() ) ; \
+		     DOC_Tools::record( &yytext[0] ) ; \
+                     return( id ) ; }
+
+static string comment ;
+
+void yyerror( const char * s )  ;
+
+%}
+%x CCMODE
+%x COMMENT
+%x CHECK
+%%
+<CCMODE>^[ ]*"PEL_LABEL"     { 
+		          BEGIN( CHECK ) ;
+			  IDENTIFICATEUR( YYDOC_PEL_LABEL ) ;
+                        } 
+
+<CCMODE>^[ ]*"PEL_CHECK_PRE" { 
+		          BEGIN( CHECK ) ;
+			  IDENTIFICATEUR( YYDOC_PEL_CHECK_PRE ) ;
+                        } 
+
+<CCMODE>^[ ]*"PEL_CHECK_POST" { 
+		           BEGIN( CHECK ) ;
+			   IDENTIFICATEUR( YYDOC_PEL_CHECK_POST ) ;
+                         } 
+
+<CCMODE>^[ ]*"PEL_ASSERT"    { 
+		          BEGIN( CHECK ) ;
+			  IDENTIFICATEUR( YYDOC_PEL_ASSERT ) ;
+                        } 
+
+<INITIAL,CCMODE>"//---------"-*    { /* On saute les comments de presentation */
+			  DOC_Tools::record( &yytext[0] ) ;
+			  if( DOC_Tools::is_implementation_file() )
+			  {
+			    DOC_Tools::toggle_cc_mode() ;
+		            if( DOC_Tools::is_cc_mode() )
+			    {
+			      BEGIN(CCMODE);
+			    }
+			    else
+			    {
+			      BEGIN(0);
+			    }
+			  }
+                        } 
+
+<INITIAL,CCMODE>"#include".*            { /* Inclusion de file */
+			  TEXT( YYDOC_INCLUDE ) ;
+                        } 
+
+<CCMODE>.               { if( !DOC_Tools::is_implementation_file() ) BEGIN(0) ; DOC_Tools::record(&yytext[0]) ; }
+<CCMODE>\n              { DOC_Tools::record(&yytext[0]) ; }
+
+<INITIAL>"PEL_EXPORT"  |
+"inline"           |
+"#undef".*         |
+"#if".*            |
+"#elseif".*        |
+"#else".*          |
+"#ifdef".*         |
+"#ifndef".*        |
+"#define".*        |
+"#endif".*              { /* Ordres du preprocesseur ignores */
+			DOC_Tools::record( &yytext[0] ) ; }
+
+<INITIAL>"extern \"C\""   { /* Mot clef extern */ 
+			  IDENTIFICATEUR( YYDOC_EXTERN ) ;
+			 }
+
+"class"                 { /* Mot clef class */
+			  IDENTIFICATEUR( YYDOC_CLASS ) ;
+                        } 
+
+"static"                { /* Mot clef de niveau de protection */
+			  IDENTIFICATEUR( YYDOC_STATIC ) ;
+                        } 
+
+"virtual"               { /* Mot clef de niveau de protection */
+			  IDENTIFICATEUR( YYDOC_VIRTUAL ) ;
+                        } 
+
+"public"                { /* Mot clef de niveau de protection */
+			  IDENTIFICATEUR( YYDOC_PUBLIC ) ;
+                        } 
+
+"protected"             { /* Mot clef de niveau de protection */
+			  IDENTIFICATEUR( YYDOC_PROTECTED ) ;
+                        } 
+
+"private"               { /* Mot clef de niveau de protection */
+			  IDENTIFICATEUR( YYDOC_PRIVATE ) ;
+                        } 
+
+"mutable"               { /* Mot clef de niveau de protection */
+			  IDENTIFICATEUR( YYDOC_MUTABLE ) ;
+                        } 
+
+"using".*               { /* Mot clef using */
+			  IDENTIFICATEUR( YYDOC_USING ) ;
+                        } 
+
+"enum"                  { /* Mot clef enum */
+			  IDENTIFICATEUR( YYDOC_ENUM ) ;
+                        } 
+
+"new"                  { /* Mot clef new */
+			  IDENTIFICATEUR( YYDOC_NEW ) ;
+                        } 
+
+"struct"                  { /* Mot clef enum */
+			  IDENTIFICATEUR( YYDOC_STRUCT ) ;
+                        } 
+
+"typedef"               { /* Mot clef enum */
+			  IDENTIFICATEUR( YYDOC_TYPEDEF ) ;
+                        } 
+
+"long int" | 
+"unsigned" | 
+"int" | 
+"char" | 
+"size_t" | 
+"double"                { /* DOC_Types de base du C */
+			  TEXT( YYDOC_TYPE_BASE ) ;
+                        } 
+
+<CHECK,INITIAL>"operator"[\[\]\*\+=\-/<>!]+  |
+<CHECK,INITIAL>"operator()"            { /* Operateur */
+			  TEXT( YYDOC_OPERATOR ) ;
+                        }
+
+"void"                  { /* DOC_Type void */
+			  IDENTIFICATEUR( YYDOC_VOID ) ;
+                        } 
+
+<CHECK,INITIAL>"const"                 { /* Modificateur const */
+			  IDENTIFICATEUR( YYDOC_CONST ) ;
+                        } 
+
+<CHECK,INITIAL>"::"     { /* Modificateur const */
+			  IDENTIFICATEUR( YYDOC_POINTPOINT ) ;
+                        } 
+
+"friend"[^;]*;          { /* Friend */
+			  TEXT( YYDOC_FRIEND ) ;
+                        } 
+
+<CHECK>"||"             { /* Operateur ou */
+			  IDENTIFICATEUR( YYDOC_OROR ) ;
+                        } 
+
+<CHECK>"&&"             { /* Operateur et */
+			  IDENTIFICATEUR( YYDOC_ANDAND ) ;
+                        } 
+
+<CHECK>"=="             { /* Operateur et */
+			  IDENTIFICATEUR( YYDOC_EGALEGAL ) ;
+                        } 
+
+<CHECK>"!="             { /* Operateur et */
+			  IDENTIFICATEUR( YYDOC_DIFFEGAL ) ;
+                        } 
+
+<CHECK>"<="             { /* Operateur et */
+			  IDENTIFICATEUR( YYDOC_INFEGAL ) ;
+                        } 
+
+<CHECK>">="             { /* Operateur et */
+			  IDENTIFICATEUR( YYDOC_SUPEGAL ) ;
+                        } 
+
+<CHECK>"->"             { /* Operateur et */
+			  IDENTIFICATEUR( YYDOC_FLECHE ) ;
+                        } 
+
+<CHECK>"FORALL" |
+<CHECK>"EXISTS"         { /* Operateur FORALL et EXISTS */
+			  TEXT( YYDOC_FORALLEXISTS ) ;
+                        } 
+
+"//-- ".*               { /* DOC_Category de method */
+			  TEXT( YYDOC_CATEGORY ) ;
+                        } 
+
+<INITIAL,CHECK>\"([^"]|\\\")*\" |
+<INITIAL,CHECK>\'.\'      { /* DOC_Text de caratere */
+			  TEXT( YYDOC_CHAINE ) ;
+                        } 
+
+<INITIAL,CHECK>"const_cast" | 
+<INITIAL,CHECK>"dynamic_cast" | 
+<INITIAL,CHECK>"static_cast" { /* Identificateur de cast */
+			  TEXT( YYDOC_CAST ) ;
+                        } 
+
+<INITIAL,CHECK>[a-zA-Z][a-zA-Z\._~0-9]*"\["[^\]]*"\]"  |
+<INITIAL,CHECK>[a-zA-Z][a-zA-Z\._~0-9]*  |
+<INITIAL,CHECK>[_~][a-zA-Z\._~0-9]+  { /* Identificateur quelconque */
+			  TEXT( YYDOC_IDENTIF ) ;
+                        } 
+
+<INITIAL,CHECK>[0-9]+              |
+<INITIAL,CHECK>[0-9]+\.[0-9]* |
+<INITIAL,CHECK>[0-9]+\.?[0-9]*[eE][+-]?[0-9]+   { /* Identificateur de chiffre */
+			  TEXT( YYDOC_CHIFFRE ) ;
+                        } 
+
+<INITIAL,CCMODE>\/\/.*  { /* Comment */
+			  TEXT( YYDOC_COMMENT ) ; 
+                        }
+
+<INITIAL,CCMODE>"/*"    { /* Comment on several lines                            
+			     TEXT( YYDOC_COMMENT ) ; */
+			  comment = "/*" ;
+			  BEGIN( COMMENT ) ;
+                        }
+<COMMENT>"*/"       {  comment += "*/" ;
+			   yylval = DOC_Text::create( PEL_Root::object(), comment ) ; 
+			   DOC_Tools::record( &yytext[0] ) ; 
+		           if( DOC_Tools::is_implementation_file() && DOC_Tools::is_cc_mode() )
+			   {
+			     BEGIN(CCMODE);
+			   }
+			   else
+			   {
+			     BEGIN(0);
+			   }
+		           return( YYDOC_COMMENT ) ; 
+			}
+
+<COMMENT>. |
+<COMMENT>\n         {  comment += yytext[0] ; DOC_Tools::record( &yytext[0] ) ; 
+                           }
+
+<INITIAL,CHECK>[<>;{}:&*()=0,~\[\]\-\+|!\.\/\%]        { 
+                          /* Caracteres de ponctuation retournes */
+                          IDENTIFICATEUR( yytext[0] ) ;
+                        }
+
+<INITIAL,CHECK>[ \n\t]  { /* Caracteres ignores */
+                          DOC_Tools::record( &yytext[0] ) ;
+                        }
+
+<INITIAL,CCMODE,COMMENT>. { /* Caracteres non reconnus */
+                          DOC_Tools::record( &yytext[0] ) ;
+			  char message[] =  "Caractere inconnu :  " ;
+			  message[20] = yytext[0] ;
+                          yyerror( message ) ;
+                        }
+
+%%
+
+extern int yyparse( void ) ;
+
+void switch_mode( void )
+{
+   if( DOC_Tools::is_implementation_file() )
+   {
+	BEGIN(CCMODE);
+   }
+   else
+   {
+        BEGIN(0);
+   }
+}
+
+
+
+void switch_to_buffer( FILE * file )
+{ 	
+   YY_BUFFER_STATE old_buffer = YY_CURRENT_BUFFER ;
+   FILE * file_old = yyin ;
+   yyin = file ;
+   yy_switch_to_buffer( yy_create_buffer( yyin, YY_BUF_SIZE ) ) ;
+   switch_mode() ;
+   yyparse() ;
+   yy_delete_buffer( YY_CURRENT_BUFFER ) ;
+   yy_switch_to_buffer( old_buffer ) ;
+   yyin = file_old ;
+}
+
+
+void yyerror( const char * s ) 
+{
+   DOC_Tools::yyerror( s ) ;
+}
+

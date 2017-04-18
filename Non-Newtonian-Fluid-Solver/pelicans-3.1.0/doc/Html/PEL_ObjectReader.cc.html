@@ -1,0 +1,476 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>PEL_ObjectReader.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="PEL_ObjectReader.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="PELpack-tree.html"><span>Tree</span></a>
+    <a href="PEL_ObjectReader.html"><span>Class</span></a>
+    <a href="PEL_ObjectReader.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="PELpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ObjectReader</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Communicator</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Data</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Exec</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Module</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ModuleIterator</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_assertions</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;fstream&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;sstream&gt;
+
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::ifstream ;
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> ;
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> ;
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">stack</font><font class="text"> ;
+
+</font><font class="kw1">struct</font><font class="text"> PEL_ObjectReader_ERROR
+{
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> n0( </font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; fname ) ;
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> n1( </font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; fname ) ;
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> n2( </font><font class="kw2">size_t</font><font class="text"> cycle_number, </font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; name ) ;
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> n3( </font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; name ) ;
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> n4( </font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; class_name, </font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; nn ) ;
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> n5( </font><font class="kw1">void</font><font class="text"> ) ;
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> n6( </font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; class_name ) ;
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> n7( </font><font class="kw2">size_t</font><font class="text"> stored_nb_rank, </font><font class="kw2">size_t</font><font class="text"> nb_ranks ) ;
+} ;
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw3">PEL_ObjectReader</font><font class="text">*
+</font><font class="kw3">PEL_ObjectReader</font><font class="text">:: create( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+			   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_ObjectReader:: create&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw3">PEL_ObjectReader</font><font class="text">* result = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_ObjectReader</font><font class="text">( a_owner, exp ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;owner() == a_owner ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( !result-&gt;positioned_in_a_valid_cycle() ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw3">PEL_ObjectReader</font><font class="text">:: </font><font class="kw3">PEL_ObjectReader</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                     </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_Object</font><font class="text">( a_owner )
+   , ROOT_MOD( 0 )
+   , NB_CYCLES( 0 )
+   , LAST_CYCLE( 0 )
+   , iOBJECT( 0 )
+{
+   </font><font class="kw2">string</font><font class="text"> fname = exp-&gt;string_data( </font><font class="string">&quot;file_name&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_Communicator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* com = </font><font class="kw3">PEL_Exec</font><font class="text">::communicator() ;
+   </font><font class="kw1">if</font><font class="text">( com-&gt;nb_ranks()&gt;1 )
+   {
+      </font><font class="kw2">ostringstream</font><font class="text"> rank ;
+      rank &lt;&lt; </font><font class="string">&quot;.&quot;</font><font class="text"> &lt;&lt; com-&gt;rank() ;
+      fname  += rank.str() ;
+   }
+
+   ifstream file( fname.c_str(), </font><font class="kw2">std</font><font class="text">::ios::in  ) ;
+   </font><font class="kw1">if</font><font class="text">( !file ) PEL_ObjectReader_ERROR::n0( fname ) ;
+   file.close() ;
+
+   ROOT_MOD = </font><font class="kw3">PEL_Module</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, </font><font class="string">&quot;ROOT&quot;</font><font class="text">, fname ) ;
+
+   </font><font class="comment">// Check fname structure :
+</font><font class="text">   </font><font class="kw3">PEL_ModuleIterator</font><font class="text">* it = ROOT_MOD-&gt;create_module_iterator( 0 ) ;
+   </font><font class="kw1">if</font><font class="text">( !it-&gt;is_valid() ) 
+      PEL_ObjectReader_ERROR::n1( fname ) ;
+   </font><font class="kw1">if</font><font class="text">( !( it-&gt;item()-&gt;name()==</font><font class="string">&quot;communicator&quot;</font><font class="text">) ) 
+      PEL_ObjectReader_ERROR::n1( fname ) ;
+   it-&gt;go_next() ;
+   </font><font class="kw1">if</font><font class="text">( !it-&gt;is_valid() ) 
+      PEL_ObjectReader_ERROR::n1( fname ) ;
+   </font><font class="kw1">if</font><font class="text">( !( it-&gt;item()-&gt;name()==</font><font class="string">&quot;header&quot;</font><font class="text">) ) 
+      PEL_ObjectReader_ERROR::n1( fname ) ;
+   </font><font class="kw1">for</font><font class="text">( it-&gt;go_next() ; it-&gt;is_valid() ; it-&gt;go_next() )
+   {
+      </font><font class="kw3">PEL_Module</font><font class="text"> </font><font class="kw1">const</font><font class="text">* mm = it-&gt;item() ;
+      </font><font class="kw1">if</font><font class="text">( !(mm-&gt;name().substr(0,6)==</font><font class="string">&quot;cycle#&quot;</font><font class="text">) )
+         PEL_ObjectReader_ERROR::n1( fname ) ;
+      </font><font class="kw1">if</font><font class="text">( !mm-&gt;has_entry( </font><font class="string">&quot;cycle_number&quot;</font><font class="text"> ) )
+         PEL_ObjectReader_ERROR::n3( mm-&gt;name() ) ;
+      </font><font class="kw1">int</font><font class="text"> i = mm-&gt;data_of_entry( </font><font class="string">&quot;cycle_number&quot;</font><font class="text"> )-&gt;to_int() ;
+      </font><font class="kw1">if</font><font class="text">( i&lt;0 ) PEL_ObjectReader_ERROR::n3( mm-&gt;name() ) ;
+      LAST_CYCLE = (</font><font class="kw2">size_t</font><font class="text">) i ;
+      ++NB_CYCLES ;
+   }
+   it-&gt;destroy() ;
+
+   </font><font class="comment">// Check communicator :
+</font><font class="text">   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* com_exp =
+      </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">::create( 0, ROOT_MOD-&gt;module( </font><font class="string">&quot;communicator&quot;</font><font class="text"> ) ) ;
+   </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> nb_ranks = com_exp-&gt;int_data( </font><font class="string">&quot;nb_ranks&quot;</font><font class="text"> ) ;
+   </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> rank = com_exp-&gt;int_data( </font><font class="string">&quot;rank&quot;</font><font class="text"> ) ;
+   </font><font class="kw1">if</font><font class="text">( nb_ranks!=com-&gt;nb_ranks() )
+   {
+      PEL_ObjectReader_ERROR::n7( nb_ranks, com-&gt;nb_ranks() ) ;
+   }
+   </font><font class="kw1">if</font><font class="text">( rank!=com-&gt;rank() )
+   {
+      PEL_ObjectReader_ERROR::n1( fname ) ;
+   }
+   com_exp-&gt;destroy() ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw3">PEL_ObjectReader</font><font class="text">:: ~</font><font class="kw3">PEL_ObjectReader</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw3">PEL_Module</font><font class="text">*
+</font><font class="kw3">PEL_ObjectReader</font><font class="text">:: header_module( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_ObjectReader:: header_module&quot;</font><font class="text"> ) ;
+
+   </font><font class="comment">// the existence of such a module has been tested in the constructor
+</font><font class="text">   </font><font class="kw3">PEL_Module</font><font class="text">* result = ROOT_MOD-&gt;module( </font><font class="string">&quot;header&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;is_under_ownership_of( </font><font class="kw1">this</font><font class="text"> ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw2">size_t
+</font><font class="kw3">PEL_ObjectReader</font><font class="text">:: nb_cycles( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">size_t</font><font class="text"> result = NB_CYCLES ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_ObjectReader</font><font class="text">:: seek_cycle( </font><font class="kw2">size_t</font><font class="text"> cycle_number )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_ObjectReader:: seek_cycle&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">if</font><font class="text">( cycle_number==0 ) cycle_number=LAST_CYCLE ;
+
+   </font><font class="kw2">ostringstream</font><font class="text"> name ;
+   name &lt;&lt; </font><font class="string">&quot;cycle#&quot;</font><font class="text"> &lt;&lt; cycle_number ;
+   </font><font class="kw1">if</font><font class="text">( !ROOT_MOD-&gt;has_module( name.str() ) ) 
+      PEL_ObjectReader_ERROR::n2( cycle_number, name.str() ) ;
+
+   </font><font class="kw3">PEL_Module</font><font class="text">* mm = ROOT_MOD-&gt;module( name.str() ) ;
+   MODS.push( mm ) ;
+   MOD_ITS.push( mm-&gt;create_module_iterator( </font><font class="kw1">this</font><font class="text"> ) ) ; 
+
+   </font><font class="kw1">if</font><font class="text">( mm-&gt;data_of_entry( </font><font class="string">&quot;cycle_number&quot;</font><font class="text"> )-&gt;to_int()!=(int)cycle_number )
+      PEL_ObjectReader_ERROR::n3( name.str() ) ;
+
+   iOBJECT = 0 ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( current_object_number() == 0 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( positioned_in_a_valid_cycle() ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">PEL_ObjectReader</font><font class="text">:: positioned_in_a_valid_cycle( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_ObjectReader:: positioned_in_a_valid_cycle&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">bool</font><font class="text"> result = !MOD_ITS.empty() ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_ObjectReader</font><font class="text">:: close_cycle( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_ObjectReader:: close_cycle&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( positioned_in_a_valid_cycle() ) ;
+
+   iOBJECT = 0 ;
+
+   </font><font class="kw3">PEL_ModuleIterator</font><font class="text">* it = MOD_ITS.top() ;
+   MOD_ITS.pop() ;
+   destroy_possession( it ) ;
+
+   MODS.pop() ;
+
+   </font><font class="kw1">if</font><font class="text">( !MODS.empty() ) PEL_ObjectReader_ERROR::n5() ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( !positioned_in_a_valid_cycle() ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_ObjectReader</font><font class="text">:: start_object_retrieval( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; class_name )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_ObjectReader:: start_object_retrieval&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( positioned_in_a_valid_cycle() ) ;
+
+   </font><font class="kw1">if</font><font class="text">( !MOD_ITS.top()-&gt;is_valid() ) PEL_ObjectReader_ERROR::n6( class_name ) ;
+
+   </font><font class="kw3">PEL_Module</font><font class="text">* mm = MOD_ITS.top()-&gt;item() ;
+   MODS.push( mm ) ;
+   MOD_ITS.push( mm-&gt;create_module_iterator( </font><font class="kw1">this</font><font class="text"> ) ) ; 
+
+   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp = </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">::create( 0, mm ) ;
+   </font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; nn = exp-&gt;string_data( </font><font class="string">&quot;class&quot;</font><font class="text"> ) ;
+   </font><font class="kw1">if</font><font class="text">( nn != class_name ) PEL_ObjectReader_ERROR::n4( class_name, nn ) ;
+
+   iOBJECT = exp-&gt;int_data( </font><font class="string">&quot;object_number&quot;</font><font class="text"> ) ;
+   </font><font class="kw1">if</font><font class="text">( ! ( iOBJECT &gt; 0 ) ) 
+      </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_bad_data_value( exp, 
+                                                 </font><font class="string">&quot;object_number&quot;</font><font class="text">, 
+                                                 </font><font class="string">&quot;greater or equal to 1&quot;</font><font class="text"> ) ;
+   exp-&gt;destroy() ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( current_object_number() != 0 ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw2">size_t
+</font><font class="kw3">PEL_ObjectReader</font><font class="text">:: current_object_number( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_ObjectReader:: current_object_number&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">return</font><font class="text">( (</font><font class="kw2">size_t</font><font class="text">)iOBJECT ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">PEL_ObjectReader</font><font class="text">:: has_entry( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; keyword ) </font><font class="kw1">const
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_ObjectReader:: has_entry&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( positioned_in_a_valid_cycle() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( current_object_number() != 0 ) ;
+   
+   </font><font class="kw1">return</font><font class="text">( MODS.top()-&gt;has_entry( keyword ) ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw3">PEL_Data</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">PEL_ObjectReader</font><font class="text">:: data_of_entry( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; keyword ) </font><font class="kw1">const
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_ObjectReader:: data_of_entry&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( positioned_in_a_valid_cycle() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( current_object_number() != 0 ) ;
+
+   </font><font class="kw3">PEL_Data</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result = MODS.top()-&gt;data_of_entry( keyword ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;is_under_ownership_of( </font><font class="kw1">this</font><font class="text"> ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_ObjectReader</font><font class="text">:: end_object_retrieval( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_ObjectReader:: end_object_retrieval&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw3">PEL_ModuleIterator</font><font class="text">* it = MOD_ITS.top() ;
+   MOD_ITS.pop() ;
+   destroy_possession( it ) ;
+
+   MODS.pop() ;
+
+   MOD_ITS.top()-&gt;go_next() ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">PEL_ObjectReader</font><font class="text">:: invariant( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">::invariant() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( MODS.size() == MOD_ITS.size() ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="kw1">void</font><font class="text"> 
+PEL_ObjectReader_ERROR:: n0( </font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; fname )
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">ostringstream</font><font class="text"> mesg ;
+   mesg &lt;&lt; </font><font class="string">&quot;PEL_ObjectReader :&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl
+</font><font class="text">        &lt;&lt; </font><font class="string">&quot;   unable to open file \&quot;&quot; &lt;&lt; fname &lt;&lt; &quot;</font><font class="text">\</font><font class="string">&quot;&quot;</font><font class="text"> ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( mesg.str() ) ;
+}
+
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="kw1">void</font><font class="text"> 
+PEL_ObjectReader_ERROR:: n1( </font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; fname )
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="comment">//????? faire un message plus explicite qui expose la structure
+</font><font class="text">   </font><font class="comment">//????? attendue du fichier telle que d&#xE9;crite dans la doc de 
+</font><font class="text">   </font><font class="comment">//????? PEL_ObjectWriter
+</font><font class="text">   </font><font class="kw2">ostringstream</font><font class="text"> mesg ;
+   mesg &lt;&lt; </font><font class="string">&quot;PEL_ObjectReader :&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl
+</font><font class="text">        &lt;&lt; </font><font class="string">&quot;   file \&quot;&quot; &lt;&lt; fname &lt;&lt; &quot;</font><font class="text">\</font><font class="string">&quot; has an invalid structure&quot;</font><font class="text"> ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( mesg.str() ) ;
+}
+
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="kw1">void</font><font class="text"> 
+PEL_ObjectReader_ERROR:: n2( </font><font class="kw2">size_t</font><font class="text"> cycle_number, </font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; name )
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">ostringstream</font><font class="text"> mesg ;
+   mesg &lt;&lt; </font><font class="string">&quot;PEL_ObjectReader :&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl
+</font><font class="text">        &lt;&lt; </font><font class="string">&quot;   object retrieval from cycle &quot;</font><font class="text"> &lt;&lt; cycle_number 
+        &lt;&lt; </font><font class="string">&quot; is impossible &quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> 
+        &lt;&lt; </font><font class="string">&quot;   since the underlying file has no module called \&quot;&quot; 
+        &lt;&lt; name &lt;&lt; &quot;</font><font class="text">\</font><font class="string">&quot;&quot;</font><font class="text"> ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( mesg.str() ) ;
+}
+
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="kw1">void</font><font class="text"> 
+PEL_ObjectReader_ERROR:: n3( </font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; name )
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">ostringstream</font><font class="text"> mesg ;
+   mesg &lt;&lt; </font><font class="string">&quot;PEL_ObjectReader :&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl
+</font><font class="text">        &lt;&lt; </font><font class="string">&quot;   module \&quot;&quot; &lt;&lt; name &lt;&lt; &quot;</font><font class="text">\</font><font class="string">&quot; has a missing or invalid&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl
+</font><font class="text">        &lt;&lt; </font><font class="string">&quot;   entry of keyword \&quot;</font><font class="text">cycle_number\</font><font class="string">&quot;&quot;</font><font class="text"> ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( mesg.str() ) ;
+}
+
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="kw1">void</font><font class="text"> 
+PEL_ObjectReader_ERROR:: n4( </font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; class_name, </font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; nn )
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">ostringstream</font><font class="text"> mesg ;
+   mesg &lt;&lt; </font><font class="string">&quot;PEL_ObjectReader :&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl
+</font><font class="text">        &lt;&lt; </font><font class="string">&quot;   attempt to retrieve an object of&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> 
+        &lt;&lt; </font><font class="string">&quot;   class \&quot;&quot; &lt;&lt; class_name &lt;&lt; &quot;</font><font class="text">\</font><font class="string">&quot; from a module whose &quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl
+</font><font class="text">        &lt;&lt; </font><font class="string">&quot;   entry of keyword \&quot;</font><font class="text">class_name\</font><font class="string">&quot; is \&quot;&quot; &lt;&lt; nn &lt;&lt; &quot;</font><font class="text">\</font><font class="string">&quot;&quot;</font><font class="text"> ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( mesg.str() ) ;
+}
+
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="kw1">void</font><font class="text"> 
+PEL_ObjectReader_ERROR:: n5( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">ostringstream</font><font class="text"> mesg ;
+   mesg &lt;&lt; </font><font class="string">&quot;PEL_ObjectReader :&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl
+</font><font class="text">        &lt;&lt; </font><font class="string">&quot;   impossible to close a cycle when an &quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> 
+        &lt;&lt; </font><font class="string">&quot;   object retrieval is in progress&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl
+</font><font class="text">        &lt;&lt; </font><font class="string">&quot;   (\&quot;</font><font class="text">start_object_retrieval\</font><font class="string">&quot; and \&quot;</font><font class="text">end_object_retrieval\</font><font class="string">&quot;&quot;</font><font class="text"> 
+        &lt;&lt; </font><font class="kw2">endl
+</font><font class="text">        &lt;&lt; </font><font class="string">&quot;    should be called the same number of times between two calls to&quot;
+</font><font class="text">	&lt;&lt; </font><font class="kw2">endl
+</font><font class="text">	&lt;&lt; </font><font class="string">&quot;    \&quot;</font><font class="text">seek_cycle\</font><font class="string">&quot; and \&quot;</font><font class="text">close_cycle\</font><font class="string">&quot;&quot;</font><font class="text"> ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( mesg.str() ) ;
+}
+
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="kw1">void</font><font class="text"> 
+PEL_ObjectReader_ERROR:: n6( </font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; class_name )
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">ostringstream</font><font class="text"> mesg ;
+   mesg &lt;&lt; </font><font class="string">&quot;PEL_ObjectReader :&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl
+</font><font class="text">        &lt;&lt; </font><font class="string">&quot;   attempt to retrieve an object of&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> 
+        &lt;&lt; </font><font class="string">&quot;   class \&quot;&quot; &lt;&lt; class_name &lt;&lt; &quot;</font><font class="text">\</font><font class="string">&quot; from a module who &quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl
+</font><font class="text">        &lt;&lt; </font><font class="string">&quot;   does not contain any more object storage&quot;</font><font class="text">  ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( mesg.str() ) ;
+}
+
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="kw1">void</font><font class="text"> 
+PEL_ObjectReader_ERROR:: n7( </font><font class="kw2">size_t</font><font class="text"> stored_nb_rank, </font><font class="kw2">size_t</font><font class="text"> nb_ranks )
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">ostringstream</font><font class="text"> mesg ;
+   mesg &lt;&lt; </font><font class="string">&quot;PEL_ObjectReader :&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl
+</font><font class="text">        &lt;&lt; </font><font class="string">&quot;   object retrieval is impossible on &quot;
+</font><font class="text">        &lt;&lt; nb_ranks &lt;&lt; </font><font class="string">&quot; processes&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> 
+        &lt;&lt; </font><font class="string">&quot;   because the storage has been done on &quot;
+</font><font class="text">        &lt;&lt; stored_nb_rank &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( mesg.str() ) ;
+}
+
+</font>
+</pre>
+</body>
+</html>

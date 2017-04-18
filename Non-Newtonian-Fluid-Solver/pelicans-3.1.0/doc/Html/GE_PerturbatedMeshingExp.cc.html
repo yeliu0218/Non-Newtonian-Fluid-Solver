@@ -1,0 +1,308 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>GE_PerturbatedMeshingExp.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="GE_PerturbatedMeshingExp.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="GEpack-tree.html"><span>Tree</span></a>
+    <a href="GE_PerturbatedMeshingExp.html"><span>Class</span></a>
+    <a href="GE_PerturbatedMeshingExp.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="GEpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">GE_PerturbatedMeshingExp</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_assertions</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Randomizer</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Sequence</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">doubleVector</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;sstream&gt;
+
+</font><font class="kw3">GE_PerturbatedMeshingExp</font><font class="text"> </font><font class="kw1">const</font><font class="text">*  
+</font><font class="kw3">GE_PerturbatedMeshingExp</font><font class="text">::PROTOTYPE_PERT_COORDS =
+   </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">GE_PerturbatedMeshingExp</font><font class="text">( </font><font class="kw3">GE_PerturbatedMeshingExp</font><font class="text">::pert_coords,
+                                 </font><font class="string">&quot;perturbated_coordinates&quot;</font><font class="text"> ) ;
+
+</font><font class="kw1">struct</font><font class="text"> GE_PerturbatedMeshingExp_ERROR
+{
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> n0( </font><font class="kw1">void</font><font class="text"> ) ;
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> n1( </font><font class="kw1">double</font><font class="text"> coeff ) ;
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> n2( </font><font class="kw1">double</font><font class="text"> h_min ) ;
+} ;
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">GE_PerturbatedMeshingExp</font><font class="text">:: </font><font class="kw3">GE_PerturbatedMeshingExp</font><font class="text">(
+                   PerturbatedMeshingExp id, </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_name ) 
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_Expression</font><font class="text">( a_name )
+   , ID( id )
+   , RAND( 0 )
+{
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">GE_PerturbatedMeshingExp</font><font class="text">*
+</font><font class="kw3">GE_PerturbatedMeshingExp</font><font class="text">:: create_replica( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                           </font><font class="kw3">PEL_Sequence</font><font class="text"> </font><font class="kw1">const</font><font class="text">* argument_list ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_PerturbatedMeshingExp:: create_replica&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_PRE( a_owner, argument_list ) ) ;
+
+   </font><font class="kw3">GE_PerturbatedMeshingExp</font><font class="text">* result =
+      </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">GE_PerturbatedMeshingExp</font><font class="text">( a_owner, ID, name(), argument_list ) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_POST( result, a_owner, argument_list ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">GE_PerturbatedMeshingExp</font><font class="text">:: </font><font class="kw3">GE_PerturbatedMeshingExp</font><font class="text">(
+                                </font><font class="kw3">PEL_Object</font><font class="text">* a_owner, 
+                                PerturbatedMeshingExp id,
+                                </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_name,
+                                </font><font class="kw3">PEL_Sequence</font><font class="text"> </font><font class="kw1">const</font><font class="text">* argument_list ) 
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_Expression</font><font class="text">( a_owner, a_name, argument_list )
+   , ID( id )
+   , RAND( </font><font class="kw3">PEL_Randomizer</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, 14021972 ) )
+{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_PerturbatedMeshingExp:: GE_PerturbatedMeshingExp&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   RAND-&gt;start() ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">GE_PerturbatedMeshingExp</font><font class="text">:: ~</font><font class="kw3">GE_PerturbatedMeshingExp</font><font class="text">( </font><font class="kw1">void</font><font class="text"> ) 
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_PerturbatedMeshingExp:: ~GE_PerturbatedMeshingExp&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw1">if</font><font class="text">( is_a_prototype() )
+   {
+      </font><font class="kw1">if</font><font class="text">( ID == pert_coords ) PROTOTYPE_PERT_COORDS = 0 ;
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; 
+</font><font class="kw3">GE_PerturbatedMeshingExp</font><font class="text">:: usage( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> result = </font><font class="string">&quot;undefined&quot;</font><font class="text"> ;
+   </font><font class="kw1">switch</font><font class="text">( ID )
+   {
+      </font><font class="kw1">case</font><font class="text"> pert_coords :
+         result = name()+</font><font class="string">&quot;(DS,DV,DS,BS)&quot;</font><font class="text"> ;
+	 </font><font class="kw1">break</font><font class="text"> ;
+   }
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_Data</font><font class="text">::Type
+</font><font class="kw3">GE_PerturbatedMeshingExp</font><font class="text">:: data_type( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw3">PEL_Data</font><font class="text">::DoubleVector ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp;
+</font><font class="kw3">GE_PerturbatedMeshingExp</font><font class="text">:: to_double_vector( </font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ct ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_PerturbatedMeshingExp:: to_double_vector&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( to_double_vector_PRE( ct ) ) ;
+
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw3">doubleVector</font><font class="text"> result( 0 ) ;
+
+   </font><font class="kw1">switch</font><font class="text">( ID )
+   {
+      </font><font class="kw1">case</font><font class="text"> pert_coords :
+         result = arg(1)-&gt;to_double_vector( ct ) ;
+         </font><font class="kw2">size_t</font><font class="text"> nb_sp_dims = result.size() ;
+         </font><font class="kw1">if</font><font class="text">( nb_sp_dims != 1 &amp;&amp; nb_sp_dims != 2 &amp;&amp; nb_sp_dims != 3 )
+         {
+            GE_PerturbatedMeshingExp_ERROR::n0() ;
+         }
+         </font><font class="kw1">if</font><font class="text">( ! arg(3)-&gt;to_bool( ct ) )
+         {
+            </font><font class="kw1">double</font><font class="text"> </font><font class="kw1">const</font><font class="text"> coeff = arg(0)-&gt;to_double( ct ) ;
+            </font><font class="kw1">if</font><font class="text">( coeff&lt;0. || coeff&gt;=0.5 )
+            {
+               GE_PerturbatedMeshingExp_ERROR::n1( coeff ) ;
+            }
+            </font><font class="kw1">double</font><font class="text"> </font><font class="kw1">const</font><font class="text"> h_min = arg(2)-&gt;to_double( ct ) ;
+            </font><font class="kw1">if</font><font class="text">( h_min&lt;=0. )
+            {
+               GE_PerturbatedMeshingExp_ERROR::n2( h_min ) ;
+            }
+            
+            </font><font class="kw1">double</font><font class="text"> </font><font class="kw1">const</font><font class="text"> phi = 2. * </font><font class="kw3">PEL</font><font class="text">::pi() * random_value() ;
+            </font><font class="kw1">double</font><font class="text"> </font><font class="kw1">const</font><font class="text"> radius = coeff*h_min ;
+            </font><font class="kw1">if</font><font class="text">( nb_sp_dims == 1 )
+            {
+               </font><font class="kw1">double</font><font class="text"> </font><font class="kw1">const</font><font class="text"> s = ( phi&lt;</font><font class="kw3">PEL</font><font class="text">::pi() ? 1. : -1. ) ;
+               result(0) += radius*s ;
+            }
+            </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( nb_sp_dims == 2 )
+            {
+               result( 0 ) += radius*</font><font class="kw3">PEL</font><font class="text">::cos( phi ) ;
+               result( 1 ) += radius*</font><font class="kw3">PEL</font><font class="text">::sin( phi ) ;
+            }
+            </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( nb_sp_dims == 3 )
+            {
+               </font><font class="kw1">double</font><font class="text"> </font><font class="kw1">const</font><font class="text"> theta = 2. * </font><font class="kw3">PEL</font><font class="text">::pi() * random_value() ;
+               result( 0 ) += radius*</font><font class="kw3">PEL</font><font class="text">::sin( theta )*</font><font class="kw3">PEL</font><font class="text">::cos( phi ) ;
+               result( 1 ) += radius*</font><font class="kw3">PEL</font><font class="text">::sin( theta )*</font><font class="kw3">PEL</font><font class="text">::sin( phi ) ;
+               result( 2 ) += radius*</font><font class="kw3">PEL</font><font class="text">::cos( theta ) ;
+            }
+         }
+         </font><font class="kw1">break</font><font class="text"> ;
+   }
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">GE_PerturbatedMeshingExp</font><font class="text">:: valid_arguments(
+                             </font><font class="kw3">PEL_Sequence</font><font class="text"> </font><font class="kw1">const</font><font class="text">* some_arguments ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_PerturbatedMeshingExp:: valid_arguments&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( valid_arguments_PRE( some_arguments ) ) ;
+   
+   </font><font class="kw1">bool</font><font class="text"> result = </font><font class="kw1">false</font><font class="text"> ;
+   </font><font class="kw1">switch</font><font class="text">( ID )
+   {
+      </font><font class="kw1">case</font><font class="text"> pert_coords :
+         result =
+            some_arguments-&gt;count() == 4 &amp;&amp;
+            extract_arg( some_arguments, 0 )-&gt;data_type() == </font><font class="kw3">PEL_Data</font><font class="text">::Double &amp;&amp;
+            extract_arg( some_arguments, 1 )-&gt;data_type() == </font><font class="kw3">PEL_Data</font><font class="text">::DoubleVector &amp;&amp;
+            extract_arg( some_arguments, 2 )-&gt;data_type() == </font><font class="kw3">PEL_Data</font><font class="text">::Double &amp;&amp;
+            extract_arg( some_arguments, 3 )-&gt;data_type() == </font><font class="kw3">PEL_Data</font><font class="text">::Bool ;
+	 </font><font class="kw1">break</font><font class="text"> ;
+   }
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">double
+</font><font class="kw3">GE_PerturbatedMeshingExp</font><font class="text">:: random_value( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_PerturbatedMeshingExp:: random_value&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw1">double</font><font class="text"> result = RAND-&gt;item() ;
+   RAND-&gt;go_next() ;
+   
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result &gt;=0.0 &amp;&amp; result &lt;= 1.0 ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="kw1">void</font><font class="text"> 
+GE_PerturbatedMeshingExp_ERROR:: n0( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> mesg ;
+   mesg += </font><font class="string">&quot;*** GE_PerturbatedMeshingExp error\n&quot;</font><font class="text"> ;
+   mesg += </font><font class="string">&quot;    the position vector (second argument) should have\n&quot;</font><font class="text"> ;
+   mesg += </font><font class="string">&quot;    1, 2 or 3 dimensions (space number of dimensions)&quot;</font><font class="text"> ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( mesg ) ;
+}
+
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="kw1">void</font><font class="text"> 
+GE_PerturbatedMeshingExp_ERROR:: n1( </font><font class="kw1">double</font><font class="text"> coeff )
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> mesg ;
+   mesg &lt;&lt; </font><font class="string">&quot;*** GE_PerturbatedMeshingExp error\n&quot;
+</font><font class="text">        &lt;&lt; </font><font class="string">&quot;    the perturbation coefficient (first argument) should be\n&quot;
+</font><font class="text">        &lt;&lt; </font><font class="string">&quot;    greater than 0. and strickly lower than 0.5\n&quot;
+</font><font class="text">        &lt;&lt; </font><font class="string">&quot;        current value: &quot;</font><font class="text"> &lt;&lt; coeff ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( mesg.str() ) ;
+}
+
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="kw1">void</font><font class="text"> 
+GE_PerturbatedMeshingExp_ERROR:: n2( </font><font class="kw1">double</font><font class="text"> h_min )
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> mesg ;
+   mesg &lt;&lt; </font><font class="string">&quot;*** GE_PerturbatedMeshingExp error\n&quot;
+</font><font class="text">        &lt;&lt; </font><font class="string">&quot;    the reference distance (fourth argument) should be\n&quot;
+</font><font class="text">        &lt;&lt; </font><font class="string">&quot;    greater than 0.\n&quot;
+</font><font class="text">        &lt;&lt; </font><font class="string">&quot;        current value: &quot;</font><font class="text"> &lt;&lt; h_min ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( mesg.str() ) ;
+}
+
+</font>
+</pre>
+</body>
+</html>

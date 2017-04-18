@@ -1,0 +1,317 @@
+MODULE PEL_Application
+
+   concrete_name = "FE_StepByStepProgression"
+
+   $DS_e  = 0.16
+
+   $SS_bulk_energy_F0 = "CH_F0Implicit"
+   
+   $DS_sigma_12 = 1.0
+   $DS_sigma_13 = 1.0
+   $DS_sigma_23 = 1.0
+   
+   $DS_Sig1 = $DS_sigma_12 + $DS_sigma_13 - $DS_sigma_23
+   $DS_Sig2 = $DS_sigma_12 + $DS_sigma_23 - $DS_sigma_13
+   $DS_Sig3 = $DS_sigma_13 + $DS_sigma_23 - $DS_sigma_12
+
+   MODULE FE_TimeIterator
+      time_initial = 0.
+      time_end = 100.
+      time_step = 100.
+   END MODULE FE_TimeIterator
+   
+   graphics_output_times = regular_vector( 0., 10, 100. )
+
+   $SS_solver_CH = "iterative"
+
+   MODULE PDE_DomainAndFields
+      verbose_level = 1
+      nb_space_dimensions = 2
+      type = "finite_element"
+      
+      MODULE GE_Meshing
+         concrete_name = "GE_BoxWithBoxes"
+         vertices_coordinate_0 = regular_vector( -1.0, 41, 1.0 )
+         vertices_coordinate_1 = regular_vector( -0.1, 2, 0.1 )
+         mesh_polyhedron = < "GE_Segment" "GE_Rectangle" >
+      END MODULE GE_Meshing         
+      
+      MODULE interior_fields              
+         
+         MODULE cc_1
+            name = "cc_1"
+            nb_components = 1
+            element_name = "PDE_2D_Q1_4nodes"
+            storage_depth = 1
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               $DS_val = ( component( $DV_X, 0 ) > 0.0 ? 1. : 0. )
+               value = vector( $DS_val )
+            END MODULE DOFs_values
+         END MODULE cc_1
+         
+         MODULE cc_1_explicit
+            name = "cc_1_explicit"
+            nb_components = 1
+            element_name = "PDE_2D_Q1_4nodes"
+            storage_depth = 1
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               $DS_val = ( component( $DV_X, 0 ) > 0.0 ? 1. : 0. )
+               value = vector( $DS_val )
+            END MODULE DOFs_values
+         END MODULE cc_1_explicit
+         
+         MODULE mm_1
+            name = "mm_1"
+            nb_components = 1
+            element_name = "PDE_2D_Q1_4nodes"
+            storage_depth = 1
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = < 0.0 >
+            END MODULE DOFs_values
+         END MODULE mm_1
+
+         MODULE cc_2
+            name = "cc_2"
+            nb_components = 1
+            element_name = "PDE_2D_Q1_4nodes"
+            storage_depth = 1
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = vector( 0.0 )
+            END MODULE DOFs_values
+         END MODULE cc_2
+         
+         MODULE cc_2_explicit
+            name = "cc_2_explicit"
+            nb_components = 1
+            element_name = "PDE_2D_Q1_4nodes"
+            storage_depth = 1
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = vector( 0.0 )
+            END MODULE DOFs_values
+         END MODULE cc_2_explicit
+         
+         MODULE mm_2
+            name = "mm_2"
+            nb_components = 1
+            element_name = "PDE_2D_Q1_4nodes"
+            storage_depth = 1
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = < 0.0 >
+            END MODULE DOFs_values
+         END MODULE mm_2
+         
+         MODULE analytical_solution
+            name = "c_ana"
+            nb_components = 1
+            element_name = "PDE_2D_Q1_4nodes"
+            storage_depth = 1
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = vector( 0.5 + 0.5*tanh( 2.0*component($DV_X,0)/$DS_e ) )
+            END MODULE DOFs_values
+         END MODULE analytical_solution
+         
+      END MODULE interior_fields
+                
+      MODULE PDE_AdapterCHARMS
+         verbose_level = 0
+         type = "quasi_hierarchical_basis"
+         MODULE PDE_AdaptationIndicator
+            concrete_name = "PDE_GeometricIndicator"
+            refinement_indicator = false
+            nb_steps = 0
+         END MODULE PDE_AdaptationIndicator
+      END MODULE PDE_AdapterCHARMS
+      
+      MODULE PDE_ResultSaver
+         
+         writers = < "PEL_TICwriter">
+         
+         writing_mode = "text"
+         files_basename = "save"
+         
+         MODULE cc_1
+            where_to_save = "at_vertices"
+            entry_name = "c1"
+            field = "cc_1"
+         END MODULE cc_1
+         
+         MODULE cc_2
+            where_to_save = "at_vertices"
+            entry_name = "c2"
+            field = "cc_2"
+         END MODULE cc_2
+         
+      END MODULE PDE_ResultSaver
+      
+   END MODULE PDE_DomainAndFields
+
+   MODULE FE_SetOfParameters
+   END MODULE FE_SetOfParameters
+   
+   MODULE FE_OneStepIteration
+      
+      concrete_name = "FE_SplitSystem"
+
+      MODULE list_of_FE_OneStepIteration
+         
+         MODULE FE_OneStepIteration#adapt
+            concrete_name = "FE_AdaptationStepCHARMS"                  
+            nb_iterations_max_before_time_stepping = 0
+            nb_iterations_max_during_time_stepping = 0
+            MODULE list_of_PDE_DiscreteField
+               
+               MODULE cc_1
+                  current = "cc_1"
+                  explicit = "cc_1_explicit"
+               END MODULE cc_1
+               
+               MODULE cc_2
+                  current = "cc_2"
+                  explicit = "cc_2_explicit"
+               END MODULE cc_2
+               
+            END MODULE list_of_PDE_DiscreteField
+         END MODULE FE_OneStepIteration#adapt
+
+         MODULE FE_OneStepIteration#CH1
+            concrete_name = "CH_CahnHilliard"
+            
+            phase_field_1 = "cc_1"
+            phase_field_1_explicit = "cc_1_explicit"
+            generalized_potential_1 = "mm_1"
+            phase_field_2 = "cc_2"
+            phase_field_2_explicit = "cc_2_explicit"
+            generalized_potential_2 = "mm_2"
+            level_to_update = 0
+            level_of_explicit = 0
+            
+            explicit_mobility = true
+            mobility_deg = 8.
+            mobility_cst = 0.001
+
+            thickness = $DS_e
+
+            MODULE CH_BulkChemicalPotential
+               coef_Sigma_1 = $DS_Sig1
+               coef_Sigma_2 = $DS_Sig2
+               coef_Sigma_3 = $DS_Sig3
+               MODULE CH_BulkEnergy#F0
+                  concrete_name = $SS_bulk_energy_F0
+               END MODULE CH_BulkEnergy#F0
+               
+               if( is_defined ( "SS_bulk_energy_P" ) )
+               MODULE CH_BulkEnergy#P
+                  concrete_name = $SS_bulk_energy_P
+                  coef_lambda = $DS_coef_lambda
+               END MODULE CH_BulkEnergy#P
+            END MODULE CH_BulkChemicalPotential
+
+            quadrature_rule_provider = "GE_ProductQRprovider_5"
+
+            nb_iterations_max = 10            
+            newton_tolerance = 1.e-6
+            
+            MODULE LA_Matrix
+               concrete_name = "LA_PelMatrix"
+            END MODULE LA_Matrix
+            
+            if( $SS_solver_CH = "iterative" )
+            MODULE LA_Solver
+               concrete_name = "LA_PreconditionedSolver"
+               MODULE LA_IterativeSolver
+                  concrete_name = "LA_GMRES_IS"
+                  nb_iterations_max = 200000
+                  restart = 50
+                  MODULE LA_ConvergenceTest
+                     concrete_name = "LA_DefaultConvergenceTest"
+                     relative_tolerance = 1.e-8
+                     absolute_tolerance = 1.e-15
+                  END MODULE LA_ConvergenceTest
+                  verbose = false
+               END MODULE LA_IterativeSolver
+               MODULE LA_Preconditioner
+                  concrete_name = "LA_ILU0_PC"
+                  diagonal_compensation = false
+                  smallest_nonzero_pivot = 1.E-12
+               END MODULE LA_Preconditioner
+            END MODULE LA_Solver
+            if( $SS_solver_CH = "direct" )
+            MODULE LA_Solver
+               type = "LA_DirectSolver"
+               MODULE LA_DirectSolver
+                  concrete_name = "EXT_UMFsolver_DS"
+               END MODULE LA_DirectSolver
+            END MODULE LA_Solver
+         END MODULE FE_OneStepIteration#CH1
+
+         MODULE FE_OneStepIteration#Averages
+            
+            concrete_name = "CH_AveragesSaver"
+
+            output_file = "averages.txt"
+            
+            MODULE total_free_energy
+
+               phase_field_1 = "cc_1"
+               level_1 = 0
+
+               phase_field_2 = "cc_2"
+               level_2 = 0
+               
+               quadrature_rule_provider = "GE_ProductQRprovider_5"
+               
+               MODULE CH_BulkChemicalPotential
+                  coef_Sigma_1 = $DS_Sig1
+                  coef_Sigma_2 = $DS_Sig2
+                  coef_Sigma_3 = $DS_Sig3
+                  MODULE CH_BulkEnergy#F0
+                     concrete_name = $SS_bulk_energy_F0
+                  END MODULE CH_BulkEnergy#F0
+                  
+                  if( is_defined ( "SS_bulk_energy_P" ) )
+                  MODULE CH_BulkEnergy#P
+                     concrete_name = $SS_bulk_energy_P
+                     coef_lambda = $DS_coef_lambda
+                  END MODULE CH_BulkEnergy#P
+               END MODULE CH_BulkChemicalPotential
+               
+               thickness = $DS_e
+               
+            END MODULE total_free_energy
+            
+         END MODULE FE_OneStepIteration#Averages
+
+         MODULE FE_OneStepIteration#2            
+            concrete_name = "FE_ComparatorWithAnalytic"
+            field = "cc_1"
+            level = 0
+            norms = vector( "L2_solution_norm", "L2_error_norm",
+                            "Infinity_error_norm" )
+            norm_saving_names = vector( "XLD1", "XLDC", "XINC" )            
+            solution = vector( 0.5 + 0.5*tanh( 2.0*component($DV_X,0)/$DS_e ) )
+            quadrature_rule_provider = "GE_ProductQRprovider_5"
+         END MODULE FE_OneStepIteration#2
+         
+         MODULE FE_OneStepIteration#3           
+            concrete_name = "FE_ComparatorWithAnalytic"
+            field = "cc_2"
+            norms = vector( "L2_solution_norm", "L2_error_norm",
+                            "Infinity_error_norm" )
+            norm_saving_names = vector( "XLD2", "XLDD", "XIND")
+            level = 0
+            solution = vector( 0.0 )
+            quadrature_rule_provider = "GE_ProductQRprovider_5"
+         END MODULE FE_OneStepIteration#3
+         
+      END MODULE list_of_FE_OneStepIteration
+      
+   END MODULE FE_OneStepIteration
+
+END MODULE PEL_Application

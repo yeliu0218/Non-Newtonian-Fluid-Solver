@@ -1,0 +1,235 @@
+<html>
+<head>
+<title>CH_Fsaver.cc</title>
+<link rel=stylesheet type="text/css" href="stylesheet.css">
+</head>
+<body>
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">doubleVector</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;CH_Fsaver.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;iostream&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">GE_Point</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">GE_Mpolyhedron</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_DiscreteField</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_DomainAndFields</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_LocalFEcell</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_ResultSaver</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_assertions</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;CH_BulkChemicalPotential.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;CH_BulkEnergy.hh&gt;
+
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">cout</font><font class="text"> ;
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+
+CH_Fsaver </font><font class="kw1">const</font><font class="text">* CH_Fsaver::PROTOTYPE = </font><font class="kw1">new</font><font class="text"> CH_Fsaver() ;
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">CH_Fsaver:: CH_Fsaver( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_Application</font><font class="text">( </font><font class="string">&quot;CH_Fsaver&quot;</font><font class="text"> )
+{
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">CH_Fsaver*
+CH_Fsaver:: create_replica( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner, 
+                            </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;CH_Fsaver:: create_replica&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_PRE( a_owner, exp ) ) ;
+
+   CH_Fsaver* result = </font><font class="kw1">new</font><font class="text"> CH_Fsaver( a_owner, exp ) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_POST( result, a_owner, exp ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">CH_Fsaver:: CH_Fsaver( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                       </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp ) 
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_Application</font><font class="text">( a_owner, exp )
+   , EXP( exp-&gt;create_clone( </font><font class="kw1">this</font><font class="text"> ) )
+   , DOM( 0 )
+   , cFE( 0 )
+{
+   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* ee =
+                       EXP-&gt;create_subexplorer( 0, </font><font class="string">&quot;PDE_DomainAndFields&quot;</font><font class="text"> ) ;
+   DOM = </font><font class="kw3">PDE_DomainAndFields</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, ee ) ;   
+   ee-&gt;destroy() ; ee = 0 ;
+   cFE = DOM-&gt;create_LocalFEcell( </font><font class="kw1">this</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">CH_Fsaver:: ~CH_Fsaver( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">CH_Fsaver:: parse_arguments( </font><font class="kw3">stringVector</font><font class="text">&amp; args ) 
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">CH_Fsaver:: run( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;CH_Fsaver:: run&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw3">PDE_ResultSaver</font><font class="text">* rsaver = DOM-&gt;result_saver() ;
+   rsaver-&gt;start_cycle() ;
+   rsaver-&gt;save_grid() ;
+   rsaver-&gt;save_fields( 0 ) ;
+
+   </font><font class="kw1">if</font><font class="text">( EXP-&gt;has_module( </font><font class="string">&quot;plots&quot;</font><font class="text"> ) )
+   {
+      </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* ee = EXP-&gt;create_subexplorer( 0, </font><font class="string">&quot;plots&quot;</font><font class="text"> ) ;
+      ee-&gt;start_module_iterator() ;
+      </font><font class="kw1">for</font><font class="text">( ; ee-&gt;is_valid_module() ; ee-&gt;go_next_module() )
+      {
+         </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* se = ee-&gt;create_subexplorer( ee ) ;
+         save_associated_field( se, rsaver ) ;
+      }
+      ee-&gt;destroy() ; ee = 0 ;
+   }
+   rsaver-&gt;terminate_cycle() ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">CH_Fsaver:: save_associated_field( </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp,
+                                   </font><font class="kw3">PDE_ResultSaver</font><font class="text">* rsaver )
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;CH_Fsaver:: save_associated_field&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( rsaver-&gt;grid_is_saved() ) ;
+
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> ptype = exp-&gt;string_data( </font><font class="string">&quot;type&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> name = exp-&gt;string_data( </font><font class="string">&quot;name&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="string">&quot;*** Saving field &quot;</font><font class="text"> &lt;&lt; name &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   
+   </font><font class="kw1">double</font><font class="text"> S1 = exp-&gt;double_data( </font><font class="string">&quot;coef_Sigma_1&quot;</font><font class="text"> ) ;
+   </font><font class="kw1">double</font><font class="text"> S2 = exp-&gt;double_data( </font><font class="string">&quot;coef_Sigma_2&quot;</font><font class="text"> ) ;
+   </font><font class="kw1">double</font><font class="text"> S3 = exp-&gt;double_data( </font><font class="string">&quot;coef_Sigma_3&quot;</font><font class="text"> ) ;
+
+   CH_BulkChemicalPotential* mu = 0 ;
+   CH_BulkEnergy* pp = 0 ;
+   </font><font class="kw1">if</font><font class="text">( ptype == </font><font class="string">&quot;CH_BulkChemicalPotential&quot;</font><font class="text"> )
+   {      
+      mu = CH_BulkChemicalPotential::create( 0, exp ) ;
+   } 
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( ptype == </font><font class="string">&quot;CH_BulkEnergy&quot;</font><font class="text"> ) 
+   {
+      </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* ee = exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;CH_BulkEnergy&quot;</font><font class="text"> ) ;
+      pp = CH_BulkEnergy::make( 0, S1, S2, S3, ee ) ;
+      ee-&gt;destroy() ; ee = 0 ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_bad_data_value(
+                           exp, </font><font class="string">&quot;type&quot;</font><font class="text">,
+                           </font><font class="string">&quot;  - \&quot;</font><font class="text">CH_BulkChemicalPotential\</font><font class="string">&quot;\n&quot;
+</font><font class="text">                           </font><font class="string">&quot;  - \&quot;</font><font class="text">CH_BulkEnergy\</font><font class="string">&quot;&quot;</font><font class="text"> ) ;
+   }
+
+   </font><font class="kw3">doubleArray2D</font><font class="text"> values( 0, 0 ) ;
+   </font><font class="kw3">doubleVector</font><font class="text"> default_values( 0 ) ;
+   </font><font class="kw3">PDE_ResultSaver</font><font class="text">::SavingLocation loc = </font><font class="kw3">PDE_ResultSaver</font><font class="text">::AtVertices ;
+   rsaver-&gt;prepare_for_field_saving( loc, name, 1, values, default_values ) ;
+   
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text"> banner =</font><font class="string">&quot;*** CH_Fsaver : error saving \&quot;&quot;+name+&quot;</font><font class="text">\</font><font class="string">&quot;&quot;</font><font class="text"> ;
+   </font><font class="kw1">for</font><font class="text">( cFE-&gt;start() ; cFE-&gt;is_valid() ; cFE-&gt;go_next() )
+   {
+      </font><font class="kw3">GE_Mpolyhedron</font><font class="text"> </font><font class="kw1">const</font><font class="text">* poly = cFE-&gt;polyhedron() ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> v=0 ; v&lt;poly-&gt;nb_vertices() ; ++v )
+      {
+         </font><font class="kw3">GE_Point</font><font class="text"> </font><font class="kw1">const</font><font class="text">* pt = poly-&gt;vertex( v ) ;
+         </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> iv = rsaver-&gt;vertex_index( pt ) ; 
+         </font><font class="kw1">double</font><font class="text"> c1 = pt-&gt;coordinate( 0 ) 
+                   - pt-&gt;coordinate( 1 ) / </font><font class="kw3">PEL</font><font class="text">::sqrt(3.) ;
+         </font><font class="kw1">double</font><font class="text"> c2 = 2.* pt-&gt;coordinate( 1 ) / </font><font class="kw3">PEL</font><font class="text">::sqrt(3.) ;
+         </font><font class="kw1">double</font><font class="text"> c3 = 1. - c1 - c2 ;
+         </font><font class="kw1">double</font><font class="text"> val= </font><font class="kw3">PEL</font><font class="text">::bad_double() ;
+         </font><font class="kw1">if</font><font class="text">( mu != 0 )
+         {
+            </font><font class="kw3">PEL_ASSERT</font><font class="text">( pp == 0 ) ;
+            val = mu-&gt;F( c1, c2, c3 ) ;
+         }
+         </font><font class="kw1">else
+</font><font class="text">         {
+            </font><font class="kw3">PEL_ASSERT</font><font class="text">( pp != 0 ) ;
+            val = pp-&gt;F( c1, c2, c3 ) ;
+         }
+         </font><font class="comment">// the value at a vertex obtained from different cells
+</font><font class="text">         </font><font class="comment">// should be the same
+</font><font class="text">         </font><font class="kw3">PDE_ResultSaver</font><font class="text">::check_value_consistency_at_vertex(
+                               banner, pt, values( 0, iv ), val, 1.E-4, 1.E-8) ;
+         values( 0, iv ) = val ;
+         
+         </font><font class="kw1">if</font><font class="text">( ( default_values( 0 ) == 
+                       </font><font class="kw3">PDE_ResultSaver</font><font class="text">::undefined_value() ) ||
+             ( val &gt; default_values( 0 ) ) )
+         {
+            default_values( 0 ) = val ;
+         }
+         
+      }
+   }
+   </font><font class="kw1">if</font><font class="text">( mu != 0 ) { mu-&gt;destroy() ; mu = 0 ; }
+   </font><font class="kw1">if</font><font class="text">( pp != 0 ) { pp-&gt;destroy() ; pp = 0 ; }
+   
+   rsaver-&gt;save_field( values, default_values ) ;
+}
+
+</font>
+</pre>
+</body>
+</html>

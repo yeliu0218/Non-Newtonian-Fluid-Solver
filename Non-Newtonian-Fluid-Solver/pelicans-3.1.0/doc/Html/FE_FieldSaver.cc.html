@@ -1,0 +1,559 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>FE_FieldSaver.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="FE_FieldSaver.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="FEpack-tree.html"><span>Tree</span></a>
+    <a href="FE_FieldSaver.html"><span>Class</span></a>
+    <a href="FE_FieldSaver.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="FEpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE_FieldSaver</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_assertions</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_BoolVector</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Communicator</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Exec</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Double</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_DoubleVector</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Int</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Module</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_String</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Vector</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_DiscreteField</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_DomainAndFields</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_LocalFEcell</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_ResultSaver</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_SetOfDiscreteFields</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">GE_Color</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">GE_Point</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE_TimeIterator</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;iostream&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;fstream&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;sstream&gt;
+
+</font><font class="kw1">struct</font><font class="text"> FE_FieldSaver_ERROR
+{
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> n0( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; n ) ;
+} ;
+
+</font><font class="kw3">FE_FieldSaver</font><font class="text"> </font><font class="kw1">const</font><font class="text">* </font><font class="kw3">FE_FieldSaver</font><font class="text">::PROTOTYPE = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">FE_FieldSaver</font><font class="text">() ;
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">FE_FieldSaver</font><font class="text">:: </font><font class="kw3">FE_FieldSaver</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">FE_OneStepIteration</font><font class="text">( </font><font class="string">&quot;FE_FieldSaver&quot;</font><font class="text"> )
+   , DOM( 0 )
+   , DBLE_EPS( </font><font class="kw3">PEL</font><font class="text">::bad_double() )
+   , DBLE_MIN( </font><font class="kw3">PEL</font><font class="text">::bad_double() )
+   , FIELDS( 0 )
+   , FIELD_LEVELS( 0 )
+   , OTYPE( </font><font class="kw3">FE_FieldSaver</font><font class="text">::none )
+   , OFILEFORMAT()
+   , OFILEBNAME()
+   , OFILENAME1()
+   , OFILENAME2()
+   , OFILENAME()
+   , SAVING_NUMBER( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+   , NEXT_SAVING_TIME( </font><font class="kw3">PEL</font><font class="text">::bad_double() )
+   , SAVING_TIMES( 0 )
+{
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">FE_OneStepIteration</font><font class="text">*
+</font><font class="kw3">FE_FieldSaver</font><font class="text">:: create_replica( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                </font><font class="kw3">PDE_DomainAndFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dom,
+                                </font><font class="kw3">FE_SetOfParameters</font><font class="text"> </font><font class="kw1">const</font><font class="text">* prms,
+                                </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* exp ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_FieldSaver:: create_replica&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_PRE( a_owner, dom, prms, exp ) ) ;
+   
+   </font><font class="kw3">FE_FieldSaver</font><font class="text">* result = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">FE_FieldSaver</font><font class="text">( a_owner, dom, prms, exp ) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_POST( result, a_owner, dom, prms, exp ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">FE_FieldSaver</font><font class="text">:: </font><font class="kw3">FE_FieldSaver</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                               </font><font class="kw3">PDE_DomainAndFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dom,
+                               </font><font class="kw3">FE_SetOfParameters</font><font class="text"> </font><font class="kw1">const</font><font class="text">* prms,
+                               </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">FE_OneStepIteration</font><font class="text">( a_owner, dom, exp )
+   , DOM( dom )
+   , DBLE_EPS( exp-&gt;has_entry( </font><font class="string">&quot;dbl_epsilon&quot;</font><font class="text"> )
+                  ? exp-&gt;double_data( </font><font class="string">&quot;dbl_epsilon&quot;</font><font class="text"> ) : 1.E-6 )
+   , DBLE_MIN( exp-&gt;has_entry( </font><font class="string">&quot;dbl_minimum&quot;</font><font class="text"> )
+                  ? exp-&gt;double_data( </font><font class="string">&quot;dbl_minimum&quot;</font><font class="text"> ) : 1.E-8 )
+   , FIELDS( </font><font class="kw3">PEL_Vector</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, 0 ) )
+   , FIELD_LEVELS( 0 )
+   , OTYPE( </font><font class="kw3">FE_FieldSaver</font><font class="text">::none )
+   , OFILEFORMAT()
+   , OFILEBNAME()
+   , OFILENAME1()
+   , OFILENAME2()
+   , OFILENAME()
+   , SAVING_NUMBER( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+   , NEXT_SAVING_TIME( </font><font class="kw3">PEL</font><font class="text">::bad_double() )
+   , SAVING_TIMES( 0 )
+{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_FieldSaver:: FE_FieldSaver&quot;</font><font class="text"> ) ;
+
+   </font><font class="comment">// Node coordinates tolerance:
+</font><font class="text">   {
+      </font><font class="kw1">if</font><font class="text">( exp-&gt;has_entry( </font><font class="string">&quot;dbl_epsilon&quot;</font><font class="text"> ) )
+      {
+         exp-&gt;test_data( </font><font class="string">&quot;dbl_epsilon&quot;</font><font class="text">, </font><font class="string">&quot;dbl_epsilon&gt;0.&quot;</font><font class="text"> ) ;
+         exp-&gt;set_default( </font><font class="string">&quot;dbl_epsilon&quot;</font><font class="text">, </font><font class="string">&quot;1.e-6&quot;</font><font class="text"> ) ;
+      }
+      </font><font class="kw1">if</font><font class="text">( exp-&gt;has_entry( </font><font class="string">&quot;dbl_minimum&quot;</font><font class="text"> ) )
+      {
+         exp-&gt;test_data( </font><font class="string">&quot;dbl_minimum&quot;</font><font class="text">, </font><font class="string">&quot;dbl_minimum&gt;0.&quot;</font><font class="text"> ) ;
+         exp-&gt;set_default( </font><font class="string">&quot;dbl_minimum&quot;</font><font class="text">, </font><font class="string">&quot;1.e-8&quot;</font><font class="text"> ) ;
+      }
+   }
+     
+   </font><font class="comment">// Post-processing:
+</font><font class="text">   {
+      </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* sexp = exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;post_processing&quot;</font><font class="text"> ) ;
+      
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; w_type = sexp-&gt;string_data( </font><font class="string">&quot;type&quot;</font><font class="text"> ) ;
+      </font><font class="kw1">if</font><font class="text">( w_type == </font><font class="string">&quot;cycles_in_separate_files&quot;</font><font class="text"> )
+      {
+         OTYPE = </font><font class="kw3">FE_FieldSaver</font><font class="text">::per_one_cycle ;
+         OFILEBNAME = sexp-&gt;string_data( </font><font class="string">&quot;file_basename&quot;</font><font class="text"> ) ;
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( w_type == </font><font class="string">&quot;last_two_cycles&quot;</font><font class="text"> )
+      {
+         OTYPE = </font><font class="kw3">FE_FieldSaver</font><font class="text">::last_two_cycles ;
+         OFILENAME1 = sexp-&gt;string_data( </font><font class="string">&quot;file_name_0&quot;</font><font class="text"> ) ;
+         OFILENAME2 = sexp-&gt;string_data( </font><font class="string">&quot;file_name_1&quot;</font><font class="text"> ) ;
+         </font><font class="kw3">PEL_Communicator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* com = </font><font class="kw3">PEL_Exec</font><font class="text">::communicator() ;
+         </font><font class="kw1">if</font><font class="text">( com-&gt;nb_ranks()&gt;1 )
+         {
+            </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> rank ;
+            rank &lt;&lt; </font><font class="string">&quot;.&quot;</font><font class="text"> &lt;&lt; com-&gt;rank() ;
+            OFILENAME1 += rank.str() ;
+            OFILENAME2 += rank.str() ;
+         }
+         OFILENAME = OFILENAME1 ;
+      }
+      </font><font class="kw1">else
+</font><font class="text">      {
+         </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_bad_data_value(
+            sexp, </font><font class="string">&quot;type&quot;</font><font class="text">,
+            </font><font class="string">&quot;   - \&quot;</font><font class="text">cycles_in_separate_files\</font><font class="string">&quot;\n&quot;
+</font><font class="text">            </font><font class="string">&quot;   - \&quot;</font><font class="text">last_two_cycles\</font><font class="string">&quot;&quot;</font><font class="text"> ) ;
+      }
+
+      OFILEFORMAT = </font><font class="string">&quot;hybrid&quot;</font><font class="text"> ;
+      </font><font class="kw1">if</font><font class="text">( sexp-&gt;has_entry( </font><font class="string">&quot;output_format&quot;</font><font class="text"> ) )
+      {
+         OFILEFORMAT = sexp-&gt;string_data( </font><font class="string">&quot;output_format&quot;</font><font class="text"> ) ;
+         sexp-&gt;set_default( </font><font class="string">&quot;output_format&quot;</font><font class="text">, </font><font class="string">&quot;hybrid&quot;</font><font class="text"> ) ;
+         sexp-&gt;test_data_in( </font><font class="string">&quot;output_format&quot;</font><font class="text">, </font><font class="string">&quot;hybrid,text&quot;</font><font class="text"> ) ;
+      }
+      
+      </font><font class="kw1">if</font><font class="text">( sexp-&gt;has_entry( </font><font class="string">&quot;saving_times&quot;</font><font class="text"> ) )
+      {
+         SAVING_TIMES = sexp-&gt;doubleVector_data( </font><font class="string">&quot;saving_times&quot;</font><font class="text"> ) ;
+      }
+      
+      sexp-&gt;destroy() ; sexp = 0 ;
+   }
+   
+   </font><font class="comment">// Fields:
+</font><font class="text">   {
+      </font><font class="kw3">PDE_SetOfDiscreteFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* sdf = dom-&gt;set_of_discrete_fields() ;
+      </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* sexp = exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;discrete_fields&quot;</font><font class="text"> ) ;
+      </font><font class="kw1">for</font><font class="text">( sexp-&gt;start_module_iterator() ;
+           sexp-&gt;is_valid_module() ;
+           sexp-&gt;go_next_module() )
+      {
+         </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* ee = sexp-&gt;create_subexplorer( 0 ) ;
+         </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; f_name = ee-&gt;string_data( </font><font class="string">&quot;name&quot;</font><font class="text"> ) ;
+         </font><font class="kw1">if</font><font class="text">( !sdf-&gt;has( f_name ) )
+         {
+            </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_data_error(
+               ee, </font><font class="string">&quot;name&quot;</font><font class="text">,</font><font class="string">&quot;   unknown discrete field \&quot;&quot;+f_name+&quot;</font><font class="text">\</font><font class="string">&quot;&quot;</font><font class="text"> ) ;
+         }
+         </font><font class="kw3">PDE_DiscreteField</font><font class="text">* df = sdf-&gt;item( f_name ) ;
+         FIELDS-&gt;append( df ) ;
+         </font><font class="kw1">int</font><font class="text"> level = 0 ;
+         </font><font class="kw1">if</font><font class="text">( ee-&gt;has_entry( </font><font class="string">&quot;level&quot;</font><font class="text"> ) )
+         {
+            level = ee-&gt;int_data( </font><font class="string">&quot;level&quot;</font><font class="text"> ) ;
+            ee-&gt;set_default( </font><font class="string">&quot;level&quot;</font><font class="text">, </font><font class="string">&quot;0&quot;</font><font class="text"> ) ;
+            </font><font class="kw1">if</font><font class="text">( level&lt;0 || level&gt;=(</font><font class="kw1">int</font><font class="text">) df-&gt;storage_depth() )
+            {
+               </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_data_error(
+                  ee, </font><font class="string">&quot;level&quot;</font><font class="text">,</font><font class="string">&quot;   bad level for discrete field \&quot;&quot;+f_name+&quot;</font><font class="text">\</font><font class="string">&quot;&quot;</font><font class="text"> ) ;
+            }
+         }
+         FIELD_LEVELS.append( (</font><font class="kw2">size_t</font><font class="text">) level ) ;
+         ee-&gt;destroy() ; ee = 0 ;
+      }
+      sexp-&gt;destroy() ; sexp = 0 ;
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">FE_FieldSaver</font><font class="text">:: ~</font><font class="kw3">FE_FieldSaver</font><font class="text">( </font><font class="kw1">void</font><font class="text"> ) 
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_FieldSaver</font><font class="text">:: do_before_time_stepping( </font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* t_it )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_FieldSaver:: do_before_time_stepping&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( do_before_time_stepping_PRE( t_it ) ) ;
+   
+   </font><font class="comment">// Initialize post_processing:
+</font><font class="text">   </font><font class="kw1">if</font><font class="text">( SAVING_TIMES.size() != 0 )
+   {
+      </font><font class="kw1">if</font><font class="text">( !t_it-&gt;table_of_times_is_valid( SAVING_TIMES ) )
+      {
+         t_it-&gt;raise_invalid_table_of_times( </font><font class="string">&quot;FE_FieldSaver&quot;</font><font class="text">, </font><font class="string">&quot;saving_times&quot;</font><font class="text">, 
+                                             SAVING_TIMES ) ;
+      }
+      SAVING_NUMBER = 0 ;
+      </font><font class="kw1">if</font><font class="text">( SAVING_TIMES.has( t_it-&gt;time() ) )
+      {
+         save_field_value( ++SAVING_NUMBER, t_it ) ;
+      }
+      NEXT_SAVING_TIME = t_it-&gt;next_time_in_table( SAVING_TIMES ) ;
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_FieldSaver</font><font class="text">:: do_one_inner_iteration( </font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* t_it )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_FieldSaver:: do_one_inner_iteration&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( do_one_inner_iteration_PRE( t_it ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_FieldSaver</font><font class="text">:: do_after_time_adaptation( </font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* t_it )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_FieldSaver:: do_after_time_adaptation&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( do_after_time_adaptation_PRE( t_it ) ) ;
+      
+   </font><font class="kw1">if</font><font class="text">( SAVING_TIMES.size() != 0 )
+   {
+      </font><font class="kw1">if</font><font class="text">( </font><font class="kw3">FE_TimeIterator</font><font class="text">::greater_or_equal( t_it-&gt;time(),
+                                             NEXT_SAVING_TIME ) )
+      {
+         start_total_timer( </font><font class="string">&quot;FE_FieldSaver:: do_after_time_adaptation&quot;</font><font class="text"> ) ;
+         
+         save_field_value( ++SAVING_NUMBER, t_it ) ;
+         NEXT_SAVING_TIME = t_it-&gt;next_time_in_table( SAVING_TIMES ) ;
+         
+         stop_total_timer() ;      
+      }
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_FieldSaver</font><font class="text">:: save_other_than_time_and_fields(
+                     </font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* t_it,  </font><font class="kw3">PDE_ResultSaver</font><font class="text">* rs )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_FieldSaver:: save_other_than_time_and_fields&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( save_other_than_time_and_fields_PRE( t_it, rs ) ) ;
+
+   </font><font class="kw1">if</font><font class="text">( SAVING_TIMES.size() == 0 )
+   {
+      start_total_timer( </font><font class="string">&quot;FE_FieldSaver:: save_other_than_time_and_fields&quot;</font><font class="text"> ) ;
+      
+      save_field_value( rs-&gt;cycle_number(), t_it ) ;
+      
+      stop_total_timer() ;
+   }      
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_FieldSaver</font><font class="text">:: initialize_file( </font><font class="kw2">size_t</font><font class="text"> i_cycle, </font><font class="kw1">double</font><font class="text"> time )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_FieldSaver:: initialize_file&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw3">PEL_Communicator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* com = </font><font class="kw3">PEL_Exec</font><font class="text">::communicator() ;
+      
+   </font><font class="kw1">if</font><font class="text">( OTYPE == per_one_cycle )
+   {
+      </font><font class="kw3">PEL_ASSERT</font><font class="text">( i_cycle&lt;99999 ) ;
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> tmp ;
+      tmp &lt;&lt; i_cycle ;
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> nb_string = tmp.str() ;
+      OFILENAME = OFILEBNAME+</font><font class="string">&quot;_00000&quot;</font><font class="text"> ;
+      OFILENAME.replace( OFILENAME.length()-nb_string.length(),
+                         nb_string.length(), nb_string ) ;
+      OFILENAME += </font><font class="string">&quot;.pel&quot;</font><font class="text"> ;
+      </font><font class="kw1">if</font><font class="text">( com-&gt;nb_ranks()&gt;1 )
+      {
+         </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> rank ;
+         rank &lt;&lt; </font><font class="string">&quot;.&quot;</font><font class="text"> &lt;&lt; com-&gt;rank() ;
+         OFILENAME += rank.str() ;
+      }
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( OTYPE == last_two_cycles )
+   {
+      </font><font class="kw1">if</font><font class="text">( OFILENAME == OFILENAME1 )
+      {
+         OFILENAME = OFILENAME2 ;
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( OFILENAME == OFILENAME2 )
+      {
+         OFILENAME = OFILENAME1 ;
+      }
+   }
+
+   </font><font class="kw2">std</font><font class="text">::ofstream file( OFILENAME.c_str(), </font><font class="kw2">std</font><font class="text">::ios::out | </font><font class="kw2">std</font><font class="text">::ios::trunc ) ;
+   </font><font class="kw1">if</font><font class="text">( !file ) FE_FieldSaver_ERROR:: n0( OFILENAME ) ;
+   file &lt;&lt; </font><font class="string">&quot;//&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   file &lt;&lt; </font><font class="string">&quot;//  FE_FieldSaver generated file&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   file &lt;&lt; </font><font class="string">&quot;//&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   file &lt;&lt; </font><font class="string">&quot;//      time: &quot;</font><font class="text"> &lt;&lt; time &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw1">if</font><font class="text">( com-&gt;nb_ranks()&gt;1 )
+   {
+      file &lt;&lt; </font><font class="string">&quot;//      rank: &quot;</font><font class="text"> &lt;&lt; com-&gt;rank() &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   }
+   file &lt;&lt; </font><font class="string">&quot;//&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   file.close() ;
+   </font><font class="kw1">if</font><font class="text">( OFILEFORMAT==</font><font class="string">&quot;hybrid&quot;</font><font class="text"> )
+   {
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text"> bin_file_name =  OFILENAME+ </font><font class="string">&quot;.bin&quot;</font><font class="text"> ;
+      </font><font class="kw2">std</font><font class="text">::ofstream file_bin( bin_file_name.c_str(),
+                              </font><font class="kw2">std</font><font class="text">::ios::out |
+                              </font><font class="kw2">std</font><font class="text">::ios::binary | 
+                              </font><font class="kw2">std</font><font class="text">::ios::trunc ) ;
+      </font><font class="kw1">if</font><font class="text">( !file_bin ) FE_FieldSaver_ERROR:: n0( bin_file_name ) ;
+      file_bin.close() ;
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_FieldSaver</font><font class="text">:: add_field( </font><font class="kw2">size_t</font><font class="text"> i_field, </font><font class="kw3">PEL_Module</font><font class="text">* mod )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_FieldSaver:: add_field&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( i_field &lt; FIELDS-&gt;index_limit() ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( mod != 0 ) ;
+
+   </font><font class="kw3">PDE_DiscreteField</font><font class="text"> </font><font class="kw1">const</font><font class="text">* f =
+         </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">PDE_DiscreteField</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;( FIELDS-&gt;at( i_field ) ) ;
+   </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> level = FIELD_LEVELS( i_field ) ;
+   </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> nb_nodes = f-&gt;nb_nodes() ;
+   </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> nb_comps = f-&gt;nb_components() ;
+   </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> nb_sp_dims = DOM-&gt;nb_space_dimensions() ;
+
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> n ;
+   n &lt;&lt; </font><font class="string">&quot;discrete_field#&quot;</font><font class="text"> &lt;&lt; i_field ;
+   </font><font class="kw3">PEL_Module</font><font class="text">* m = </font><font class="kw3">PEL_Module</font><font class="text">::create( mod, n.str() ) ;
+   mod-&gt;add_module( m ) ;
+
+   m-&gt;add_entry( </font><font class="string">&quot;name&quot;</font><font class="text">, </font><font class="kw3">PEL_String</font><font class="text">::create( m, f-&gt;name() ) ) ;
+   m-&gt;add_entry( </font><font class="string">&quot;nb_components&quot;</font><font class="text">, </font><font class="kw3">PEL_Int</font><font class="text">::create( m, nb_comps ) ) ;
+   m-&gt;add_entry( </font><font class="string">&quot;nb_nodes&quot;</font><font class="text">, </font><font class="kw3">PEL_Int</font><font class="text">::create( m, nb_nodes ) ) ;
+   m-&gt;add_entry( </font><font class="string">&quot;level&quot;</font><font class="text">, </font><font class="kw3">PEL_Int</font><font class="text">::create( m, level ) ) ;
+   
+   </font><font class="kw3">doubleVector</font><font class="text"> values( nb_comps*nb_nodes, </font><font class="kw3">PEL</font><font class="text">::bad_double() ) ;
+   {
+      </font><font class="kw2">size_t</font><font class="text"> idx = 0 ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;nb_nodes ; ++i )
+      {
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> ic=0 ; ic&lt;nb_comps ; ++ic )
+         {
+            values( idx++ ) = f-&gt;DOF_value( level, i, ic ) ;
+         }
+      }
+   }
+   m-&gt;add_entry( </font><font class="string">&quot;node_values&quot;</font><font class="text">, </font><font class="kw3">PEL_DoubleVector</font><font class="text">::create( m, values ) ) ;
+
+   </font><font class="kw3">doubleVector</font><font class="text"> loc( nb_sp_dims*nb_nodes, </font><font class="kw3">PEL</font><font class="text">::bad_double() ) ;
+   </font><font class="kw3">boolVector</font><font class="text"> found( nb_nodes, </font><font class="kw1">false</font><font class="text"> ) ;
+   </font><font class="kw3">boolVector</font><font class="text"> has_loc( nb_nodes, </font><font class="kw1">true</font><font class="text"> ) ;
+   {
+      </font><font class="kw3">PDE_LocalFEcell</font><font class="text">* cFE = DOM-&gt;create_LocalFEcell( 0 ) ;
+      cFE-&gt;include_color( </font><font class="kw3">GE_Color</font><font class="text">::halo_color() ) ;
+      cFE-&gt;require_field_calculation( f, </font><font class="kw3">PDE_LocalFE</font><font class="text">::node ) ;
+      </font><font class="kw1">for</font><font class="text">( cFE-&gt;start() ; cFE-&gt;is_valid() ; cFE-&gt;go_next() )
+      {
+         </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> nb_loc_nodes = cFE-&gt;nb_local_nodes( f ) ;
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;nb_loc_nodes ; ++i )
+         {
+            </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> i_node = cFE-&gt;global_node( f, i ) ;
+            </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> idx = i_node*nb_sp_dims ;
+            </font><font class="kw3">GE_Point</font><font class="text"> </font><font class="kw1">const</font><font class="text">* node = cFE-&gt;local_node_location( f, i ) ;
+            </font><font class="kw1">if</font><font class="text">( found(i_node) )
+            {
+               </font><font class="kw1">bool</font><font class="text"> ok = </font><font class="kw1">true</font><font class="text"> ;
+               </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> ic=0 ; ok &amp;&amp; ic&lt;nb_sp_dims ; ++ic )
+               {
+                  ok = </font><font class="kw3">PEL</font><font class="text">::double_equality( node-&gt;coordinate(ic),
+                                             loc( idx+ic ),
+                                             DBLE_EPS, DBLE_MIN ) ;
+               }
+               </font><font class="kw1">if</font><font class="text">( !ok ) </font><font class="comment">// Periodic node...
+</font><font class="text">               {
+                  has_loc(i_node) = </font><font class="kw1">false</font><font class="text"> ;
+                  </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> ic=0 ; ic&lt;nb_sp_dims ; ++ic )
+                  {
+                     loc( idx+ic ) = 0. ;
+                  }
+               }
+            }
+            </font><font class="kw1">else
+</font><font class="text">            {
+               </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> ic=0 ; ic&lt;nb_sp_dims ; ++ic )
+               {
+                  loc( idx+ic ) = node-&gt;coordinate(ic) ;
+               }
+            }      
+            found(i_node) = </font><font class="kw1">true</font><font class="text"> ;
+         }
+      }
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i_node=0 ; i_node&lt;nb_nodes ; ++i_node )
+      {
+         </font><font class="kw1">if</font><font class="text">( !found(i_node) )
+         {
+            has_loc(i_node) = </font><font class="kw1">false</font><font class="text"> ;
+            </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> idx = i_node*nb_sp_dims ;
+            </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> ic=0 ; ic&lt;nb_sp_dims ; ++ic )
+            {
+               loc( idx+ic ) = 0. ;
+            }
+         }
+      }
+      cFE-&gt;destroy() ; cFE = 0 ;
+   }
+   m-&gt;add_entry( </font><font class="string">&quot;node_locations&quot;</font><font class="text">, </font><font class="kw3">PEL_DoubleVector</font><font class="text">::create( m, loc ) ) ;
+   m-&gt;add_entry( </font><font class="string">&quot;has_node_locations&quot;</font><font class="text">, </font><font class="kw3">PEL_BoolVector</font><font class="text">::create( m, has_loc ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_FieldSaver</font><font class="text">:: save_field_value(
+                           </font><font class="kw2">size_t</font><font class="text"> i_cycle, </font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* t_it )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_FieldSaver:: save_field_value&quot;</font><font class="text"> ) ;
+   
+   initialize_file( i_cycle, t_it-&gt;time() ) ;
+
+   </font><font class="kw3">PEL_Module</font><font class="text">* mod = </font><font class="kw3">PEL_Module</font><font class="text">::create( 0, </font><font class="string">&quot;Root&quot;</font><font class="text"> ) ;
+   
+   mod-&gt;add_entry( </font><font class="string">&quot;time&quot;</font><font class="text">, </font><font class="kw3">PEL_Double</font><font class="text">::create( mod, t_it-&gt;time() ) ) ;
+
+   </font><font class="kw3">PEL_Communicator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* com = </font><font class="kw3">PEL_Exec</font><font class="text">::communicator() ;
+   mod-&gt;add_entry( </font><font class="string">&quot;nb_ranks&quot;</font><font class="text">, </font><font class="kw3">PEL_Int</font><font class="text">::create( mod, com-&gt;nb_ranks() ) ) ;
+   mod-&gt;add_entry( </font><font class="string">&quot;rank&quot;</font><font class="text">, </font><font class="kw3">PEL_Int</font><font class="text">::create( mod, com-&gt;rank() ) ) ;
+   
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;FIELDS-&gt;index_limit() ; ++i )
+   {
+      add_field( i, mod ) ;
+   }
+   
+   mod-&gt;write( OFILENAME, OFILEFORMAT ) ;
+
+   mod-&gt;destroy() ; mod = 0 ;
+}
+
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="kw1">void</font><font class="text"> 
+FE_FieldSaver_ERROR:: n0( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; n )
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> mess ;
+   mess += </font><font class="string">&quot;*** FE_FieldSaver arror:\n&quot;</font><font class="text"> ;
+   mess += </font><font class="string">&quot;    unable to open file \&quot;&quot; ;
+   mess += n ;
+   mess += &quot;</font><font class="text">\</font><font class="string">&quot; for writing&quot;</font><font class="text"> ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( mess ) ;
+}
+
+
+</font>
+</pre>
+</body>
+</html>

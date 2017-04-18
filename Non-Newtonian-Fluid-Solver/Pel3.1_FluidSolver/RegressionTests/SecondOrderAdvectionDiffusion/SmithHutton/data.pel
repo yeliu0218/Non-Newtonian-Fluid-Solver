@@ -1,0 +1,151 @@
+MODULE PEL_Application
+   
+   concrete_name = "FE_StepByStepProgression"
+   
+   geometry = "cartesian"
+   
+   $IS_N = 100
+   $DS_TS = 0.025
+   $DS_Tend = 1.25
+   
+   MODULE FE_TimeIterator
+      time_initial = 0.0
+      time_end = $DS_Tend
+      time_step = $DS_TS
+   END MODULE FE_TimeIterator
+   
+//   MODULE FE_TimeIteratorAdapter
+//      concrete_name = "FE_CourantNumber"
+//      active_level = 0
+//      discrete_fields = < "velocity" >
+//      Courant = 1.0
+//   END MODULE FE_TimeIteratorAdapter
+   graphics_output_times = regular_vector( 0., 5, $DS_Tend )
+   
+   MODULE PDE_DomainAndFields
+      
+      verbose_level = 1
+      nb_space_dimensions = 2
+      type = "finite_element"
+      
+      MODULE GE_Meshing
+         concrete_name = "GE_BoxWithBoxes"
+         mesh_polyhedron = < "GE_Segment" "GE_Rectangle" >
+         vertices_coordinate_1 = regular_vector( 0., $IS_N, 1.0 )
+         vertices_coordinate_0 = regular_vector( 0., $IS_N, 1.0 )
+      END MODULE GE_Meshing
+      
+      MODULE macro_colors
+         inlet = < "bottom" >
+         outlet = < "right" "left" "top" >
+      END MODULE macro_colors
+      
+      MODULE interior_fields
+         MODULE field#concentration
+            name = "CC"
+            nb_components = 1
+            element_name = "PDE_2D_Q0_1node"
+            storage_depth = 2
+            $DS_T = 0.
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = < 0. >
+            END MODULE DOFs_values
+         END MODULE field#concentration
+         MODULE field#velocity
+            name = "velocity"
+            nb_components = 2
+            element_name = "PDE_2D_Q1_4nodes"
+            storage_depth = 2
+            $DS_T = 0.
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               $DS_x = component($DV_X,0)
+               $DS_y = component($DV_X,1)
+               value = vector( $DS_y, 1.0 - $DS_x )
+            END MODULE DOFs_values
+         END MODULE field#velocity
+      END MODULE interior_fields
+      
+      MODULE boundary_conditions
+         MODULE Dirichlet
+            field = "CC"
+            color = "inlet"
+            type = "Dirichlet"
+            $DS_x = component( $DV_X, 0 )
+            value = ( in_range( $DS_x, vector( 1./3., 2./3. ) ) ? 1.0: 0.0 )
+         END MODULE Dirichlet
+//         MODULE Neumann_homogeneous
+//            field = "CC"
+//            color = "outlet"
+//            type = "Neumann_homogeneous"
+//         END MODULE Neumann_homogeneous
+      END MODULE boundary_conditions
+      
+      MODULE PDE_ResultSaver
+         writers = < "PEL_VTKwriter" >
+         writing_mode = "text"
+         files_basename = "save"
+         MODULE field#CC
+            where_to_save = "at_cell_centers"
+            entry_name = "C"
+            field = "CC"
+         END MODULE field#CC
+         MODULE field#UU
+            where_to_save = "at_vertices"
+            entry_name = "U"
+            field = "velocity"
+         END MODULE field#UU
+      END MODULE PDE_ResultSaver
+      
+   END MODULE PDE_DomainAndFields
+   
+   MODULE FE_SetOfParameters
+      source = < 0. >
+      density= < 1. >
+      diffusivity = < 0. >
+   END MODULE FE_SetOfParameters
+   
+   MODULE FE_OneStepIteration
+      concrete_name = "FE_SplitSystem"
+      MODULE list_of_FE_OneStepIteration
+         MODULE FE_OneStepIteration#concentration
+            concrete_name = "MY_AdvectionDiffusion"
+            AD_unknown_field="CC" 
+            AD_coeff_diffusion="diffusivity"
+            AD_coeff_unsteady ="density" 
+            AD_param_source="source"
+            
+            MODULE convective_scheme
+               concrete_name = "MY_MUSCL_Scheme"
+               AD_param_advective_velocity="velocity"
+               AD_coeff_unsteady ="density" 
+            END MODULE convective_scheme
+            
+            MODULE LA_Matrix
+               concrete_name = "LA_PelMatrix"
+            END MODULE LA_Matrix
+            
+            MODULE LA_Solver
+               concrete_name = "LA_PreconditionedSolver"
+               MODULE LA_IterativeSolver
+                  concrete_name = "LA_GMRES_IS"
+                  nb_iterations_max = 200000
+                  restart = 50
+                  MODULE LA_ConvergenceTest
+                     concrete_name = "LA_DefaultConvergenceTest"
+                     relative_tolerance = 1.e-12
+                     absolute_tolerance = 1.e-20
+                  END MODULE LA_ConvergenceTest
+                  verbose = false
+               END MODULE LA_IterativeSolver
+               MODULE LA_Preconditioner
+                  concrete_name = "LA_Jacobi_PC"
+                  smallest_inverted_item = 1.e-20
+               END MODULE LA_Preconditioner
+            END MODULE LA_Solver
+         END MODULE FE_OneStepIteration#concentration
+      END MODULE list_of_FE_OneStepIteration
+   END MODULE FE_OneStepIteration
+   
+END MODULE PEL_Application

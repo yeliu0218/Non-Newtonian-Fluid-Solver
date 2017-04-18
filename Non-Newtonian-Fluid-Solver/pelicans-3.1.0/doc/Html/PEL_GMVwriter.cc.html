@@ -1,0 +1,800 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>PEL_GMVwriter.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="PEL_GMVwriter.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="PELpack-tree.html"><span>Tree</span></a>
+    <a href="PEL_GMVwriter.html"><span>Class</span></a>
+    <a href="PEL_GMVwriter.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="PELpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_GMVwriter</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_DataWithContext</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Int</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_List</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Map</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_String</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_System</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">doubleArray2D</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">intArray2D</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">size_t_vector</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">stringVector</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;iostream&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;sstream&gt;
+
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ; </font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">cout</font><font class="text"> ;
+
+</font><font class="kw3">PEL_GMVwriter</font><font class="text"> </font><font class="kw1">const</font><font class="text">* </font><font class="kw3">PEL_GMVwriter</font><font class="text">::PROTOTYPE = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_GMVwriter</font><font class="text">() ;
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_GMVwriter</font><font class="text">:: </font><font class="kw3">PEL_GMVwriter</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_DataOnMeshingWriter</font><font class="text">( </font><font class="string">&quot;PEL_GMVwriter&quot;</font><font class="text"> )
+   , OPENMODE()
+   , HAS_FACE_VARS( </font><font class="kw1">false</font><font class="text"> )
+   , DIM( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+   , BINARY( </font><font class="kw1">false</font><font class="text"> )
+   , ICYCLE( 0 )
+{
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_GMVwriter</font><font class="text">*
+</font><font class="kw3">PEL_GMVwriter</font><font class="text">:: create_replica( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+				</font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_GMVwriter:: create_replica&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_PRE( a_owner, exp ) ) ;
+
+   </font><font class="kw3">PEL_GMVwriter</font><font class="text">* result = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_GMVwriter</font><font class="text">( a_owner, exp ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( create_replica_POST( result, a_owner, exp ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_GMVwriter</font><font class="text">:: </font><font class="kw3">PEL_GMVwriter</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+			       </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_DataOnMeshingWriter</font><font class="text">( a_owner )
+   , OPENMODE()
+   , HAS_FACE_VARS( </font><font class="kw1">false</font><font class="text"> )
+   , DIM( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+   , BINARY( </font><font class="kw1">false</font><font class="text"> )
+   , ICYCLE( 0 )
+{
+   FILEBASENAME = exp-&gt;string_data( </font><font class="string">&quot;files_basename&quot;</font><font class="text"> ) ;
+   FILEXTENSION = </font><font class="string">&quot;.gmv&quot;</font><font class="text"> ;
+   OPENMODE =  </font><font class="kw2">std</font><font class="text">::ios::out ;
+
+   FORMAT = </font><font class="string">&quot;ascii&quot;</font><font class="text"> ;
+
+   </font><font class="kw1">if</font><font class="text">( exp-&gt;string_data( </font><font class="string">&quot;writing_mode&quot;</font><font class="text"> )==</font><font class="string">&quot;binary&quot;</font><font class="text"> )
+   {
+      FORMAT = </font><font class="string">&quot;ieeei4r4&quot;</font><font class="text"> ;
+      BINARY = </font><font class="kw1">true</font><font class="text"> ;
+      OPENMODE = </font><font class="kw2">std</font><font class="text">::ios::out|</font><font class="kw2">std</font><font class="text">::ios::binary ;
+      </font><font class="kw1">if</font><font class="text">( </font><font class="kw1">sizeof</font><font class="text">(</font><font class="kw1">int</font><font class="text">) != 4 )
+      {
+         </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> mesg ;
+         mesg &lt;&lt; </font><font class="string">&quot;*** PEL_GMVwriter error:&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+         mesg &lt;&lt; </font><font class="string">&quot;    size_of(int) returns : &quot;</font><font class="text"> &lt;&lt; </font><font class="kw1">sizeof</font><font class="text">(</font><font class="kw1">int</font><font class="text">) &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+         mesg &lt;&lt; </font><font class="string">&quot;    and the size of the type \&quot;</font><font class="kw1">int</font><font class="text">\</font><font class="string">&quot; should be 4&quot;</font><font class="text"> ;
+         </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( mesg.str() ) ;
+      }
+   }
+   
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+}
+
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_GMVwriter</font><font class="text">:: ~</font><font class="kw3">PEL_GMVwriter</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">if</font><font class="text">( is_a_prototype() )
+   {
+      PROTOTYPE = 0 ;
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_GMVwriter</font><font class="text">:: determine_conditions( </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_GMVwriter:: determine_conditions&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">if</font><font class="text">( DIM == </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+   {
+      </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* se = exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;meshing&quot;</font><font class="text"> ) ;
+      DIM = se-&gt;int_data( </font><font class="string">&quot;nb_sp_dims&quot;</font><font class="text"> ) ;
+      se-&gt;destroy() ; se=0 ;
+      </font><font class="kw1">if</font><font class="text">( exp-&gt;has_module( </font><font class="string">&quot;fields&quot;</font><font class="text"> ) )
+      {
+         se = exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;fields&quot;</font><font class="text"> ) ;
+         se-&gt;start_module_iterator() ;
+         </font><font class="kw1">for</font><font class="text">( ; se-&gt;is_valid_module() ; se-&gt;go_next_module() )
+         {
+            </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* sse = se-&gt;create_subexplorer( se ) ;
+            </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; location = sse-&gt;string_data( </font><font class="string">&quot;location&quot;</font><font class="text"> ) ;
+            </font><font class="kw1">if</font><font class="text">( location == </font><font class="string">&quot;at_face_centers&quot;</font><font class="text"> ) 
+            {
+               HAS_FACE_VARS = </font><font class="kw1">true</font><font class="text"> ;
+               </font><font class="kw1">break</font><font class="text"> ;
+            }
+         }
+         se-&gt;destroy() ; se=0 ;
+      }
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      </font><font class="comment">// *** peut etre &#xE0; faire : v&#xE9;rifs de consistance.
+</font><font class="text">   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_GMVwriter</font><font class="text">:: write_cycle( </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_GMVwriter:: write_cycle&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( write_cycle_PRE( exp ) ) ;
+
+   determine_conditions( exp ) ;
+
+   </font><font class="comment">// Current time
+</font><font class="text">   ICYCLE = exp-&gt;int_data( </font><font class="string">&quot;cycle_number&quot;</font><font class="text"> ) ;
+
+   </font><font class="comment">// Open file and test
+</font><font class="text">   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> fname = output_file_name( ICYCLE, </font><font class="string">&quot;&quot;</font><font class="text"> ) ;
+   FILE_FOR_PLAIN_VARS.open( fname.c_str(), OPENMODE ) ;
+   </font><font class="kw1">if</font><font class="text">( FILE_FOR_PLAIN_VARS.fail() || !FILE_FOR_PLAIN_VARS.is_open() )
+   {
+      </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain(
+	 </font><font class="string">&quot;unable to create the GMV output file : &quot;</font><font class="text"> + fname ) ;
+   }
+   </font><font class="kw1">if</font><font class="text">( DIM==2 &amp;&amp; HAS_FACE_VARS )
+   {
+      fname = output_file_name( ICYCLE, </font><font class="string">&quot;_f&quot;</font><font class="text"> ) ;
+      FILE_FOR_FACE2D_VARS.open( fname.c_str(), OPENMODE ) ;
+      </font><font class="kw1">if</font><font class="text">( FILE_FOR_FACE2D_VARS.fail() || !FILE_FOR_FACE2D_VARS.is_open() )
+      {
+         </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain(
+            </font><font class="string">&quot;unable to create the GMV output file : &quot;</font><font class="text"> + fname ) ;
+      }
+   }
+
+   write_data( </font><font class="string">&quot;gmvinput &quot;</font><font class="text">, 8, FILE_FOR_PLAIN_VARS ) ;
+   write_data( FORMAT, 8, FILE_FOR_PLAIN_VARS ) ;
+   write_data_endl( FILE_FOR_PLAIN_VARS ) ;
+   write_data( </font><font class="string">&quot;cycleno &quot;</font><font class="text">, 8, FILE_FOR_PLAIN_VARS ) ;
+   write_data( (</font><font class="kw1">int</font><font class="text">)ICYCLE, FILE_FOR_PLAIN_VARS ) ;
+   write_data_endl( FILE_FOR_PLAIN_VARS ) ;
+
+   </font><font class="kw1">if</font><font class="text">( DIM==2 &amp;&amp; HAS_FACE_VARS )
+   {
+      write_data( </font><font class="string">&quot;gmvinput &quot;</font><font class="text">, 8, FILE_FOR_FACE2D_VARS ) ;
+      write_data( FORMAT, 8, FILE_FOR_FACE2D_VARS ) ;
+      write_data_endl( FILE_FOR_FACE2D_VARS ) ;
+      write_data( </font><font class="string">&quot;cycleno &quot;</font><font class="text">, 8, FILE_FOR_FACE2D_VARS ) ;
+      write_data( (</font><font class="kw1">int</font><font class="text">)ICYCLE, FILE_FOR_FACE2D_VARS ) ;
+      write_data_endl( FILE_FOR_FACE2D_VARS ) ;
+   }
+
+   </font><font class="comment">// Does a new grid must be saved?
+</font><font class="text">   </font><font class="kw1">if</font><font class="text">( exp-&gt;has_module( </font><font class="string">&quot;meshing&quot;</font><font class="text"> ) )
+   {
+      </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* se = exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;meshing&quot;</font><font class="text"> ) ;
+      </font><font class="kw1">if</font><font class="text">( DIM==2 )
+      {
+         write_cells( se ) ;
+         </font><font class="kw1">if</font><font class="text">( HAS_FACE_VARS ) write_faces( se ) ;
+      }
+      </font><font class="kw1">else
+</font><font class="text">      {
+         write_faces( se ) ;
+      }
+      se-&gt;destroy() ; se = 0 ;
+   }
+
+   </font><font class="kw1">if</font><font class="text">( DIM==2 )
+   {
+      write_data( </font><font class="string">&quot;nodes &quot;</font><font class="text">, 8, FILE_FOR_PLAIN_VARS ) ;
+      write_data( </font><font class="string">&quot;fromfile &quot;</font><font class="text">, 8, FILE_FOR_PLAIN_VARS ) ;
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> buf = </font><font class="string">&quot;\&quot;&quot;+PEL_System::basename( NAME_FILE_CELLS )+&quot;</font><font class="text">\</font><font class="string">&quot;&quot;</font><font class="text"> ;
+      write_data( buf, buf.length(), FILE_FOR_PLAIN_VARS ) ;
+      write_data_endl( FILE_FOR_PLAIN_VARS ) ;
+
+      write_data( </font><font class="string">&quot;cells &quot;</font><font class="text">, 8, FILE_FOR_PLAIN_VARS ) ;
+      write_data( </font><font class="string">&quot;fromfile &quot;</font><font class="text">, 8, FILE_FOR_PLAIN_VARS ) ;
+      write_data( buf, buf.length(), FILE_FOR_PLAIN_VARS ) ;
+      write_data_endl( FILE_FOR_PLAIN_VARS ) ;
+
+      </font><font class="kw1">if</font><font class="text">( HAS_FACE_VARS )
+      {
+         write_data( </font><font class="string">&quot;nodes &quot;</font><font class="text">, 8, FILE_FOR_FACE2D_VARS ) ;
+         write_data( </font><font class="string">&quot;fromfile &quot;</font><font class="text">, 8, FILE_FOR_FACE2D_VARS ) ;
+         buf = </font><font class="string">&quot;\&quot;&quot;+PEL_System::basename( NAME_FILE_FACES )+&quot;</font><font class="text">\</font><font class="string">&quot;&quot;</font><font class="text"> ;
+         write_data( buf, buf.length(), FILE_FOR_FACE2D_VARS ) ;
+         write_data_endl( FILE_FOR_FACE2D_VARS ) ;
+
+         write_data( </font><font class="string">&quot;faces &quot;</font><font class="text">, 8, FILE_FOR_FACE2D_VARS ) ;
+         write_data( </font><font class="string">&quot;fromfile &quot;</font><font class="text">, 8, FILE_FOR_FACE2D_VARS ) ;
+         write_data( buf, buf.length(), FILE_FOR_FACE2D_VARS ) ;
+         write_data_endl( FILE_FOR_FACE2D_VARS ) ;
+      }
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      write_data( </font><font class="string">&quot;nodes &quot;</font><font class="text">, 8, FILE_FOR_PLAIN_VARS ) ;
+      write_data( </font><font class="string">&quot;fromfile &quot;</font><font class="text">, 8, FILE_FOR_PLAIN_VARS ) ;
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> buf = </font><font class="string">&quot;\&quot;&quot;+PEL_System::basename( NAME_FILE_FACES )+&quot;</font><font class="text">\</font><font class="string">&quot;&quot;</font><font class="text"> ;
+      write_data( buf, buf.length(), FILE_FOR_PLAIN_VARS ) ;
+      write_data_endl( FILE_FOR_PLAIN_VARS ) ;
+
+      write_data( </font><font class="string">&quot;faces &quot;</font><font class="text">, 8, FILE_FOR_PLAIN_VARS ) ;
+      write_data( </font><font class="string">&quot;fromfile &quot;</font><font class="text">, 8, FILE_FOR_PLAIN_VARS ) ;
+      write_data( buf, buf.length(), FILE_FOR_PLAIN_VARS ) ;
+      write_data_endl( FILE_FOR_PLAIN_VARS ) ;
+   }
+
+   </font><font class="comment">// Saving of variables
+</font><font class="text">   </font><font class="kw1">if</font><font class="text">( exp-&gt;has_module( </font><font class="string">&quot;variables&quot;</font><font class="text"> ) )
+   {
+      </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* se = exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;variables&quot;</font><font class="text"> ) ;
+      </font><font class="kw1">if</font><font class="text">( se-&gt;has_entry( </font><font class="string">&quot;TIME&quot;</font><font class="text"> ) )
+      {
+         write_time_variable( se-&gt;double_data( </font><font class="string">&quot;TIME&quot;</font><font class="text"> ), 
+                              FILE_FOR_PLAIN_VARS ) ;
+         </font><font class="kw1">if</font><font class="text">( DIM==2 &amp;&amp; HAS_FACE_VARS )
+            write_time_variable( se-&gt;double_data( </font><font class="string">&quot;TIME&quot;</font><font class="text"> ), 
+                                 FILE_FOR_FACE2D_VARS ) ;
+      }
+      se-&gt;destroy() ; se = 0 ;
+   }
+
+   </font><font class="comment">// Saving of fields
+</font><font class="text">   </font><font class="kw1">if</font><font class="text">( exp-&gt;has_module( </font><font class="string">&quot;fields&quot;</font><font class="text"> ) )
+   {
+      </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* se = exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;fields&quot;</font><font class="text"> ) ;
+      write_fields( se ) ;
+      se-&gt;destroy() ; se = 0 ;
+   }
+
+   write_data( </font><font class="string">&quot;endgmv &quot;</font><font class="text">, 8, FILE_FOR_PLAIN_VARS ) ;
+   write_data_endl( FILE_FOR_PLAIN_VARS ) ;
+   FILE_FOR_PLAIN_VARS.close() ;
+   </font><font class="kw1">if</font><font class="text">( DIM==2 &amp;&amp; HAS_FACE_VARS )
+   {
+      write_data( </font><font class="string">&quot;endgmv &quot;</font><font class="text">, 8, FILE_FOR_FACE2D_VARS ) ;
+      write_data_endl( FILE_FOR_FACE2D_VARS ) ;
+      FILE_FOR_FACE2D_VARS.close() ;
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_GMVwriter</font><font class="text">:: write_cells( </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">(</font><font class="string">&quot;PEL_GMVwriter:: write_cells&quot;</font><font class="text">) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( exp!=0 ) ;
+
+   </font><font class="comment">// Open grid file and test
+</font><font class="text">   NAME_FILE_CELLS = output_file_name( ICYCLE, </font><font class="string">&quot;_grid&quot;</font><font class="text"> ) ;
+   </font><font class="kw2">std</font><font class="text">::ofstream file( NAME_FILE_CELLS.c_str(), OPENMODE ) ;
+   </font><font class="kw1">if</font><font class="text">( file.fail() || !file.is_open() )
+   {
+      </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain(
+	 </font><font class="string">&quot;write_cells : unable to create the GMV output file : &quot;</font><font class="text"> + NAME_FILE_CELLS ) ;
+   }
+   write_data( </font><font class="string">&quot;gmvinput &quot;</font><font class="text">, 8, file ) ;
+   write_data( FORMAT, 8, file ) ;
+   write_data_endl( file ) ;
+
+
+   </font><font class="comment">// Vertices
+</font><font class="text">   </font><font class="kw3">doubleArray2D</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; vertices = exp-&gt;doubleArray2D_data( </font><font class="string">&quot;vertices&quot;</font><font class="text"> ) ;
+   write_data( </font><font class="string">&quot;nodev &quot;</font><font class="text">,8, file ) ;
+   write_data( (</font><font class="kw1">int</font><font class="text">)vertices.index_bound( 1 ), file ) ;
+   write_data_endl( file ) ;
+   save_vertices( vertices, file ) ;
+
+   </font><font class="comment">// Cells
+</font><font class="text">   </font><font class="kw3">intVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; cell_nb_vertices = exp-&gt;intVector_data( </font><font class="string">&quot;cell_nb_vertices&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">intArray2D</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; connectivity = exp-&gt;intArray2D_data( </font><font class="string">&quot;cell2vertex&quot;</font><font class="text"> ) ;
+   write_data( </font><font class="string">&quot;cells &quot;</font><font class="text">, 8, file ) ;
+   write_data( (</font><font class="kw1">int</font><font class="text">)connectivity.index_bound( 1 ), file ) ;
+   write_data_endl( file ) ;
+ 
+   save_cells( cell_nb_vertices, connectivity, file ) ;
+
+   write_data( </font><font class="string">&quot;endgmv &quot;</font><font class="text">, 8, file ) ;
+   write_data_endl( file ) ;
+   file.close() ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_GMVwriter</font><font class="text">:: write_faces( </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">(</font><font class="string">&quot;PEL_GMVwriter:: write_faces&quot;</font><font class="text">) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( exp!=0 ) ;
+
+   </font><font class="comment">// Open grid file and test
+</font><font class="text">   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> add_string = </font><font class="string">&quot;_grid&quot;</font><font class="text"> ;
+   </font><font class="kw1">if</font><font class="text">( DIM==2 ) 
+   {
+      </font><font class="kw3">PEL_ASSERT</font><font class="text">( HAS_FACE_VARS ) ;
+      add_string += </font><font class="string">&quot;_f&quot;</font><font class="text"> ;
+   }
+   NAME_FILE_FACES = output_file_name( ICYCLE, add_string ) ;
+   </font><font class="kw2">std</font><font class="text">::ofstream file( NAME_FILE_FACES.c_str(), OPENMODE ) ;
+   </font><font class="kw1">if</font><font class="text">( file.fail() || !file.is_open() )
+   {
+      </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain(
+	 </font><font class="string">&quot;write_faces : unable to create the GMV output file : &quot;</font><font class="text"> + NAME_FILE_FACES ) ;
+   }
+   write_data( </font><font class="string">&quot;gmvinput &quot;</font><font class="text">, 8, file ) ;
+   write_data( FORMAT, 8, file ) ;
+   write_data_endl( file ) ;
+
+   </font><font class="comment">// Vertices
+</font><font class="text">   </font><font class="kw3">doubleArray2D</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; vertices = exp-&gt;doubleArray2D_data( </font><font class="string">&quot;vertices&quot;</font><font class="text"> ) ;
+   write_data( </font><font class="string">&quot;nodev &quot;</font><font class="text">,8, file ) ;
+   write_data( (</font><font class="kw1">int</font><font class="text">)vertices.index_bound( 1 ), file ) ;
+   write_data_endl( file ) ;
+   save_vertices( vertices, file ) ;
+
+   </font><font class="comment">// Faces
+</font><font class="text">   </font><font class="kw3">intArray2D</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; cell2vertex = exp-&gt;intArray2D_data( </font><font class="string">&quot;cell2vertex&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">intVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; face_nb_verts = exp-&gt;intVector_data( </font><font class="string">&quot;face_nb_vertices&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">intArray2D</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; face2vertex = exp-&gt;intArray2D_data( </font><font class="string">&quot;face2vertex&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">intArray2D</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; face2cell = exp-&gt;intArray2D_data( </font><font class="string">&quot;face2cell&quot;</font><font class="text"> ) ;
+   write_data( </font><font class="string">&quot;faces &quot;</font><font class="text">, 8, file ) ;
+   </font><font class="kw2">size_t</font><font class="text"> nb_faces  = face2vertex.index_bound( 1 ) ;
+   </font><font class="kw2">size_t</font><font class="text"> nb_cells  = cell2vertex.index_bound( 1 ) ;
+   write_data( (</font><font class="kw1">int</font><font class="text">)nb_faces, file ) ;
+   write_data( (</font><font class="kw1">int</font><font class="text">)nb_cells, file ) ;
+   write_data_endl( file ) ;
+ 
+   </font><font class="kw1">for</font><font class="text">(  </font><font class="kw2">size_t</font><font class="text"> m=0 ; m&lt;nb_faces ; ++m )
+   {
+      write_data( face_nb_verts( m ), file ) ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> iv=0 ; iv&lt;(</font><font class="kw2">size_t</font><font class="text">)face_nb_verts( m ) ; ++iv )
+      {
+         write_data( face2vertex( iv, m ) + 1, file ) ;
+      }
+      write_data( face2cell( 0, m ) + 1, file ) ;
+      </font><font class="kw1">int</font><font class="text"> icell = face2cell( 1, m ) ;
+      </font><font class="kw1">if</font><font class="text">( icell == index_for_trash() )
+      {
+         icell = 0 ;
+      }
+      </font><font class="kw1">else
+</font><font class="text">      {
+         icell = icell+1 ;
+      }
+      write_data( icell, file ) ;
+      write_data_endl( file ) ;
+   }
+
+   write_data( </font><font class="string">&quot;endgmv &quot;</font><font class="text">, 8, file ) ;
+   write_data_endl( file ) ;
+   file.close() ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_GMVwriter</font><font class="text">:: write_fields( </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* exp )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_GMVwriter:: write_fields&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( exp!=0 ) ;
+
+   </font><font class="comment">// Fields that are not the velocity field
+</font><font class="text">   write_data( </font><font class="string">&quot;variable &quot;</font><font class="text">, 8, FILE_FOR_PLAIN_VARS ) ;
+   write_data_endl( FILE_FOR_PLAIN_VARS ) ;
+   </font><font class="kw1">if</font><font class="text">( DIM==2 &amp;&amp; HAS_FACE_VARS )
+   {
+      write_data( </font><font class="string">&quot;variable &quot;</font><font class="text">, 8, FILE_FOR_FACE2D_VARS ) ;
+      write_data_endl( FILE_FOR_FACE2D_VARS ) ;
+   }
+   exp-&gt;start_module_iterator() ;
+   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* vexp = 0 ;
+   </font><font class="kw1">for</font><font class="text">( ; exp-&gt;is_valid_module() ; exp-&gt;go_next_module() )
+   {
+      </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fexp = exp-&gt;create_subexplorer( 0 ) ;
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; name = fexp-&gt;string_data( </font><font class="string">&quot;name&quot;</font><font class="text"> ) ;
+      </font><font class="kw1">if</font><font class="text">( name!=</font><font class="string">&quot;VELO&quot;</font><font class="text"> )
+      {
+         write_one_field( name, fexp ) ;
+      }
+      </font><font class="kw1">else
+</font><font class="text">      {
+         vexp = exp-&gt;create_subexplorer( 0 ) ;
+      }
+      fexp-&gt;destroy() ; fexp = 0 ;
+   }
+   write_data( </font><font class="string">&quot;endvars &quot;</font><font class="text">, 8, FILE_FOR_PLAIN_VARS ) ;
+   write_data_endl( FILE_FOR_PLAIN_VARS ) ;
+   </font><font class="kw1">if</font><font class="text">( DIM==2 &amp;&amp; HAS_FACE_VARS )
+   {
+      write_data( </font><font class="string">&quot;endvars &quot;</font><font class="text">, 8, FILE_FOR_FACE2D_VARS ) ;
+      write_data_endl( FILE_FOR_FACE2D_VARS ) ;
+   }
+
+   </font><font class="comment">// Velocity field
+</font><font class="text">   </font><font class="kw1">if</font><font class="text">( vexp != 0 )
+   {
+      </font><font class="kw3">PEL_ASSERT</font><font class="text">( vexp-&gt;string_data( </font><font class="string">&quot;name&quot;</font><font class="text"> )==</font><font class="string">&quot;VELO&quot;</font><font class="text"> ) ;
+      write_velocity_field( vexp ) ;
+      vexp-&gt;destroy() ; vexp = 0 ;
+   }
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------
+</font><font class="kw1">void</font><font class="text"> 
+</font><font class="kw3">PEL_GMVwriter</font><font class="text">:: write_time_variable( </font><font class="kw1">double</font><font class="text"> t, </font><font class="kw2">std</font><font class="text">::ofstream&amp; file )
+</font><font class="comment">//-----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">const</font><font class="text"> </font><font class="kw2">size_t</font><font class="text"> sd = </font><font class="kw1">sizeof</font><font class="text">(</font><font class="kw1">float</font><font class="text">) ;
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">const</font><font class="text"> </font><font class="kw2">size_t</font><font class="text"> ss = </font><font class="kw1">sizeof</font><font class="text">(</font><font class="kw1">char</font><font class="text">) ;
+   </font><font class="kw1">if</font><font class="text">( !BINARY )
+   {
+      file &lt;&lt; </font><font class="string">&quot;probtime &quot;</font><font class="text"> &lt;&lt; t &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> tmp( </font><font class="string">&quot;probtime&quot;</font><font class="text"> ) ;
+      file.write(tmp.c_str(), 8*ss ) ;
+      </font><font class="kw1">float</font><font class="text"> fval = (</font><font class="kw1">float</font><font class="text">)t ;
+      file.write((</font><font class="kw1">const</font><font class="text"> </font><font class="kw1">char</font><font class="text">*)&amp;fval,sd) ;
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_GMVwriter</font><font class="text">:: write_velocity_field( </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fexp )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_GMVwriter:: write_velocity_field&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( fexp!=0 ) ;
+
+   </font><font class="kw3">doubleArray2D</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; X = fexp-&gt;doubleArray2D_data( </font><font class="string">&quot;value&quot;</font><font class="text"> ) ;
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; location = fexp-&gt;string_data( </font><font class="string">&quot;location&quot;</font><font class="text"> ) ;
+   </font><font class="kw1">int</font><font class="text"> pos = 0 ;
+   </font><font class="kw1">if</font><font class="text">( location == </font><font class="string">&quot;at_vertices&quot;</font><font class="text"> ) 
+   {
+      pos = 1 ;
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( location == </font><font class="string">&quot;at_face_centers&quot;</font><font class="text"> )
+   {
+      </font><font class="kw3">PEL_ASSERT</font><font class="text">( HAS_FACE_VARS ) ;
+      pos = 2 ;
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( location != </font><font class="string">&quot;at_cell_centers&quot;</font><font class="text"> )
+   {
+      raise_field_location_error(
+         </font><font class="string">&quot;velocity&quot;</font><font class="text">, location,
+         </font><font class="string">&quot;at_vertices,at_face_centers,at_cell_centers&quot;</font><font class="text"> ) ;
+   }
+
+   </font><font class="kw2">std</font><font class="text">::ofstream&amp; file = ( pos==2 &amp;&amp; DIM==2 &amp;&amp; HAS_FACE_VARS ) ? 
+                            FILE_FOR_FACE2D_VARS : FILE_FOR_PLAIN_VARS ;
+
+   write_data( </font><font class="string">&quot;velocity &quot;</font><font class="text">, 8, file ) ;
+   write_data( pos, file ) ;
+   write_data_endl( file ) ;
+
+   </font><font class="comment">// Field writing. If vectorial field create one new field by component 
+</font><font class="text">   </font><font class="comment">// adding &quot;_&quot; and the component number to the original name.
+</font><font class="text">   </font><font class="kw2">size_t</font><font class="text"> nb_components = X.index_bound( 0 ) ;
+   </font><font class="kw2">size_t</font><font class="text"> nb_values_by_component = X.index_bound(1) ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; j&lt;nb_components ; j++ )
+   {
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;nb_values_by_component ; i++ ) 
+      {
+         write_data( X(j,i), file ) ;
+      }
+      write_data_endl( file ) ;
+   }
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=nb_components ; j&lt;3 ; j++ )
+   {
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;nb_values_by_component ; i++ ) 
+      {
+         write_data( 0., file ) ;
+      }
+      write_data_endl( file ) ;
+   }
+   write_data_endl( file ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_GMVwriter</font><font class="text">:: write_one_field( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; name,
+                                 </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fexp )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_GMVwriter:: write_one_field&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( fexp!=0 ) ;
+
+   </font><font class="kw3">doubleArray2D</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; X = fexp-&gt;doubleArray2D_data( </font><font class="string">&quot;value&quot;</font><font class="text"> ) ;
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; location = fexp-&gt;string_data( </font><font class="string">&quot;location&quot;</font><font class="text"> ) ;
+   </font><font class="kw1">int</font><font class="text"> pos = 0 ;
+   </font><font class="kw1">if</font><font class="text">( location == </font><font class="string">&quot;at_vertices&quot;</font><font class="text"> ) 
+   {
+      pos = 1 ;
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( location == </font><font class="string">&quot;at_face_centers&quot;</font><font class="text"> )
+   {
+      </font><font class="kw3">PEL_ASSERT</font><font class="text">( HAS_FACE_VARS ) ;
+      pos = 2 ;
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( location != </font><font class="string">&quot;at_cell_centers&quot;</font><font class="text"> )
+   {
+      raise_field_location_error(
+         name, location, </font><font class="string">&quot;at_vertices,at_face_centers,at_cell_centers&quot;</font><font class="text"> ) ;
+   }
+
+   </font><font class="kw2">std</font><font class="text">::ofstream&amp; file = ( pos==2 &amp;&amp; DIM==2 &amp;&amp; HAS_FACE_VARS ) ? 
+                            FILE_FOR_FACE2D_VARS : FILE_FOR_PLAIN_VARS ;
+
+   </font><font class="comment">// Field writing. If vectorial field create one new field by component 
+</font><font class="text">   </font><font class="comment">// adding &quot;_&quot; and the component number to the original name.
+</font><font class="text">   </font><font class="kw1">bool</font><font class="text"> is_vectorial = ( X.index_bound(0)&gt;1 ) ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; j&lt;X.index_bound(0) ; j++ )
+   {
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> rname = name ;
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> tmp ;
+      </font><font class="kw1">if</font><font class="text">( is_vectorial )
+      {
+         tmp &lt;&lt; j ;
+         rname += (</font><font class="string">&quot;_&quot;</font><font class="text">+tmp.str()) ; 
+      }
+      write_data( rname, 8, file ) ;
+      write_data( pos, file ) ;
+      write_data_endl( file ) ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;X.index_bound(1) ; i++ ) 
+      {
+         write_data( X(j,i), file ) ;
+      }
+      write_data_endl( file ) ;
+   }
+   write_data_endl( file ) ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------
+</font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string
+</font><font class="kw3">PEL_GMVwriter</font><font class="text">:: output_file_name( </font><font class="kw2">size_t</font><font class="text"> nb, </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> add_string )
+</font><font class="comment">//-----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_GMVwriter:: output_file_name&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( nb&lt;99999 ) ;
+
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> tmp ;
+   tmp &lt;&lt; nb ;
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> nb_string = tmp.str() ;
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> result = FILEBASENAME+add_string+FILEXTENSION+</font><font class="string">&quot;.00000&quot;</font><font class="text">;
+   result.replace( result.length()-nb_string.length(), 
+                   nb_string.length(),
+                   nb_string ) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( result.length()==( FILEBASENAME.length()+add_string.length()
+                                +FILEXTENSION.length()+6) ) ;
+
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_GMVwriter</font><font class="text">:: save_vertices( </font><font class="kw3">doubleArray2D</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; vert,
+                               </font><font class="kw2">std</font><font class="text">::ofstream&amp; file )
+</font><font class="comment">//-----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_GMVwriter:: save_vertices&quot;</font><font class="text"> ) ;
+   </font><font class="kw2">size_t</font><font class="text"> dim     = vert.index_bound(0);
+   </font><font class="kw2">size_t</font><font class="text"> nb_vert = vert.index_bound(1);
+
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;nb_vert ; i++ ) 
+   {
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; j&lt;dim ; j++ ) 
+      {
+         write_data( vert(j,i), file ) ;
+      }
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=dim ; j&lt;(</font><font class="kw2">size_t</font><font class="text">)3 ; j++ ) 
+      {
+         write_data( 0., file ) ;
+      }     
+      write_data_endl( file ) ;
+   }
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_GMVwriter</font><font class="text">:: save_cells( </font><font class="kw3">intVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; cell_vertices,
+                            </font><font class="kw3">intArray2D</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; connec,
+                            </font><font class="kw2">std</font><font class="text">::ofstream&amp; file )
+</font><font class="comment">//-----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_GMVwriter:: save_cells&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw2">size_t</font><font class="text"> nb_cell = connec.index_bound(1) ;
+
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> elm_type = </font><font class="string">&quot;&quot;</font><font class="text"> ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;nb_cell ; i++ ) 
+   {
+      </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> vert_by_mesh = cell_vertices( i ) ;
+      </font><font class="kw1">if</font><font class="text">( DIM==1 &amp;&amp; vert_by_mesh==2 )
+      {
+         elm_type = </font><font class="string">&quot;line &quot;</font><font class="text"> ;
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( DIM==2 &amp;&amp; vert_by_mesh==3 )
+      {
+         elm_type = </font><font class="string">&quot;tri &quot;</font><font class="text"> ;
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( DIM==2 &amp;&amp; vert_by_mesh==4 )
+      {
+         elm_type = </font><font class="string">&quot;quad &quot;</font><font class="text"> ;
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( DIM==3 &amp;&amp; vert_by_mesh==4 )
+      {
+         elm_type = </font><font class="string">&quot;tet &quot;</font><font class="text"> ;
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( DIM==3 &amp;&amp; vert_by_mesh==8 )
+      {
+         </font><font class="comment">// Instead of standard hex we use the Patran numbered hexahedron 
+</font><font class="text">         elm_type = </font><font class="string">&quot;phex8 &quot;</font><font class="text"> ;
+      }
+      </font><font class="kw1">else</font><font class="text"> 
+      {
+         </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( </font><font class="string">&quot;Invalid polyhedron type for GMV output &quot;</font><font class="text"> ) ;
+      }
+
+      write_data( elm_type, 8, file ) ;
+      write_data( (</font><font class="kw1">int</font><font class="text">) vert_by_mesh, file ) ;
+      write_data_endl( file ) ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; j&lt;vert_by_mesh ; j++ ) 
+      {
+         </font><font class="kw1">int</font><font class="text"> nb = connec(j,i)+1 ;
+         write_data( nb, file ) ;
+      }
+      write_data_endl( file ) ;
+   }
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_GMVwriter</font><font class="text">:: write_data( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> val, </font><font class="kw2">size_t</font><font class="text"> length, 
+                            </font><font class="kw2">std</font><font class="text">::ofstream&amp; file ) 
+</font><font class="comment">//-----------------------------------------------------------------------
+</font><font class="text">{  
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">const</font><font class="text"> </font><font class="kw2">size_t</font><font class="text"> ss = </font><font class="kw1">sizeof</font><font class="text">(</font><font class="kw1">char</font><font class="text">) ;
+   </font><font class="kw1">if</font><font class="text">( !BINARY )
+   {
+      file &lt;&lt; val ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> tmp( length, </font><font class="string">' '</font><font class="text"> ) ;
+      tmp.replace( 0, val.length(), val ) ;
+      file.write( tmp.c_str(), length*ss ) ;
+   }
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_GMVwriter</font><font class="text">:: write_data( </font><font class="kw1">int</font><font class="text"> val, </font><font class="kw2">std</font><font class="text">::ofstream&amp; file ) 
+</font><font class="comment">//-----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">const</font><font class="text"> </font><font class="kw2">size_t</font><font class="text"> si = </font><font class="kw1">sizeof</font><font class="text">(</font><font class="kw1">int</font><font class="text">) ;
+   </font><font class="kw1">if</font><font class="text">( !BINARY )
+   {
+      file &lt;&lt; </font><font class="string">&quot; &quot;</font><font class="text"> &lt;&lt; val ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      file.write((</font><font class="kw1">const</font><font class="text"> </font><font class="kw1">char</font><font class="text">*)&amp;val,si) ;
+   }
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_GMVwriter</font><font class="text">:: write_data( </font><font class="kw1">double</font><font class="text"> val, </font><font class="kw2">std</font><font class="text">::ofstream&amp; file ) 
+</font><font class="comment">//-----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">const</font><font class="text"> </font><font class="kw2">size_t</font><font class="text"> sd = </font><font class="kw1">sizeof</font><font class="text">(</font><font class="kw1">float</font><font class="text">) ;
+   </font><font class="kw1">if</font><font class="text">( !BINARY )
+   {
+      file &lt;&lt; </font><font class="string">&quot; &quot;</font><font class="text"> &lt;&lt; val ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      </font><font class="kw1">float</font><font class="text"> fval = (</font><font class="kw1">float</font><font class="text">)val ;
+      file.write((</font><font class="kw1">const</font><font class="text"> </font><font class="kw1">char</font><font class="text">*)&amp;fval,sd) ;
+   }
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_GMVwriter</font><font class="text">:: write_data_endl( </font><font class="kw2">std</font><font class="text">::ofstream&amp; file )
+</font><font class="comment">//-----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">if</font><font class="text">( !BINARY )
+   {
+      file &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   }
+}
+
+</font>
+</pre>
+</body>
+</html>

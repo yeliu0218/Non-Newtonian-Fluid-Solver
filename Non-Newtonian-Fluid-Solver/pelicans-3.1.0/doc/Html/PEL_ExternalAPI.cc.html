@@ -1,0 +1,181 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>PEL_ExternalAPI.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="PEL_ExternalAPI.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="PELpack-tree.html"><span>Tree</span></a>
+    <a href="PEL_ExternalAPI.html"><span>Class</span></a>
+    <a href="PEL_ExternalAPI.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="PELpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ExternalAPI</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ObjectRegister</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_assertions</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">stringVector</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;iostream&gt;
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_ExternalAPI</font><font class="text">:: </font><font class="kw3">PEL_ExternalAPI</font><font class="text">( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_name,
+                                   </font><font class="kw2">size_t</font><font class="text"> a_priority_level )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_Object</font><font class="text">( 0 )
+   , MY_NAME( a_name )
+   , MY_PRIORITY( a_priority_level )
+{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_ExternalAPI:: PEL_ExternalAPI&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">if</font><font class="text">( a_priority_level&gt;9 )
+   {
+      </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain(
+         </font><font class="string">&quot;PEL_ExternalAPI error :\n&quot;
+</font><font class="text">         </font><font class="string">&quot;   external API of name : \n&quot;</font><font class="text">+a_name+</font><font class="string">&quot;\&quot;</font><font class="text">\n</font><font class="string">&quot;
+         &quot;</font><font class="text">   is </font><font class="kw2">defined</font><font class="text"> with a priority level greater than 9</font><font class="string">&quot; ) ;
+   }
+   
+   plugins_map()-&gt;register_item( a_name, this ) ;
+   plugins_names().append( a_name ) ;
+}
+</font><font class="text">
+</font><font class="string">//----------------------------------------------------------------------
+PEL_ExternalAPI:: ~PEL_ExternalAPI( void )
+//----------------------------------------------------------------------
+{
+}
+</font><font class="text">
+</font><font class="string">//----------------------------------------------------------------------
+void
+PEL_ExternalAPI:: initialize_all_APIs( int&amp; argc, char**&amp; argv )
+//----------------------------------------------------------------------
+{
+   PEL_LABEL( &quot;</font><font class="kw3">PEL_ExternalAPI</font><font class="text">:: initialize_all_APIs</font><font class="string">&quot; ) ;
+</font><font class="text">
+</font><font class="string">   size_t const nb_APIs = plugins_names().size() ;
+   for( size_t level=9 ; level&lt;10 ; --level )
+   {
+      for( size_t i=0 ; i&lt;nb_APIs ; ++i )
+      {
+         std::string const&amp; name = plugins_names()(i) ;
+         PEL_ExternalAPI* api =
+            static_cast&lt;PEL_ExternalAPI*&gt;( plugins_map()-&gt;item( name ) ) ;
+         if( api-&gt;MY_PRIORITY==level )
+         {
+            api-&gt;initialize( argc, argv ) ;
+         }
+      }
+   }
+}
+</font><font class="text">
+</font><font class="string">//----------------------------------------------------------------------
+void
+PEL_ExternalAPI:: terminate_all_APIs( void )
+//----------------------------------------------------------------------
+{
+   PEL_LABEL( &quot;</font><font class="kw3">PEL_ExternalAPI</font><font class="text">:: terminate_all_APIs</font><font class="string">&quot; ) ;
+   
+   size_t const nb_APIs = plugins_names().size() ;
+   for( size_t level=0 ; level&lt;10 ; ++level )
+   {
+      for( size_t i=nb_APIs-1 ; i&lt;nb_APIs ; --i )
+      {
+         std::string const&amp; name = plugins_names()(i) ;
+         if( plugins_map()-&gt;has( name ) )
+         {
+            PEL_ExternalAPI* api =
+               static_cast&lt;PEL_ExternalAPI*&gt;( plugins_map()-&gt;item( name ) ) ;
+            if( api-&gt;MY_PRIORITY==level )
+            {
+               plugins_map()-&gt;unregister_item( name ) ;
+               api-&gt;destroy() ;
+            }
+         }
+      }
+   }
+   plugins_map()-&gt;destroy() ;
+}
+</font><font class="text">
+</font><font class="string">//----------------------------------------------------------------------
+PEL_ObjectRegister*
+PEL_ExternalAPI:: plugins_map( void )
+//----------------------------------------------------------------------
+{
+   static PEL_ObjectRegister* result =
+         PEL_ObjectRegister::create( 0, &quot;</font><font class="kw3">PEL_ExternalAPI</font><font class="text"> descendant</font><font class="string">&quot; ) ;
+   return( result ) ;
+}
+</font><font class="text">
+</font><font class="string">//----------------------------------------------------------------------
+stringVector&amp;
+PEL_ExternalAPI:: plugins_names( void )
+//----------------------------------------------------------------------
+{
+   static stringVector result(0) ;
+   return( result ) ;
+}
+</font><font class="text">
+</font>
+</pre>
+</body>
+</html>

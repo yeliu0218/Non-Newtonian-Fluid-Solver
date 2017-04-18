@@ -1,0 +1,1028 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>DOC_WriterHtml.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="DOC_WriterHtml.cc_PelDoc ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PelDoc</div>
+  <div id=navbarmenu>
+    <a href="DOpack-tree.html"><span>Tree</span></a>
+    <a href="DOC_WriterHtml.html"><span>Class</span></a>
+    <a href="DOC_WriterHtml.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <a href="DOC_WriterHtml.icc.html"><span>Inlined</span></a>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="DOpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated
+ *  reusable components, whose purpose is to simplify the task of developing
+ *  softwares of numerical mathematics and scientific computing.
+ *
+ *  This software is governed by the CeCILL-C license under French law and
+ *  abiding by the rules of distribution of free software. You can use, modify
+ *  and/or redistribute the software under the terms of the CeCILL-C license
+ *  as circulated by CEA, CNRS and INRIA at the following URL
+ *  &quot;http://www.cecill.info&quot;.
+ *
+ *  As a counterpart to the access to the source code and rights to copy,
+ *  modify and redistribute granted by the license, users are provided only
+ *  with a limited warranty and the software's author, the holder of the
+ *  economic rights, and the successive licensors have only limited liability.
+ *
+ *  In this respect, the user's attention is drawn to the risks associated
+ *  with loading, using, modifying and/or developing or reproducing the
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also
+ *  therefore means that it is reserved for developers and experienced
+ *  professionals having in-depth computer knowledge. Users are therefore
+ *  encouraged to load and test the software's suitability as regards their
+ *  requirements in conditions enabling the security of their systems and/or
+ *  data to be ensured and, more generally, to use and operate it in the same
+ *  conditions as regards security.
+ *
+ *  The fact that you are presently reading this means that you have had
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;DOC_WriterHtml.hh&gt;
+</font><font class="kw2">#ifdef</font><font class="text"> OUTLINE
+</font><font class="kw2">#define</font><font class="text"> </font><font class="kw1">inline
+</font><font class="kw2">#include</font><font class="text"> &lt;DOC_WriterHtml.icc&gt;
+#undef </font><font class="kw1">inline
+</font><font class="kw2">#endif
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Module</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Root</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_String</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_System</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;DOC_Category.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;DOC_Class.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;algorithm&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;DOC_ClassItem.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;DOC_Function.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;DOC_Method.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;DOC_WebView.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;fstream&gt;
+
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+
+</font><font class="comment">//--------------------------------------------------------------------
+</font><font class="kw3">stringVector</font><font class="text"> DOC_WriterHtml::menu = </font><font class="kw3">stringVector</font><font class="text">(0) ;
+</font><font class="comment">//--------------------------------------------------------------------
+</font><font class="text">
+
+
+</font><font class="comment">//--------------------------------------------------------------------
+</font><font class="text">DOC_WriterHtml*
+DOC_WriterHtml::create( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner, </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; str )
+</font><font class="comment">//--------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;DOC_WriterHtml::create&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw1">return</font><font class="text"> </font><font class="kw1">new</font><font class="text"> DOC_WriterHtml( a_owner, str ) ;
+}
+
+
+
+</font><font class="comment">//--------------------------------------------------------------------
+</font><font class="text">DOC_WriterHtml::DOC_WriterHtml( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+</font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; str )
+</font><font class="comment">//--------------------------------------------------------------------
+</font><font class="text">: DOC_Writer( a_owner, str + </font><font class="string">&quot;.html&quot;</font><font class="text"> )
+, file( str ) {
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;DOC_WriterHtml::DOC_WriterHtml&quot;</font><font class="text"> ) ;
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> strtitle = file ;
+   </font><font class="kw1">if</font><font class="text">( file == </font><font class="string">&quot;index&quot;</font><font class="text"> ) strtitle = DOC_Package::application() + </font><font class="string">&quot; class reference&quot;</font><font class="text"> ;
+   head( out(), strtitle, file !=</font><font class="string">&quot;index&quot;</font><font class="text"> ) ; </font><font class="comment">/** &lt;HTML /&gt; */
+</font><font class="text">   
+   </font><font class="comment">/** &lt;MODIF&gt; - Create frameset */
+</font><font class="text">   </font><font class="kw1">if</font><font class="text">( file == </font><font class="string">&quot;index&quot;</font><font class="text"> ) {
+      DOC_Package </font><font class="kw1">const</font><font class="text">* pack = DOC_Package::master() ;
+      </font><font class="kw3">PEL_Iterator</font><font class="text">* it = pack-&gt;sub_packages()-&gt;create_iterator(</font><font class="kw1">this</font><font class="text">) ;
+      </font><font class="kw2">string</font><font class="text"> def = </font><font class="string">&quot;MASTER-tree&quot;</font><font class="text"> ;
+      </font><font class="kw1">if</font><font class="text">( it-&gt;is_valid() ) {
+         DOC_Package </font><font class="kw1">const</font><font class="text">* first = </font><font class="kw1">dynamic_cast</font><font class="text">&lt;DOC_Package*&gt;( it-&gt;item() ) ;
+         </font><font class="kw3">PEL_CHECK</font><font class="text">( </font><font class="kw1">dynamic_cast</font><font class="text">&lt;DOC_Package </font><font class="kw1">const</font><font class="text">*&gt;( first )!=0 ) ;
+         def = first-&gt;name() ;
+      }
+      </font><font class="comment">/** &lt;HTML&gt; */
+</font><font class="text">      out() &lt;&lt; </font><font class="string">&quot;&lt;frameset cols=\&quot;</font><font class="text">20%,*\</font><font class="string">&quot; frameborder=\&quot;</font><font class="text">1\</font><font class="string">&quot;&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      out() &lt;&lt; </font><font class="string">&quot;  &lt;frameset rows=\&quot;</font><font class="text">30%,*\</font><font class="string">&quot;&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      out() &lt;&lt; </font><font class="string">&quot;    &lt;frame src=\&quot;</font><font class="text">overview-frame.html\</font><font class="string">&quot; name=\&quot;</font><font class="text">LibListFrame\</font><font class="string">&quot;&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      out() &lt;&lt; </font><font class="string">&quot;    &lt;frame src=\&quot;&quot; &lt;&lt; def &lt;&lt; &quot;</font><font class="text">.html\</font><font class="string">&quot; name=\&quot;</font><font class="text">LibFrame\</font><font class="string">&quot;&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      out() &lt;&lt; </font><font class="string">&quot;  &lt;/frameset&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      out() &lt;&lt; </font><font class="string">&quot;  &lt;frame src=\&quot;&quot; + DOC_Package::master()-&gt;name() + &quot;</font><font class="text">-tree.html\</font><font class="string">&quot; name=\&quot;</font><font class="text">classFrame\</font><font class="string">&quot;&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      out() &lt;&lt; </font><font class="string">&quot;  &lt;noframes&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      out() &lt;&lt; </font><font class="string">&quot;  &lt;body&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      out() &lt;&lt; </font><font class="string">&quot;    &lt;p&gt;Sorry, a frames-capable browser is required to access the PELICANS documentation.&lt;/p&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      out() &lt;&lt; </font><font class="string">&quot;    &lt;a href=\&quot;&quot; &lt;&lt; def &lt;&lt; &quot;</font><font class="text">.html\</font><font class="string">&quot;&gt;.: No frames :.&lt;/a&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      out() &lt;&lt; </font><font class="string">&quot;  &lt;/body&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      out() &lt;&lt; </font><font class="string">&quot;  &lt;/noframes&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      out() &lt;&lt; </font><font class="string">&quot;&lt;/frameset&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      </font><font class="comment">/** &lt;/HTML&gt; */
+</font><font class="text">   }
+   </font><font class="comment">/** &lt;/MODIF&gt; - Create frameset */
+</font><font class="text">   package_level = 0 ;
+   class_level = 0 ;
+}
+
+
+
+</font><font class="comment">//--------------------------------------------------------------------
+</font><font class="text">DOC_WriterHtml::~DOC_WriterHtml( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//--------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">if</font><font class="text">( file != </font><font class="string">&quot;index&quot;</font><font class="text"> ) {
+      out() &lt;&lt; </font><font class="string">&quot;\n&lt;/body&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ; </font><font class="comment">/** &lt;HTML /&gt; */
+</font><font class="text">   }
+   out() &lt;&lt; </font><font class="string">&quot;&lt;/html&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ; </font><font class="comment">/** &lt;/HTML /&gt; */
+</font><font class="text">   
+}
+
+
+
+</font><font class="comment">//--------------------------------------------------------------------
+</font><font class="kw2">string
+</font><font class="text">DOC_WriterHtml::underlined_text( </font><font class="kw2">size_t</font><font class="text"> marqueur,
+</font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; text_initial ) </font><font class="kw1">const
+</font><font class="comment">//--------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">string</font><font class="text"> ret ;
+   </font><font class="comment">/** &lt;MODIF&gt; - Highlighting styles definition */
+</font><font class="text">   </font><font class="comment">/** &lt;HTML&gt; */
+</font><font class="text">   ret = </font><font class="string">&quot;&lt;span class=\&quot;&quot; ;
+   switch( marqueur ) {
+      /** style =  */
+      case 0 : ret+=&quot;</font><font class="text">uid0</font><font class="string">&quot; ;
+      break ;
+      /** style =  */
+      case 1 : ret+=&quot;</font><font class="text">uid1</font><font class="string">&quot; ;
+      break ;
+      /** style =  */
+      case 2 : ret+=&quot;</font><font class="text">uid2</font><font class="string">&quot; ;
+      break ;
+      /** style =  */
+      case 10 : ret+=&quot;</font><font class="text">uid10</font><font class="string">&quot; ;
+      break ;
+      /** style =  */
+      case 20 : ret+=&quot;</font><font class="text">uid20</font><font class="string">&quot; ;
+      break ;
+      /** style = default */
+      default : ret+=&quot;</font><font class="text">uidd</font><font class="string">&quot; ;
+      break ;
+   }
+   ret += &quot;</font><font class="text">\</font><font class="string">&quot;&gt;&quot;</font><font class="text"> + text_initial + </font><font class="string">&quot;&lt;/span&gt;&quot;</font><font class="text"> ;
+   </font><font class="comment">/** &lt;/HTML&gt; */
+</font><font class="text">   </font><font class="comment">/** &lt;/MODIF&gt; - Highlighting styles definition */
+</font><font class="text">   </font><font class="kw1">return</font><font class="text"> ret ;
+}
+
+</font><font class="comment">//--------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">DOC_WriterHtml::hruler( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//--------------------------------------------------------------------
+</font><font class="text">{
+   out() &lt;&lt; </font><font class="string">&quot;&lt;hr /&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+}
+
+
+
+</font><font class="comment">//--------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">DOC_WriterHtml::start_category( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; name,
+</font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; protection )
+</font><font class="comment">//--------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="comment">/** &lt;MODIF&gt; - category table heading */
+</font><font class="text">   </font><font class="comment">/** &lt;HTML&gt; */
+</font><font class="text">   out() &lt;&lt; </font><font class="string">&quot;\n&lt;!-- ========== NEW CATEGORY ========== --&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   out() &lt;&lt; </font><font class="string">&quot;&lt;table class=category cellpadding=2 cellspacing=0 rules=rows&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   out() &lt;&lt; </font><font class="string">&quot;  &lt;tr class=heading&gt;&lt;th class=name&gt;&quot;</font><font class="text"> &lt;&lt; name &lt;&lt; </font><font class="string">&quot;&lt;/th&gt;&lt;th class=protection&gt;&quot;</font><font class="text"> &lt;&lt; protection &lt;&lt; </font><font class="string">&quot;&lt;/th&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="string">&quot;&lt;/tr&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="comment">/** &lt;/HTML&gt; */
+</font><font class="text">}
+
+
+
+</font><font class="comment">//--------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">DOC_WriterHtml::title( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; tit, </font><font class="kw1">int</font><font class="text"> niveau )
+</font><font class="comment">//--------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">if</font><font class="text">( tit.length() &gt; 0 ) {
+      out() &lt;&lt; </font><font class="string">&quot;&lt;h1 id=maintitle&gt;&quot;</font><font class="text"> &lt;&lt; tit &lt;&lt; </font><font class="string">&quot;&lt;/h1&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text">;
+   }
+}
+
+
+
+</font><font class="comment">//--------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">DOC_WriterHtml::comment( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; com )
+</font><font class="comment">//--------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;DOC_WriterHtml::comment&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw1">if</font><font class="text">( com.length()&gt;0 ) {
+      </font><font class="comment">// Searching for html syntax
+</font><font class="text">      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> to_output = expand( com, </font><font class="string">&quot;http://&quot;</font><font class="text"> ) ;
+      to_output = expand( to_output, </font><font class="string">&quot;mailto:&quot;</font><font class="text"> ) ;
+      out() &lt;&lt; </font><font class="string">&quot;&lt;pre&gt;&quot;</font><font class="text"> &lt;&lt; to_output &lt;&lt; </font><font class="string">&quot;&lt;/pre&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   }
+   </font><font class="kw1">else</font><font class="text"> {
+      out() &lt;&lt; </font><font class="string">&quot;&lt;br /&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   }
+}
+
+
+</font><font class="comment">//--------------------------------------------------------------------
+</font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string
+</font><font class="text">DOC_WriterHtml::expand( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; com, </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; html_cmd )
+</font><font class="comment">//--------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;DOC_WriterHtml:: expand&quot;</font><font class="text"> ) ;
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> result ;
+   </font><font class="kw2">size_t</font><font class="text"> idx_deb = 0 ;
+   </font><font class="kw2">size_t</font><font class="text"> idx ;
+   </font><font class="kw2">size_t</font><font class="text"> l = com.length() ;
+   
+   </font><font class="kw1">while</font><font class="text">( ( idx = com.find( html_cmd, idx_deb ) ) &lt; l ) {
+      result += com.substr( idx_deb, idx-idx_deb ) ;
+      
+      </font><font class="kw2">size_t</font><font class="text"> idx_fin = idx+1 ;
+      </font><font class="kw1">for</font><font class="text">( ; idx_fin&lt;l ; idx_fin++ ) {
+         </font><font class="kw1">if</font><font class="text">( com[idx_fin]==</font><font class="string">' '</font><font class="text"> || com[idx_fin]==</font><font class="string">'\n'</font><font class="text"> )
+            </font><font class="kw1">break</font><font class="text"> ;
+      }
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> link = com.substr( idx+html_cmd.length(), idx_fin-(idx+html_cmd.length()) ) ;
+      
+      result += </font><font class="string">&quot;&lt;a href=\&quot;&quot; + html_cmd + link + &quot;</font><font class="text">\</font><font class="string">&quot;&gt;&quot;</font><font class="text"> + link + </font><font class="string">&quot;&lt;/a&gt;&quot;</font><font class="text"> ; </font><font class="comment">/** &lt;HTML /&gt; */
+</font><font class="text">      idx_deb = idx_fin ;
+   }
+   result += com.substr( idx_deb, com.length()-idx_deb ) ;
+   
+   </font><font class="kw1">return</font><font class="text"> result ;
+   
+}
+
+
+</font><font class="comment">//--------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">DOC_WriterHtml::list( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; id )
+</font><font class="comment">//--------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">if</font><font class="text">( !id.empty() ) {
+      out() &lt;&lt; id &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      out() &lt;&lt; </font><font class="string">&quot;&lt;ul&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   }
+   </font><font class="kw1">else</font><font class="text"> {
+      out() &lt;&lt; </font><font class="string">&quot;&lt;/ul&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   }
+}
+
+
+
+</font><font class="comment">//--------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">DOC_WriterHtml::new_element( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//--------------------------------------------------------------------
+</font><font class="text">{
+   write( </font><font class="string">&quot;&lt;li&gt;&quot;</font><font class="text"> ) ;
+}
+
+
+
+</font><font class="comment">//--------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">DOC_WriterHtml::write_label( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; label )
+</font><font class="comment">//--------------------------------------------------------------------
+</font><font class="text">{
+   out() &lt;&lt; </font><font class="string">&quot;&lt;a name=\&quot;&quot; &lt;&lt; label &lt;&lt; &quot;</font><font class="text">\</font><font class="string">&quot;&gt;&lt;/a&gt;&quot;</font><font class="text"> ;
+}
+
+
+
+</font><font class="comment">//--------------------------------------------------------------------
+</font><font class="kw2">string
+</font><font class="text">DOC_WriterHtml::reference( DOC_Class </font><font class="kw1">const</font><font class="text">* cl,
+</font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; label,
+</font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; display ) </font><font class="kw1">const
+</font><font class="comment">//--------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">string</font><font class="text"> ret = display ;
+   </font><font class="kw2">string</font><font class="text"> ext ;
+   </font><font class="kw1">if</font><font class="text">( !cl-&gt;is_external() ) {
+      ret = </font><font class="string">&quot;&lt;a href=\&quot;&quot; + cl-&gt;name() + &quot;</font><font class="text">.html#</font><font class="string">&quot; + label
+      + &quot;</font><font class="text">\</font><font class="string">&quot; target=\&quot;</font><font class="text">classFrame\</font><font class="string">&quot;&gt;&quot;</font><font class="text"> + display + </font><font class="string">&quot;&lt;/a&gt;&quot;</font><font class="text"> ;
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( ! ( ext = DOC_Tools::external( cl-&gt;name() + </font><font class="string">&quot;.html&quot;</font><font class="text"> ) ).empty() ) {
+      ret = </font><font class="string">&quot;&lt;a href=\&quot;&quot; + ext + &quot;</font><font class="text">#</font><font class="string">&quot; + label + &quot;</font><font class="text">\</font><font class="string">&quot; target=\&quot;</font><font class="text">_blank\</font><font class="string">&quot;&gt;&quot;
+</font><font class="text">      + underlined_text( 2, display ) + </font><font class="string">&quot;&lt;/a&gt;&quot;</font><font class="text"> ;
+   }
+   
+   </font><font class="kw1">return</font><font class="text"> ret ;
+}
+
+
+
+</font><font class="comment">//--------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">DOC_WriterHtml::write_code( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; com )
+</font><font class="comment">//--------------------------------------------------------------------
+</font><font class="text">{
+   out() &lt;&lt; </font><font class="string">&quot;&lt;code&gt;&quot;</font><font class="text"> ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">string</font><font class="text">::const_iterator iter = com.begin() ;
+   iter != com.end() ;
+   ++iter ) {
+      </font><font class="comment">/** ecrire de mani&#xE8;re propre le traitement des caract&#xE8;res sp&#xE9;ciaux */
+</font><font class="text">      </font><font class="kw1">if</font><font class="text">( *iter==</font><font class="string">'\n'</font><font class="text"> ) {
+         out() &lt;&lt; </font><font class="string">&quot;&lt;br /&gt;\n&quot;</font><font class="text"> ;
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( *iter==</font><font class="string">' '</font><font class="text"> &amp;&amp; iter+1 != com.end() &amp;&amp; *(iter+1)==</font><font class="string">' '</font><font class="text"> ) {
+         out() &lt;&lt; </font><font class="string">&quot;&amp;nbsp;&quot;</font><font class="text"> ;
+         ++iter ;
+      }
+      </font><font class="kw1">else</font><font class="text"> {
+         out() &lt;&lt; *iter ;
+      }
+   }
+   out() &lt;&lt; </font><font class="string">&quot;&lt;/code&gt;&quot;</font><font class="text"> ;
+}
+
+</font><font class="comment">//--------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">DOC_WriterHtml::write_prototype( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; com )
+</font><font class="comment">//--------------------------------------------------------------------
+</font><font class="text">{
+   out() &lt;&lt; </font><font class="string">&quot;&lt;table class=prototype&gt;\n  &lt;tr&gt;&lt;td&gt;&lt;code&gt;&quot;</font><font class="text"> ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">string</font><font class="text">::const_iterator iter = com.begin() ;
+   iter != com.end() ;
+   ++iter ) {
+      </font><font class="kw1">if</font><font class="text">( *iter==</font><font class="string">'\n'</font><font class="text"> ) {
+         out() &lt;&lt; </font><font class="string">&quot;&lt;/tr&gt;\n  &lt;tr&gt;&lt;td /&gt;&lt;td&gt;&lt;code&gt;&quot;</font><font class="text"> ;
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( *iter == 40 ) {
+         out() &lt;&lt; *iter &lt;&lt; </font><font class="string">&quot;&lt;/code&gt;&lt;/td&gt;&lt;td&gt;&lt;code&gt;&quot;</font><font class="text"> ;
+         ++iter ;
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( *iter==</font><font class="string">' '</font><font class="text"> &amp;&amp; iter+1 != com.end() &amp;&amp; *(iter+1)==</font><font class="string">' '</font><font class="text"> ) {
+         ++iter ;
+      }
+      </font><font class="comment">/** r&#xE9;utiliser le traitement de caracteres speciaux de write_code */
+</font><font class="text">      </font><font class="kw1">else</font><font class="text"> {
+         out() &lt;&lt; *iter ;
+      }
+   }
+   out() &lt;&lt; </font><font class="string">&quot;&lt;/code&gt;&lt;/td&gt;&lt;/tr&gt;\n&lt;/table&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+}
+
+
+</font><font class="comment">//--------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">DOC_WriterHtml::write( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; com )
+</font><font class="comment">//--------------------------------------------------------------------
+</font><font class="text">{
+   
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">string</font><font class="text">::const_iterator iter = com.begin() ;
+   iter != com.end() ;
+   ++iter ) {
+      </font><font class="kw1">if</font><font class="text">( *iter==</font><font class="string">'\n'</font><font class="text"> ) {
+         out() &lt;&lt; </font><font class="string">&quot;&lt;br /&gt;\n&quot;</font><font class="text"> ;
+      }
+      </font><font class="kw1">else</font><font class="text"> {
+         out() &lt;&lt; *iter ;
+      }
+   }
+}
+
+
+</font><font class="comment">//--------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">DOC_WriterHtml::head( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostream</font><font class="text">&amp; ovf, </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; title, </font><font class="kw1">bool</font><font class="text"> set_body )
+</font><font class="comment">//--------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> nm = title ;
+   </font><font class="kw2">size_t</font><font class="text"> idx=nm.find_last_of( </font><font class="string">&quot;/&quot;</font><font class="text"> ) ;
+   </font><font class="kw1">if</font><font class="text">( idx&lt;nm.length() )
+      nm = nm.substr( idx+1, nm.length()-idx-1 ) ;
+   </font><font class="comment">/** &lt;HTML&gt; */
+</font><font class="text">   ovf &lt;&lt; </font><font class="string">&quot;&lt;!DOCTYPE html&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   ovf &lt;&lt; </font><font class="string">&quot;     PUBLIC \&quot;</font><font class="text">-</font><font class="comment">//W3C//DTD XHTML 1.0 Frameset//EN\&quot;&quot; &lt;&lt; endl ;
+</font><font class="text">   ovf &lt;&lt; </font><font class="string">&quot;     \&quot;</font><font class="text">http:</font><font class="comment">//www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd\&quot;&gt;&quot; &lt;&lt; endl ;
+</font><font class="text">   ovf &lt;&lt; </font><font class="string">&quot;&lt;html&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   ovf &lt;&lt; </font><font class="string">&quot;&lt;head&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   ovf &lt;&lt; </font><font class="string">&quot;  &lt;title&gt;&quot;</font><font class="text"> &lt;&lt; nm &lt;&lt; </font><font class="string">&quot;&lt;/title&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   ovf &lt;&lt; </font><font class="string">&quot;  &lt;link rel =\&quot;</font><font class="text">stylesheet\</font><font class="string">&quot; type=\&quot;</font><font class="text">text/css\</font><font class="string">&quot; href=\&quot;</font><font class="text">stylesheet.css\</font><font class="string">&quot; title=\&quot;</font><font class="text">Style\</font><font class="string">&quot;&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   ovf &lt;&lt; </font><font class="string">&quot;&lt;/head&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw1">if</font><font class="text">( set_body ) {
+      ovf &lt;&lt; </font><font class="string">&quot;&lt;script&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      ovf &lt;&lt; </font><font class="string">&quot;  function asd()&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      ovf &lt;&lt; </font><font class="string">&quot;  {&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      ovf &lt;&lt; </font><font class="string">&quot;    parent.document.title=\&quot;&quot; &lt;&lt;
+      nm &lt;&lt; &quot;</font><font class="text">_</font><font class="string">&quot; &lt;&lt; DOC_Package::application() &lt;&lt; &quot;</font><font class="text"> \</font><font class="string">&quot;;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      ovf &lt;&lt; </font><font class="string">&quot;  }&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      ovf &lt;&lt; </font><font class="string">&quot;&lt;/script&gt; &quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      ovf &lt;&lt; </font><font class="string">&quot;\n&lt;body onload=\&quot;</font><font class="text">asd();\</font><font class="string">&quot;&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   }
+   </font><font class="comment">/** &lt;HTML&gt; */
+</font><font class="text">}
+
+
+</font><font class="comment">//--------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">DOC_WriterHtml::finalize( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//--------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;DOC_WriterHtml::finalize&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> src = </font><font class="string">&quot;doc&quot;</font><font class="text"> ;
+   src += </font><font class="kw3">PEL_System</font><font class="text">::path_name_separator() ; 
+   src += </font><font class="string">&quot;share&quot;</font><font class="text"> ;
+   src += </font><font class="kw3">PEL_System</font><font class="text">::path_name_separator() ; 
+   src += </font><font class="string">&quot;stylesheet.css&quot;</font><font class="text"> ;
+   copy( src, </font><font class="string">&quot;.&quot;</font><font class="text"> ) ;
+</font><font class="comment">//   copy( &quot;doc/share/stylesheet.css&quot;, &quot;.&quot; ) ;
+</font><font class="text">   src = </font><font class="string">&quot;doc&quot;</font><font class="text"> ;
+   src += </font><font class="kw3">PEL_System</font><font class="text">::path_name_separator() ; 
+   src += </font><font class="string">&quot;share&quot;</font><font class="text"> ;
+   src += </font><font class="kw3">PEL_System</font><font class="text">::path_name_separator() ;
+   src += </font><font class="string">&quot;img&quot;</font><font class="text"> ;
+   src += </font><font class="kw3">PEL_System</font><font class="text">::path_name_separator() ;
+   src += </font><font class="string">&quot;arrow.png&quot;</font><font class="text"> ;
+   copy( src, </font><font class="string">&quot;.&quot;</font><font class="text"> ) ;
+</font><font class="comment">//   copy( &quot;doc/share/img/arrow.png&quot;, &quot;.&quot; ) ;
+</font><font class="text">   
+   </font><font class="comment">// process_documentation_package( DOC_Package::master() ) ;
+</font><font class="text">   
+   DOC_WriterHtml* red = </font><font class="kw1">new</font><font class="text"> DOC_WriterHtml( 0, DOC_Package::master()-&gt;name()+</font><font class="string">&quot;-tree&quot;</font><font class="text"> ) ;
+   red-&gt;start_package_doc( DOC_Package::master(), 0 ) ;
+   red-&gt;title( </font><font class="string">&quot;Hierarchy for &quot;</font><font class="text">+DOC_Package::application()+</font><font class="string">&quot; libraries&quot;</font><font class="text"> , 0 ) ;
+   red-&gt;process_documentation_package( DOC_Package::master() ) ;
+   red-&gt;destroy() ;
+   
+   </font><font class="comment">//??????????????? numero de version ???????????????????????,
+</font><font class="text">   </font><font class="kw2">std</font><font class="text">::ofstream ovf( </font><font class="string">&quot;overview-frame.html&quot;</font><font class="text"> ) ;
+   head( ovf, DOC_Package::application() + </font><font class="string">&quot; API Specification : Overview&quot;</font><font class="text">, </font><font class="kw1">false</font><font class="text">  ) ;
+   ovf &lt;&lt; </font><font class="string">&quot;&lt;body&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   ovf &lt;&lt; </font><font class="string">&quot;&lt;h3&gt;&quot;</font><font class="text">&lt;&lt;DOC_Package::application() &lt;&lt;</font><font class="string">&quot;&lt;/h3&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   ovf &lt;&lt; </font><font class="string">&quot;&lt;h4&gt;&lt;a href=\&quot;&quot;+DOC_Package::master()-&gt;name()+&quot;</font><font class="text">-tree.html\</font><font class="string">&quot; target=\&quot;</font><font class="text">classFrame\</font><font class="string">&quot;&gt;All Classes&lt;/a&gt;&lt;/h4&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   ovf &lt;&lt; </font><font class="string">&quot;&lt;h4&gt;Libraries&lt;/h4&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   ovf &lt;&lt; </font><font class="string">&quot;&lt;div id=\&quot;</font><font class="text">liblist\</font><font class="string">&quot;&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   ovf &lt;&lt; </font><font class="string">&quot;&lt;ul&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   
+   </font><font class="kw3">PEL_List</font><font class="text"> </font><font class="kw1">const</font><font class="text">* classes = DOC_Class::list() ;
+   DOC_Package </font><font class="kw1">const</font><font class="text">* pack = DOC_Package::master() ;
+   </font><font class="kw3">PEL_Iterator</font><font class="text">* it = pack-&gt;sub_packages()-&gt;create_iterator(</font><font class="kw1">this</font><font class="text">) ;
+   </font><font class="kw1">for</font><font class="text">( it-&gt;start() ; it-&gt;is_valid() ; it-&gt;go_next() ) {
+      DOC_Package* p = </font><font class="kw1">static_cast</font><font class="text">&lt;DOC_Package*&gt;( it-&gt;item() ) ;
+      </font><font class="kw3">PEL_CHECK</font><font class="text">( </font><font class="kw1">dynamic_cast</font><font class="text">&lt;DOC_Package*&gt;(p)!=0 ) ;
+      
+      </font><font class="kw1">if</font><font class="text">( ! p-&gt;own_non_external_classes() ) </font><font class="kw1">continue</font><font class="text"> ;
+      
+      </font><font class="kw2">string</font><font class="text"> nn = p-&gt;name() ;
+      
+      ovf &lt;&lt; </font><font class="string">&quot;&lt;li&gt;&lt;a href=\&quot;&quot; &lt;&lt; nn &lt;&lt; &quot;</font><font class="text">.html\</font><font class="string">&quot;&quot;
+</font><font class="text">      &lt;&lt; </font><font class="string">&quot; target=\&quot;</font><font class="text">LibFrame\</font><font class="string">&quot;&gt;&quot;</font><font class="text"> &lt;&lt; p-&gt;comment()  &lt;&lt; </font><font class="string">&quot;&lt;/a&gt;&lt;/li&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      
+      red =  DOC_WriterHtml::create( 0, nn ) ;
+      red-&gt;out() &lt;&lt; </font><font class="string">&quot;&lt;h3&gt;&lt;a href=\&quot;&quot; &lt;&lt; p-&gt;name() &lt;&lt; &quot;</font><font class="text">-tree.html\</font><font class="string">&quot; target=\&quot;</font><font class="text">classFrame\</font><font class="string">&quot;&gt;&quot;</font><font class="text"> &lt;&lt; p-&gt;comment() &lt;&lt; </font><font class="string">&quot;&lt;/a&gt;&lt;/h3&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      red-&gt;out() &lt;&lt; </font><font class="string">&quot;&lt;h4&gt;Classes&lt;/h4&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      red-&gt;out() &lt;&lt; </font><font class="string">&quot;&lt;div id=\&quot;</font><font class="text">classlist\</font><font class="string">&quot;&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      
+      </font><font class="kw3">PEL_Iterator</font><font class="text">* cl_it = classes-&gt;create_iterator( </font><font class="kw1">this</font><font class="text">) ;
+      red-&gt;out() &lt;&lt; </font><font class="string">&quot;&lt;ul&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      </font><font class="kw1">for</font><font class="text">( cl_it-&gt;start() ; cl_it-&gt;is_valid() ; cl_it-&gt;go_next() ) {
+         DOC_Class* cl = </font><font class="kw1">static_cast</font><font class="text">&lt;DOC_Class* &gt;( cl_it-&gt;item() ) ;
+         </font><font class="kw1">if</font><font class="text">( p-&gt;own_class( cl  ) &amp;&amp; !cl-&gt;is_external() ) {
+            </font><font class="kw2">string</font><font class="text"> display = cl-&gt;name() ;
+            </font><font class="kw1">if</font><font class="text">( cl-&gt;is_plug_point() )
+               display = underlined_text(10, cl-&gt;name()) ;
+            red-&gt;out() &lt;&lt; </font><font class="string">&quot;&lt;li&gt;&quot;</font><font class="text"> &lt;&lt; reference( cl, </font><font class="string">&quot;&quot;</font><font class="text">, display ) &lt;&lt; </font><font class="string">&quot;&lt;/li&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+         }
+      }
+      red-&gt;out() &lt;&lt; </font><font class="string">&quot;&lt;/ul&gt;\n&lt;/div&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      red-&gt;destroy() ;
+      
+      nn = p-&gt;name()+</font><font class="string">&quot;-tree&quot;</font><font class="text"> ;
+      red = DOC_WriterHtml::create( 0, nn ) ;
+      red-&gt;start_package_doc( p, 0 ) ;
+      red-&gt;title( </font><font class="string">&quot;Hierarchy for Library &quot;</font><font class="text">+p-&gt;comment(), 0 ) ;
+      red-&gt;process_documentation_package( p, 0 ) ;
+      red-&gt;destroy() ;
+   }
+   
+   ovf &lt;&lt; </font><font class="string">&quot;&lt;/ul&gt;\n&lt;/div&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   ovf &lt;&lt; </font><font class="string">&quot;&lt;/body&gt;\n&lt;/html&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+}
+
+
+
+</font><font class="comment">//--------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="text">DOC_WriterHtml::source_reference( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//--------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">return</font><font class="text"> </font><font class="kw1">true</font><font class="text"> ;
+}
+
+
+
+</font><font class="comment">//--------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">DOC_WriterHtml::start_package_doc( DOC_Package </font><font class="kw1">const</font><font class="text">* pack,
+</font><font class="kw2">size_t</font><font class="text"> level )
+</font><font class="comment">//--------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">stringVector</font><font class="text"> items(1), refs(1) ;
+   items(0) = </font><font class="string">&quot;Tree&quot;</font><font class="text"> ;
+   refs(0) = pack-&gt;name()+</font><font class="string">&quot;-tree.html&quot;</font><font class="text"> ;
+   navbar( out(), items, refs, 0 ) ;
+}
+
+
+</font><font class="comment">//--------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">DOC_WriterHtml::process_documentation_package( DOC_Package </font><font class="kw1">const</font><font class="text">* pack,
+</font><font class="kw2">size_t</font><font class="text"> level )
+</font><font class="comment">//--------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;DOC_WriterHtml::process_documentation_package&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw2">string</font><font class="text"> indent = </font><font class="kw2">string</font><font class="text">( 2*level, </font><font class="string">' '</font><font class="text"> ) ;
+   </font><font class="comment">/** ??? -&gt; moche ??? */
+</font><font class="text">   </font><font class="kw1">if</font><font class="text">(class_level == 1) out() &lt;&lt; indent &lt;&lt; </font><font class="string">&quot;&lt;/ul&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw1">if</font><font class="text">( level &gt; 0 ) {
+      class_level = 0 ;
+      out() &lt;&lt; indent &lt;&lt; </font><font class="string">&quot;\n&lt;!-- ========== NEW PACKAGE ========== --&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      out() &lt;&lt; indent &lt;&lt; </font><font class="string">&quot;&lt;h2 class=name&gt;&quot;</font><font class="text"> &lt;&lt; pack-&gt;comment() &lt;&lt; </font><font class="string">&quot;&lt;/h2&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   }
+   
+   out() &lt;&lt; indent &lt;&lt; </font><font class="string">&quot;&lt;ul class=packagetree&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   package_level = level ;
+   DOC_Writer::process_documentation_package( pack, level ) ;
+   out() &lt;&lt; indent &lt;&lt; </font><font class="string">&quot;&lt;/ul&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+}
+
+
+</font><font class="comment">//--------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">DOC_WriterHtml::disp_classes_tree( DOC_Class </font><font class="kw1">const</font><font class="text">* classe,
+</font><font class="kw1">int</font><font class="text"> niveau,
+</font><font class="kw3">PEL_List</font><font class="text">* list_classes )
+</font><font class="comment">//--------------------------------------------------------------------
+</font><font class="text">{
+   
+   </font><font class="kw1">if</font><font class="text">( !classe-&gt;is_external() ) {
+      </font><font class="kw2">string</font><font class="text"> indent = </font><font class="kw2">string</font><font class="text">( 2*(niveau+package_level), </font><font class="string">' '</font><font class="text"> ) ;
+      </font><font class="kw2">string</font><font class="text"> style ;
+      </font><font class="comment">/** select list element style depending on location in the class tree */
+</font><font class="text">      </font><font class="kw1">if</font><font class="text"> ( niveau &gt; 0 ) {
+         </font><font class="kw1">if</font><font class="text"> ( classe-&gt;inherited_classes()-&gt;count() == 0 ) {
+            style = </font><font class="string">&quot;leaf&quot;</font><font class="text"> ;
+         }
+         </font><font class="kw1">else</font><font class="text"> {
+            style = </font><font class="string">&quot;node&quot;</font><font class="text"> ;
+         }
+      }
+      </font><font class="kw1">else</font><font class="text"> {
+         </font><font class="kw1">if</font><font class="text"> ( classe-&gt;inherited_classes()-&gt;count() == 0 ) {
+            style = </font><font class="string">&quot;nochild&quot;</font><font class="text"> ;
+         }
+         </font><font class="kw1">else</font><font class="text"> {
+            style = </font><font class="string">&quot;root&quot;</font><font class="text"> ;
+         }
+      }
+      </font><font class="kw1">if</font><font class="text"> ( class_level+1 == (</font><font class="kw2">size_t</font><font class="text">) niveau ) out() &lt;&lt; indent &lt;&lt; </font><font class="string">&quot;&lt;ul class=branch&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      </font><font class="comment">/** write matching end-tags for open lists */
+</font><font class="text">      </font><font class="kw1">if</font><font class="text"> ( class_level &gt; (</font><font class="kw2">size_t</font><font class="text">) niveau ) {
+         </font><font class="kw1">for</font><font class="text"> (</font><font class="kw2">size_t</font><font class="text"> i = class_level - (</font><font class="kw2">size_t</font><font class="text">) niveau; i &gt; 0; i--) {
+            out() &lt;&lt; indent &lt;&lt; </font><font class="string">&quot;  &lt;/ul&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+         }
+      }
+      </font><font class="kw2">string</font><font class="text"> display = classe-&gt;name() ;
+      </font><font class="kw1">if</font><font class="text">( classe-&gt;is_plug_point() ) display = underlined_text(10, classe-&gt;name()) ;
+      </font><font class="kw2">string</font><font class="text"> comm ;
+      </font><font class="kw2">string</font><font class="text"> comm_court = classe-&gt;short_description() ;
+      </font><font class="kw1">if</font><font class="text">( !comm_court.empty() ) {
+         </font><font class="kw1">int</font><font class="text"> st = 30 - classe-&gt;name().length() ;
+         </font><font class="kw1">if</font><font class="text">( st&lt;0 ) st=2 ;
+         comm = </font><font class="kw2">string</font><font class="text">( st, </font><font class="string">'.'</font><font class="text"> ) + comm_court ;
+      }
+      </font><font class="comment">/** write parent class name if applicable */
+</font><font class="text">      </font><font class="kw1">if</font><font class="text"> ( (niveau == 0) &amp;&amp; 
+           (classe-&gt;mother() != NULL) &amp;&amp; 
+           (!classe-&gt;mother()-&gt;is_upper_class() ) ) 
+      {
+         out() &lt;&lt; indent
+         &lt;&lt; </font><font class="string">&quot;  &lt;li class=&quot;</font><font class="text"> &lt;&lt; style &lt;&lt; </font><font class="string">&quot;&gt;&quot;
+</font><font class="text">         &lt;&lt; reference( classe, </font><font class="string">&quot;&quot;</font><font class="text">, display ) &lt;&lt; comm
+         &lt;&lt; </font><font class="string">&quot;&lt;span class=\&quot;</font><font class="text">parentname\</font><font class="string">&quot;&gt; (&quot;</font><font class="text"> &lt;&lt; reference( classe-&gt;mother(), </font><font class="string">&quot;&quot;</font><font class="text">, classe-&gt;mother()-&gt;name() ) &lt;&lt; </font><font class="string">&quot;)&lt;/span&gt;&quot;
+</font><font class="text">         &lt;&lt; </font><font class="string">&quot;&lt;/li&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      }
+      </font><font class="kw1">else</font><font class="text"> {
+         out() &lt;&lt; indent &lt;&lt; </font><font class="string">&quot;  &lt;li class=&quot;</font><font class="text"> &lt;&lt; style &lt;&lt; </font><font class="string">&quot;&gt;&quot;</font><font class="text"> &lt;&lt; reference( classe, </font><font class="string">&quot;&quot;</font><font class="text">, display ) &lt;&lt; comm &lt;&lt; </font><font class="string">&quot;&lt;/li&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      }
+      class_level = niveau ;
+   }
+   DOC_Writer::disp_classes_tree( classe,
+   niveau,
+   list_classes ) ;
+}
+
+
+
+
+</font><font class="comment">//--------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">DOC_WriterHtml::process_webview( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text"> src,
+</font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text"> dest,
+</font><font class="kw3">stringVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; item,
+</font><font class="kw3">stringVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; refs,
+</font><font class="kw2">size_t</font><font class="text"> n )
+</font><font class="comment">//--------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">static</font><font class="text"> DOC_WebView* webview = 0 ;
+   </font><font class="kw1">if</font><font class="text">( webview==0 ) {
+      </font><font class="kw3">PEL_Module</font><font class="text">* mod = </font><font class="kw3">PEL_Module</font><font class="text">::create( </font><font class="kw3">PEL_Root</font><font class="text">::object(), </font><font class="string">&quot;PEL_Application&quot;</font><font class="text"> ) ;
+      mod-&gt;add_entry( </font><font class="string">&quot;concrete_name&quot;</font><font class="text">, </font><font class="kw3">PEL_String</font><font class="text">::create( mod, </font><font class="string">&quot;webview&quot;</font><font class="text"> ) ) ;
+      </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* exp = </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">::create( mod, mod ) ;
+      webview = DOC_WebView::create( </font><font class="kw3">PEL_Root</font><font class="text">::object(), exp ) ;
+   }
+   </font><font class="kw2">std</font><font class="text">::ofstream os( dest.c_str() ) ;
+   </font><font class="kw1">if</font><font class="text">( os ) {
+      head( os, src, </font><font class="kw1">true</font><font class="text"> ) ;
+      navbar( os, item, refs, n) ;
+      os.close() ;
+      </font><font class="kw3">stringVector</font><font class="text"> arg( 5 ) ;
+      arg(0) = </font><font class="string">&quot;-g&quot;</font><font class="text"> ;
+      arg(1) = </font><font class="string">&quot;--no-header&quot;</font><font class="text"> ;
+      arg(2) = </font><font class="string">&quot;-o&quot;</font><font class="text"> ;
+      arg(3) = dest ;
+      arg(4) = src ;
+      webview-&gt;re_initialize( arg ) ;
+      webview-&gt;run() ;
+      os.open( dest.c_str() , </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ios_base</font><font class="text">::app ) ;
+      os&lt;&lt;</font><font class="string">&quot;&lt;/body&gt;\n&lt;/html&gt;&quot;</font><font class="text">&lt;&lt;</font><font class="kw2">endl</font><font class="text"> ;
+      os.close() ;
+   }
+   
+}
+
+</font><font class="comment">//--------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">DOC_WriterHtml::navbar( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostream</font><font class="text">&amp; os,
+</font><font class="kw3">stringVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; items,
+</font><font class="kw3">stringVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; refs,
+</font><font class="kw2">size_t</font><font class="text"> n )
+</font><font class="comment">//--------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( n&lt;items.size() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( refs.size()==items.size() ) ;
+   
+   </font><font class="comment">/** &lt;MODIF&gt; - NAVIGATION BAR */
+</font><font class="text">   os &lt;&lt; </font><font class="string">&quot;\n&lt;!-- ========== START OF NAVBAR ========== --&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   os &lt;&lt; </font><font class="string">&quot;&lt;a name=\&quot;</font><font class="text">navbar_top\</font><font class="string">&quot;&gt;&lt;!-- --&gt;&lt;/a&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   os &lt;&lt; </font><font class="string">&quot;&lt;div id=navbar&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   os &lt;&lt; </font><font class="string">&quot;  &lt;a name=\&quot;</font><font class="text">navbar_top_firstrow\</font><font class="string">&quot;&gt;&lt;!-- --&gt;&lt;/a&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   os &lt;&lt; </font><font class="string">&quot;  &lt;div id=navbarapp&gt;&quot;</font><font class="text">&lt;&lt;DOC_Package::application() &lt;&lt;</font><font class="string">&quot;&lt;/div&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   os &lt;&lt; </font><font class="string">&quot;  &lt;div id=navbarmenu&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;items.size() ; i++ ) {
+      </font><font class="kw1">if</font><font class="text">( i==n ) {
+         os &lt;&lt; </font><font class="string">&quot;    &lt;span class=selected&gt;&quot;</font><font class="text"> &lt;&lt; items(i) &lt;&lt; </font><font class="string">&quot;&lt;/span&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      }
+      </font><font class="kw1">else</font><font class="text"> {
+         os &lt;&lt; </font><font class="string">&quot;    &lt;a href=\&quot;&quot; &lt;&lt; refs(i) &lt;&lt; &quot;</font><font class="text">\</font><font class="string">&quot;&gt;&lt;span&gt;&quot;</font><font class="text"> &lt;&lt; items(i) &lt;&lt; </font><font class="string">&quot;&lt;/span&gt;&lt;/a&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      }
+   }
+   os &lt;&lt; </font><font class="string">&quot;    &lt;div id=navbarsub&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   os &lt;&lt; </font><font class="string">&quot;      &lt;a href=\&quot;</font><font class="text">index.html\</font><font class="string">&quot; target=\&quot;</font><font class="text">_top\</font><font class="string">&quot;&gt;FRAMES :&lt;/a&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   os &lt;&lt; </font><font class="string">&quot;      &lt;a href=\&quot;&quot; &lt;&lt; refs(0) &lt;&lt; &quot;</font><font class="text">\</font><font class="string">&quot; target=\&quot;</font><font class="text">_top\</font><font class="string">&quot;&gt;: NO FRAMES&lt;/a&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   os &lt;&lt; </font><font class="string">&quot;    &lt;/div&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   os &lt;&lt; </font><font class="string">&quot;  &lt;/div&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   os &lt;&lt; </font><font class="string">&quot;&lt;/div&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   os &lt;&lt; </font><font class="string">&quot;&lt;!-- ========== END OF NAVBAR ========== --&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="comment">/** &lt;/MODIF&gt; - NAVIGATION BAR */
+</font><font class="text">   
+}
+
+</font><font class="comment">//--------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">DOC_WriterHtml::process_documentation( DOC_Class </font><font class="kw1">const</font><font class="text">* classe )
+</font><font class="comment">//--------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;DOC_WriterHtml::process_documentation&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">if</font><font class="text">( classe-&gt;package() == 0 ) </font><font class="kw1">return</font><font class="text"> ;
+   </font><font class="comment">// ----------------------------------
+</font><font class="text">
+   </font><font class="kw2">string</font><font class="text"> pname = classe-&gt;package()-&gt;top()-&gt;name() ;
+   
+   </font><font class="kw3">PEL_List</font><font class="text"> </font><font class="kw1">const</font><font class="text">* elements = classe-&gt;owned_components() ;
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> inlined ;
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> implementation ;
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> interface ;
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> implementation_dest ;
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> interface_dest ;
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> inlined_dest ;
+   </font><font class="kw1">if</font><font class="text">( classe-&gt;publish_source() ) {
+      implementation = DOC_Tools::read_file( classe-&gt;name()+</font><font class="string">&quot;.cc&quot;</font><font class="text"> ) ;
+      interface = DOC_Tools::read_file( classe-&gt;name()+</font><font class="string">&quot;.hh&quot;</font><font class="text"> ) ;
+      inlined = DOC_Tools::read_file( classe-&gt;name()+</font><font class="string">&quot;.icc&quot;</font><font class="text"> ) ;
+      </font><font class="kw1">if</font><font class="text">( !implementation.empty() )
+         implementation_dest = </font><font class="kw3">PEL_Module</font><font class="text">::basename( implementation )+</font><font class="string">&quot;.html&quot;</font><font class="text"> ;
+      </font><font class="kw1">if</font><font class="text">( !interface.empty() )
+         interface_dest = </font><font class="kw3">PEL_Module</font><font class="text">::basename( interface )+</font><font class="string">&quot;.html&quot;</font><font class="text"> ;
+      </font><font class="kw1">if</font><font class="text">( !inlined.empty() )
+         inlined_dest = </font><font class="kw3">PEL_Module</font><font class="text">::basename( inlined )+</font><font class="string">&quot;.html&quot;</font><font class="text"> ;
+   }
+   
+   </font><font class="kw3">stringVector</font><font class="text"> item(2), refs(2) ;
+   item(0) = </font><font class="string">&quot;Tree&quot;</font><font class="text"> ; refs(0) = pname + </font><font class="string">&quot;-tree.html&quot;</font><font class="text"> ;
+   item(1) = </font><font class="string">&quot;Class&quot;</font><font class="text"> ; refs(1) = classe-&gt;name() + </font><font class="string">&quot;.html&quot;</font><font class="text"> ;
+   </font><font class="kw1">if</font><font class="text">( !interface_dest.empty() ) {
+      item.append( </font><font class="string">&quot;Header&quot;</font><font class="text"> ) ; refs.append( interface_dest ) ;
+   }
+   </font><font class="kw1">if</font><font class="text">( !implementation_dest.empty() ) {
+      item.append( </font><font class="string">&quot;Implementation&quot;</font><font class="text"> ) ; refs.append( implementation_dest ) ;
+   }
+   </font><font class="kw1">if</font><font class="text">( !inlined_dest.empty() ) {
+      item.append( </font><font class="string">&quot;Inlined&quot;</font><font class="text"> ) ; refs.append( inlined_dest ) ;
+   }
+   navbar( out(), item, refs, 1 ) ;
+   </font><font class="kw1">if</font><font class="text">( !interface_dest.empty() ) {
+      process_webview( interface, interface_dest, item, refs, 2 ) ;
+   }
+   </font><font class="kw1">if</font><font class="text">( !implementation_dest.empty() ) {
+      process_webview( implementation, implementation_dest, item, refs, 3 ) ;
+   }
+   </font><font class="kw1">if</font><font class="text">( !inlined_dest.empty() ) {
+      process_webview( inlined, inlined_dest, item, refs, 4 ) ;
+   }
+   
+   </font><font class="comment">/** &lt;MODIF&gt; - summary link */
+</font><font class="text">   out() &lt;&lt; </font><font class="string">&quot;&lt;br /&gt;\n&lt;div class=link2anchor&gt;SUMMARY :: &lt;a href=\&quot;</font><font class="text">#method_summary\</font><font class="string">&quot;&gt;METHOD&lt;/a&gt;&lt;/div&gt;\n&lt;br /&gt;\n&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   out() &lt;&lt; </font><font class="string">&quot;\n&lt;!-- ====== START OF CLASS DATA ======== --&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   
+   </font><font class="comment">/** &lt;MODIF&gt; - title */
+</font><font class="text">   </font><font class="kw2">string</font><font class="text"> fullpp ;
+   DOC_Package </font><font class="kw1">const</font><font class="text">* pp = classe-&gt;package() ;
+   </font><font class="kw1">while</font><font class="text">( pp != DOC_Package::master() ) {
+      fullpp = pp-&gt;comment() + </font><font class="string">&quot; / &quot;</font><font class="text"> + fullpp ;
+      pp = pp-&gt;father() ;
+   }
+   out() &lt;&lt; </font><font class="string">&quot;&lt;div id=classtitle&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   out() &lt;&lt; </font><font class="string">&quot;  &lt;span class=classpath&gt;&quot;</font><font class="text"> &lt;&lt; fullpp &lt;&lt; </font><font class="string">&quot;&lt;/span&gt;&lt;br /&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   out() &lt;&lt; </font><font class="string">&quot;  &lt;span class=classname&gt;Class  &quot;</font><font class="text"> &lt;&lt; classe-&gt;name() &lt;&lt; </font><font class="string">&quot;&lt;/span&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   out() &lt;&lt; </font><font class="string">&quot;&lt;/div&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   out() &lt;&lt; </font><font class="string">&quot;\n&lt;br /&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   
+   </font><font class="comment">/** &lt;MODIF&gt; - HIERARCHY */
+</font><font class="text">   </font><font class="kw3">PEL_List</font><font class="text">* mms=</font><font class="kw3">PEL_List</font><font class="text">::create(</font><font class="kw1">this</font><font class="text">) ;
+   DOC_Class </font><font class="kw1">const</font><font class="text">* mm = classe-&gt;mother() ;
+   </font><font class="kw1">while</font><font class="text">( mm != 0 ) {
+      mms-&gt;prepend( </font><font class="kw1">const_cast</font><font class="text">&lt;DOC_Class*&gt;(mm) ) ;
+      mm = mm-&gt;mother() ;
+   }
+   </font><font class="kw2">size_t</font><font class="text"> i=0 ;
+   </font><font class="kw3">PEL_ListIterator</font><font class="text">* class_it = mms-&gt;create_iterator(0) ;
+   out() &lt;&lt; </font><font class="string">&quot;\n&lt;div id=hierarchy&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw1">for</font><font class="text">( class_it-&gt;start() ; class_it-&gt;is_valid() ; class_it-&gt;go_next() ) {
+      DOC_Class*cl = </font><font class="kw1">static_cast</font><font class="text">&lt;DOC_Class*&gt;( class_it-&gt;item() ) ;
+      </font><font class="kw1">if</font><font class="text"> (i == 0) {
+         out() &lt;&lt; </font><font class="string">&quot;&lt;ul class=rootclass&gt;&lt;li&gt;&quot;</font><font class="text"> &lt;&lt; reference( cl, </font><font class="string">&quot;&quot;</font><font class="text">, cl-&gt;name() ) &lt;&lt; </font><font class="string">&quot;&lt;/li&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      }
+      </font><font class="kw1">else</font><font class="text"> {
+         out() &lt;&lt; </font><font class="string">&quot;  &lt;ul class=parentclass&gt;&lt;li&gt;&quot;</font><font class="text"> &lt;&lt; reference( cl, </font><font class="string">&quot;&quot;</font><font class="text">, cl-&gt;name() ) &lt;&lt; </font><font class="string">&quot;&lt;/li&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      }
+      ++i ;
+   }
+   class_it-&gt;destroy() ;
+   </font><font class="kw1">if</font><font class="text">( i!=0 ) {
+      
+      out() &lt;&lt; </font><font class="string">&quot;  &lt;ul class=self&gt;&lt;li&gt;&quot;</font><font class="text"> &lt;&lt; classe-&gt;name() &lt;&lt; </font><font class="string">&quot;&lt;/li&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   }
+   </font><font class="kw1">while</font><font class="text"> (i != 0) {
+      out() &lt;&lt; </font><font class="string">&quot;&lt;/ul&gt;&quot;</font><font class="text"> ;
+      --i ;
+   }
+   out() &lt;&lt; </font><font class="string">&quot;\n&lt;/div&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   
+   </font><font class="kw1">if</font><font class="text">( classe-&gt;is_virtual() &amp;&amp; classe-&gt;inherited_classes()-&gt;count()&gt;0 ) {
+      out() &lt;&lt; </font><font class="string">&quot;\n&lt;!-- ========== DERIVED CLASSES ========== --&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      out() &lt;&lt; </font><font class="string">&quot;&lt;dl&gt;&lt;dt&gt;&lt;b&gt;Direct Known Derived Classes:&lt;/b&gt;\n&lt;dd&gt;&quot;</font><font class="text"> ;
+      </font><font class="kw3">PEL_List</font><font class="text"> </font><font class="kw1">const</font><font class="text">* inherited_classes = classe-&gt;inherited_classes() ;
+      </font><font class="kw3">PEL_Iterator</font><font class="text">* child_it = inherited_classes-&gt;create_iterator(0) ;
+      </font><font class="kw1">bool</font><font class="text"> prem = </font><font class="kw1">true</font><font class="text"> ;
+      </font><font class="kw1">for</font><font class="text">( child_it-&gt;start() ; child_it-&gt;is_valid() ; child_it-&gt;go_next() ) {
+         DOC_Class*cl = </font><font class="kw1">static_cast</font><font class="text">&lt;DOC_Class*&gt;( child_it-&gt;item() ) ;
+         </font><font class="kw1">if</font><font class="text">( !prem ) write( </font><font class="string">&quot;, &quot;</font><font class="text"> ); </font><font class="kw1">else</font><font class="text"> prem=</font><font class="kw1">false</font><font class="text"> ;
+         
+         write( reference( cl,
+         </font><font class="string">&quot;&quot;</font><font class="text">,
+         cl-&gt;name() ) ) ;
+      }
+      child_it-&gt;destroy() ;
+      out() &lt;&lt; </font><font class="string">&quot;&lt;/dd&gt;\n&lt;/dl&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   }
+   hruler() ;
+   
+   comment(
+   DOC_Method::format_comment( *</font><font class="kw1">this</font><font class="text">,
+   1,
+   classe-&gt;comment(),
+   </font><font class="string">'`'</font><font class="text">,
+   </font><font class="string">'\'',
+   classe ) ) ;
+   hruler() ;
+   out() &lt;&lt; &quot;&lt;a name=\&quot;method_summary\&quot;&gt;&lt;/a&gt;&quot; &lt;&lt; endl ;
+   
+   if( elements-&gt;count()&gt;0 ) {
+      string category = &quot;no init cat&quot; ;
+      bool premierDomaine = true ;
+      
+      string heritage ;
+      PEL_Iterator* elm_it = elements-&gt;create_iterator(0) ;
+      for( elm_it-&gt;start() ; elm_it-&gt;is_valid() ; elm_it-&gt;go_next() ) {
+         DOC_ClassItem* el = static_cast&lt;DOC_ClassItem*&gt;( elm_it-&gt;item() ) ;
+         
+         if( classe-&gt;has_to_document( el ) ) {
+            bool nouvelleDOC_Category = el-&gt;category()-&gt;name() != category ;
+            if( nouvelleDOC_Category ) {
+               if( !premierDomaine ) {
+                  out() &lt;&lt; &quot;&lt;/table&gt;&quot; &lt;&lt; endl ;
+               }
+               premierDomaine = false ;
+               category = el-&gt;category()-&gt;name() ;
+               string prot = &quot;public&quot; ;
+               if( el-&gt;protection() == DOC_ClassItem::Protected ) {
+                  prot = &quot;protected&quot; ;
+               }
+               else if( el-&gt;protection() == DOC_ClassItem::Private ) {
+                  prot = &quot;private&quot; ;
+               }
+               string cat_title = category ;
+               if( cat_title.empty() ) cat_title=&quot;Miscellaneous&quot; ;
+               start_category( cat_title, prot ) ;
+            }
+            out() &lt;&lt; &quot;  &lt;tr&gt;&lt;td colspan=\&quot;2\&quot;&gt;&quot; ;
+            write( reference( classe, el-&gt;bookmark(), el-&gt;signature() ) ) ;
+            out() &lt;&lt; &quot;&lt;/td&gt;&lt;/tr&gt;&quot; &lt;&lt; endl;
+         }
+      }
+      out() &lt;&lt; &quot;&lt;/table&gt;&quot; &lt;&lt; endl ;
+      
+      for( elm_it-&gt;start() ; elm_it-&gt;is_valid() ; elm_it-&gt;go_next() ) {
+         DOC_ClassItem* el = static_cast&lt;DOC_ClassItem*&gt;( elm_it-&gt;item() ) ;
+         if( classe-&gt;has_to_document( el ) ) {
+            out() &lt;&lt; &quot;\n&lt;!-- ========== NEW METHOD ========== --&gt;&quot; &lt;&lt; endl ;
+            hruler() ;
+            write_label( el-&gt;bookmark() ) ;
+            process_documentation( classe, el ) ;
+         }
+      }
+      elm_it-&gt;destroy() ;
+   }
+}
+</font><font class="text">
+
+
+</font><font class="string">//--------------------------------------------------------------------
+void
+DOC_WriterHtml::process_documentation( DOC_Class const* classeAProcess_Documentationr,
+DOC_ClassItem * elem )
+//--------------------------------------------------------------------
+{
+   PEL_LABEL( &quot;DOC_WriterHtml::process_documentation II&quot; ) ;
+   
+   string proto = elem-&gt;prototype( *this ) ;
+   out() &lt;&lt; &quot;\n&lt;div class=method&gt;&quot; &lt;&lt; endl ;
+   write_prototype( proto ) ;
+   comment(
+   DOC_Method::format_comment( *this,
+   1,
+   elem-&gt;comment(),
+   '</font><font class="text">`</font><font class="string">',
+   '</font><font class="text">\</font><font class="string">''</font><font class="text">,
+   elem-&gt;def_class() ) ) ;
+   out() &lt;&lt; </font><font class="string">&quot;&lt;br /&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   DOC_Method </font><font class="kw1">const</font><font class="text">* method = elem-&gt;method() ;
+   </font><font class="kw1">if</font><font class="text">( method != 0 ) {
+      </font><font class="kw3">PEL_List</font><font class="text"> </font><font class="kw1">const</font><font class="text">* preConditions =  method-&gt;conditions_list(DOC_Method::pre) ;
+      </font><font class="kw3">PEL_List</font><font class="text"> </font><font class="kw1">const</font><font class="text">* postConditions =  method-&gt;conditions_list(DOC_Method::post) ;
+      </font><font class="kw1">if</font><font class="text"> ( ( preConditions-&gt;count()&gt;0 )||( postConditions-&gt;count()&gt;0 ) ) {
+         DOC_Method </font><font class="kw1">const</font><font class="text">* referring = method-&gt;referring_method() ;
+         
+         out() &lt;&lt; </font><font class="string">&quot;&lt;div class=conditions&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+         </font><font class="kw1">if</font><font class="text">( preConditions-&gt;count() &gt; 0 ) {
+            </font><font class="kw1">if</font><font class="text">( method-&gt;is_precondition() &amp;&amp; referring!=0 ) {
+               </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> ref = referring-&gt;bookmark() ;
+               comment( </font><font class="string">&quot;Is the precondition of method &quot;</font><font class="text"> +
+               reference( referring-&gt;def_class(),
+               ref,
+               referring-&gt;name()  ) +
+               </font><font class="string">&quot; fulfilled ? True if :&quot;</font><font class="text"> ) ;
+            }
+            </font><font class="kw1">else</font><font class="text"> {
+               out() &lt;&lt; </font><font class="string">&quot;  &lt;span class=precondition&gt;Precondition&lt;/span&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+            }
+            out() &lt;&lt; </font><font class="string">&quot;  &lt;ul&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+            </font><font class="kw3">PEL_Iterator</font><font class="text">* it = preConditions-&gt;create_iterator( 0 ) ;
+            </font><font class="kw1">for</font><font class="text">( it-&gt;start() ; it-&gt;is_valid() ; it-&gt;go_next() ) {
+               DOC_Function* f=</font><font class="kw1">static_cast</font><font class="text">&lt;DOC_Function*&gt;( it-&gt;item() ) ;
+               out() &lt;&lt; </font><font class="string">&quot;    &lt;li&gt;&quot;</font><font class="text"> ;
+               write_code( f-&gt;referenced_string(
+               method-&gt;def_class(),
+               method,
+               </font><font class="kw1">this</font><font class="text"> ) ) ;
+               out() &lt;&lt; </font><font class="string">&quot;&lt;/li&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+            }
+            it-&gt;destroy() ;
+            out() &lt;&lt; </font><font class="string">&quot;  &lt;/ul&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+         }
+         </font><font class="kw1">if</font><font class="text"> ( ( preConditions-&gt;count()&gt;0 )&amp;&amp;( postConditions-&gt;count()&gt;0 ) )  out() &lt;&lt; </font><font class="string">&quot;&lt;br /&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+         </font><font class="kw1">if</font><font class="text">( postConditions-&gt;count()&gt;0 ) {
+            </font><font class="kw1">if</font><font class="text">( method-&gt;is_postcondition()  &amp;&amp; referring!=0 ) {
+               </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> ref = referring-&gt;bookmark() ;
+               comment( </font><font class="string">&quot;Is the postcondition of method &quot;</font><font class="text"> +
+               reference( referring-&gt;def_class(),
+               ref,
+               referring-&gt;name()  ) +
+               </font><font class="string">&quot; fulfilled ? True if :&quot;</font><font class="text"> ) ;
+            }
+            </font><font class="kw1">else</font><font class="text"> {
+               out() &lt;&lt; </font><font class="string">&quot;  &lt;span class=postcondition&gt;Postcondition&lt;/span&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+            }
+            out() &lt;&lt; </font><font class="string">&quot;  &lt;ul&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+            </font><font class="kw3">PEL_Iterator</font><font class="text">* it = postConditions-&gt;create_iterator( 0 ) ;
+            </font><font class="kw1">for</font><font class="text">( it-&gt;start() ; it-&gt;is_valid() ; it-&gt;go_next() ) {
+               DOC_Function* f=</font><font class="kw1">static_cast</font><font class="text">&lt;DOC_Function*&gt;( it-&gt;item() ) ;
+               out() &lt;&lt; </font><font class="string">&quot;    &lt;li&gt;&quot;</font><font class="text"> ;
+               write_code( f-&gt;referenced_string(
+               method-&gt;def_class(),
+               method,
+               </font><font class="kw1">this</font><font class="text">) ) ;
+               out() &lt;&lt; </font><font class="string">&quot;&lt;/li&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+            }
+            out() &lt;&lt; </font><font class="string">&quot;  &lt;/ul&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+            it-&gt;destroy() ;
+         }
+         out() &lt;&lt; </font><font class="string">&quot;&lt;/div&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      }
+      
+      DOC_Method </font><font class="kw1">const</font><font class="text">* surdefinition = method-&gt;overiden_method() ;
+      
+      out() &lt;&lt; </font><font class="string">&quot;&lt;table class=footer&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      out() &lt;&lt; </font><font class="string">&quot;&lt;tr&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text">;
+      </font><font class="kw1">if</font><font class="text">( classeAProcess_Documentationr!=method-&gt;def_class() ) {
+         out() &lt;&lt; </font><font class="string">&quot;  &lt;td class=extends&gt;&quot;</font><font class="text"> ;
+         write( </font><font class="string">&quot; Extension from &quot;
+</font><font class="text">         + reference( method-&gt;def_class(),
+         </font><font class="string">&quot;&quot;</font><font class="text">,
+         method-&gt;def_class()-&gt;name() ) ) ;
+         out() &lt;&lt; </font><font class="string">&quot;&lt;/td&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text">;
+      } </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( surdefinition!=0 ) {
+         out() &lt;&lt; </font><font class="string">&quot;  &lt;td class=overrides&gt;&quot;</font><font class="text"> ;
+         write( </font><font class="string">&quot; Overridden from &quot;
+</font><font class="text">         + reference( surdefinition-&gt;def_class(),
+         </font><font class="string">&quot;&quot;</font><font class="text">,
+         surdefinition-&gt;def_class()-&gt;name() ) ) ;
+         out() &lt;&lt; </font><font class="string">&quot;&lt;/td&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text">;
+      }
+      out() &lt;&lt; </font><font class="string">&quot;  &lt;td class=link2anchor&gt;&quot;</font><font class="text"> ;
+      out() &lt;&lt; </font><font class="string">&quot;SUMMARY :: &lt;a href=\&quot;</font><font class="text">#method_summary\</font><font class="string">&quot;&gt;METHOD&lt;/a&gt;&lt;/td&gt;&lt;/tr&gt;&quot;
+</font><font class="text">      &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      out() &lt;&lt; </font><font class="string">&quot;&lt;/table&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      out() &lt;&lt; </font><font class="string">&quot;&lt;/div&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   }
+}
+
+</font>
+</pre>
+</body>
+</html>

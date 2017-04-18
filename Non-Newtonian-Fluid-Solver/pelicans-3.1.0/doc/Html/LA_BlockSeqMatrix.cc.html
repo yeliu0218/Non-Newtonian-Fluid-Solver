@@ -1,0 +1,1194 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>LA_BlockSeqMatrix.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="LA_BlockSeqMatrix.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="LApack-tree.html"><span>Tree</span></a>
+    <a href="LA_BlockSeqMatrix.html"><span>Class</span></a>
+    <a href="LA_BlockSeqMatrix.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="LApack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated
+ *  reusable components, whose purpose is to simplify the task of developing
+ *  softwares of numerical mathematics and scientific computing.
+ *
+ *  This software is governed by the CeCILL-C license under French law and
+ *  abiding by the rules of distribution of free software. You can use, modify
+ *  and/or redistribute the software under the terms of the CeCILL-C license
+ *  as circulated by CEA, CNRS and INRIA at the following URL
+ *  &quot;http://www.cecill.info&quot;.
+ *
+ *  As a counterpart to the access to the source code and rights to copy,
+ *  modify and redistribute granted by the license, users are provided only
+ *  with a limited warranty and the software's author, the holder of the
+ *  economic rights, and the successive licensors have only limited liability.
+ *
+ *  In this respect, the user's attention is drawn to the risks associated
+ *  with loading, using, modifying and/or developing or reproducing the
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also
+ *  therefore means that it is reserved for developers and experienced
+ *  professionals having in-depth computer knowledge. Users are therefore
+ *  encouraged to load and test the software's suitability as regards their
+ *  requirements in conditions enabling the security of their systems and/or
+ *  data to be ensured and, more generally, to use and operate it in the same
+ *  conditions as regards security.
+ *
+ *  The fact that you are presently reading this means that you have had
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_BlockSeqMatrix</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_MatrixIterator</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_BlockSeqMatrixIterator</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_PelMatrix</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_SeqVector</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_assertions</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Vector</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Iterator</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">intVector</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;iostream&gt;
+
+</font><font class="kw3">LA_BlockSeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">LA_BlockSeqMatrix</font><font class="text">:: PROTOTYPE = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">LA_BlockSeqMatrix</font><font class="text">() ;
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_BlockSeqMatrix</font><font class="text">*
+</font><font class="kw3">LA_BlockSeqMatrix</font><font class="text">:: create( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                            </font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_row_partitioning,
+                            </font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_col_partitioning,
+                            </font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* a_block_proto )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_BlockSeqMatrix:: create&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( a_row_partitioning.size()&gt;0 ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( a_col_partitioning.size()&gt;0 ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( a_block_proto != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( !a_block_proto-&gt;is_desynchronizable() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( !a_block_proto-&gt;is_symmetric() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( a_block_proto-&gt;is_resizable() ) ;
+
+   </font><font class="kw3">LA_BlockSeqMatrix</font><font class="text">* result =  </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">LA_BlockSeqMatrix</font><font class="text">( a_owner,
+                                                       a_row_partitioning,
+                                                       a_col_partitioning,
+                                                       a_block_proto ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;owner() == a_owner ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;name() == </font><font class="string">&quot;LA_BlockSeqMatrix&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( ! result-&gt;is_symmetric() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;distribution_strategy() == </font><font class="kw3">LA</font><font class="text">::NoDistribution ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( ! result-&gt;is_desynchronizable() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;is_resizable() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;row_partition() == a_row_partitioning ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;col_partition() == a_col_partitioning ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;nb_stored_items() == 0 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;nb_rows() == a_row_partitioning.sum() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;nb_cols() == a_col_partitioning.sum() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;block_prototype()-&gt;name() == a_block_proto-&gt;name() ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_BlockSeqMatrix</font><font class="text">*
+</font><font class="kw3">LA_BlockSeqMatrix</font><font class="text">:: create_matrix( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_BlockSeqMatrix:: create_matrix&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( create_matrix_PRE( a_owner ) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw3">LA_BlockSeqMatrix</font><font class="text">* result = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">LA_BlockSeqMatrix</font><font class="text">(
+                  a_owner, ROW_PARTITION, COL_PARTITION, BLOCK_PROTO ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( create_matrix_POST( result, a_owner ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_BlockSeqMatrix</font><font class="text">*
+</font><font class="kw3">LA_BlockSeqMatrix</font><font class="text">:: create_replica( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                    </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_BlockSeqMatrix:: create_replica&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_PRE( a_owner, exp ) ) ;
+
+   </font><font class="kw3">intVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; rp = exp-&gt;intVector_data( </font><font class="string">&quot;row_partitioning&quot;</font><font class="text"> ) ;
+   </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> nr = rp.size() ;
+   </font><font class="kw1">if</font><font class="text">( nr == 0 )
+   {
+      </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_data_error(
+         exp, </font><font class="string">&quot;row_partitioning&quot;</font><font class="text">,
+         </font><font class="string">&quot;invalid null row-partitioning&quot;</font><font class="text"> ) ;
+   }
+   </font><font class="kw3">size_t_vector</font><font class="text"> row_partitioning( nr ) ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;nr ; ++i )
+   {
+      </font><font class="kw1">if</font><font class="text">( rp( i ) &lt;= 0 )
+      {
+         </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_data_error(
+            exp, </font><font class="string">&quot;row_partitioning&quot;</font><font class="text">,
+            </font><font class="string">&quot;invalid null or negative row dimension&quot;</font><font class="text"> ) ;
+      }
+      row_partitioning( i ) = (</font><font class="kw2">size_t</font><font class="text">) rp( i ) ;
+   }
+
+   </font><font class="kw3">intVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; cp = exp-&gt;intVector_data( </font><font class="string">&quot;col_partitioning&quot;</font><font class="text"> ) ;
+   </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> nc = cp.size() ;
+   </font><font class="kw1">if</font><font class="text">( nc == 0 )
+   {
+      </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_data_error(
+         exp, </font><font class="string">&quot;col_partitioning&quot;</font><font class="text">,
+         </font><font class="string">&quot;invalid null col-partitioning&quot;</font><font class="text"> ) ;
+   }
+   </font><font class="kw3">size_t_vector</font><font class="text"> col_partitioning( nc ) ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;nc ; ++i )
+   {
+      </font><font class="kw1">if</font><font class="text">( cp( i ) &lt;= 0 )
+      {
+         </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_data_error(
+            exp, </font><font class="string">&quot;col_partitioning&quot;</font><font class="text">,
+            </font><font class="string">&quot;invalid null or negative column dimension&quot;</font><font class="text"> ) ;
+      }
+      col_partitioning( i ) = (</font><font class="kw2">size_t</font><font class="text">) cp( i ) ;
+   }
+
+   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* sexp =
+                         exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;block_prototype&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">LA_SeqMatrix</font><font class="text">* a_block_proto = </font><font class="kw3">LA_SeqMatrix</font><font class="text">::make( 0, sexp ) ;
+   </font><font class="kw1">if</font><font class="text">( !a_block_proto-&gt;is_resizable() ||
+       a_block_proto-&gt;is_desynchronizable() ||
+       a_block_proto-&gt;is_symmetric() )
+   {
+      </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_module_error(
+             sexp, </font><font class="string">&quot;invalid block prototype matrix&quot;</font><font class="text"> ) ;
+   }
+   sexp-&gt;destroy() ; sexp = 0 ;
+
+   </font><font class="kw3">LA_BlockSeqMatrix</font><font class="text">* result = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">LA_BlockSeqMatrix</font><font class="text">( a_owner,
+                                                      row_partitioning,
+                                                      col_partitioning,
+                                                      a_block_proto ) ;
+   a_block_proto-&gt;destroy() ; a_block_proto = 0 ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_POST( result, a_owner, exp ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_BlockSeqMatrix</font><font class="text">:: </font><font class="kw3">LA_BlockSeqMatrix</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">LA_SeqMatrix</font><font class="text">( </font><font class="string">&quot;LA_BlockSeqMatrix&quot;</font><font class="text"> )
+   , NB_ROWS( 0 )
+   , NB_COLS( 0 )
+   , ROW_PARTITION( 0 )
+   , COL_PARTITION( 0 )
+   , ROW_BLOCK_2_FIRST_ELEM( 0 )
+   , COL_BLOCK_2_FIRST_ELEM( 0 )
+   , ROW_ELEM_2_BLOCK( 0 )
+   , COL_ELEM_2_BLOCK( 0 )
+   , VEC_X( 0 )
+   , VEC_Y( 0 )
+   , BLOCK_PROTO( 0 )
+   , BLOCKS( 0 )
+{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_BlockSeqMatrix:: LA_BlockSeqMatrix( prototype )&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( is_a_prototype() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( name() == </font><font class="string">&quot;LA_BlockSeqMatrix&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( !is_symmetric() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( !is_desynchronizable() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( is_resizable() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_BlockSeqMatrix</font><font class="text">:: </font><font class="kw3">LA_BlockSeqMatrix</font><font class="text">(
+                                  </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                  </font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_row_partitioning,
+                                  </font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_col_partitioning,
+                                  </font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* a_block_proto )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">LA_SeqMatrix</font><font class="text">( a_owner, </font><font class="string">&quot;LA_BlockSeqMatrix&quot;</font><font class="text"> )
+   , NB_ROWS( 0 )
+   , NB_COLS( 0 )
+   , ROW_PARTITION( a_row_partitioning )
+   , COL_PARTITION( a_col_partitioning )
+   , ROW_BLOCK_2_FIRST_ELEM( 0 )
+   , COL_BLOCK_2_FIRST_ELEM( 0 )
+   , ROW_ELEM_2_BLOCK( 0 )
+   , COL_ELEM_2_BLOCK( 0 )
+   , VEC_X( </font><font class="kw3">LA_SeqVector</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, 0 ) )
+   , VEC_Y( </font><font class="kw3">LA_SeqVector</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, 0 ) )
+   , BLOCK_PROTO( a_block_proto-&gt;create_matrix( </font><font class="kw1">this</font><font class="text"> ) )
+   , BLOCKS( 0 )
+{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_BlockSeqMatrix:: LA_BlockSeqMatrix&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( a_row_partitioning.size()&gt;0 ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( a_col_partitioning.size()&gt;0 ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( a_block_proto != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( !a_block_proto-&gt;is_symmetric() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( !a_block_proto-&gt;is_desynchronizable() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( a_block_proto-&gt;is_resizable() ) ;
+
+   init() ;
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( !is_a_prototype() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( owner() == a_owner ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( name() == </font><font class="string">&quot;LA_BlockSeqMatrix&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( !is_symmetric() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( !is_desynchronizable() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( is_resizable() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( row_partition() == a_row_partitioning ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( col_partition() == a_col_partitioning ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( nb_stored_items() == 0 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( nb_rows() == a_row_partitioning.sum() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( nb_cols() == a_col_partitioning.sum() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( block_prototype()-&gt;name() == a_block_proto-&gt;name() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_BlockSeqMatrix</font><font class="text">:: ~</font><font class="kw3">LA_BlockSeqMatrix</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_BlockSeqMatrix</font><font class="text">:: set_block_prototype( </font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* a_proto )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_BlockSeqMatrix:: set_block_prototype&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( is_synchronized() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( a_proto != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( a_proto-&gt;owner() == </font><font class="kw1">this</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( a_proto-&gt;nb_rows() == 0 ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( a_proto-&gt;nb_cols() == 0 ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( !a_proto-&gt;is_desynchronizable() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( !a_proto-&gt;is_symmetric() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( a_proto-&gt;is_resizable() ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   BLOCK_PROTO = a_proto ;
+
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;BLOCKS-&gt;index_limit() ; i++ )
+   {
+      </font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* old_mat =
+               </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;( BLOCKS-&gt;at( i ) ) ;
+      </font><font class="kw1">if</font><font class="text">( old_mat != 0 )
+      {
+         </font><font class="kw3">LA_SeqMatrix</font><font class="text">* new_mat =
+                          BLOCK_PROTO-&gt;create_copy( BLOCKS, old_mat ) ;
+         new_mat-&gt;make_non_resizable() ;
+         BLOCKS-&gt;set_at( i, new_mat ) ;
+         </font><font class="kw3">PEL_ASSERT</font><font class="text">( new_mat-&gt;state() == old_mat-&gt;state() ) ;
+         BLOCKS-&gt;destroy_possession( old_mat ) ;
+      }
+   }
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( block_prototype() == a_proto ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">(
+      </font><font class="kw3">FORALL</font><font class="text">( ( </font><font class="kw2">size_t</font><font class="text"> ib=0 ; ib&lt;row_partition().size() ; ++ib ),
+      </font><font class="kw3">FORALL</font><font class="text">( ( </font><font class="kw2">size_t</font><font class="text"> jb=0 ; jb&lt;col_partition().size() ; ++jb ),
+              </font><font class="kw3">IMPLIES</font><font class="text">( has_submatrix( ib, jb ),
+                       submatrix( ib, jb )-&gt;name() == a_proto-&gt;name() ) ) ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">LA_BlockSeqMatrix</font><font class="text">:: block_prototype( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_BlockSeqMatrix:: block_prototype&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result = BLOCK_PROTO ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;nb_rows() == 0 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;nb_cols() == 0 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( !result-&gt;is_desynchronizable() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( !result-&gt;is_symmetric() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;is_resizable() ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw2">size_t
+</font><font class="kw3">LA_BlockSeqMatrix</font><font class="text">:: allocated_memory( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_BlockSeqMatrix:: allocated_memory&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> result = 0 ;
+
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;BLOCKS-&gt;index_limit() ; ++i )
+   {
+      </font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* mat =
+                  </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* &gt;( BLOCKS-&gt;at( i ) ) ;
+      </font><font class="kw1">if</font><font class="text">( mat!=0 )
+      {
+         result += mat-&gt;allocated_memory() ;
+      }
+   }
+
+   </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> nb_size_t =
+             ROW_PARTITION.size()
+           + COL_PARTITION.size()
+           + ROW_BLOCK_2_FIRST_ELEM.size()
+           + COL_BLOCK_2_FIRST_ELEM.size()
+           + ROW_ELEM_2_BLOCK.size()
+           + ROW_ELEM_2_BLOCK.size() ;
+   result += nb_size_t*</font><font class="kw1">sizeof</font><font class="text">(</font><font class="kw2">size_t</font><font class="text">) ;
+
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_BlockSeqMatrix</font><font class="text">:: is_desynchronizable( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_BlockSeqMatrix:: is_desynchronizable&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">bool</font><font class="text"> result = </font><font class="kw1">false</font><font class="text"> ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result == </font><font class="kw1">false</font><font class="text"> ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw2">size_t
+</font><font class="kw3">LA_BlockSeqMatrix</font><font class="text">:: nb_stored_items( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_BlockSeqMatrix:: nb_stored_items&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( nb_stored_items_PRE() ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> result = 0 ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;BLOCKS-&gt;index_limit() ; ++i )
+   {
+      </font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* mat =
+           </font><font class="kw1">dynamic_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* &gt;( BLOCKS-&gt;at( i ) ) ;
+      </font><font class="kw1">if</font><font class="text">( mat!=0 )
+      {
+         result += mat-&gt;nb_stored_items() ;
+      }
+   }
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw2">size_t
+</font><font class="kw3">LA_BlockSeqMatrix</font><font class="text">:: nb_rows( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">return</font><font class="text">( NB_ROWS ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw2">size_t
+</font><font class="kw3">LA_BlockSeqMatrix</font><font class="text">:: nb_cols( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">return</font><font class="text">( NB_COLS ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">double
+</font><font class="kw3">LA_BlockSeqMatrix</font><font class="text">:: item( </font><font class="kw2">size_t</font><font class="text"> i, </font><font class="kw2">size_t</font><font class="text"> j ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_BlockSeqMatrix:: item&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( item_PRE( i, j ) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> ib = ROW_ELEM_2_BLOCK( i ) ;
+   </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> jb = COL_ELEM_2_BLOCK( j ) ;
+
+   </font><font class="kw1">double</font><font class="text"> result = 0.0 ;
+   </font><font class="kw1">if</font><font class="text">( has_submatrix( ib, jb ) )
+   {
+      </font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* mat = submatrix( ib, jb ) ;
+      result = mat-&gt;item( i-ROW_BLOCK_2_FIRST_ELEM( ib ),
+                          j-COL_BLOCK_2_FIRST_ELEM( jb ) ) ;
+   }
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp;
+</font><font class="kw3">LA_BlockSeqMatrix</font><font class="text">:: row_partition( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">return</font><font class="text">( ROW_PARTITION ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp;
+</font><font class="kw3">LA_BlockSeqMatrix</font><font class="text">:: col_partition( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">return</font><font class="text">( COL_PARTITION ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_BlockSeqMatrix</font><font class="text">:: has_submatrix( </font><font class="kw2">size_t</font><font class="text"> ib, </font><font class="kw2">size_t</font><font class="text"> jb ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_BlockSeqMatrix::has_submatrix&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( ib&lt;ROW_PARTITION.size() ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( jb&lt;COL_PARTITION.size() ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> idx = block_idx( ib, jb ) ;
+   </font><font class="kw1">return</font><font class="text">( BLOCKS-&gt;at( idx ) != 0 ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">LA_BlockSeqMatrix</font><font class="text">:: submatrix( </font><font class="kw2">size_t</font><font class="text"> ib, </font><font class="kw2">size_t</font><font class="text"> jb ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_BlockSeqMatrix:: submatrix&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( ib &lt; row_partition().size() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( jb &lt; col_partition().size() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( has_submatrix( ib, jb ) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> idx = block_idx( ib, jb ) ;
+   </font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result =
+              </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqMatrix</font><font class="text"> *&gt;( BLOCKS-&gt;at( idx ) ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;is_under_ownership_of( </font><font class="kw1">this</font><font class="text"> ) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;nb_rows() == row_partition()(ib) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;nb_cols() == col_partition()(jb) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;name() == block_prototype()-&gt;name() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( !result-&gt;is_desynchronizable() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( !result-&gt;is_symmetric() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( !result-&gt;is_resizable() ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_MatrixIterator</font><font class="text">*
+</font><font class="kw3">LA_BlockSeqMatrix</font><font class="text">:: create_stored_item_iterator( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_BlockSeqMatrix:: create_stored_item_iterator&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw3">LA_BlockSeqMatrixIterator</font><font class="text">* result =
+                       </font><font class="kw3">LA_BlockSeqMatrixIterator</font><font class="text">::create( a_owner, </font><font class="kw1">this</font><font class="text"> ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( create_stored_item_iterator_POST( a_owner, result ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_BlockSeqMatrix</font><font class="text">:: re_initialize_with_global_sizes( </font><font class="kw2">size_t</font><font class="text"> a_nb_rows,
+                                                     </font><font class="kw2">size_t</font><font class="text"> a_nb_cols )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_BlockSeqMatrix:: re_initialize_with_global_sizes&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( re_initialize_with_global_sizes_PRE( a_nb_rows,
+                                                       a_nb_cols ) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw3">size_t_vector</font><font class="text"> rows( 1 ) ;
+   </font><font class="kw3">size_t_vector</font><font class="text"> cols( 1 ) ;
+   rows( 0 ) = a_nb_rows ;
+   cols( 0 ) = a_nb_cols ;
+   set_partitioning_then_nullify( rows, cols ) ;
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( re_initialize_with_global_sizes_POST( a_nb_rows,
+                                                         a_nb_cols ) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( nb_stored_items() == 0 ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_BlockSeqMatrix</font><font class="text">:: set_partitioning_then_nullify(
+                                     </font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; row_partitioning,
+                                     </font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; col_partitioning )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_BlockSeqMatrix:: set_partitioning_then_nullify&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( is_resizable() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( row_partitioning.size() != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( col_partitioning.size() != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   ROW_PARTITION = row_partitioning ;
+   COL_PARTITION = col_partitioning ;
+   init() ;
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( row_partition() == row_partitioning ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( col_partition() == col_partitioning ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( nb_rows() == row_partitioning.sum() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( nb_cols() == col_partitioning.sum() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( nb_stored_items() == 0 ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_BlockSeqMatrix</font><font class="text">:: set_stored_items( </font><font class="kw1">double</font><font class="text"> val )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_BlockSeqMatrix:: set_stored_items&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;BLOCKS-&gt;index_limit() ; i++ )
+   {
+      </font><font class="kw3">PEL_Object</font><font class="text">* obj = BLOCKS-&gt;at( i ) ;
+      </font><font class="kw3">LA_SeqMatrix</font><font class="text">* mat = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqMatrix</font><font class="text">* &gt;( obj ) ;
+      </font><font class="kw1">if</font><font class="text">( mat!=0 )
+      {
+         mat-&gt;set_stored_items(val) ;
+      }
+   }
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( set_stored_items_POST( val ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_BlockSeqMatrix</font><font class="text">:: nullify_row( </font><font class="kw2">size_t</font><font class="text"> i )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_BlockSeqMatrix:: nullify_row&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( nullify_row_PRE( i ) ) ;
+
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_not_implemented( </font><font class="kw1">this</font><font class="text">, </font><font class="string">&quot;nullify_row&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( nullify_row_POST( i ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_BlockSeqMatrix</font><font class="text">:: nullify_item( </font><font class="kw2">size_t</font><font class="text"> i, </font><font class="kw2">size_t</font><font class="text"> j )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_BlockSeqMatrix:: nullify_item&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( i &lt; nb_rows() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( j &lt; nb_cols() ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> ib = ROW_ELEM_2_BLOCK( i ) ;
+   </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> jb = COL_ELEM_2_BLOCK( j ) ;
+
+   </font><font class="kw3">LA_SeqMatrix</font><font class="text">* m = submat( ib, jb ) ;
+   m-&gt;set_item( i-ROW_BLOCK_2_FIRST_ELEM( ib ),
+                j-COL_BLOCK_2_FIRST_ELEM( jb ), 0. ) ;
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_BlockSeqMatrix</font><font class="text">:: set_item( </font><font class="kw2">size_t</font><font class="text"> i, </font><font class="kw2">size_t</font><font class="text"> j, </font><font class="kw1">double</font><font class="text"> x )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_BlockSeqMatrix:: set_item&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_SAVEOLD</font><font class="text">( </font><font class="kw3">LA</font><font class="text">::SyncState, state, state() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( set_item_PRE( i, j ) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> ib = ROW_ELEM_2_BLOCK( i ) ;
+   </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> jb = COL_ELEM_2_BLOCK( j ) ;
+   set_submatrix_item( ib, jb,
+                       i-ROW_BLOCK_2_FIRST_ELEM( ib ),
+                       j-COL_BLOCK_2_FIRST_ELEM( jb ), x ) ;
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( set_item_POST( i, j, </font><font class="kw3">OLD</font><font class="text">( state ) ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_BlockSeqMatrix</font><font class="text">:: add_to_item( </font><font class="kw2">size_t</font><font class="text"> i, </font><font class="kw2">size_t</font><font class="text"> j, </font><font class="kw1">double</font><font class="text"> x )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_BlockSeqMatrix:: add_to_item&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_SAVEOLD</font><font class="text">( </font><font class="kw3">LA</font><font class="text">::SyncState, state, state() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( add_to_item_PRE( i, j ) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> ib = ROW_ELEM_2_BLOCK( i ) ;
+   </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> jb = COL_ELEM_2_BLOCK( j ) ;
+   add_to_submatrix_item( ib, jb,
+                          i-ROW_BLOCK_2_FIRST_ELEM( ib ),
+                          j-COL_BLOCK_2_FIRST_ELEM( jb ), x ) ;
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( add_to_item_POST( i, j, </font><font class="kw3">OLD</font><font class="text">( state ) ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_BlockSeqMatrix</font><font class="text">:: set_submatrix_item( </font><font class="kw2">size_t</font><font class="text"> ib, </font><font class="kw2">size_t</font><font class="text"> jb,
+                                        </font><font class="kw2">size_t</font><font class="text"> i, </font><font class="kw2">size_t</font><font class="text"> j,
+                                        </font><font class="kw1">double</font><font class="text"> x )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_BlockSeqMatrix:: set_submatrix_item&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( ib &lt; row_partition().size() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( jb &lt; col_partition().size() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( i &lt; row_partition()(ib) ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( j &lt; col_partition()(jb) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   submat( ib, jb )-&gt;set_item( i, j, x ) ;
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( has_submatrix( ib, jb ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_BlockSeqMatrix</font><font class="text">:: add_to_submatrix_item( </font><font class="kw2">size_t</font><font class="text"> ib, </font><font class="kw2">size_t</font><font class="text"> jb,
+                                           </font><font class="kw2">size_t</font><font class="text"> i, </font><font class="kw2">size_t</font><font class="text"> j,
+                                           </font><font class="kw1">double</font><font class="text"> x )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_BlockSeqMatrix:: add_to_submatrix_item&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( ib &lt; row_partition().size() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( jb &lt; col_partition().size() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( i &lt; row_partition()(ib) ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( j &lt; col_partition()(jb) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   submat( ib, jb )-&gt;add_to_item( i, j, x ) ;
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( has_submatrix( ib, jb ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_BlockSeqMatrix</font><font class="text">:: multiply_vec_then_add(
+                        </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* x, </font><font class="kw3">LA_Vector</font><font class="text">* y,
+                        </font><font class="kw1">double</font><font class="text"> alpha, </font><font class="kw1">double</font><font class="text"> beta ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_BlockSeqMatrix:: multiply_vec_then_add&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( multiply_vec_then_add_PRE( x, y, alpha, beta ) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   y-&gt;scale( beta ) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( </font><font class="kw1">dynamic_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;( x ) != 0 ) ;
+   </font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* seq_x = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;( x ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( </font><font class="kw1">dynamic_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqVector</font><font class="text">*&gt;( y ) != 0 ) ;
+   </font><font class="kw3">LA_SeqVector</font><font class="text">* seq_y = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqVector</font><font class="text">* &gt;( y ) ;
+
+   </font><font class="kw1">double</font><font class="text">* x_ptr = </font><font class="kw1">const_cast</font><font class="text">&lt;</font><font class="kw1">double</font><font class="text">*&gt;( seq_x-&gt;data() ) ;
+   </font><font class="kw1">double</font><font class="text">* y_ptr = seq_y-&gt;data() ;
+
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> jb=0 ; jb&lt;COL_PARTITION.size() ; jb++ )
+   {
+      VEC_X-&gt;</font><font class="kw2">set</font><font class="text">( COL_PARTITION(jb),
+                  x_ptr+COL_BLOCK_2_FIRST_ELEM(jb) ) ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> ib=0 ; ib&lt;ROW_PARTITION.size() ; ib++ )
+      {
+         </font><font class="kw1">if</font><font class="text">( has_submatrix( ib, jb ) )
+         {
+            VEC_Y-&gt;</font><font class="kw2">set</font><font class="text">( ROW_PARTITION(ib),
+                        y_ptr+ROW_BLOCK_2_FIRST_ELEM(ib) ) ;
+            </font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* mat = submatrix( ib, jb ) ;
+            mat-&gt;multiply_vec_then_add( VEC_X, VEC_Y,
+                                        alpha, 1.0 ) ;
+         }
+      }
+   }
+
+   VEC_X-&gt;</font><font class="kw2">set</font><font class="text">( 0, (</font><font class="kw1">double</font><font class="text">*) 0 ) ;
+   VEC_Y-&gt;</font><font class="kw2">set</font><font class="text">( 0, (</font><font class="kw1">double</font><font class="text">*) 0 ) ;
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( multiply_vec_then_add_POST( y ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_BlockSeqMatrix</font><font class="text">:: tr_multiply_vec_then_add(
+                        </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* x, </font><font class="kw3">LA_Vector</font><font class="text">* y,
+                        </font><font class="kw1">double</font><font class="text"> alpha, </font><font class="kw1">double</font><font class="text"> beta )  </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_BlockSeqMatrix:: tr_multiply_vec_then_add&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( tr_multiply_vec_then_add_PRE( x, y, alpha, beta ) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   y-&gt;scale( beta ) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( </font><font class="kw1">dynamic_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;( x ) != 0 ) ;
+   </font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* seq_x = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* &gt;( x ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( </font><font class="kw1">dynamic_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqVector</font><font class="text">*&gt;( y ) != 0 ) ;
+   </font><font class="kw3">LA_SeqVector</font><font class="text">* seq_y = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqVector</font><font class="text">* &gt;( y ) ;
+
+
+   </font><font class="kw1">double</font><font class="text">* x_ptr = </font><font class="kw1">const_cast</font><font class="text">&lt;</font><font class="kw1">double</font><font class="text">*&gt;( seq_x-&gt;data() ) ;
+   </font><font class="kw1">double</font><font class="text">* y_ptr = seq_y-&gt;data() ;
+
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> jb=0 ; jb&lt;COL_PARTITION.size() ; jb++ )
+   {
+      VEC_Y-&gt;</font><font class="kw2">set</font><font class="text">( COL_PARTITION(jb),
+                  y_ptr+COL_BLOCK_2_FIRST_ELEM(jb) ) ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> ib=0 ; ib&lt;ROW_PARTITION.size() ; ib++ )
+      {
+         </font><font class="kw1">if</font><font class="text">( has_submatrix( ib, jb ) )
+         {
+            VEC_X-&gt;</font><font class="kw2">set</font><font class="text">( ROW_PARTITION(ib),
+                        x_ptr+ROW_BLOCK_2_FIRST_ELEM(ib) ) ;
+            </font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* mat = submatrix( ib, jb ) ;
+            mat-&gt;tr_multiply_vec_then_add( VEC_X, VEC_Y,
+                                           alpha, 1.0 ) ;
+         }
+      }
+   }
+
+   VEC_X-&gt;</font><font class="kw2">set</font><font class="text">( 0, (</font><font class="kw1">double</font><font class="text">*) 0 ) ;
+   VEC_Y-&gt;</font><font class="kw2">set</font><font class="text">( 0, (</font><font class="kw1">double</font><font class="text">*) 0 ) ;
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( tr_multiply_vec_then_add_POST( y ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_BlockSeqMatrix</font><font class="text">:: scale( </font><font class="kw1">double</font><font class="text"> alpha )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_BlockSeqMatrix:: scale&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( scale_PRE( alpha ) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw1">if</font><font class="text">( alpha == 0.0 )
+   {
+      nullify() ;
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( alpha != 1.0 )
+   {
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;BLOCKS-&gt;index_limit() ; ++i )
+
+      {
+         </font><font class="kw3">PEL_Object</font><font class="text">* obj = BLOCKS-&gt;at(i) ;
+         </font><font class="kw1">if</font><font class="text">( obj != 0 )
+         {
+            </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqMatrix</font><font class="text">*&gt;( obj )-&gt;scale( alpha ) ;
+         }
+      }
+   }
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( scale_POST( alpha ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_BlockSeqMatrix</font><font class="text">:: </font><font class="kw2">set</font><font class="text">( </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* A, </font><font class="kw1">bool</font><font class="text"> same_pattern )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_BlockSeqMatrix:: set&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( set_PRE( A, same_pattern ) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw3">LA_BlockSeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* AS = </font><font class="kw1">dynamic_cast</font><font class="text">&lt;</font><font class="kw3">LA_BlockSeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;( A ) ;
+   </font><font class="kw1">if</font><font class="text">( AS==0 || ( ROW_PARTITION != AS-&gt;ROW_PARTITION )
+             || ( COL_PARTITION != AS-&gt;COL_PARTITION ) )
+   {
+      </font><font class="kw3">LA_SeqMatrix</font><font class="text">::</font><font class="kw2">set</font><font class="text">( A, same_pattern ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      set_IMP( AS, same_pattern ) ;
+   }
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( set_POST( A ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_BlockSeqMatrix</font><font class="text">:: add_Mat( </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* A, </font><font class="kw1">double</font><font class="text"> alpha,
+                             </font><font class="kw1">bool</font><font class="text"> same_pattern )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_BlockSeqMatrix:: add_Mat&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_SAVEOLD</font><font class="text">( </font><font class="kw3">LA</font><font class="text">::SyncState, state, state() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( add_Mat_PRE( A, alpha, same_pattern ) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw3">LA_BlockSeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* AS =
+      </font><font class="kw1">dynamic_cast</font><font class="text">&lt;</font><font class="kw3">LA_BlockSeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;(A) ;
+   </font><font class="kw1">if</font><font class="text">( AS==0 ||
+       ( ROW_PARTITION != AS-&gt;ROW_PARTITION ) ||
+       ( COL_PARTITION != AS-&gt;COL_PARTITION ) )
+   {
+      </font><font class="kw3">LA_SeqMatrix</font><font class="text">::add_Mat( A, alpha, same_pattern ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      add_Mat_IMP( AS, alpha, same_pattern ) ;
+   }
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( add_Mat_POST( </font><font class="kw3">OLD</font><font class="text">( state ) ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_BlockSeqMatrix</font><font class="text">:: add_Mat_Mat( </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* A, </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* B,
+                                 </font><font class="kw1">double</font><font class="text"> alpha )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_BlockSeqMatrix:: add_Mat_Mat&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_SAVEOLD</font><font class="text">( </font><font class="kw3">LA</font><font class="text">::SyncState, state, state() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( add_Mat_Mat_PRE( A, B, alpha ) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw3">LA_BlockSeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* BA =
+      </font><font class="kw1">dynamic_cast</font><font class="text">&lt;</font><font class="kw3">LA_BlockSeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;( A ) ;
+   </font><font class="kw3">LA_BlockSeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* BB =
+      </font><font class="kw1">dynamic_cast</font><font class="text">&lt;</font><font class="kw3">LA_BlockSeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;( B ) ;
+   </font><font class="kw1">if</font><font class="text">( ( BA!=0 &amp;&amp; BB!=0 ) &amp;&amp;
+       ( BA-&gt;ROW_PARTITION == ROW_PARTITION &amp;&amp;
+         BB-&gt;COL_PARTITION == COL_PARTITION &amp;&amp;
+         BA-&gt;COL_PARTITION == BB-&gt;ROW_PARTITION ) )
+   {
+      add_Mat_Mat_IMP( BA, BB, alpha ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      </font><font class="kw3">LA_SeqMatrix</font><font class="text">::add_Mat_Mat( A, B, alpha ) ;
+   }
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( add_Mat_Mat_POST( </font><font class="kw3">OLD</font><font class="text">( state ) ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_BlockSeqMatrix</font><font class="text">:: readMM( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; file )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_BlockSeqMatrix:: readMM&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( readMM_PRE( file ) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="comment">// Avoid unefficient (or forbidden) call to insert function:
+</font><font class="text">   </font><font class="kw3">LA_PelMatrix</font><font class="text">* m = </font><font class="kw3">LA_PelMatrix</font><font class="text">::create( 0, 0, 0 ) ;
+   m-&gt;readMM( file ) ;
+   re_initialize_with_global_sizes( m-&gt;nb_rows(), m-&gt;nb_cols() ) ;
+   </font><font class="kw2">set</font><font class="text">( m ) ;
+   m-&gt;destroy() ; m = 0 ;
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( readMM_POST() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_BlockSeqMatrix</font><font class="text">:: restore( </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_BlockSeqMatrix:: restore&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( restore_PRE( exp ) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="comment">// Avoid unefficient (or forbidden) call to insert function:
+</font><font class="text">   </font><font class="kw3">LA_PelMatrix</font><font class="text">* m = </font><font class="kw3">LA_PelMatrix</font><font class="text">::create( 0, 0, 0 ) ;
+   m-&gt;restore( exp ) ;
+   re_initialize_with_global_sizes( m-&gt;nb_rows(), m-&gt;nb_cols() ) ;
+   </font><font class="kw2">set</font><font class="text">( m ) ;
+   m-&gt;destroy() ; m = 0 ;
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( restore_POST() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_BlockSeqMatrix</font><font class="text">:: add_Mat_Mat_IMP( </font><font class="kw3">LA_BlockSeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* A,
+                                     </font><font class="kw3">LA_BlockSeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* B,
+                                     </font><font class="kw1">double</font><font class="text"> alpha )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_BlockSeqMatrix:: add_Mat_Mat_IMP&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_SAVEOLD</font><font class="text">( </font><font class="kw3">LA</font><font class="text">::SyncState, state, state() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( add_Mat_Mat_PRE( A, B, alpha ) ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( A-&gt;row_partition() == row_partition() &amp;&amp;
+                  B-&gt;col_partition() == col_partition() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( A-&gt;col_partition() == B-&gt;row_partition() )  ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> ib = 0 ; ib&lt;A-&gt;ROW_PARTITION.size() ; ++ib )
+   {
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> kb = 0 ; kb&lt;A-&gt;COL_PARTITION.size() ; ++kb )
+      {
+         </font><font class="kw1">if</font><font class="text">( A-&gt;has_submatrix( ib, kb ) )
+         {
+            </font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* matA = A-&gt;submatrix( ib, kb ) ;
+            </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> jb = 0 ; jb&lt;COL_PARTITION.size() ; ++jb )
+            {
+               </font><font class="kw1">if</font><font class="text">( B-&gt;has_submatrix( kb, jb ) )
+               {
+                  </font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* matB = B-&gt;submatrix( kb, jb ) ;
+                  submat( ib, jb )-&gt;add_Mat_Mat( matA, matB, alpha ) ;
+               }
+            }
+         }
+      }
+   }
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( add_Mat_Mat_POST( </font><font class="kw3">OLD</font><font class="text">( state ) ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_BlockSeqMatrix</font><font class="text">:: set_IMP( </font><font class="kw3">LA_BlockSeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* A, </font><font class="kw1">bool</font><font class="text"> same_pattern )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_BlockSeqMatrix:: set_IMP&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( set_PRE( A, same_pattern ) ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( A-&gt;row_partition() == row_partition() &amp;&amp;
+                  A-&gt;col_partition() == col_partition() ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> nbi = ROW_PARTITION.size() ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> ib = 0 ; ib&lt;nbi ; ++ib )
+   {
+      </font><font class="kw3">PEL_CHECK</font><font class="text">( ROW_PARTITION( ib ) == A-&gt;ROW_PARTITION( ib ) ) ;
+      </font><font class="kw2">size_t</font><font class="text"> nbj = COL_PARTITION.size() ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> jb = 0 ; jb&lt;nbj ; ++jb )
+      {
+         </font><font class="kw3">PEL_CHECK</font><font class="text">( COL_PARTITION( jb ) == A-&gt;COL_PARTITION( jb ) ) ;
+         </font><font class="kw1">if</font><font class="text">( A-&gt;has_submatrix( ib, jb ) )
+         {
+            </font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* mat = A-&gt;submatrix( ib, jb ) ;
+            submat( ib, jb )-&gt;</font><font class="kw2">set</font><font class="text">( mat, same_pattern ) ;
+         }
+         </font><font class="kw1">else
+</font><font class="text">         {
+            </font><font class="kw3">PEL_ASSERT</font><font class="text">( !same_pattern ) ;
+            </font><font class="kw1">if</font><font class="text">( has_submatrix( ib, jb ) )
+            {
+               </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> idx = block_idx( ib, jb ) ;
+               </font><font class="kw3">LA_SeqMatrix</font><font class="text">* old_mat = submat( ib, jb ) ;
+               BLOCKS-&gt;destroy_possession( old_mat ) ;
+               BLOCKS-&gt;set_at( idx, 0 ) ;
+            }
+         }
+      }
+   }
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( set_POST( A ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_BlockSeqMatrix</font><font class="text">:: add_Mat_IMP( </font><font class="kw3">LA_BlockSeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* A,
+                                 </font><font class="kw1">double</font><font class="text"> alpha, </font><font class="kw1">bool</font><font class="text"> same_pattern )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_BlockSeqMatrix:: add_Mat_IMP&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_SAVEOLD</font><font class="text">( </font><font class="kw3">LA</font><font class="text">::SyncState, state, state() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( add_Mat_PRE( A, alpha, same_pattern ) ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( A-&gt;row_partition() == row_partition() &amp;&amp;
+                  A-&gt;col_partition() == col_partition() ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> nbi = ROW_PARTITION.size() ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> ib = 0 ; ib&lt;nbi ; ++ib )
+   {
+      </font><font class="kw3">PEL_CHECK</font><font class="text">( ROW_PARTITION( ib ) == A-&gt;ROW_PARTITION( ib ) ) ;
+      </font><font class="kw2">size_t</font><font class="text"> nbj = COL_PARTITION.size() ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> jb = 0 ; jb&lt;nbj ; ++jb )
+      {
+         </font><font class="kw3">PEL_CHECK</font><font class="text">( COL_PARTITION( jb ) == A-&gt;COL_PARTITION( jb ) ) ;
+         </font><font class="kw1">if</font><font class="text">( A-&gt;has_submatrix( ib, jb ) )
+
+         {
+            </font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* mat = A-&gt;submatrix( ib, jb ) ;
+            submat( ib, jb )-&gt;add_Mat( mat, alpha, same_pattern ) ;
+         }
+      }
+   }
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( add_Mat_POST( </font><font class="kw3">OLD</font><font class="text">( state ) ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">*
+</font><font class="kw3">LA_BlockSeqMatrix</font><font class="text">:: submat( </font><font class="kw2">size_t</font><font class="text"> ib, </font><font class="kw2">size_t</font><font class="text"> jb ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_BlockSeqMatrix:: submat&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( ib &lt; row_partition().size() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( jb &lt; col_partition().size() ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> idx = block_idx( ib, jb ) ;
+   </font><font class="kw3">LA_SeqMatrix</font><font class="text">* result =
+              </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqMatrix</font><font class="text"> *&gt;( BLOCKS-&gt;at( idx ) ) ;
+   </font><font class="kw1">if</font><font class="text">( result == 0 )
+   {
+      result = BLOCK_PROTO-&gt;create_matrix( BLOCKS ) ;
+      result-&gt;re_initialize( ROW_PARTITION( ib ), COL_PARTITION( jb ) ) ;
+      result-&gt;make_non_resizable() ;
+      BLOCKS-&gt;set_at( idx, result ) ;
+   }
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;is_under_ownership_of( </font><font class="kw1">this</font><font class="text"> ) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;name() == block_prototype()-&gt;name() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( !result-&gt;is_symmetric() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( !result-&gt;is_desynchronizable() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( !result-&gt;is_resizable() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;nb_rows() == row_partition()(ib) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;nb_cols() == col_partition()(jb) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_BlockSeqMatrix</font><font class="text">:: init( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_BlockSeqMatrix:: init&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( ROW_PARTITION.size() &gt; 0 ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( COL_PARTITION.size() &gt; 0 ) ;
+
+   ROW_BLOCK_2_FIRST_ELEM.re_initialize( ROW_PARTITION.size()+1 ) ;
+   COL_BLOCK_2_FIRST_ELEM.re_initialize( COL_PARTITION.size()+1 ) ;
+
+   NB_ROWS = 0 ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i = 0 ; i&lt;ROW_PARTITION.size() ; i++ )
+   {
+      ROW_BLOCK_2_FIRST_ELEM( i ) = NB_ROWS  ;
+      NB_ROWS += ROW_PARTITION(i) ;
+   }
+   ROW_BLOCK_2_FIRST_ELEM( ROW_PARTITION.size() ) = NB_ROWS ;
+
+   ROW_ELEM_2_BLOCK.re_initialize( NB_ROWS ) ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i = 0 ; i&lt;ROW_PARTITION.size() ; i++ )
+   {
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j = ROW_BLOCK_2_FIRST_ELEM( i ) ;
+           j&lt;ROW_BLOCK_2_FIRST_ELEM( i+1 ) ; j++ )
+      {
+         ROW_ELEM_2_BLOCK( j ) = i ;
+      }
+   }
+
+   NB_COLS = 0 ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i = 0 ; i&lt;COL_PARTITION.size() ; i++ )
+   {
+      COL_BLOCK_2_FIRST_ELEM( i ) = NB_COLS ;
+      </font><font class="comment">// PEL_ASSERT( COL_PARTITION(i)&gt;0 ) ;
+</font><font class="text">      NB_COLS += COL_PARTITION(i) ;
+   }
+   COL_BLOCK_2_FIRST_ELEM( COL_PARTITION.size() ) = NB_COLS ;
+
+   COL_ELEM_2_BLOCK.re_initialize( NB_COLS ) ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i = 0 ; i&lt;COL_PARTITION.size() ; i++ )
+   {
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j = COL_BLOCK_2_FIRST_ELEM( i ) ;
+           j&lt;COL_BLOCK_2_FIRST_ELEM( i+1 ) ; j++ )
+      {
+         COL_ELEM_2_BLOCK( j ) = i ;
+      }
+   }
+
+   </font><font class="kw1">if</font><font class="text">( BLOCKS != 0 )
+   {
+      destroy_possession( BLOCKS ) ;
+      BLOCKS = 0 ;
+   }
+   BLOCKS = </font><font class="kw3">PEL_Vector</font><font class="text">::create(
+                      </font><font class="kw1">this</font><font class="text">, ROW_PARTITION.size()*COL_PARTITION.size() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw2">size_t
+</font><font class="kw3">LA_BlockSeqMatrix</font><font class="text">:: block_idx( </font><font class="kw2">size_t</font><font class="text"> ib, </font><font class="kw2">size_t</font><font class="text"> jb ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">return</font><font class="text">( ib+jb*ROW_PARTITION.size() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_BlockSeqMatrix</font><font class="text">:: invariant( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( is_a_prototype() ||
+               ( ROW_BLOCK_2_FIRST_ELEM.size() == ROW_PARTITION.size()+1 &amp;&amp;
+                 COL_BLOCK_2_FIRST_ELEM.size() == COL_PARTITION.size()+1 ) ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( ROW_ELEM_2_BLOCK.size() == NB_ROWS ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( COL_ELEM_2_BLOCK.size() == NB_COLS ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( is_a_prototype() || (BLOCK_PROTO != 0) ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( is_a_prototype() ||
+               ( BLOCKS != 0 &amp;&amp;
+                 BLOCKS-&gt;index_limit() ==
+                 ROW_PARTITION.size()*COL_PARTITION.size() ) ) ;
+
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+
+</font>
+</pre>
+</body>
+</html>

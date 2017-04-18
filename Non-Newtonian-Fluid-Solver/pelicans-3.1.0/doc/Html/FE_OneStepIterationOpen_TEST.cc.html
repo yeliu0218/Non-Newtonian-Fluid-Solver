@@ -1,0 +1,247 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>FE_OneStepIterationOpen_TEST.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="FE_OneStepIterationOpen_TEST.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="FEpack-tree.html"><span>Tree</span></a>
+    <a href="FE_OneStepIterationOpen_TEST.html"><span>Class</span></a>
+    <a href="FE_OneStepIterationOpen_TEST.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="FEpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE_OneStepIterationOpen_TEST</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Exec</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_SeqMatrix</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_SeqVector</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_DiscreteField</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_DomainAndFields</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_SetOfDomains</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE_OneStepIteration</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE_SetOfParameters</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE_TimeIterator</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE_OneStepIterationOpen</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;ios&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;iomanip&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;iostream&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;sstream&gt;
+
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">cout</font><font class="text"> ; </font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ios_base</font><font class="text"> ;
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> ; </font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> ;
+
+</font><font class="kw3">FE_OneStepIterationOpen_TEST</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">FE_OneStepIterationOpen_TEST</font><font class="text">::PROTOTYPE = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">FE_OneStepIterationOpen_TEST</font><font class="text">() ;
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw3">FE_OneStepIterationOpen_TEST</font><font class="text">:: </font><font class="kw3">FE_OneStepIterationOpen_TEST</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_ObjectTest</font><font class="text">( </font><font class="string">&quot;FE_OneStepIterationOpen&quot;</font><font class="text">, 
+                     </font><font class="string">&quot;FE_OneStepIterationOpen_TEST&quot;</font><font class="text"> )
+{
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw3">FE_OneStepIterationOpen_TEST</font><font class="text">:: ~</font><font class="kw3">FE_OneStepIterationOpen_TEST</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">void</font><font class="text"> 
+</font><font class="kw3">FE_OneStepIterationOpen_TEST</font><font class="text">:: process_one_test( 
+                                              </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp ) 
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_OneStepIterationOpen_TEST:: process_one_test&quot;</font><font class="text"> ) ;
+
+   </font><font class="comment">// -- similar to instantiations in FE_StepByStepProgression
+</font><font class="text">   </font><font class="kw3">FE</font><font class="text">::set_geometry( </font><font class="kw3">FE</font><font class="text">::cartesian ) ;
+
+   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* ee = 
+                       exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;PDE_DomainAndFields&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PDE_DomainAndFields</font><font class="text">* dom = </font><font class="kw3">PDE_DomainAndFields</font><font class="text">::create( 0, ee, </font><font class="kw3">PEL_Exec</font><font class="text">::communicator() ) ;
+   </font><font class="kw2">size_t</font><font class="text"> nb_dims = dom-&gt;nb_space_dimensions() ;
+   ee-&gt;destroy() ;
+
+   ee = exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;FE_SetOfParameters&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">FE_SetOfParameters</font><font class="text">* prms = </font><font class="kw3">FE_SetOfParameters</font><font class="text">::create( dom, dom, ee ) ;
+   ee-&gt;destroy() ;
+
+   ee = exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;FE_OneStepIteration&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">FE_OneStepIteration</font><font class="text">* one_it = 
+                        </font><font class="kw3">FE_OneStepIteration</font><font class="text">::make( dom, dom, prms, ee ) ;
+   ee-&gt;destroy() ;
+
+   ee = exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;FE_TimeIterator&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">FE_TimeIterator</font><font class="text">* t_it = </font><font class="kw3">FE_TimeIterator</font><font class="text">::create( 0, ee ) ;
+   ee-&gt;destroy() ; ee = 0 ;
+
+   ee = exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;jacobian_test&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">FE_OneStepIterationOpen</font><font class="text">* one_it_jac = </font><font class="kw3">FE_OneStepIterationOpen</font><font class="text">::object( 
+                    ee-&gt;string_data( </font><font class="string">&quot;one_step_iteration_with_jacobian&quot;</font><font class="text"> ) ) ;
+   </font><font class="kw1">double</font><font class="text"> d_eps = ee-&gt;double_data( </font><font class="string">&quot;dbl_epsilon&quot;</font><font class="text"> ) ;
+   </font><font class="kw1">double</font><font class="text"> d_min = ee-&gt;double_data( </font><font class="string">&quot;dbl_minimum&quot;</font><font class="text"> ) ;
+   </font><font class="kw1">double</font><font class="text"> hh = ee-&gt;double_data( </font><font class="string">&quot;hh&quot;</font><font class="text"> ) ;
+   ee-&gt;destroy() ; ee = 0 ;
+
+   one_it-&gt;do_before_time_stepping( t_it ) ;
+   t_it-&gt;start() ;
+
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;one_it_jac-&gt;nb_unknowns() ; ++i )
+   {
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; j&lt;one_it_jac-&gt;nb_unknowns() ; ++j )
+      {
+         </font><font class="kw3">PDE_DiscreteField</font><font class="text">* uu = one_it_jac-&gt;field( j ) ;
+         </font><font class="kw2">size_t</font><font class="text"> l_uu = one_it_jac-&gt;level_of_field( j ) ;
+         </font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text"> </font><font class="kw1">const</font><font class="text">* uu_link =
+                                    one_it_jac-&gt;link_DOF_2_unknown( j ) ;
+
+         one_it_jac-&gt;build_function_and_jacobian( t_it ) ;
+
+         </font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* jac  = one_it_jac-&gt;create_jacobian( 0, i, j ) ;
+         </font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* func = one_it_jac-&gt;create_function( 0, i ) ;
+
+         </font><font class="kw1">bool</font><font class="text"> eq = </font><font class="kw1">false</font><font class="text"> ;
+         </font><font class="kw1">bool</font><font class="text"> ok = </font><font class="kw1">true</font><font class="text"> ;
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> n=0 ; n&lt;uu-&gt;nb_nodes() ; ++n )
+         {
+            </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> ic=0 ; ic&lt;uu-&gt;nb_components() ; ++ic )
+            {
+               </font><font class="kw1">if</font><font class="text">( uu_link-&gt;DOF_is_unknown( n, ic ) )
+               {
+                  </font><font class="kw2">size_t</font><font class="text"> i_unk = uu_link-&gt;unknown_linked_to_DOF( n, ic ) ;
+                  </font><font class="kw1">double</font><font class="text"> old_val = uu-&gt;DOF_value( l_uu, n, ic ) ;
+                  uu-&gt;set_DOF_value( l_uu, n, old_val + hh , ic ) ;
+
+                  one_it_jac-&gt;build_function_and_jacobian( t_it ) ;
+                  </font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* new_func = 
+                        one_it_jac-&gt;create_function( 0, i) ;
+                  </font><font class="kw3">PEL_ASSERT</font><font class="text">( new_func-&gt;nb_rows() == func-&gt;nb_rows() ) ;
+                  </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> ii=0 ; ii&lt;func-&gt;nb_rows() ; ++ii )
+                  {
+                     </font><font class="kw1">double</font><font class="text"> newf = new_func-&gt;item( ii ) ;
+                     </font><font class="kw1">double</font><font class="text"> oldf = func-&gt;item( ii ) ;
+                     </font><font class="kw1">double</font><font class="text"> xx = - ( newf - oldf )/ hh ;
+                     eq = </font><font class="kw3">PEL</font><font class="text">::double_equality( xx, jac-&gt;item( ii, i_unk ),
+                                                d_eps, d_min ) ;
+                     </font><font class="kw1">if</font><font class="text">( !eq ) 
+                     {
+                        display_error( i, j, 
+                                       xx, jac-&gt;item( ii, i_unk ), 
+                                       newf, oldf ) ;
+                     }
+                     ok = ok &amp;&amp; eq ;
+                  }
+
+                  new_func-&gt;destroy() ;
+                  uu-&gt;set_DOF_value( l_uu, n, old_val, ic ) ;
+               }
+            }
+         }
+         {
+            </font><font class="kw2">ostringstream</font><font class="text"> mesg ;
+            mesg &lt;&lt; </font><font class="string">&quot; block(&quot;</font><font class="text"> &lt;&lt; i &lt;&lt; </font><font class="string">&quot;,&quot;</font><font class="text"> &lt;&lt; j &lt;&lt; </font><font class="string">&quot;) (&quot;</font><font class="text"> &lt;&lt; nb_dims &lt;&lt; </font><font class="string">&quot;D)&quot;</font><font class="text"> ;
+            notify_one_test_result( one_it_jac-&gt;name() + mesg.str(), ok ) ;
+         }
+         jac-&gt;destroy() ;
+         func-&gt;destroy() ;
+      }
+   }
+   dom-&gt;destroy() ;
+   t_it-&gt;destroy() ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_OneStepIterationOpen_TEST</font><font class="text">:: display_error( </font><font class="kw2">size_t</font><font class="text"> i, </font><font class="kw2">size_t</font><font class="text"> j,
+                                              </font><font class="kw1">double</font><font class="text"> xx_1, </font><font class="kw1">double</font><font class="text"> xx_2,
+                                              </font><font class="kw1">double</font><font class="text"> newf, </font><font class="kw1">double</font><font class="text"> oldf ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">ios_base</font><font class="text">::</font><font class="kw2">fmtflags</font><font class="text"> original_flags = out().flags() ;
+   out().setf( </font><font class="kw2">ios_base</font><font class="text">::</font><font class="kw2">uppercase</font><font class="text"> | </font><font class="kw2">ios_base</font><font class="text">::</font><font class="kw2">scientific</font><font class="text"> ) ;
+   out() &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">setprecision</font><font class="text">( 10 ) ;
+
+   out() &lt;&lt; </font><font class="string">&quot;block (&quot;</font><font class="text"> &lt;&lt; i &lt;&lt; </font><font class="string">&quot;,&quot;</font><font class="text"> &lt;&lt; j &lt;&lt; </font><font class="string">&quot;)&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   out() &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">setw</font><font class="text">( 20 ) &lt;&lt; xx_1
+         &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">setw</font><font class="text">( 20 ) &lt;&lt; xx_2
+         &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">setw</font><font class="text">( 20 ) &lt;&lt; newf
+         &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">setw</font><font class="text">( 20 ) &lt;&lt; oldf
+         &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+
+   out().</font><font class="kw2">flags</font><font class="text">( original_flags ) ;
+}
+
+</font>
+</pre>
+</body>
+</html>

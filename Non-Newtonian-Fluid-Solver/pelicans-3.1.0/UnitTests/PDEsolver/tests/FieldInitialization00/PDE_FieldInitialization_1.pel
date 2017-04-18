@@ -1,0 +1,159 @@
+// field initialization :
+//   uniformly defined
+//   2D rectangular meshing
+
+MODULE PEL_ObjectTest#PDE_FieldInitialization_TEST
+      
+   MODULE PDE_FieldInitialization_1
+      
+      MODULE PDE_DomainAndFields
+         
+         verbose_level = 0
+         nb_space_dimensions = 2
+         type = "finite_element"
+         
+         MODULE GE_Meshing
+            
+            concrete_name = "GE_BoxWithBoxes"
+            
+            vertices_coordinate_0 = regular_vector( 0.0, 5, 0.37246789387 )
+            vertices_coordinate_1 = regular_vector( 812.256, 20, 1250.60925673 )
+            mesh_polyhedron = < "GE_Segment" "GE_Rectangle" >
+            
+         END MODULE GE_Meshing
+         
+         MODULE interior_fields
+            
+            MODULE uu_Q0
+               name = "uu_Q0"
+               nb_components = 5
+               element_name = "PDE_2D_Q0_1node"
+               storage_depth = 1
+               MODULE DOFs_values
+                  type = "uniformly_defined"
+                  value = vector( sqr( component($DV_X,0) ),
+                  log( component($DV_X,1) ),
+                  component($DV_X,0)*component($DV_X,1),
+                  component($DV_X,0)+pi(),
+                  sqrt( sqr(component($DV_X,1)+pi()) ) )
+               END MODULE DOFs_values
+            END MODULE uu_Q0
+            
+            MODULE uu_Q1
+               name = "uu_Q1"
+               nb_components = 2
+               element_name = "PDE_2D_Q1_4nodes"
+               storage_depth = 1
+               MODULE DOFs_values
+                  type = "uniformly_defined"
+                  value = vector( sqr( component( $DV_X, 0 ) ),
+                  log( component( $DV_X, 1 ) ) )
+               END MODULE DOFs_values
+            END MODULE uu_Q1
+            
+            MODULE uu_Q2_8
+               name = "uu_Q2_8"
+               nb_components = 1
+               element_name = "PDE_2D_Q2_8nodes"
+               storage_depth = 3
+               MODULE DOFs_values
+                  type = "uniformly_defined"
+                  value = vector( sqrt( component( $DV_X, 1 ) ) )
+               END MODULE DOFs_values
+            END MODULE uu_Q2_8
+            
+            MODULE uu_Q2_9
+               name = "uu_Q2_9"
+               nb_components = 1
+               element_name = "PDE_2D_Q2_9nodes"
+               storage_depth = 4
+               MODULE DOFs_values
+                  type = "uniformly_defined"
+                  value = vector( log(component($DV_X,1)) + 3.0 )
+               END MODULE DOFs_values
+            END MODULE uu_Q2_9
+            
+         END MODULE interior_fields
+         
+         MODULE boundary_fields
+            
+            MODULE bd_L1
+               name = "bd_L1"
+               nb_components = 1
+               element_name = "PDE_1D_P1_2nodes"
+               storage_depth = 10
+               MODULE DOFs_values
+                  type = "uniformly_defined" 
+                  value = vector( sqrt( component( $DV_X, 0 ) *
+                  component( $DV_X, 1 ) ) )
+               END MODULE DOFs_values
+            END MODULE bd_L1
+            
+            MODULE bd_L0
+               name = "bd_L0"
+               nb_components = 1
+               element_name = "PDE_1D_P0_1node"
+               storage_depth = 10
+               MODULE DOFs_values
+                  type = "uniformly_defined" 
+                  value = vector( sqrt( component( $DV_X, 0 ) *
+                  component( $DV_X, 1 ) ) )
+               END MODULE DOFs_values
+            END MODULE bd_L0
+            
+         END MODULE boundary_fields
+         
+      END MODULE PDE_DomainAndFields
+      
+      MODULE solution
+         
+         MODULE interior_fields
+            
+            MODULE uu_Q0
+               name = "uu_Q0"
+               value = vector( sqr( component($DV_X,0) ),
+               log( component($DV_X,1) ),
+               component($DV_X,0)*component($DV_X,1),
+               component($DV_X,0)+pi(),
+               sqrt( sqr(component($DV_X,1)+pi()) ) )
+            END MODULE uu_Q0
+            
+            MODULE uu_Q1
+               name = "uu_Q1"
+               value = vector( sqr( component( $DV_X, 0 ) ),
+               log( component( $DV_X, 1 ) ) )
+            END MODULE uu_Q1
+            
+            MODULE uu_Q2_8
+               name = "uu_Q2_8"
+               value = vector( sqrt( component( $DV_X, 1 ) ) )
+            END MODULE uu_Q2_8
+            
+            MODULE uu_Q2_9
+               name = "uu_Q2_9"
+               value = vector( log(component($DV_X,1)) + 3.0 )
+            END MODULE uu_Q2_9
+            
+         END MODULE interior_fields
+         
+         MODULE boundary_fields
+            
+            MODULE bd_L1
+               name = "bd_L1"
+               value = vector( sqrt( component( $DV_X, 0 ) *
+               component( $DV_X, 1 ) ) )
+            END MODULE bd_L1
+            
+            MODULE bd_L0
+               name = "bd_L0"
+               value = vector( sqrt( component( $DV_X, 0 ) *
+               component( $DV_X, 1 ) ) )
+            END MODULE bd_L0
+            
+         END MODULE boundary_fields
+         
+      END MODULE solution
+      
+   END MODULE PDE_FieldInitialization_1
+   
+END MODULE PEL_ObjectTest#PDE_FieldInitialization_TEST

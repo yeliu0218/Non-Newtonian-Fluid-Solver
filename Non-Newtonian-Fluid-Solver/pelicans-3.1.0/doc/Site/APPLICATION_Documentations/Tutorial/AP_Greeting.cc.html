@@ -1,0 +1,129 @@
+<html>
+<head>
+<title>AP_Greeting.cc</title>
+<link rel=stylesheet type="text/css" href="stylesheet.css">
+</head>
+<body>
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;AP_Greeting.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_assertions</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;iostream&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;fstream&gt;
+
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">cout</font><font class="text"> ;
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+
+AP_Greeting </font><font class="kw1">const</font><font class="text">* AP_Greeting::PROTOTYPE = </font><font class="kw1">new</font><font class="text"> AP_Greeting() ;
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">AP_Greeting:: AP_Greeting( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_Application</font><font class="text">( </font><font class="string">&quot;AP_Greeting&quot;</font><font class="text"> )
+{
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">AP_Greeting:: ~AP_Greeting( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">AP_Greeting*
+AP_Greeting:: create_replica( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner, 
+                              </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;AP_Greeting:: create_replica&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_PRE( a_owner, exp ) ) ;
+
+   AP_Greeting* result = </font><font class="kw1">new</font><font class="text"> AP_Greeting( a_owner, exp ) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_POST( result, a_owner, exp ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">AP_Greeting:: AP_Greeting( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner, 
+                           </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp ) 
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_Application</font><font class="text">( a_owner, exp )
+   , NAME( exp-&gt;string_data( </font><font class="string">&quot;name&quot;</font><font class="text"> ) )
+   , HAS_CARD( </font><font class="kw1">false</font><font class="text"> )
+{
+   </font><font class="kw1">if</font><font class="text">( exp-&gt;has_module( </font><font class="string">&quot;greeting_card&quot;</font><font class="text"> ) )
+   {
+      </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* se = 
+                         exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;greeting_card&quot;</font><font class="text"> ) ;
+      HAS_CARD = </font><font class="kw1">true</font><font class="text"> ;
+      INST = se-&gt;string_data( </font><font class="string">&quot;institution&quot;</font><font class="text"> ) ;
+      TOWN = se-&gt;string_data( </font><font class="string">&quot;town&quot;</font><font class="text"> ) ;
+      ZIP  = se-&gt;int_data( </font><font class="string">&quot;zip&quot;</font><font class="text"> ) ;
+      se-&gt;destroy() ;
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">AP_Greeting:: run( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;AP_Greeting:: run&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">cout</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> &lt;&lt; </font><font class="string">&quot;Hello &quot;</font><font class="text"> &lt;&lt; NAME &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw1">if</font><font class="text">( HAS_CARD )
+   {
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> ff = NAME + </font><font class="string">&quot;.card&quot;</font><font class="text"> ;
+      </font><font class="kw2">std</font><font class="text">::ofstream os( ff.c_str() ) ;
+      </font><font class="kw1">if</font><font class="text">( !os )
+         </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( </font><font class="string">&quot;file opening failed&quot;</font><font class="text"> ) ; 
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">cout</font><font class="text"> &lt;&lt; </font><font class="string">&quot;Editing greeting card: &quot;</font><font class="text"> &lt;&lt; ff &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+      os &lt;&lt; </font><font class="string">&quot;TO: &quot;</font><font class="text"> &lt;&lt; NAME &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+      os &lt;&lt; </font><font class="string">&quot;    &quot;</font><font class="text"> &lt;&lt; INST &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+      os &lt;&lt; </font><font class="string">&quot;    &quot;</font><font class="text"> &lt;&lt; ZIP  &lt;&lt; </font><font class="string">&quot; &quot;</font><font class="text"> &lt;&lt; TOWN &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+      os &lt;&lt; </font><font class="string">&quot;THANK YOU!&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+      os.close() ;
+   }
+}
+
+</font>
+</pre>
+</body>
+</html>

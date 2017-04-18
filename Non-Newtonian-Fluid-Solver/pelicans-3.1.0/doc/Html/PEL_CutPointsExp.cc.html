@@ -1,0 +1,495 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>PEL_CutPointsExp.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="PEL_CutPointsExp.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="PELpack-tree.html"><span>Tree</span></a>
+    <a href="PEL_CutPointsExp.html"><span>Class</span></a>
+    <a href="PEL_CutPointsExp.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="PELpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_CutPointsExp</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_assertions</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Sequence</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">doubleVector</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">doubleArray2D</font><font class="text">.hh&gt;
+
+</font><font class="kw3">PEL_CutPointsExp</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">PEL_CutPointsExp</font><font class="text">::PROTOTYPE_MP = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_CutPointsExp</font><font class="text">(
+                         </font><font class="string">&quot;middle_point&quot;</font><font class="text">, </font><font class="kw3">PEL_CutPointsExp</font><font class="text">::mid_point ) ;
+</font><font class="kw3">PEL_CutPointsExp</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">PEL_CutPointsExp</font><font class="text">::PROTOTYPE_MPS = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_CutPointsExp</font><font class="text">(
+                       </font><font class="string">&quot;middle_points&quot;</font><font class="text">, </font><font class="kw3">PEL_CutPointsExp</font><font class="text">::mid_points ) ;
+</font><font class="kw3">PEL_CutPointsExp</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">PEL_CutPointsExp</font><font class="text">::PROTOTYPE_X = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_CutPointsExp</font><font class="text">(
+                              </font><font class="string">&quot;x_cut_points&quot;</font><font class="text">, </font><font class="kw3">PEL_CutPointsExp</font><font class="text">::xcut ) ;
+</font><font class="kw3">PEL_CutPointsExp</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">PEL_CutPointsExp</font><font class="text">::PROTOTYPE_Y = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_CutPointsExp</font><font class="text">(
+                              </font><font class="string">&quot;y_cut_points&quot;</font><font class="text">, </font><font class="kw3">PEL_CutPointsExp</font><font class="text">::ycut ) ;
+</font><font class="kw3">PEL_CutPointsExp</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">PEL_CutPointsExp</font><font class="text">::PROTOTYPE_Z = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_CutPointsExp</font><font class="text">(
+                              </font><font class="string">&quot;z_cut_points&quot;</font><font class="text">, </font><font class="kw3">PEL_CutPointsExp</font><font class="text">::zcut ) ;
+
+</font><font class="kw1">struct</font><font class="text"> PEL_CutPointsExp_ERROR
+{
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> n0( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; f_name, </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; op_name ) ;
+} ;
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_CutPointsExp</font><font class="text">:: </font><font class="kw3">PEL_CutPointsExp</font><font class="text">( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_name,
+                                     IS_CutOp a_op ) 
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_Expression</font><font class="text">( a_name )
+   , OP( a_op )
+{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_CutPointsExp:: PEL_CutPointsExp&quot;</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_CutPointsExp</font><font class="text">:: </font><font class="kw3">PEL_CutPointsExp</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                     </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_name,
+                                     </font><font class="kw3">PEL_Sequence</font><font class="text"> </font><font class="kw1">const</font><font class="text">* argument_list,
+                                     IS_CutOp a_op ) 
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_Expression</font><font class="text">( a_owner, a_name, argument_list )
+   , OP( a_op )
+{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_CutPointsExp:: PEL_CutPointsExp&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_CutPointsExp</font><font class="text">:: ~</font><font class="kw3">PEL_CutPointsExp</font><font class="text">( </font><font class="kw1">void</font><font class="text"> ) 
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_CutPointsExp:: ~PEL_CutPointsExp&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw1">if</font><font class="text">( </font><font class="kw1">this</font><font class="text"> == PROTOTYPE_X ) PROTOTYPE_X = 0 ;
+   </font><font class="kw1">if</font><font class="text">( </font><font class="kw1">this</font><font class="text"> == PROTOTYPE_Y ) PROTOTYPE_Y = 0 ;
+   </font><font class="kw1">if</font><font class="text">( </font><font class="kw1">this</font><font class="text"> == PROTOTYPE_Z ) PROTOTYPE_Z = 0 ;
+   </font><font class="kw1">if</font><font class="text">( </font><font class="kw1">this</font><font class="text"> == PROTOTYPE_MP ) PROTOTYPE_MP = 0 ;
+   </font><font class="kw1">if</font><font class="text">( </font><font class="kw1">this</font><font class="text"> == PROTOTYPE_MPS ) PROTOTYPE_MPS = 0 ;
+   
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_CutPointsExp</font><font class="text">*
+</font><font class="kw3">PEL_CutPointsExp</font><font class="text">:: create_replica( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                   </font><font class="kw3">PEL_Sequence</font><font class="text"> </font><font class="kw1">const</font><font class="text">* argument_list ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_CutPointsExp:: create_replica&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_PRE( a_owner, argument_list ) ) ;
+
+   </font><font class="kw3">PEL_CutPointsExp</font><font class="text">* result =
+           </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_CutPointsExp</font><font class="text">( a_owner, name(), argument_list, OP ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( create_replica_POST( result, a_owner, argument_list ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; 
+</font><font class="kw3">PEL_CutPointsExp</font><font class="text">:: usage( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> result = </font><font class="string">&quot;unspecified&quot;</font><font class="text"> ;
+   </font><font class="kw1">if</font><font class="text">( OP == mid_point )
+   {
+      result = name()+</font><font class="string">&quot;(DS,DV)&quot;</font><font class="text"> ;
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( OP == mid_points )
+   {
+      result = name()+</font><font class="string">&quot;([DV],DV)&quot;</font><font class="text"> ;
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( OP == xcut )
+   {
+      result = name()+</font><font class="string">&quot;(DV,DS[,DS])&quot;</font><font class="text"> ;
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( OP == ycut )
+   {
+      result = name()+</font><font class="string">&quot;(DS,DV[,DS] )&quot;</font><font class="text"> ;
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( OP == zcut )
+   {
+      result = name()+</font><font class="string">&quot;(DS,DS,DV)&quot;</font><font class="text"> ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      PEL_CutPointsExp_ERROR::n0( </font><font class="string">&quot;usage&quot;</font><font class="text">, name() ) ;
+   }
+   
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">PEL_CutPointsExp</font><font class="text">:: valid_arguments( </font><font class="kw3">PEL_Sequence</font><font class="text"> </font><font class="kw1">const</font><font class="text">* some_arguments ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_CutPointsExp:: valid_arguments&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( valid_arguments_PRE( some_arguments ) ) ;
+
+   </font><font class="kw1">bool</font><font class="text"> result = </font><font class="kw1">false</font><font class="text"> ;
+   </font><font class="kw1">if</font><font class="text">( OP == mid_point )
+   {
+      result = ( some_arguments-&gt;count() == 2 ) ;
+      </font><font class="kw1">if</font><font class="text">( result )
+      {
+         </font><font class="kw3">PEL_Data</font><font class="text">::Type k0 = extract_arg( some_arguments, 0 )-&gt;data_type() ;
+         result &amp;= ( k0 == Double ) ;
+         </font><font class="kw3">PEL_Data</font><font class="text">::Type k1 = extract_arg( some_arguments, 1 )-&gt;data_type() ;
+         result &amp;= ( k1 == DoubleVector ) ;
+      }
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( OP == mid_points )
+   {
+      result = ( some_arguments-&gt;count() == 1 || some_arguments-&gt;count() == 2 ) ;
+      </font><font class="kw1">if</font><font class="text">( result )
+      {
+         </font><font class="kw3">PEL_Data</font><font class="text">::Type k0 = extract_arg( some_arguments, 0 )-&gt;data_type() ;
+         result &amp;= ( k0 == DoubleVector ) ;
+         </font><font class="kw1">if</font><font class="text">( some_arguments-&gt;count() == 2 )
+         {
+            </font><font class="kw3">PEL_Data</font><font class="text">::Type k1 = extract_arg( some_arguments, 1 )-&gt;data_type() ;
+            result &amp;= ( k1 == DoubleVector ) ;
+         }
+      }
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( OP == xcut )
+   {
+      result = ( some_arguments-&gt;count() == 2 || some_arguments-&gt;count() == 3 ) ;
+      </font><font class="kw1">if</font><font class="text">( result )
+      {
+         </font><font class="kw3">PEL_Data</font><font class="text">::Type k0 = extract_arg( some_arguments, 0 )-&gt;data_type() ;
+         result &amp;= ( k0 == DoubleVector ) ;
+         </font><font class="kw3">PEL_Data</font><font class="text">::Type k1 = extract_arg( some_arguments, 1 )-&gt;data_type() ;
+         result &amp;= ( k1 == Double ) ;
+         </font><font class="kw1">if</font><font class="text">( some_arguments-&gt;count() == 3 )
+         {
+            </font><font class="kw3">PEL_Data</font><font class="text">::Type k2 = extract_arg( some_arguments, 2 )-&gt;data_type() ;
+            result &amp;= ( k2 == Double ) ;
+         }
+      }
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( OP == ycut )
+   {
+      result = ( some_arguments-&gt;count() == 2 || some_arguments-&gt;count() == 3 ) ;
+      </font><font class="kw1">if</font><font class="text">( result )
+      {
+         </font><font class="kw3">PEL_Data</font><font class="text">::Type k0 = extract_arg( some_arguments, 0 )-&gt;data_type() ;
+         result &amp;= ( k0 == Double ) ;
+         </font><font class="kw3">PEL_Data</font><font class="text">::Type k1 = extract_arg( some_arguments, 1 )-&gt;data_type() ;
+         result &amp;= ( k1 == DoubleVector ) ;
+         </font><font class="kw1">if</font><font class="text">( some_arguments-&gt;count() == 3 )
+         {
+            </font><font class="kw3">PEL_Data</font><font class="text">::Type k2 = extract_arg( some_arguments, 2 )-&gt;data_type() ;
+            result &amp;= ( k2 == Double ) ;
+         }
+      }
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( OP == zcut )
+   {
+      result = ( some_arguments-&gt;count() == 3 ) ;
+      </font><font class="kw1">if</font><font class="text">( result )
+      {
+         </font><font class="kw3">PEL_Data</font><font class="text">::Type k0 = extract_arg( some_arguments, 0 )-&gt;data_type() ;
+         result &amp;= ( k0 == Double ) ;
+         </font><font class="kw3">PEL_Data</font><font class="text">::Type k1 = extract_arg( some_arguments, 1 )-&gt;data_type() ;
+         result &amp;= ( k1 == Double ) ;
+         </font><font class="kw3">PEL_Data</font><font class="text">::Type k2 = extract_arg( some_arguments, 2 )-&gt;data_type() ;
+         result &amp;= ( k2 == DoubleVector ) ;
+      }
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      PEL_CutPointsExp_ERROR::n0( </font><font class="string">&quot;valid_arguments&quot;</font><font class="text">, name() ) ;
+   }
+
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_Data</font><font class="text">::Type
+</font><font class="kw3">PEL_CutPointsExp</font><font class="text">:: data_type( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_Data</font><font class="text">::Type result = Undefined ;
+   </font><font class="kw1">if</font><font class="text">( OP == mid_point )
+   {
+      result = Double ;
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( OP == mid_points )
+   {
+      result = DoubleVector ;
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( OP == xcut ||  OP == ycut || OP == zcut )
+   {
+      result = DoubleArray2D ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      PEL_CutPointsExp_ERROR::n0( </font><font class="string">&quot;data_type&quot;</font><font class="text">, name() ) ;
+   }
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">double
+</font><font class="kw3">PEL_CutPointsExp</font><font class="text">:: to_double( </font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ct ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_CutPointsExp:: to_double&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( to_double_PRE( ct ) ) ;
+
+   </font><font class="kw1">double</font><font class="text"> result = </font><font class="kw3">PEL</font><font class="text">::bad_double() ;
+
+   </font><font class="kw1">if</font><font class="text">( OP == mid_point )
+   {
+      </font><font class="kw1">double</font><font class="text"> </font><font class="kw1">const</font><font class="text"> x = arg(0)-&gt;to_double( ct ) ;
+      </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; verts_table = arg(1)-&gt;to_double_vector( ct ) ;
+      result = m_pt( x, verts_table ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      PEL_CutPointsExp_ERROR::n0( </font><font class="string">&quot;to_double&quot;</font><font class="text">, name() ) ;
+   }
+   
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp;
+</font><font class="kw3">PEL_CutPointsExp</font><font class="text">:: to_double_vector( </font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ct ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_CutPointsExp:: to_double_vector&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( to_double_vector_PRE( ct ) ) ;
+
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw3">doubleVector</font><font class="text"> result(0) ;
+
+   </font><font class="kw1">if</font><font class="text">( OP == mid_points )
+   {
+      </font><font class="kw1">if</font><font class="text">( nb_arguments()==1 )
+      {
+         </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; verts_table = arg(0)-&gt;to_double_vector( ct ) ;
+         build_coords( verts_table, result ) ;
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( nb_arguments()==2 )
+      {
+         </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; pt_table = arg(0)-&gt;to_double_vector( ct ) ;
+         </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; verts_table = arg(1)-&gt;to_double_vector( ct ) ;
+         result.re_initialize( pt_table.size() ) ;
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;pt_table.size() ; ++i )
+         {
+            result(i) = m_pt( pt_table(i), verts_table ) ;
+         }
+      }
+      </font><font class="kw1">else
+</font><font class="text">      {
+         PEL_CutPointsExp_ERROR::n0( </font><font class="string">&quot;to_double_vector&quot;</font><font class="text">, name() ) ;
+      }
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      PEL_CutPointsExp_ERROR::n0( </font><font class="string">&quot;to_double_vector&quot;</font><font class="text">, name() ) ;
+   }
+   
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">doubleArray2D</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp;
+</font><font class="kw3">PEL_CutPointsExp</font><font class="text">:: to_double_array2D( </font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ct ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_CutPointsExp:: to_double_array2D&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( to_double_array2D_PRE( ct ) ) ;
+
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw3">doubleArray2D</font><font class="text"> result(0,0) ;
+   
+   </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> nb_dims = nb_arguments() ;
+   </font><font class="kw1">if</font><font class="text">( OP == xcut )
+   {
+      </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; verts_table = arg(0)-&gt;to_double_vector( ct ) ;
+      </font><font class="kw3">doubleVector</font><font class="text"> coords_table(0) ;
+      build_coords( verts_table, coords_table ) ;
+      result.re_initialize( coords_table.size(), nb_dims ) ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;coords_table.size() ; ++i )
+      {
+         result(i,0) = coords_table(i) ;
+         result(i,1) = arg(1)-&gt;to_double( ct ) ;
+         </font><font class="kw1">if</font><font class="text">( nb_dims==3 ) result(i,2) = arg(2)-&gt;to_double( ct ) ;
+      }
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( OP == ycut )
+   {
+      </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; verts_table = arg(1)-&gt;to_double_vector( ct ) ;
+      </font><font class="kw3">doubleVector</font><font class="text"> coords_table(0) ;
+      build_coords( verts_table, coords_table ) ;
+      result.re_initialize( coords_table.size(), nb_dims ) ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;coords_table.size() ; ++i )
+      {
+         result(i,0) = arg(0)-&gt;to_double( ct ) ;
+         result(i,1) = coords_table(i) ;
+         </font><font class="kw1">if</font><font class="text">( nb_dims==3 ) result(i,2) = arg(2)-&gt;to_double( ct ) ;
+      }
+      
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( OP == zcut )
+   {
+      </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; verts_table = arg(2)-&gt;to_double_vector( ct ) ;
+      </font><font class="kw3">doubleVector</font><font class="text"> coords_table(0) ;
+      build_coords( verts_table, coords_table ) ;
+      result.re_initialize( coords_table.size(), nb_dims ) ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;coords_table.size() ; ++i )
+      {
+         result(i,0) = arg(0)-&gt;to_double( ct ) ;
+         result(i,1) = arg(1)-&gt;to_double( ct ) ;
+         result(i,2) = coords_table(i) ;
+      }
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      PEL_CutPointsExp_ERROR::n0( </font><font class="string">&quot;to_double_array2D&quot;</font><font class="text">, name() ) ;
+   }
+   
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_CutPointsExp</font><font class="text">:: check_table( </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; verts_table ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_CutPointsExp:: check_table&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">if</font><font class="text">( verts_table.size() &lt;= 1 )
+   {
+      raise_error( </font><font class="string">&quot;cutline vector should have at least two elements&quot;</font><font class="text"> ) ;
+   }
+
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;verts_table.size()-1 ; ++i )
+   {
+      </font><font class="kw1">if</font><font class="text">( verts_table(i)&gt;=verts_table(i+1) )
+      {
+         raise_error( </font><font class="string">&quot;cutline vector should be increasing&quot;</font><font class="text"> ) ;
+      }
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">double
+</font><font class="kw3">PEL_CutPointsExp</font><font class="text">:: m_pt( </font><font class="kw1">double</font><font class="text"> x,
+                         </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; verts_table ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_CutPointsExp:: m_pt&quot;</font><font class="text"> ) ;
+
+   check_table( verts_table ) ;
+
+   </font><font class="kw1">double</font><font class="text"> result = </font><font class="kw3">PEL</font><font class="text">::bad_double() ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;verts_table.size()-1 ; ++i )
+   {
+      </font><font class="kw3">PEL_CHECK</font><font class="text">( verts_table(i)&lt;verts_table(i+1) ) ;
+      result = 0.5*( verts_table(i)+verts_table(i+1) ) ;
+      </font><font class="kw1">if</font><font class="text">( x&lt;verts_table(i+1) ) </font><font class="kw1">break</font><font class="text"> ;
+   }
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_CutPointsExp</font><font class="text">:: build_coords( </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; verts_table,
+                                 </font><font class="kw3">doubleVector</font><font class="text">&amp; coords_table ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_CutPointsExp:: build_coords&quot;</font><font class="text"> ) ;
+
+   check_table( verts_table ) ;
+   
+   coords_table.re_initialize( verts_table.size()-1 ) ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;verts_table.size()-1 ; ++i )
+   {
+      coords_table(i) = 0.5*( verts_table(i)+verts_table(i+1) ) ;
+   }
+}
+
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="kw1">void</font><font class="text"> 
+PEL_CutPointsExp_ERROR:: n0( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; f_name,
+                             </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; op_name )
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> mesg ;
+   mesg += </font><font class="string">&quot;*** PEL_CutPointsExp::&quot;</font><font class="text"> + f_name +</font><font class="string">&quot;\n&quot;</font><font class="text"> ;
+   mesg += </font><font class="string">&quot;    operation &quot;</font><font class="text"> + op_name + </font><font class="string">&quot; not implemented.&quot;</font><font class="text"> ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_internal( mesg ) ;
+}
+
+</font>
+</pre>
+</body>
+</html>

@@ -1,0 +1,1743 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>LA_SeqMatrix.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="LA_SeqMatrix.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="LApack-tree.html"><span>Tree</span></a>
+    <a href="LA_SeqMatrix.html"><span>Class</span></a>
+    <a href="LA_SeqMatrix.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="LApack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated
+ *  reusable components, whose purpose is to simplify the task of developing
+ *  softwares of numerical mathematics and scientific computing.
+ *
+ *  This software is governed by the CeCILL-C license under French law and
+ *  abiding by the rules of distribution of free software. You can use, modify
+ *  and/or redistribute the software under the terms of the CeCILL-C license
+ *  as circulated by CEA, CNRS and INRIA at the following URL
+ *  &quot;http://www.cecill.info&quot;.
+ *
+ *  As a counterpart to the access to the source code and rights to copy,
+ *  modify and redistribute granted by the license, users are provided only
+ *  with a limited warranty and the software's author, the holder of the
+ *  economic rights, and the successive licensors have only limited liability.
+ *
+ *  In this respect, the user's attention is drawn to the risks associated
+ *  with loading, using, modifying and/or developing or reproducing the
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also
+ *  therefore means that it is reserved for developers and experienced
+ *  professionals having in-depth computer knowledge. Users are therefore
+ *  encouraged to load and test the software's suitability as regards their
+ *  requirements in conditions enabling the security of their systems and/or
+ *  data to be ensured and, more generally, to use and operate it in the same
+ *  conditions as regards security.
+ *
+ *  The fact that you are presently reading this means that you have had
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_SeqMatrix</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_MatrixIterator</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_PelMatrix</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_SeqVector</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_SeqImplementation</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_assertions</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Bool</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_DistributedPartition</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_DoubleVector</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Int</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Module</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ObjectRegister</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Root</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;fstream&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;sstream&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw2">string</font><font class="text">&gt;
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">*
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: make( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                     </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_SeqMatrix:: make&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( exp != 0 ) ;
+
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> name = exp-&gt;string_data( </font><font class="string">&quot;concrete_name&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* proto =
+      </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;(
+                               sparse_mat_pluggin_map()-&gt;item( name ) ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( proto!=0 ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( proto-&gt;is_a_prototype() ) ;
+
+   </font><font class="kw3">LA_SeqMatrix</font><font class="text">* result = proto-&gt;create_replica( a_owner, exp ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result!=0 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;owner() == a_owner ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( </font><font class="kw3">IMPLIES</font><font class="text">( result-&gt;is_desynchronizable(),
+                            result-&gt;state() == </font><font class="kw3">LA</font><font class="text">::NotSync_undef ) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;distribution_strategy() == </font><font class="kw3">LA</font><font class="text">::NoDistribution ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: </font><font class="kw3">LA_SeqMatrix</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                             </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_name )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">LA_Matrix</font><font class="text">( a_owner, a_name, </font><font class="kw3">LA</font><font class="text">::NoDistribution )
+   , ROW_DIST( 0 )
+   , COL_DIST( 0 )
+{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_SeqMatrix:: LA_SeqMatrix&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( !a_name.empty() ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( !is_a_prototype() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( owner() == a_owner ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( name() == a_name ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( is_resizable() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( distribution_strategy() == </font><font class="kw3">LA</font><font class="text">::NoDistribution ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: </font><font class="kw3">LA_SeqMatrix</font><font class="text">( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_name )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">LA_Matrix</font><font class="text">( a_name )
+   , ROW_DIST( 0 )
+   , COL_DIST( 0 )
+{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_SeqMatrix:: LA_SeqMatrix( prototype )&quot;</font><font class="text"> ) ;
+   sparse_mat_pluggin_map()-&gt;register_item( a_name, </font><font class="kw1">this</font><font class="text"> ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( is_a_prototype() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( name() == a_name ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( !is_resizable() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( distribution_strategy() == </font><font class="kw3">LA</font><font class="text">::InvalidDistribution ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: ~</font><font class="kw3">LA_SeqMatrix</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">*
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: create_copy( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                            </font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* other ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_SeqMatrix:: create_copy&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( create_copy_PRE( a_owner, other ) ) ;
+
+   </font><font class="kw1">if</font><font class="text">( !is_resizable() )
+   {
+      </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_internal(
+         </font><font class="string">&quot;*** LA_SeqMatrix:: create_copy error:\n&quot;
+</font><font class="text">         </font><font class="string">&quot;    create copy of non resizable matrix is not implemented&quot;</font><font class="text"> ) ;
+   }
+
+   </font><font class="kw3">LA_SeqMatrix</font><font class="text">* result = create_matrix( a_owner ) ;
+   result-&gt;re_initialize_with_global_sizes( other-&gt;nb_rows(),
+                                            other-&gt;nb_cols() ) ;
+   result-&gt;</font><font class="kw2">set</font><font class="text">( other ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( create_copy_POST( result, a_owner, other ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: re_initialize( </font><font class="kw2">size_t</font><font class="text"> a_nb_rows, </font><font class="kw2">size_t</font><font class="text"> a_nb_cols,
+                              </font><font class="kw2">size_t</font><font class="text"> a_nb_local_rows, </font><font class="kw2">size_t</font><font class="text"> a_nb_local_cols )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_SeqMatrix:: re_initialize&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( re_initialize_PRE( a_nb_rows, a_nb_cols,
+                                     a_nb_local_rows, a_nb_local_cols ) ) ;
+
+   re_initialize_with_global_sizes( a_nb_rows, a_nb_cols ) ;
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( re_initialize_POST( a_nb_rows, a_nb_cols,
+                                       a_nb_local_rows, a_nb_local_cols ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_SeqVector</font><font class="text">*
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: create_vector( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_SeqMatrix:: create_vector&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( create_vector_PRE( a_owner ) ) ;
+
+   </font><font class="kw1">if</font><font class="text">( !is_resizable() )
+   {
+      </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_internal(
+         </font><font class="string">&quot;*** LA_SeqMatrix:: create_vector error:\n&quot;
+</font><font class="text">         </font><font class="string">&quot;    create vector of non resizable matrix is not implemented&quot;</font><font class="text"> ) ;
+   }
+
+   </font><font class="kw3">LA_SeqVector</font><font class="text">* result = </font><font class="kw3">LA_SeqVector</font><font class="text">::create( a_owner, nb_rows() ) ;
+   </font><font class="kw1">if</font><font class="text">( is_desynchronizable() ) result-&gt;make_desynchronizable() ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( create_vector_POST( result, a_owner ) ) ;
+   </font><font class="kw1">return</font><font class="text"> result ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_Implementation</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: implementation( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_SeqMatrix:: implementation&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw3">LA_Implementation</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result = </font><font class="kw3">LA_SeqImplementation</font><font class="text">::object() ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( implementation_POST( result ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_DistributedPartition</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: row_distribution( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_SeqMatrix:: row_distribution&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( row_distribution_PRE() ) ;
+
+   </font><font class="kw1">if</font><font class="text">( ROW_DIST == 0 )
+   {
+      ROW_DIST = </font><font class="kw3">PEL_DistributedPartition</font><font class="text">::create(
+                                </font><font class="kw1">const_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqMatrix</font><font class="text">*&gt;( </font><font class="kw1">this</font><font class="text"> ) ) ;
+   }
+   </font><font class="kw1">if</font><font class="text">( ROW_DIST-&gt;global_number() != nb_rows() )
+   {
+      ROW_DIST-&gt;set_global_number( nb_rows() ) ;
+   }
+
+   </font><font class="kw3">PEL_DistributedPartition</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result = ROW_DIST ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( row_distribution_POST( result ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_DistributedPartition</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: col_distribution( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_SeqMatrix:: col_distribution&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( col_distribution_PRE() ) ;
+
+   </font><font class="kw1">if</font><font class="text">( COL_DIST == 0 )
+   {
+      COL_DIST = </font><font class="kw3">PEL_DistributedPartition</font><font class="text">::create(
+                                </font><font class="kw1">const_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqMatrix</font><font class="text">*&gt;( </font><font class="kw1">this</font><font class="text"> ) ) ;
+   }
+   </font><font class="kw1">if</font><font class="text">( COL_DIST-&gt;global_number() != nb_cols() )
+   {
+      COL_DIST-&gt;set_global_number( nb_cols() ) ;
+   }
+
+   </font><font class="kw3">PEL_DistributedPartition</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result = COL_DIST ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( col_distribution_POST( result ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">*
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: create_local_matrix( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_SeqMatrix:: create_local_matrix&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( create_local_matrix_PRE( a_owner ) ) ;
+
+   </font><font class="kw3">LA_SeqMatrix</font><font class="text">* result = create_matrix( a_owner ) ;
+   result-&gt;</font><font class="kw2">set</font><font class="text">( </font><font class="kw1">this</font><font class="text"> ) ;
+   result-&gt;synchronize() ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( create_local_matrix_POST( result, a_owner ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: extract_diag( </font><font class="kw3">LA_Vector</font><font class="text">* diag ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_SeqMatrix:: extract_diag&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( extract_diag_PRE( diag ) ) ;
+
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;nb_rows() ; ++i )
+   {
+      diag-&gt;set_item( i, item( i, i ) ) ;
+   }
+   diag-&gt;synchronize() ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( extract_diag_POST( diag ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: extract_row( </font><font class="kw2">size_t</font><font class="text"> i, </font><font class="kw3">LA_Vector</font><font class="text">* row ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_SeqMatrix:: extract_row&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( extract_row_PRE( i, row ) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; j&lt;nb_cols() ; ++j )
+   {
+      row-&gt;set_item( j, item( i, j ) ) ;
+   }
+   row-&gt;synchronize() ;
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( extract_row_POST( i, row ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: extract_col( </font><font class="kw2">size_t</font><font class="text"> j, </font><font class="kw3">LA_Vector</font><font class="text">* col ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_SeqMatrix:: extract_col&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( extract_col_PRE( j, col ) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;nb_rows() ; ++i )
+   {
+      col-&gt;set_item( i, item( i, j ) ) ;
+   }
+   col-&gt;synchronize() ;
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( extract_col_POST( j, col ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: extract_lump( </font><font class="kw3">LA_Vector</font><font class="text">* lump ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_SeqMatrix:: extract_lump&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( extract_lump_PRE( lump ) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw3">LA_MatrixIterator</font><font class="text">* it = create_stored_item_iterator( 0 ) ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;nb_rows() ; i++ )
+   {
+      </font><font class="kw1">double</font><font class="text"> ss = 0.0 ;
+      </font><font class="kw1">for</font><font class="text">( it-&gt;start_row_items(i) ; it-&gt;is_valid() ; it-&gt;go_next() )
+      {
+         ss += </font><font class="kw3">PEL</font><font class="text">::abs( it-&gt;item() ) ;
+      }
+      lump-&gt;set_item( i, ss ) ;
+   }
+   it-&gt;destroy() ; it = 0 ;
+   lump-&gt;synchronize() ;
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( extract_lump_POST( lump ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: nullify( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_SeqMatrix:: nullify&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( nullify_PRE() ) ;
+
+   set_stored_items( 0.0 ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( nullify_POST() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: nullify_row( </font><font class="kw2">size_t</font><font class="text"> i )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_SeqMatrix:: nullify_row&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( nullify_row_PRE( i ) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw3">LA_MatrixIterator</font><font class="text">* it = create_stored_item_iterator( 0 ) ;
+   </font><font class="kw1">for</font><font class="text">( it-&gt;start_row_items(i) ; it-&gt;is_valid() ; it-&gt;go_next() )
+   {
+      it-&gt;set_item( 0. ) ;
+   }
+   it-&gt;destroy() ; it = 0 ;
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( nullify_row_POST( i ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: scale( </font><font class="kw1">double</font><font class="text"> alpha )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_SeqMatrix:: scale&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( scale_PRE( alpha ) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw1">if</font><font class="text">( alpha != 1. )
+   {
+      </font><font class="kw3">LA_MatrixIterator</font><font class="text">* it = create_stored_item_iterator( 0 ) ;
+      start_local_modifs() ;
+      </font><font class="kw1">for</font><font class="text">( it-&gt;start_all_items() ; it-&gt;is_valid() ; it-&gt;go_next() )
+      {
+         it-&gt;set_item( it-&gt;item()*alpha ) ;
+      }
+      stop_local_modifs() ;
+      it-&gt;destroy() ; it = 0 ;
+   }
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( scale_POST( alpha ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: multiply_vec_then_add(
+                        </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* x, </font><font class="kw3">LA_Vector</font><font class="text">* y,
+                        </font><font class="kw1">double</font><font class="text"> alpha, </font><font class="kw1">double</font><font class="text"> beta ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_SeqMatrix:: multiply_vec_then_add&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( multiply_vec_then_add_PRE( x, y, alpha, beta ) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( </font><font class="kw1">dynamic_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* &gt;( x ) != 0 ) ;
+   </font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* bx = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* &gt;( x ) ;
+
+   </font><font class="kw1">if</font><font class="text">( beta != 1. ) y-&gt;scale( beta ) ;
+
+   </font><font class="kw3">LA_MatrixIterator</font><font class="text">* it = create_stored_item_iterator( 0 ) ;
+   </font><font class="kw1">for</font><font class="text">( it-&gt;start_all_items() ; it-&gt;is_valid() ; it-&gt;go_next() )
+   {
+      y-&gt;add_to_item( it-&gt;row(),
+                      alpha * it-&gt;item() * bx-&gt;item( it-&gt;col() ) ) ;
+   }
+   it-&gt;destroy() ; it = 0 ;
+   y-&gt;synchronize() ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( multiply_vec_then_add_POST( y ) ) ;
+
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: tr_multiply_vec_then_add(
+                        </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* x, </font><font class="kw3">LA_Vector</font><font class="text">* y,
+                        </font><font class="kw1">double</font><font class="text"> alpha, </font><font class="kw1">double</font><font class="text"> beta )  </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_SeqMatrix:: tr_multiply_vec_then_add&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( tr_multiply_vec_then_add_PRE( x, y, alpha, beta ) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( </font><font class="kw1">dynamic_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* &gt;( x ) != 0 ) ;
+   </font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* bx = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* &gt;( x ) ;
+
+   </font><font class="kw1">if</font><font class="text">( beta != 1. ) y-&gt;scale( beta ) ;
+
+   </font><font class="kw3">LA_MatrixIterator</font><font class="text">* it = create_stored_item_iterator( 0 ) ;
+   </font><font class="kw1">for</font><font class="text">( it-&gt;start_all_items() ; it-&gt;is_valid() ; it-&gt;go_next() )
+   {
+      y-&gt;add_to_item( it-&gt;col(),
+                      alpha * it-&gt;item() * bx-&gt;item( it-&gt;row() ) ) ;
+   }
+   it-&gt;destroy() ; it = 0 ;
+   y-&gt;synchronize() ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( tr_multiply_vec_then_add_POST( y ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: scale_as_diag_mat_mat( </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* lvec )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_SeqMatrix:: scale_as_diag_mat_mat&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( scale_as_diag_mat_mat_PRE( lvec ) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( </font><font class="kw1">dynamic_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* &gt;( lvec ) != 0 ) ;
+   </font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dx = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* &gt;( lvec ) ;
+
+   </font><font class="kw3">LA_MatrixIterator</font><font class="text">* it = create_stored_item_iterator( 0 ) ;
+   start_local_modifs() ;
+   </font><font class="kw1">for</font><font class="text">( it-&gt;start_all_items() ; it-&gt;is_valid() ; it-&gt;go_next() )
+   {
+      it-&gt;set_item( it-&gt;item()*dx-&gt;item( it-&gt;row() ) ) ;
+   }
+   stop_local_modifs() ;
+   it-&gt;destroy() ; it = 0 ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( scale_as_diag_mat_mat_POST() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: scale_as_mat_diag_mat( </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* rvec )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_SeqMatrix:: scale_as_mat_diag_mat&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( scale_as_mat_diag_mat_PRE( rvec ) ) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( </font><font class="kw1">dynamic_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* &gt;( rvec ) != 0 ) ;
+   </font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dx = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* &gt;( rvec ) ;
+
+   </font><font class="kw3">LA_MatrixIterator</font><font class="text">* it = create_stored_item_iterator( 0 ) ;
+   start_local_modifs() ;
+   </font><font class="kw1">for</font><font class="text">( it-&gt;start_all_items() ; it-&gt;is_valid() ; it-&gt;go_next() )
+   {
+      it-&gt;set_item( it-&gt;item()*dx-&gt;item( it-&gt;col() ) ) ;
+   }
+   stop_local_modifs() ;
+   it-&gt;destroy() ; it = 0 ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( scale_as_mat_diag_mat_POST() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: add_to_diag( </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* vec )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_SeqMatrix:: add_to_diag LA_Vector&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_SAVEOLD</font><font class="text">( </font><font class="kw3">LA</font><font class="text">::SyncState, state, state() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( add_to_diag_PRE( vec ) ) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( </font><font class="kw1">dynamic_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* &gt;( vec ) != 0 ) ;
+   </font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dx = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* &gt;( vec ) ;
+
+   start_local_modifs() ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;dx-&gt;nb_rows() ; ++i )
+   {
+      add_to_item( i, i, dx-&gt;item(i) ) ;
+   }
+   stop_local_modifs() ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( add_to_diag_POST( </font><font class="kw3">OLD</font><font class="text">( state ) ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: </font><font class="kw2">set</font><font class="text">( </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* A, </font><font class="kw1">bool</font><font class="text"> same_pattern )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_SeqMatrix:: set&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( set_PRE( A, same_pattern ) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( </font><font class="kw1">dynamic_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* &gt;( A ) != 0 ) ;
+   </font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* AS = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;(A) ;
+
+   set_IMP( AS, same_pattern ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( set_POST(A) ) ;
+}
+
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: add_Mat( </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* A, </font><font class="kw1">double</font><font class="text"> alpha, </font><font class="kw1">bool</font><font class="text"> same_pattern )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_SeqMatrix:: add_Mat&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_SAVEOLD</font><font class="text">( </font><font class="kw3">LA</font><font class="text">::SyncState, state, state() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( add_Mat_PRE( A, alpha, same_pattern ) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( </font><font class="kw1">dynamic_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* &gt;( A ) != 0 ) ;
+   </font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* AS = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;(A) ;
+
+   add_Mat_IMP( AS, alpha, same_pattern ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( add_Mat_POST( </font><font class="kw3">OLD</font><font class="text">( state ) ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: add_tMat( </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* A, </font><font class="kw1">double</font><font class="text"> alpha )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_SeqMatrix:: add_tMat&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_SAVEOLD</font><font class="text">( </font><font class="kw3">LA</font><font class="text">::SyncState, state, state() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( add_tMat_PRE( A, alpha ) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw1">if</font><font class="text">( A-&gt;is_symmetric() )
+   {
+      add_Mat( A, alpha ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      </font><font class="kw3">PEL_CHECK</font><font class="text">( </font><font class="kw1">dynamic_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* &gt;( A ) != 0 ) ;
+      </font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* AS = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;(A) ;
+      add_tMat_IMP( AS, alpha ) ;
+   }
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( add_tMat_POST( </font><font class="kw3">OLD</font><font class="text">( state ) ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: add_Mat_Mat( </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* A, </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* B,
+                            </font><font class="kw1">double</font><font class="text"> alpha )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_SeqMatrix:: add_Mat_Mat&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_SAVEOLD</font><font class="text">( </font><font class="kw3">LA</font><font class="text">::SyncState, state, state() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( add_Mat_Mat_PRE( A, B, alpha ) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( </font><font class="kw1">dynamic_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* &gt;( A ) != 0 ) ;
+   </font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* AS = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;(A) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( </font><font class="kw1">dynamic_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* &gt;( B ) != 0 ) ;
+   </font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* BS = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;(B) ;
+
+   add_Mat_Mat_IMP( AS, BS, alpha ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( add_Mat_Mat_POST( </font><font class="kw3">OLD</font><font class="text">( state ) ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: add_tMat_Mat( </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* A, </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* B,
+                             </font><font class="kw1">double</font><font class="text"> alpha )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_SeqMatrix:: add_tMat_Mat&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( add_tMat_Mat_PRE( A, B, alpha ) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( </font><font class="kw1">dynamic_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* &gt;( A ) != 0 ) ;
+   </font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* AS = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;(A) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( </font><font class="kw1">dynamic_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* &gt;( B ) != 0 ) ;
+   </font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* BS = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;(B) ;
+
+   add_tMat_Mat_IMP( AS, BS, alpha ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( add_tMat_Mat_POST() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: add_Mat_tMat( </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* A, </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* B,
+                             </font><font class="kw1">double</font><font class="text"> alpha )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_SeqMatrix:: add_Mat_tMat&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( add_Mat_tMat_PRE( A, B, alpha ) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( </font><font class="kw1">dynamic_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* &gt;( A ) != 0 ) ;
+   </font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* AS = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;(A) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( </font><font class="kw1">dynamic_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* &gt;( B ) != 0 ) ;
+   </font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* BS = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;(B) ;
+
+   add_Mat_tMat_IMP( AS, BS, alpha ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( add_Mat_tMat_POST() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: add_tMat_tMat( </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* A, </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* B,
+                              </font><font class="kw1">double</font><font class="text"> alpha )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_SeqMatrix:: add_tMat_tMat&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( add_tMat_tMat_PRE( A, B, alpha ) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( </font><font class="kw1">dynamic_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* &gt;( A ) != 0 ) ;
+   </font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* AS = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;(A) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( </font><font class="kw1">dynamic_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* &gt;( B ) != 0 ) ;
+   </font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* BS = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;(B) ;
+
+   add_tMat_tMat_IMP( AS, BS, alpha ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( add_tMat_tMat_POST() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: writeMM( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; file ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_SeqMatrix:: writeMM&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( !file.empty() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( is_synchronized() ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw2">std</font><font class="text">::ofstream out( file.c_str() ) ; </font><font class="comment">//??????
+</font><font class="text">   </font><font class="kw1">if</font><font class="text">( !out )
+   {
+      </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_file_handling( file, </font><font class="string">&quot;open&quot;</font><font class="text"> ) ;
+   }
+   out &lt;&lt; </font><font class="string">&quot;%%MatrixMarket matrix coordinate real general&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   out &lt;&lt; nb_rows() &lt;&lt; </font><font class="string">&quot; &quot;</font><font class="text"> &lt;&lt; nb_cols()
+       &lt;&lt; </font><font class="string">&quot; &quot;</font><font class="text"> &lt;&lt; nb_stored_items() &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw3">LA_MatrixIterator</font><font class="text">* it = create_stored_item_iterator( 0 ) ;
+   out.precision( 16 ) ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;nb_rows() ; i++ )
+   {
+      </font><font class="kw1">for</font><font class="text">( it-&gt;start_row_items(i) ; it-&gt;is_valid() ; it-&gt;go_next() )
+      {
+         out &lt;&lt; it-&gt;row() + 1 &lt;&lt; </font><font class="string">&quot; &quot;
+</font><font class="text">             &lt;&lt; it-&gt;col() + 1 &lt;&lt; </font><font class="string">&quot; &quot;
+</font><font class="text">             &lt;&lt; it-&gt;item() &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+      }
+   }
+   it-&gt;destroy() ; it=0 ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: save( </font><font class="kw3">PEL_Module</font><font class="text">* mod ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_SeqMatrix:: save&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( save_PRE( mod ) ) ;
+
+   mod-&gt;add_entry( </font><font class="string">&quot;sparse&quot;</font><font class="text">,    </font><font class="kw3">PEL_Bool</font><font class="text">::create( mod, </font><font class="kw1">false</font><font class="text"> ) ) ;
+   mod-&gt;add_entry( </font><font class="string">&quot;symmetric&quot;</font><font class="text">, </font><font class="kw3">PEL_Bool</font><font class="text">::create( mod, is_symmetric() ) ) ;
+   mod-&gt;add_entry( </font><font class="string">&quot;nb_rows&quot;</font><font class="text">,   </font><font class="kw3">PEL_Int</font><font class="text">::create( mod, nb_rows() ) ) ;
+   mod-&gt;add_entry( </font><font class="string">&quot;nb_cols&quot;</font><font class="text">,   </font><font class="kw3">PEL_Int</font><font class="text">::create( mod, nb_cols() ) ) ;
+   </font><font class="kw3">doubleVector</font><font class="text"> V(0) ;
+   </font><font class="kw1">if</font><font class="text">( !is_symmetric() )
+   {
+      V.re_initialize( nb_rows()*nb_cols() ) ;
+      </font><font class="kw2">size_t</font><font class="text"> k = 0 ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;nb_rows() ; ++i )
+      {
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; j&lt;nb_cols() ; ++j)
+         {
+            V( k++ ) = item( i, j ) ;
+         }
+      }
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      V.re_initialize( nb_rows()*(nb_rows()+1)/2 ) ;
+      </font><font class="kw2">size_t</font><font class="text"> k = 0 ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;nb_rows() ; ++i )
+      {
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=i ; j&lt;nb_cols() ; ++j)
+         {
+            V( k++ ) = item( i, j ) ;
+         }
+      }
+   }
+   mod-&gt;add_entry( </font><font class="string">&quot;row_values&quot;</font><font class="text">,
+                   </font><font class="kw3">PEL_DoubleVector</font><font class="text">::create( mod, V ) ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( save_POST() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: restore( </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_SeqMatrix:: restore&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( restore_PRE( exp ) ) ;
+
+   </font><font class="kw1">bool</font><font class="text"> sym = exp-&gt;bool_data( </font><font class="string">&quot;symmetric&quot;</font><font class="text"> ) ;
+   </font><font class="kw1">bool</font><font class="text"> sparse = exp-&gt;bool_data( </font><font class="string">&quot;sparse&quot;</font><font class="text"> ) ;
+   </font><font class="kw1">if</font><font class="text">( sparse )
+   {
+      </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_internal(
+         </font><font class="string">&quot;Sparse format not implemented&quot;</font><font class="text"> ) ;
+   }
+   </font><font class="kw1">if</font><font class="text">( sym != is_symmetric() )
+   {
+      </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain(
+         </font><font class="string">&quot;*** LA_SeqMatrix:: restore error:\n&quot;
+</font><font class="text">         </font><font class="string">&quot;    matrix internal structure is no compatible\n&quot;
+</font><font class="text">         </font><font class="string">&quot;    with symmetry saving&quot;</font><font class="text"> ) ;
+   }
+   </font><font class="kw1">if</font><font class="text">( !is_resizable() )
+   {
+      </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_internal(
+         </font><font class="string">&quot;Reading of non resizable matrix is not implemented&quot;</font><font class="text"> ) ;
+   }
+
+   </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; values = exp-&gt;doubleVector_data( </font><font class="string">&quot;row_values&quot;</font><font class="text"> ) ;
+   </font><font class="kw2">size_t</font><font class="text"> n = (</font><font class="kw2">size_t</font><font class="text">) exp-&gt;int_data( </font><font class="string">&quot;nb_rows&quot;</font><font class="text"> ) ;
+   </font><font class="kw2">size_t</font><font class="text"> m = (</font><font class="kw2">size_t</font><font class="text">) exp-&gt;int_data( </font><font class="string">&quot;nb_cols&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">if</font><font class="text">( sym )
+   {
+      </font><font class="kw3">PEL_ASSERT</font><font class="text">( n == m ) ;
+      </font><font class="kw3">PEL_ASSERT</font><font class="text">( values.size() == n*(n+1)/2 ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      </font><font class="kw3">PEL_ASSERT</font><font class="text">( values.size()==n*m ) ;
+   }
+
+   re_initialize_with_global_sizes( n, m ) ;
+
+   </font><font class="kw1">if</font><font class="text">( !sym )
+   {
+      </font><font class="kw2">size_t</font><font class="text"> k=0 ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;n ; ++i )
+      {
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; j&lt;m ; ++j )
+         {
+            set_item( i, j, values( k++ ) );
+         }
+      }
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      </font><font class="kw2">size_t</font><font class="text"> k=0 ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;n ; ++i )
+      {
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=i ; j&lt;m ; ++j )
+         {
+            set_item( i, j, values( k++ ) );
+         }
+      }
+   }
+   synchronize() ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( restore_POST() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: solve_LU( </font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* rhs, </font><font class="kw3">LA_SeqVector</font><font class="text">* sol ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_SeqMatrix:: solve_LU&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( solve_LU_PRE( rhs, sol ) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw3">LA_MatrixIterator</font><font class="text">* it = create_stored_item_iterator( 0 ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> n = nb_rows() ;
+   </font><font class="kw2">size_t</font><font class="text"> i, j ;
+
+   </font><font class="kw1">for</font><font class="text">( i=0 ; i&lt;n ; i++ )
+   {
+      </font><font class="kw1">double</font><font class="text"> r = rhs-&gt;item( i ) ;
+      </font><font class="kw1">for</font><font class="text">( it-&gt;start_row_items(i) ; it-&gt;is_valid() ; it-&gt;go_next() )
+      {
+         j = it-&gt;col() ;
+         </font><font class="kw1">if</font><font class="text">( j&lt;i )
+         {
+            r -= it-&gt;item() * sol-&gt;item( j ) ;
+         }
+      }
+      sol-&gt;set_item( i, r ) ;
+   }
+
+   </font><font class="kw1">for</font><font class="text">( i = n-1 ; i&lt;n ; i-- )
+   {
+      </font><font class="kw1">double</font><font class="text"> r = sol-&gt;item( i ) ;
+      </font><font class="kw1">double</font><font class="text"> d = 1. ;
+      </font><font class="kw1">for</font><font class="text">( it-&gt;start_row_items(i) ; it-&gt;is_valid() ; it-&gt;go_next() )
+      {
+         j = it-&gt;col() ;
+         </font><font class="kw1">if</font><font class="text">( j==i )
+         {
+            d = it-&gt;item() ;
+         }
+         </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( j&gt;i )
+         {
+            r -= it-&gt;item() * sol-&gt;item( j ) ;
+         }
+      }
+      sol-&gt;set_item( i, r/d ) ;
+   }
+
+   it-&gt;destroy() ;  it = 0 ;
+   sol-&gt;synchronize() ;
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( solve_LU_POST( rhs, sol ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: relax( </font><font class="kw1">double</font><font class="text"> omega,
+                      </font><font class="kw3">LA_SeqMatrix</font><font class="text">::relaxation_mode mode,
+                      </font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* omega_inv_diag,
+                      </font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* rhs,
+                      </font><font class="kw3">LA_SeqVector</font><font class="text">* sol ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_SeqMatrix:: relax&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( relax_PRE( omega, mode, omega_inv_diag, rhs, sol ) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw3">LA_MatrixIterator</font><font class="text">* it = create_stored_item_iterator( 0 ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> n = nb_rows() ;
+
+   </font><font class="kw1">if</font><font class="text">( mode == forward || mode == symmetric )
+   {
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;n ; ++i )
+      {
+         </font><font class="kw1">double</font><font class="text"> xt =  rhs-&gt;item(i) ;
+         </font><font class="kw1">for</font><font class="text">( it-&gt;start_row_items(i) ; it-&gt;is_valid() ; it-&gt;go_next() )
+         {
+            xt -= it-&gt;item()*sol-&gt;item( it-&gt;col() ) ;
+         }
+         sol-&gt;add_to_item( i, xt*omega_inv_diag-&gt;item(i) ) ;
+      }
+   }
+
+   </font><font class="kw1">if</font><font class="text">( mode == backward || mode == symmetric )
+   {
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=n-1 ; i&lt;n ; --i )
+      {
+         </font><font class="kw1">double</font><font class="text"> xt =  rhs-&gt;item(i) ;
+         </font><font class="kw1">for</font><font class="text">( it-&gt;start_row_items(i) ; it-&gt;is_valid() ; it-&gt;go_next() )
+         {
+            xt -= it-&gt;item()*sol-&gt;item( it-&gt;col() ) ;
+         }
+         sol-&gt;add_to_item( i, xt*omega_inv_diag-&gt;item(i) ) ;
+      }
+   }
+
+   it-&gt;destroy() ;  it = 0 ;
+   sol-&gt;synchronize() ;
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( relax_POST( omega, mode, omega_inv_diag, rhs, sol ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: factorize_MILU0( </font><font class="kw1">bool</font><font class="text"> modified, </font><font class="kw1">double</font><font class="text"> piv_min )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_SeqMatrix:: factorize_MILU0&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( factorize_MILU0_PRE( modified, piv_min ) ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> n = nb_rows() ;
+
+   </font><font class="kw3">LA_MatrixIterator</font><font class="text">* itIK = create_stored_item_iterator( 0 ) ;
+   </font><font class="kw3">LA_MatrixIterator</font><font class="text">* itIJ = create_stored_item_iterator( 0 ) ;
+   </font><font class="kw3">LA_MatrixIterator</font><font class="text">* itKJ = create_stored_item_iterator( 0 ) ;
+
+   </font><font class="kw1">if</font><font class="text">( </font><font class="kw3">PEL</font><font class="text">::abs( item( 0, 0 ) )&lt;piv_min )
+   {
+      nullify_row( 0 ) ;
+      set_item( 0, 0, 1. ) ;
+      raise_MILU0_zero_pivot( 0 ) ;
+   }
+
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=1 ; i&lt;n ; ++i )
+   {
+      </font><font class="kw1">double</font><font class="text"> drop = 0.0 ;
+      </font><font class="kw1">for</font><font class="text">( itIK-&gt;start_row_items(i) ; itIK-&gt;is_valid() ; itIK-&gt;go_next() )
+      {
+         </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> k = itIK-&gt;col() ;
+         </font><font class="kw1">if</font><font class="text">( k&lt;i )
+         {
+            </font><font class="kw1">double</font><font class="text"> </font><font class="kw1">const</font><font class="text"> akk = item( k, k ) ;
+            </font><font class="kw1">double</font><font class="text"> </font><font class="kw1">const</font><font class="text"> aik = itIK-&gt;item()/akk ;
+            itIK-&gt;set_item( aik ) ;
+            </font><font class="kw1">for</font><font class="text">( itKJ-&gt;start_row_items(k) ; itKJ-&gt;is_valid() ; itKJ-&gt;go_next() )
+            {
+               </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> j = itKJ-&gt;col() ;
+               </font><font class="kw1">if</font><font class="text">( j&gt;k )
+               {
+                  </font><font class="kw1">double</font><font class="text"> </font><font class="kw1">const</font><font class="text"> akj = itKJ-&gt;item() ;
+                  </font><font class="kw1">bool</font><font class="text"> found = </font><font class="kw1">false</font><font class="text"> ;
+                  </font><font class="kw1">for</font><font class="text">( itIJ-&gt;start_row_items(i) ; itIJ-&gt;is_valid() ; itIJ-&gt;go_next() )
+                  {
+                     </font><font class="kw1">if</font><font class="text">( itIJ-&gt;col() == j )
+                     {
+                        found = </font><font class="kw1">true</font><font class="text"> ;
+                        itIJ-&gt;add_to_item( -aik*akj ) ;
+                        </font><font class="kw1">break</font><font class="text"> ;
+                     }
+                  }
+                  </font><font class="kw1">if</font><font class="text">( !found ) drop -= aik*akj ;
+               }
+            }
+         }
+      }
+      </font><font class="kw1">double</font><font class="text"> aii = item( i, i ) ;
+      </font><font class="kw1">if</font><font class="text">( modified )
+      {
+         aii -= drop ;
+         add_to_item( i, i, -drop ) ;
+      }
+      </font><font class="kw1">if</font><font class="text">( </font><font class="kw3">PEL</font><font class="text">::abs( aii )&lt;piv_min )
+      {
+         nullify_row( i ) ;
+         set_item( i, i, 1. ) ;
+         raise_MILU0_zero_pivot( i ) ;
+      }
+   }
+   itIK-&gt;destroy() ; itIK = 0 ;
+   itIJ-&gt;destroy() ; itIJ = 0 ;
+   itKJ-&gt;destroy() ; itKJ = 0 ;
+   synchronize() ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( factorize_MILU0_POST() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: raise_MILU0_zero_pivot( </font><font class="kw2">size_t</font><font class="text"> i ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_SeqMatrix:: raise_MILU0_zero_pivot&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( i&lt;nb_rows() ) ;
+
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> mesg ;
+   mesg &lt;&lt; </font><font class="string">&quot;*** ILU(0) factorization :&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;***   zero pivot at step &quot;</font><font class="text"> &lt;&lt; i &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;display_info( mesg.str() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: invariant( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( </font><font class="kw3">LA_Matrix</font><font class="text">::invariant() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( distribution_strategy() == </font><font class="kw3">LA</font><font class="text">::NoDistribution ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: create_copy_PRE( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                </font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* other ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( other != 0 ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( other-&gt;is_synchronized() ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: create_copy_POST( </font><font class="kw3">LA_SeqMatrix</font><font class="text">* result,
+                                 </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                 </font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* other ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( result != 0 ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( result-&gt;owner() == a_owner ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( result-&gt;is_synchronized() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( result-&gt;name() == name() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( result-&gt;nb_rows() == other-&gt;nb_rows() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( result-&gt;nb_cols() == other-&gt;nb_cols() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( result-&gt;nb_stored_items() == other-&gt;nb_stored_items() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( result-&gt;is_resizable() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( result-&gt;distribution_strategy() == </font><font class="kw3">LA</font><font class="text">::NoDistribution ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: item_PRE( </font><font class="kw2">size_t</font><font class="text"> i, </font><font class="kw2">size_t</font><font class="text"> j ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( i &lt; nb_rows() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( j &lt; nb_cols() ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: extract_row_PRE( </font><font class="kw2">size_t</font><font class="text"> i, </font><font class="kw3">LA_Vector</font><font class="text">* row ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( is_synchronized() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( i &lt; nb_rows() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( row != 0 ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( row-&gt;nb_rows() == nb_cols() ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: extract_row_POST( </font><font class="kw2">size_t</font><font class="text"> i, </font><font class="kw3">LA_Vector</font><font class="text">* row ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( row-&gt;is_synchronized() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">(
+      </font><font class="kw3">FORMAL</font><font class="text">( </font><font class="kw3">FORALL</font><font class="text">( ( </font><font class="kw2">size_t</font><font class="text"> j=0 ; j&lt;nb_cols() ; ++j ),
+                      row-&gt;item( j ) == item( i, j ) ) ) ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: extract_col_PRE( </font><font class="kw2">size_t</font><font class="text"> j, </font><font class="kw3">LA_Vector</font><font class="text">* col ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( is_synchronized() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( j &lt; nb_cols() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( col != 0 ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( col-&gt;nb_rows() == nb_rows() ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: extract_col_POST( </font><font class="kw2">size_t</font><font class="text"> j, </font><font class="kw3">LA_Vector</font><font class="text">* col ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( col-&gt;is_synchronized() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">(
+      </font><font class="kw3">FORMAL</font><font class="text">( </font><font class="kw3">FORALL</font><font class="text">( ( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;nb_rows() ; ++i ),
+                      col-&gt;item( i ) == item( i, j ) ) ) ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: extract_lump_PRE( </font><font class="kw3">LA_Vector</font><font class="text">* lump ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( is_synchronized() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( lump != 0 ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( lump-&gt;nb_rows() == nb_rows() ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: extract_lump_POST( </font><font class="kw3">LA_Vector</font><font class="text">* lump ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( lump-&gt;is_synchronized() ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: nullify_POST( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( </font><font class="kw3">LA_Matrix</font><font class="text">::nullify_POST() ) ;
+
+   </font><font class="kw3">LA_MatrixIterator</font><font class="text">* it_mat = create_stored_item_iterator( 0 ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">(
+      </font><font class="kw3">FORALL</font><font class="text">( ( it_mat-&gt;start_all_items() ;
+                it_mat-&gt;is_valid() ;
+                it_mat-&gt;go_next() ),
+              it_mat-&gt;item() == 0. ) ) ;
+   it_mat-&gt;destroy() ; it_mat = 0 ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: nullify_row_PRE( </font><font class="kw2">size_t</font><font class="text"> i ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( i &lt; nb_rows() ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: nullify_row_POST( </font><font class="kw2">size_t</font><font class="text"> i ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( </font><font class="kw3">FORALL</font><font class="text">( ( </font><font class="kw2">size_t</font><font class="text"> j=0 ; j&lt;nb_cols() ; j++ ),
+                       item( i, j ) == 0.0 ) ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( </font><font class="kw3">IMPLIES</font><font class="text">( is_desynchronizable(),
+                        state() == </font><font class="kw3">LA</font><font class="text">::NotSync_undef ) ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( </font><font class="kw3">IMPLIES</font><font class="text">( is_desynchronizable(),
+                        !is_synchronized() ) ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: add_tMat_Mat_PRE( </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* A, </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* B,
+                                 </font><font class="kw1">double</font><font class="text"> alpha ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( state() != </font><font class="kw3">LA</font><font class="text">::NotSync_set ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( !is_symmetric() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( A != 0 ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( A != </font><font class="kw1">this</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( A-&gt;implementation() == implementation() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( A-&gt;is_synchronized() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( A-&gt;nb_cols() == nb_rows() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( B != 0 ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( B != </font><font class="kw1">this</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( B-&gt;implementation() == implementation() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( B-&gt;is_synchronized() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( B-&gt;nb_cols() == nb_cols() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( A-&gt;nb_rows() == B-&gt;nb_rows() ) ;
+
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: add_tMat_Mat_POST( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: add_Mat_tMat_PRE( </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* A, </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* B,
+                                 </font><font class="kw1">double</font><font class="text"> alpha ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( state() != </font><font class="kw3">LA</font><font class="text">::NotSync_set ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( !is_symmetric() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( A != 0 ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( A != </font><font class="kw1">this</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( A-&gt;implementation() == implementation() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( A-&gt;is_synchronized() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( A-&gt;nb_rows() == nb_rows() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( B != 0 ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( B != </font><font class="kw1">this</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( B-&gt;implementation() == implementation() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( B-&gt;is_synchronized() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( B-&gt;nb_rows() == nb_cols() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( A-&gt;nb_cols() == B-&gt;nb_cols() ) ;
+
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: add_Mat_tMat_POST( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: add_tMat_tMat_PRE( </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* A, </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* B,
+                                  </font><font class="kw1">double</font><font class="text"> alpha ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( state() != </font><font class="kw3">LA</font><font class="text">::NotSync_set ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( !is_symmetric() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( A != 0 ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( A != </font><font class="kw1">this</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( A-&gt;implementation() == implementation() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( A-&gt;is_synchronized() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( A-&gt;nb_cols() == nb_rows() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( B != 0 ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( B != </font><font class="kw1">this</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( B-&gt;implementation() == implementation() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( B-&gt;is_synchronized() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( B-&gt;nb_rows() == nb_cols() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( A-&gt;nb_rows() == B-&gt;nb_cols() ) ;
+
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: add_tMat_tMat_POST( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: set_stored_items_POST( </font><font class="kw1">double</font><font class="text"> val ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( </font><font class="kw3">IMPLIES</font><font class="text">( is_desynchronizable(), state() == </font><font class="kw3">LA</font><font class="text">::NotSync_undef ) ) ;
+   </font><font class="kw3">LA_MatrixIterator</font><font class="text">* it_mat = create_stored_item_iterator( 0 ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">(
+      </font><font class="kw3">FORALL</font><font class="text">( ( it_mat-&gt;start_all_items() ;
+                it_mat-&gt;is_valid() ;
+                it_mat-&gt;go_next() ),
+              it_mat-&gt;item() == val ) ) ;
+   it_mat-&gt;destroy() ; it_mat = 0 ;
+
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: set_PRE( </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* A, </font><font class="kw1">bool</font><font class="text"> same_pattern ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( </font><font class="kw3">LA_Matrix</font><font class="text">::set_PRE( A, same_pattern )  ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( !same_pattern || has_same_pattern( A ) ) ;
+
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: add_Mat_PRE( </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* A,
+                            </font><font class="kw1">double</font><font class="text"> alpha,
+                            </font><font class="kw1">bool</font><font class="text"> same_pattern ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( </font><font class="kw3">LA_Matrix</font><font class="text">::add_Mat_PRE( A, alpha, same_pattern ) ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( !same_pattern || has_same_pattern( A ) ) ;
+   </font><font class="kw1">return</font><font class="text"> </font><font class="kw1">true</font><font class="text"> ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: factorize_MILU0_PRE(
+                                   </font><font class="kw1">bool</font><font class="text"> modified, </font><font class="kw1">double</font><font class="text"> piv_min ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( is_synchronized() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( nb_rows() !=0 ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( nb_cols() == nb_rows() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( piv_min &gt;= 0. ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: factorize_MILU0_POST( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( is_synchronized() ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: solve_LU_PRE(
+                </font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* rhs, </font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* sol ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( is_synchronized() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( nb_cols() == nb_rows() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( nb_rows() !=0 ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( </font><font class="kw3">FORALL</font><font class="text">( ( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;nb_rows() ; i++ ),
+                       item( i, i ) != 0.0 ) ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( rhs != 0 ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( rhs-&gt;is_synchronized() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( rhs-&gt;nb_rows() == nb_rows() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( sol != 0 ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( sol-&gt;nb_rows() == nb_rows() ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: solve_LU_POST(
+                </font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* rhs, </font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* sol ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( sol-&gt;is_synchronized() ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: relax_PRE(
+                       </font><font class="kw1">double</font><font class="text"> omega,
+                       </font><font class="kw3">LA_SeqMatrix</font><font class="text">::relaxation_mode mode,
+                       </font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* omega_inv_diag,
+                       </font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* rhs,
+                       </font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* sol ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( is_synchronized() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( nb_cols() == nb_rows() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( nb_rows() !=0 ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( rhs != 0 ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( rhs-&gt;is_synchronized() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( rhs-&gt;nb_rows() == nb_rows() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( sol != 0 ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( sol-&gt;is_synchronized() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( sol-&gt;nb_rows() == nb_rows() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( omega&gt;0. &amp;&amp; omega&lt;2. ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( omega_inv_diag!= 0 ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( omega_inv_diag-&gt;is_synchronized() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( omega_inv_diag-&gt;nb_rows() == nb_rows() ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: relax_POST(
+                       </font><font class="kw1">double</font><font class="text"> omega,
+                       </font><font class="kw3">LA_SeqMatrix</font><font class="text">::relaxation_mode mode,
+                       </font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* omega_inv_diag,
+                       </font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* rhs,
+                       </font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* sol ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( sol-&gt;is_synchronized() ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: set_IMP( </font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* A, </font><font class="kw1">bool</font><font class="text"> same_pattern )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_SeqMatrix:: set_IMP&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( set_PRE( A, same_pattern ) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw1">if</font><font class="text">( </font><font class="kw1">this</font><font class="text"> != A )
+   {
+      </font><font class="kw1">bool</font><font class="text"> not_sym = !is_symmetric() ;
+      nullify() ;
+      </font><font class="kw3">LA_MatrixIterator</font><font class="text">* it = A-&gt;create_stored_item_iterator( 0 ) ;
+      </font><font class="kw1">for</font><font class="text">( it-&gt;start_all_items() ; it-&gt;is_valid() ; it-&gt;go_next() )
+      {
+         </font><font class="kw2">size_t</font><font class="text"> i = it-&gt;row() ;
+         </font><font class="kw2">size_t</font><font class="text"> j = it-&gt;col() ;
+         </font><font class="kw1">if</font><font class="text">( not_sym || i&lt;=j ) set_item( i, j, it-&gt;item() ) ;
+      }
+      it-&gt;destroy() ; it = 0 ;
+   }
+   synchronize() ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( set_POST(A) ) ;
+}
+
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: add_Mat_IMP( </font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* A, </font><font class="kw1">double</font><font class="text"> alpha,
+                            </font><font class="kw1">bool</font><font class="text"> same_pattern )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_SeqMatrix:: add_Mat_IMP&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_SAVEOLD</font><font class="text">( </font><font class="kw3">LA</font><font class="text">::SyncState, state, state() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( add_Mat_PRE( A, alpha, same_pattern ) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw3">LA_MatrixIterator</font><font class="text">* itA = A-&gt;create_stored_item_iterator( 0 ) ;
+   start_local_modifs() ;
+   </font><font class="kw1">for</font><font class="text">( itA-&gt;start_all_items() ; itA-&gt;is_valid() ; itA-&gt;go_next() )
+   {
+      add_to_item( itA-&gt;row(), itA-&gt;col(), alpha*itA-&gt;item() ) ;
+   }
+   stop_local_modifs() ;
+   itA-&gt;destroy() ; itA = 0 ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( add_Mat_POST( </font><font class="kw3">OLD</font><font class="text">( state ) ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: add_tMat_IMP( </font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* A, </font><font class="kw1">double</font><font class="text"> alpha )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_SeqMatrix:: add_tMat_IMP&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_SAVEOLD</font><font class="text">( </font><font class="kw3">LA</font><font class="text">::SyncState, state, state() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( add_tMat_PRE( A, alpha ) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw3">LA_MatrixIterator</font><font class="text">* itA = A-&gt;create_stored_item_iterator( 0 ) ;
+   start_local_modifs() ;
+   </font><font class="kw1">for</font><font class="text">( itA-&gt;start_all_items() ; itA-&gt;is_valid() ; itA-&gt;go_next() )
+   {
+      add_to_item( itA-&gt;col(), itA-&gt;row(), alpha*itA-&gt;item() ) ;
+   }
+   stop_local_modifs() ;
+   itA-&gt;destroy() ; itA = 0 ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( add_tMat_POST( </font><font class="kw3">OLD</font><font class="text">( state ) ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: add_Mat_Mat_IMP( </font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* A, </font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* B,
+                                </font><font class="kw1">double</font><font class="text"> alpha )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_SeqMatrix:: add_Mat_Mat_IMP&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_SAVEOLD</font><font class="text">( </font><font class="kw3">LA</font><font class="text">::SyncState, state, state() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( add_Mat_Mat_PRE( A, B, alpha ) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw3">LA_MatrixIterator</font><font class="text">* itA = A-&gt;create_stored_item_iterator( 0 ) ;
+   </font><font class="kw3">LA_MatrixIterator</font><font class="text">* itB = B-&gt;create_stored_item_iterator( 0 ) ;
+   start_local_modifs() ;
+   </font><font class="kw1">for</font><font class="text">( itA-&gt;start_all_items() ; itA-&gt;is_valid() ; itA-&gt;go_next() )
+   {
+      </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> i = itA-&gt;row() ;
+      </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> k = itA-&gt;col() ;
+      </font><font class="kw1">for</font><font class="text">( itB-&gt;start_row_items( k ) ; itB-&gt;is_valid() ; itB-&gt;go_next() )
+      {
+         </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> j = itB-&gt;col() ;
+         add_to_item( i, j, alpha * itA-&gt;item() * itB-&gt;item() ) ;
+      }
+   }
+   stop_local_modifs() ;
+   itA-&gt;destroy() ; itA = 0 ;
+   itB-&gt;destroy() ; itB = 0 ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( add_Mat_Mat_POST( </font><font class="kw3">OLD</font><font class="text">( state ) ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: add_tMat_Mat_IMP( </font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* A, </font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* B,
+                                 </font><font class="kw1">double</font><font class="text"> alpha )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_SeqMatrix:: add_tMat_Mat_IMP&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( add_tMat_Mat_PRE( A, B, alpha ) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw3">LA_MatrixIterator</font><font class="text">* itA = A-&gt;create_stored_item_iterator( 0 ) ;
+   </font><font class="kw3">LA_MatrixIterator</font><font class="text">* itB = B-&gt;create_stored_item_iterator( 0 ) ;
+   start_local_modifs() ;
+   </font><font class="kw1">for</font><font class="text">( itA-&gt;start_all_items() ; itA-&gt;is_valid() ; itA-&gt;go_next() )
+   {
+      </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> i = itA-&gt;col() ;
+      </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> k = itA-&gt;row() ;
+      </font><font class="kw1">for</font><font class="text">( itB-&gt;start_row_items( k ) ; itB-&gt;is_valid() ; itB-&gt;go_next() )
+      {
+         </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> j = itB-&gt;col() ;
+         add_to_item( i, j, alpha*itA-&gt;item()*itB-&gt;item() ) ;
+      }
+   }
+   stop_local_modifs() ;
+   itA-&gt;destroy() ; itA = 0 ;
+   itB-&gt;destroy() ; itB = 0 ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( add_tMat_Mat_POST() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: add_Mat_tMat_IMP( </font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* A, </font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* B,
+                                 </font><font class="kw1">double</font><font class="text"> alpha )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_SeqMatrix:: add_Mat_tMat_IMP&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( add_Mat_tMat_PRE( A, B, alpha ) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw3">LA_PelMatrix</font><font class="text">* tB = </font><font class="kw3">LA_PelMatrix</font><font class="text">::create( 0, B-&gt;nb_cols(), A-&gt;nb_rows() ) ;
+   tB-&gt;add_tMat( B ) ;
+   tB-&gt;synchronize() ;
+   add_Mat_Mat_IMP( A, tB, alpha ) ;
+   tB-&gt;destroy() ; tB = 0 ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( add_Mat_tMat_POST() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: add_tMat_tMat_IMP( </font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* A,
+                                  </font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* B,
+                                  </font><font class="kw1">double</font><font class="text"> alpha  )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_SeqMatrix:: add_tMat_tMat_IMP&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( add_tMat_tMat_PRE( A, B, alpha ) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw3">LA_MatrixIterator</font><font class="text">* itA = A-&gt;create_stored_item_iterator( 0 ) ;
+   </font><font class="kw3">LA_MatrixIterator</font><font class="text">* itB = B-&gt;create_stored_item_iterator( 0 ) ;
+   start_local_modifs() ;
+   </font><font class="kw1">for</font><font class="text">( itB-&gt;start_all_items() ; itB-&gt;is_valid() ; itB-&gt;go_next() )
+   {
+      </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> j = itB-&gt;row() ;
+      </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> k = itB-&gt;col() ;
+      </font><font class="kw1">for</font><font class="text">( itA-&gt;start_row_items( k ) ; itA-&gt;is_valid() ; itA-&gt;go_next() )
+      {
+         </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> i = itA-&gt;col() ;
+         add_to_item( i, j, alpha*itA-&gt;item()*itB-&gt;item() ) ;
+      }
+   }
+   stop_local_modifs() ;
+   itA-&gt;destroy() ; itA = 0 ;
+   itB-&gt;destroy() ; itB = 0 ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( add_tMat_tMat_POST() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: has_same_pattern( </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* A ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_SeqMatrix:: has_same_pattern&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( is_synchronized() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( A != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( A-&gt;is_synchronized() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( A-&gt;implementation() == implementation() ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw1">bool</font><font class="text"> result = ( A == </font><font class="kw1">this</font><font class="text"> ) ;
+
+   </font><font class="kw1">if</font><font class="text">( !result )
+   {
+      </font><font class="kw3">PEL_CHECK</font><font class="text">( </font><font class="kw1">dynamic_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* &gt;( A ) != 0 ) ;
+      </font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* sA = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* &gt;( A ) ;
+
+      result = ( A-&gt;nb_rows()==nb_rows() &amp;&amp; A-&gt;nb_cols() == nb_cols() ) ;
+
+      </font><font class="kw3">LA_MatrixIterator</font><font class="text">* it = create_stored_item_iterator( 0 ) ;
+      </font><font class="kw3">LA_MatrixIterator</font><font class="text">* itA = sA-&gt;create_stored_item_iterator( 0 ) ;
+      </font><font class="kw1">for</font><font class="text">( it-&gt;start_all_items(), itA-&gt;start_all_items()  ;
+           result &amp;&amp; it-&gt;is_valid() &amp;&amp; itA-&gt;is_valid() ;
+           it-&gt;go_next(), itA-&gt;go_next() )
+      {
+         result &amp;= it-&gt;row()==itA-&gt;row() &amp;&amp; it-&gt;col()==itA-&gt;col() ;
+      }
+      result &amp;= ( ! it-&gt;is_valid() ) &amp;&amp;  ( ! itA-&gt;is_valid() ) ;
+      it-&gt;destroy()  ; it = 0 ;
+      itA-&gt;destroy() ; itA = 0 ;
+   }
+
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: implementation_POST(
+                                 </font><font class="kw3">LA_Implementation</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( </font><font class="kw3">LA_Matrix</font><font class="text">::implementation_POST( result ) ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( result == </font><font class="kw3">LA_SeqImplementation</font><font class="text">::object() ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: re_initialize_with_global_sizes_PRE( </font><font class="kw2">size_t</font><font class="text"> a_nb_rows,
+                                                    </font><font class="kw2">size_t</font><font class="text"> a_nb_cols ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( is_resizable() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( a_nb_rows != </font><font class="kw3">PEL</font><font class="text">::bad_index() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( a_nb_cols != </font><font class="kw3">PEL</font><font class="text">::bad_index() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( </font><font class="kw3">IMPLIES</font><font class="text">( is_symmetric(), a_nb_rows == a_nb_cols ) ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: re_initialize_with_global_sizes_POST( </font><font class="kw2">size_t</font><font class="text"> a_nb_rows,
+                                                     </font><font class="kw2">size_t</font><font class="text"> a_nb_cols ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( nb_rows() == a_nb_rows ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( nb_cols() == a_nb_cols ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( </font><font class="kw3">IMPLIES</font><font class="text">( is_desynchronizable(),
+                        state() == </font><font class="kw3">LA</font><font class="text">::NotSync_undef ) ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( </font><font class="kw3">IMPLIES</font><font class="text">( is_desynchronizable(),
+                        !is_synchronized() ) ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: save_PRE( </font><font class="kw3">PEL_Module</font><font class="text"> </font><font class="kw1">const</font><font class="text">* mod ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( is_synchronized() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( mod != 0 ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: save_POST( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: restore_PRE( </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( exp != 0 ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: restore_POST( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( is_synchronized() ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_ObjectRegister</font><font class="text">*
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">:: sparse_mat_pluggin_map( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw3">PEL_ObjectRegister</font><font class="text">* result =
+      </font><font class="kw3">PEL_ObjectRegister</font><font class="text">::create( </font><font class="kw3">PEL_Root</font><font class="text">::object(),
+                                  </font><font class="string">&quot;LA_SeqMatrix descendant&quot;</font><font class="text"> ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font>
+</pre>
+</body>
+</html>

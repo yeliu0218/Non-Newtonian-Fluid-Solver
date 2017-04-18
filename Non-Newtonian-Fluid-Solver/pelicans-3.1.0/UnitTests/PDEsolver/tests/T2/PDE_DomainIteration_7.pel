@@ -1,0 +1,56 @@
+MODULE PEL_ObjectTest#PDE_DomainIteration_TEST
+   
+   MODULE PDE_DomainIteration_7
+      
+      MODULE calculations_consistency
+         dbl_epsilon = 1.e-10
+         dbl_minimum = 1.e-12
+         quadrature_rule_provider = "GE_QRprovider_3"
+      END MODULE calculations_consistency
+      
+      MODULE iterations_trace
+         output_file = "dom_7.trace"
+      END MODULE iterations_trace
+      
+      MODULE PDE_DomainAndFields
+         
+         verbose_level = 1
+         nb_space_dimensions = 3
+         type = "finite_element"
+         
+         MODULE GE_Meshing
+            concrete_name = "GE_BoxWithBoxes"
+            
+            $IS_NB_MESHES = 2
+            
+            vertices_coordinate_1 = regular_vector( 0.0, $IS_NB_MESHES, 1.0 )
+            vertices_coordinate_0 = regular_vector( 0.0, $IS_NB_MESHES, 1.0 )
+            vertices_coordinate_2 = regular_vector( 0.0, $IS_NB_MESHES, 1.0 )
+            
+            mesh_polyhedron = < "GE_Rectangle" "GE_Cuboid" >
+         END MODULE GE_Meshing
+         
+         MODULE decohesion
+            type = "everywhere"
+         END MODULE decohesion
+         
+         MODULE interior_fields
+            
+            MODULE Q_FIELD
+               name = "Q_FIELD"
+               nb_components = 3
+               element_name = "PDE_3D_Q1_8nodes"
+               storage_depth = 3
+               MODULE DOFs_values
+                  type = "uniformly_defined"
+                  value = vector( 0.0, 0.0, 0.0 )
+               END MODULE DOFs_values
+            END MODULE Q_FIELD
+            
+         END MODULE interior_fields
+         
+      END MODULE PDE_DomainAndFields
+      
+   END MODULE PDE_DomainIteration_7
+   
+END MODULE PEL_ObjectTest#PDE_DomainIteration_TEST

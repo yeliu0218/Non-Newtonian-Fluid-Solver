@@ -1,0 +1,1136 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>LA_PelMatrix.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="LA_PelMatrix.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="LApack-tree.html"><span>Tree</span></a>
+    <a href="LA_PelMatrix.html"><span>Class</span></a>
+    <a href="LA_PelMatrix.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="LApack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated
+ *  reusable components, whose purpose is to simplify the task of developing
+ *  softwares of numerical mathematics and scientific computing.
+ *
+ *  This software is governed by the CeCILL-C license under French law and
+ *  abiding by the rules of distribution of free software. You can use, modify
+ *  and/or redistribute the software under the terms of the CeCILL-C license
+ *  as circulated by CEA, CNRS and INRIA at the following URL
+ *  &quot;http://www.cecill.info&quot;.
+ *
+ *  As a counterpart to the access to the source code and rights to copy,
+ *  modify and redistribute granted by the license, users are provided only
+ *  with a limited warranty and the software's author, the holder of the
+ *  economic rights, and the successive licensors have only limited liability.
+ *
+ *  In this respect, the user's attention is drawn to the risks associated
+ *  with loading, using, modifying and/or developing or reproducing the
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also
+ *  therefore means that it is reserved for developers and experienced
+ *  professionals having in-depth computer knowledge. Users are therefore
+ *  encouraged to load and test the software's suitability as regards their
+ *  requirements in conditions enabling the security of their systems and/or
+ *  data to be ensured and, more generally, to use and operate it in the same
+ *  conditions as regards security.
+ *
+ *  The fact that you are presently reading this means that you have had
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_PelMatrix</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_PelMatrixIterator</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_SeqVector</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Communicator</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Exec</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_assertions</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;iomanip&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;iostream&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;fstream&gt;
+
+</font><font class="kw3">LA_PelMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* </font><font class="kw3">LA_PelMatrix</font><font class="text">::PROTOTYPE = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">LA_PelMatrix</font><font class="text">() ;
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_PelMatrix</font><font class="text">*
+</font><font class="kw3">LA_PelMatrix</font><font class="text">:: create( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                       </font><font class="kw2">size_t</font><font class="text"> a_nb_rows,
+                       </font><font class="kw2">size_t</font><font class="text"> a_nb_cols )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_PelMatrix:: create&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw3">LA_PelMatrix</font><font class="text">* result = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">LA_PelMatrix</font><font class="text">( a_owner, a_nb_rows, a_nb_cols ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;owner() == a_owner ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( !result-&gt;is_symmetric() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;is_resizable() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( !result-&gt;is_desynchronizable() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;distribution_strategy() == </font><font class="kw3">LA</font><font class="text">::NoDistribution ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;state() == </font><font class="kw3">LA</font><font class="text">::Sync ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;is_synchronized() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;nb_rows() == a_nb_rows ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;nb_cols() == a_nb_cols ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;nb_stored_items() == 0 ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_PelMatrix</font><font class="text">:: </font><font class="kw3">LA_PelMatrix</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                             </font><font class="kw2">size_t</font><font class="text"> a_nb_rows,
+                             </font><font class="kw2">size_t</font><font class="text"> a_nb_cols )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">LA_SeqMatrix</font><font class="text">( a_owner, </font><font class="string">&quot;LA_PelMatrix&quot;</font><font class="text"> )
+   , UNSYNCHRO( </font><font class="kw1">false</font><font class="text"> )
+   , NB_ROWS( a_nb_rows )
+   , NB_COLS( a_nb_cols )
+   , ROW_TABLE( 0 )
+   , FIRST_BUCKET( 0 )
+   , CURRENT_BUCKET( 0 )
+{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_PelMatrix:: LA_PelMatrix&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">if</font><font class="text">( NB_ROWS &gt; 0 )
+   {
+      ROW_TABLE = </font><font class="kw1">new</font><font class="text"> RowElm* [ NB_ROWS ] ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;NB_ROWS ; ++i )
+         ROW_TABLE[i] = 0 ;
+   }
+
+   init_allocating() ;
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_PelMatrix</font><font class="text">*
+</font><font class="kw3">LA_PelMatrix</font><font class="text">:: create_matrix( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_PelMatrix:: create_matrix&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( create_matrix_PRE( a_owner ) ) ;
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">LA_PelMatrix</font><font class="text">* result = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">LA_PelMatrix</font><font class="text">( a_owner, NB_ROWS, NB_COLS ) ;
+   </font><font class="kw1">if</font><font class="text">( UNSYNCHRO ) result-&gt;make_desynchronizable() ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( create_matrix_POST( result, a_owner ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_PelMatrix</font><font class="text">*
+</font><font class="kw3">LA_PelMatrix</font><font class="text">:: create_replica( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                               </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_PelMatrix:: create_replica&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_PRE( a_owner, exp ) ) ;
+
+   </font><font class="kw1">int</font><font class="text"> a_nb_rows = 0 ;
+   </font><font class="kw1">int</font><font class="text"> a_nb_cols = 0 ;
+   </font><font class="kw1">if</font><font class="text">( exp-&gt;has_entry( </font><font class="string">&quot;nb_rows&quot;</font><font class="text"> ) )
+   {
+      a_nb_rows = exp-&gt;int_data( </font><font class="string">&quot;nb_rows&quot;</font><font class="text"> ) ;
+      exp-&gt;test_data( </font><font class="string">&quot;nb_rows&quot;</font><font class="text">, </font><font class="string">&quot;nb_rows&gt;=0&quot;</font><font class="text"> ) ;
+      exp-&gt;set_default( </font><font class="string">&quot;nb_rows&quot;</font><font class="text">, </font><font class="string">&quot;0&quot;</font><font class="text"> ) ;
+   }
+   </font><font class="kw1">if</font><font class="text">( exp-&gt;has_entry( </font><font class="string">&quot;nb_cols&quot;</font><font class="text"> ) )
+   {
+      a_nb_cols = exp-&gt;int_data( </font><font class="string">&quot;nb_cols&quot;</font><font class="text"> ) ;
+      exp-&gt;test_data( </font><font class="string">&quot;nb_cols&quot;</font><font class="text">, </font><font class="string">&quot;nb_cols&gt;=0&quot;</font><font class="text"> ) ;
+      exp-&gt;set_default( </font><font class="string">&quot;nb_cols&quot;</font><font class="text">, </font><font class="string">&quot;0&quot;</font><font class="text"> ) ;
+   }
+
+   </font><font class="kw3">LA_PelMatrix</font><font class="text">* result =
+           </font><font class="kw3">LA_PelMatrix</font><font class="text">::create( a_owner, a_nb_rows, a_nb_cols ) ;
+
+   </font><font class="kw1">if</font><font class="text">(  exp-&gt;has_entry( </font><font class="string">&quot;is_desynchronizable&quot;</font><font class="text"> ) )
+   {
+      </font><font class="kw1">bool</font><font class="text"> </font><font class="kw1">const</font><font class="text"> dist = exp-&gt;bool_data( </font><font class="string">&quot;is_desynchronizable&quot;</font><font class="text"> ) ;
+      exp-&gt;set_default( </font><font class="string">&quot;is_desynchronizable&quot;</font><font class="text">, </font><font class="string">&quot;false&quot;</font><font class="text"> ) ;
+      </font><font class="kw1">if</font><font class="text">( dist )
+      {
+         </font><font class="kw1">if</font><font class="text">( </font><font class="kw3">PEL_Exec</font><font class="text">::communicator()-&gt;nb_ranks() != 1 )
+         {
+            </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_data_error(
+               exp, </font><font class="string">&quot;is_desynchronizable&quot;</font><font class="text">,
+               </font><font class="string">&quot;testing distributed behavior is only allowed on one processor&quot;</font><font class="text"> ) ;
+         }
+         result-&gt;make_desynchronizable() ;
+      }
+   }
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_POST( result, a_owner, exp ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_PelMatrix</font><font class="text">:: </font><font class="kw3">LA_PelMatrix</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">LA_SeqMatrix</font><font class="text">( </font><font class="string">&quot;LA_PelMatrix&quot;</font><font class="text"> )
+   , UNSYNCHRO( </font><font class="kw1">false</font><font class="text"> )
+   , NB_ROWS( 0 )
+   , NB_COLS( 0 )
+   , ROW_TABLE( 0 )
+   , FIRST_BUCKET( 0 )
+   , CURRENT_BUCKET( 0 )
+{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_PelMatrix:: LA_PelMatrix&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( is_a_prototype() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_PelMatrix</font><font class="text">:: ~</font><font class="kw3">LA_PelMatrix</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_PelMatrix:: ~LA_PelMatrix&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   destroy_all_elements() ;
+   </font><font class="kw1">if</font><font class="text">( ROW_TABLE != 0 )
+   {
+      </font><font class="kw1">delete</font><font class="text"> [] ROW_TABLE ;
+      ROW_TABLE = 0 ;
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_PelMatrix</font><font class="text">:: re_initialize_with_global_sizes( </font><font class="kw2">size_t</font><font class="text"> a_nb_rows,
+                                                </font><font class="kw2">size_t</font><font class="text"> a_nb_cols )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_PelMatrix:: re_initialize_with_global_sizes&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( re_initialize_with_global_sizes_PRE( a_nb_rows,
+                                                       a_nb_cols ) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   destroy_all_elements() ;
+   init_allocating() ;
+
+   NB_COLS = a_nb_cols ;
+
+   </font><font class="kw1">if</font><font class="text">( a_nb_rows != NB_ROWS )
+   {
+      NB_ROWS = a_nb_rows ;
+
+      </font><font class="kw1">if</font><font class="text">( ROW_TABLE != 0 )
+      {
+         </font><font class="kw1">delete</font><font class="text"> [] ROW_TABLE ;
+         ROW_TABLE = 0 ;
+      }
+      </font><font class="kw1">if</font><font class="text">( NB_ROWS &gt; 0 )
+      {
+         ROW_TABLE = </font><font class="kw1">new</font><font class="text"> RowElm* [ NB_ROWS ] ;
+      }
+   }
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> iRow=0 ; iRow&lt;NB_ROWS ; iRow++ )
+   {
+      ROW_TABLE[iRow] = 0 ;
+   }
+   </font><font class="kw1">if</font><font class="text">( UNSYNCHRO )
+   {
+      set_unsynchronized_state( </font><font class="kw3">LA</font><font class="text">::NotSync_undef ) ;
+   }
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( re_initialize_with_global_sizes_POST( a_nb_rows,
+                                                         a_nb_cols ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw2">size_t
+</font><font class="kw3">LA_PelMatrix</font><font class="text">:: nb_stored_items( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_PelMatrix:: nb_stored_items&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( nb_stored_items_PRE() ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> result = 0 ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;NB_ROWS ; i++ )
+   {
+      RowElm* elm = ROW_TABLE[i] ;
+      </font><font class="kw1">while</font><font class="text">( elm!=0 )
+      {
+         ++result ;
+         elm = elm-&gt;next ;
+      }
+   }
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw2">size_t
+</font><font class="kw3">LA_PelMatrix</font><font class="text">:: allocated_memory( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_PelMatrix:: allocated_memory&quot;</font><font class="text"> ) ;
+
+   RowElmBucket * ptr = FIRST_BUCKET ;
+   </font><font class="kw2">size_t</font><font class="text"> result = 0 ;
+
+   </font><font class="kw1">while</font><font class="text">( ptr!=0 )
+   {
+      ptr = ptr-&gt;next ;
+      result += </font><font class="kw1">sizeof</font><font class="text">(RowElmBucket) ;
+   }
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw2">size_t
+</font><font class="kw3">LA_PelMatrix</font><font class="text">:: nb_rows( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">return</font><font class="text">( NB_ROWS ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw2">size_t
+</font><font class="kw3">LA_PelMatrix</font><font class="text">:: nb_cols( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">return</font><font class="text">( NB_COLS ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">double
+</font><font class="kw3">LA_PelMatrix</font><font class="text">:: item( </font><font class="kw2">size_t</font><font class="text"> i, </font><font class="kw2">size_t</font><font class="text"> j ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_PelMatrix:: item&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( item_PRE( i, j ) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw1">double</font><font class="text"> result = 0. ;
+   RowElm* elm = ROW_TABLE[i] ;
+   </font><font class="kw1">while</font><font class="text">( elm!=0 &amp;&amp; elm-&gt;iCol&lt;=j )
+   {
+      </font><font class="kw1">if</font><font class="text">( elm-&gt;iCol==j )
+      {
+         result = elm-&gt;xVal ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      }
+      elm = elm-&gt;next ;
+   }
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_PelMatrix</font><font class="text">:: make_desynchronizable( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_PelMatrix:: make_desynchronizable&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( !is_desynchronizable() ) ;
+
+   UNSYNCHRO = </font><font class="kw1">true</font><font class="text"> ;
+   set_unsynchronized_state( </font><font class="kw3">LA</font><font class="text">::NotSync_undef ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( is_desynchronizable() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( state() == </font><font class="kw3">LA</font><font class="text">::NotSync_undef ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( ! is_synchronized() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_PelMatrix</font><font class="text">:: is_desynchronizable( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_PelMatrix:: is_desynchronizable&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">bool</font><font class="text"> result = UNSYNCHRO ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_MatrixIterator</font><font class="text">*
+</font><font class="kw3">LA_PelMatrix</font><font class="text">:: create_stored_item_iterator( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_PelMatrix:: create_stored_item_iterator&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( create_stored_item_iterator_PRE( a_owner ) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw3">LA_PelMatrixIterator</font><font class="text">* result =
+                           </font><font class="kw3">LA_PelMatrixIterator</font><font class="text">::create( a_owner, </font><font class="kw1">this</font><font class="text"> ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( create_stored_item_iterator_POST( a_owner, result ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_PelMatrix</font><font class="text">:: set_stored_items( </font><font class="kw1">double</font><font class="text"> val )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_PelMatrix:: set_stored_items&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> iRow=0 ; iRow&lt;NB_ROWS ; iRow++ )
+   {
+      RowElm* elm = ROW_TABLE[iRow] ;
+      </font><font class="kw1">while</font><font class="text">( elm!=0 )
+      {
+         elm-&gt;xVal = val ;
+         elm = elm-&gt;next ;
+      }
+   }
+   </font><font class="kw1">if</font><font class="text">( is_desynchronizable() )
+   {
+      set_unsynchronized_state( </font><font class="kw3">LA</font><font class="text">::NotSync_undef ) ;
+   }
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( set_stored_items_POST( val ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_PelMatrix</font><font class="text">:: nullify_row( </font><font class="kw2">size_t</font><font class="text"> i )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_PelMatrix:: nullify_row&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( nullify_row_PRE( i ) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   RowElm* elm = ROW_TABLE[i] ;
+   </font><font class="kw1">while</font><font class="text">( elm!=0 )
+   {
+      elm-&gt;xVal = 0. ;
+      elm = elm-&gt;next ;
+   }
+   </font><font class="kw1">if</font><font class="text">( UNSYNCHRO ) set_unsynchronized_state( </font><font class="kw3">LA</font><font class="text">::NotSync_undef ) ;
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( nullify_row_POST( i ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_PelMatrix</font><font class="text">:: set_item( </font><font class="kw2">size_t</font><font class="text"> i, </font><font class="kw2">size_t</font><font class="text"> j, </font><font class="kw1">double</font><font class="text"> x )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_PelMatrix:: set_item&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_SAVEOLD</font><font class="text">( </font><font class="kw3">LA</font><font class="text">::SyncState, state, state() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( set_item_PRE( i, j ) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw1">if</font><font class="text">( is_desynchronizable() &amp;&amp; !only_local_modifs() )
+   {
+      set_unsynchronized_state( </font><font class="kw3">LA</font><font class="text">::NotSync_set ) ;
+   }
+
+   RowElm* elm = ROW_TABLE[i] ;
+   RowElm* dummy = 0 ;
+   </font><font class="kw1">bool</font><font class="text"> found = </font><font class="kw1">false</font><font class="text"> ;
+   </font><font class="kw1">while</font><font class="text">( elm!=0 &amp;&amp; elm-&gt;iCol&lt;=j &amp;&amp; !found )
+   {
+      </font><font class="kw1">if</font><font class="text">( elm-&gt;iCol==j )
+      {
+         found = </font><font class="kw1">true</font><font class="text"> ;
+      }
+      </font><font class="kw1">else
+</font><font class="text">      {
+         dummy = elm ;
+         elm = elm-&gt;next ;
+      }
+   }
+
+   </font><font class="kw1">if</font><font class="text">( !found )
+   {
+      elm = create_element() ;
+      </font><font class="kw3">PEL_CHECK</font><font class="text">( elm != 0 ) ;
+      elm-&gt;iCol = j ;
+      elm-&gt;xVal = x ;
+      </font><font class="kw1">if</font><font class="text">( dummy == 0 )
+      {
+         elm-&gt;next = ROW_TABLE[i] ;
+         ROW_TABLE[i] = elm ;
+      }
+      </font><font class="kw1">else
+</font><font class="text">      {
+         elm-&gt;next = dummy-&gt;next ;
+         dummy-&gt;next  = elm ;
+      }
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      elm-&gt;xVal = x ;
+   }
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( set_item_POST( i, j, </font><font class="kw3">OLD</font><font class="text">( state ) ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_PelMatrix</font><font class="text">:: add_to_item( </font><font class="kw2">size_t</font><font class="text"> i, </font><font class="kw2">size_t</font><font class="text"> j, </font><font class="kw1">double</font><font class="text"> x )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_PelMatrix:: add_to_item&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_SAVEOLD</font><font class="text">( </font><font class="kw3">LA</font><font class="text">::SyncState, state, state() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( add_to_item_PRE( i, j ) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw1">if</font><font class="text">( is_desynchronizable() &amp;&amp; !only_local_modifs() )
+   {
+      set_unsynchronized_state( </font><font class="kw3">LA</font><font class="text">::NotSync_add ) ;
+   }
+
+   RowElm* elm = ROW_TABLE[i] ;
+   RowElm* dummy = 0 ;
+   </font><font class="kw1">bool</font><font class="text"> found = </font><font class="kw1">false</font><font class="text"> ;
+   </font><font class="kw1">while</font><font class="text">( elm!=0 &amp;&amp; elm-&gt;iCol&lt;=j &amp;&amp; !found )
+   {
+      </font><font class="kw1">if</font><font class="text">( elm-&gt;iCol==j )
+      {
+         found = </font><font class="kw1">true</font><font class="text"> ;
+      }
+      </font><font class="kw1">else
+</font><font class="text">      {
+         dummy = elm ;
+         elm = elm-&gt;next ;
+      }
+   }
+   </font><font class="kw1">if</font><font class="text">( !found )
+   {
+         elm = create_element() ;
+         </font><font class="kw3">PEL_ASSERT</font><font class="text">( elm != 0 ) ;
+         elm-&gt;iCol = j ;
+         elm-&gt;xVal = x ;
+         </font><font class="kw1">if</font><font class="text">( dummy==0 )
+         {
+            elm-&gt;next = ROW_TABLE[i] ;
+            ROW_TABLE[i] = elm ;
+         }
+         </font><font class="kw1">else
+</font><font class="text">         {
+            elm-&gt;next = dummy-&gt;next ;
+            dummy-&gt;next  = elm ;
+         }
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      elm-&gt;xVal += x ;
+   }
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( add_to_item_POST( i, j, </font><font class="kw3">OLD</font><font class="text">( state ) ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_PelMatrix</font><font class="text">:: multiply_vec_then_add( </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* x, </font><font class="kw3">LA_Vector</font><font class="text">* y,
+				      </font><font class="kw1">double</font><font class="text"> alpha, </font><font class="kw1">double</font><font class="text"> beta ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_PelMatrix:: multiply_vec_then_add&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( multiply_vec_then_add_PRE( x, y, alpha, beta ) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* bx = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* &gt;( x ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( </font><font class="kw1">dynamic_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* &gt;( x ) != 0 ) ;
+   </font><font class="kw3">LA_SeqVector</font><font class="text">* by = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqVector</font><font class="text">* &gt;( y ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( </font><font class="kw1">dynamic_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqVector</font><font class="text">* &gt;( y ) != 0 ) ;
+
+   </font><font class="kw1">double</font><font class="text">* resu = by-&gt;data() ;
+   </font><font class="kw1">double</font><font class="text"> </font><font class="kw1">const</font><font class="text">* x_data = bx-&gt;data() ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;NB_ROWS ; i++ )
+   {
+      RowElm* elm = ROW_TABLE[i] ;
+      *resu *= beta ;
+      </font><font class="kw1">while</font><font class="text">( elm!=0 )
+      {
+         *resu += alpha * elm-&gt;xVal * x_data[ elm-&gt;iCol ] ;
+         elm = elm-&gt;next ;
+      }
+      resu++ ;
+   }
+   y-&gt;synchronize() ;
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( multiply_vec_then_add_POST( y ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_PelMatrix</font><font class="text">:: tr_multiply_vec_then_add( </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* x, </font><font class="kw3">LA_Vector</font><font class="text">* y,
+					 </font><font class="kw1">double</font><font class="text"> alpha, </font><font class="kw1">double</font><font class="text"> beta ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_PelMatrix:: tr_multiply_vec_then_add&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( tr_multiply_vec_then_add_PRE( x, y, alpha, beta ) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   y-&gt;scale( beta ) ;
+
+   </font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* bx = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* &gt;( x ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( </font><font class="kw1">dynamic_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* &gt;( x ) != 0 ) ;
+   </font><font class="kw3">LA_SeqVector</font><font class="text">* by = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqVector</font><font class="text">* &gt;( y ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( </font><font class="kw1">dynamic_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqVector</font><font class="text">* &gt;( y ) != 0 ) ;
+
+   </font><font class="kw1">double</font><font class="text"> </font><font class="kw1">const</font><font class="text">* x_data = bx-&gt;data() ;
+   </font><font class="kw1">double</font><font class="text">* y_data = by-&gt;data() ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;NB_ROWS ; i++ )
+   {
+      RowElm* elm = ROW_TABLE[i] ;
+      </font><font class="kw1">while</font><font class="text">( elm!=0 )
+      {
+         </font><font class="kw3">PEL_CHECK</font><font class="text">( elm-&gt;iCol&lt;by-&gt;nb_rows() ) ;
+         y_data[elm-&gt;iCol] += alpha * elm-&gt;xVal*x_data[i] ;
+         elm = elm-&gt;next ;
+      }
+   }
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( tr_multiply_vec_then_add_POST( y ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_PelMatrix</font><font class="text">:: </font><font class="kw2">set</font><font class="text">( </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* A, </font><font class="kw1">bool</font><font class="text"> same_pattern )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_PelMatrix:: set&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( set_PRE( A, same_pattern ) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw3">LA_PelMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* pA = </font><font class="kw1">dynamic_cast</font><font class="text">&lt;</font><font class="kw3">LA_PelMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* &gt;( A ) ;
+   </font><font class="kw1">if</font><font class="text">( pA==0 )
+   {
+      </font><font class="kw3">LA_SeqMatrix</font><font class="text">::</font><font class="kw2">set</font><font class="text">( A, same_pattern ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      </font><font class="kw1">if</font><font class="text">( same_pattern )
+      {
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;NB_ROWS ; i++ )
+         {
+            RowElm* elm = ROW_TABLE[i] ;
+            </font><font class="kw1">for</font><font class="text">( RowElm* elmA = pA-&gt;ROW_TABLE[i] ;
+                 elmA != 0 ;
+                 elmA = elmA-&gt;next )
+            {
+               </font><font class="kw3">PEL_CHECK</font><font class="text">( elm!=0 ) ;
+               </font><font class="kw3">PEL_CHECK</font><font class="text">( elm-&gt;iCol == elmA-&gt;iCol ) ;
+               elm-&gt;xVal = elmA-&gt;xVal ;
+               elm = elm-&gt;next ;
+            }
+         }
+      }
+      </font><font class="kw1">else
+</font><font class="text">      {
+         destroy_all_elements() ;
+         init_allocating() ;
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;NB_ROWS ; i++ )
+         {
+            RowElm* elm = 0 ;
+            </font><font class="kw1">bool</font><font class="text"> first = </font><font class="kw1">true</font><font class="text"> ;
+            ROW_TABLE[i] = 0 ;
+            </font><font class="kw1">for</font><font class="text">( RowElm* elmA = pA-&gt;ROW_TABLE[i] ;
+                 elmA != 0 ;
+                 elmA = elmA-&gt;next )
+            {
+               RowElm* elmNew = create_element() ;
+               elmNew-&gt;iCol = elmA-&gt;iCol ;
+               elmNew-&gt;xVal = elmA-&gt;xVal ;
+               elmNew-&gt;next = 0 ;
+               </font><font class="kw1">if</font><font class="text">( first )
+               {
+                  ROW_TABLE[i] = elmNew ;
+                  elm = elmNew ;
+                  first = </font><font class="kw1">false</font><font class="text"> ;
+               }
+               </font><font class="kw1">else
+</font><font class="text">               {
+                  elm-&gt;next = elmNew ;
+                  elm = elm-&gt;next ;
+               }
+            }
+         }
+      }
+   }
+   </font><font class="comment">//synchronize() ;
+</font><font class="text">   </font><font class="kw1">if</font><font class="text">( is_desynchronizable() ) set_unsynchronized_state( </font><font class="kw3">LA</font><font class="text">::NotSync_undef ) ;
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( set_POST( A ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_PelMatrix</font><font class="text">:: scale( </font><font class="kw1">double</font><font class="text"> alpha )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_PelMatrix:: scale&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( scale_PRE( alpha ) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw1">if</font><font class="text">( alpha==0.0 )
+   {
+      nullify() ;
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( alpha!=1.0 )
+   {
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;NB_ROWS ; i++ )
+      {
+         RowElm* elm = ROW_TABLE[i] ;
+         </font><font class="kw1">while</font><font class="text">( elm!=0 )
+         {
+            elm-&gt;xVal *= alpha ;
+            elm = elm-&gt;next ;
+         }
+      }
+   }
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( scale_POST( alpha ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_PelMatrix</font><font class="text">:: add_Mat_Mat( </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* A, </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* B,
+                            </font><font class="kw1">double</font><font class="text"> alpha )
+</font><font class="comment">//----------------------------------------------------------------------
+// M &lt;- alpha*A* B +beta*M
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_PelMatrix:: add_Mat_Mat&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_SAVEOLD</font><font class="text">( </font><font class="kw3">LA</font><font class="text">::SyncState, state, state() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( add_Mat_Mat_PRE( A, B, alpha ) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw3">LA_PelMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* APEL = </font><font class="kw1">dynamic_cast</font><font class="text">&lt;</font><font class="kw3">LA_PelMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;( A ) ;
+   </font><font class="kw3">LA_PelMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* BPEL = </font><font class="kw1">dynamic_cast</font><font class="text">&lt;</font><font class="kw3">LA_PelMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;( B ) ;
+
+   </font><font class="kw1">if</font><font class="text">( ( APEL != 0 ) &amp;&amp; ( BPEL != 0 ) )
+   {
+      add_Mat_Mat_IMP( APEL, BPEL, alpha ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      </font><font class="kw3">LA_SeqMatrix</font><font class="text">::add_Mat_Mat( A, B, alpha ) ;
+   }
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( add_Mat_Mat_POST( </font><font class="kw3">OLD</font><font class="text">( state ) ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_PelMatrix</font><font class="text">:: add_Mat_tMat( </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* A, </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* B,
+                             </font><font class="kw1">double</font><font class="text"> alpha )
+</font><font class="comment">//----------------------------------------------------------------------
+// M &lt;- alpha*A*transpose( B )+beta*M
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_PelMatrix:: add_Mat_tMat&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( add_Mat_tMat_PRE( A, B, alpha ) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw3">LA_PelMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* APEL = </font><font class="kw1">dynamic_cast</font><font class="text">&lt;</font><font class="kw3">LA_PelMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;( A ) ;
+   </font><font class="kw3">LA_PelMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* BPEL = </font><font class="kw1">dynamic_cast</font><font class="text">&lt;</font><font class="kw3">LA_PelMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;( B ) ;
+
+   </font><font class="kw1">if</font><font class="text">( ( APEL != 0 ) &amp;&amp; ( BPEL != 0 ) )
+   {
+      add_Mat_tMat_IMP( APEL, BPEL, alpha ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      </font><font class="kw3">LA_SeqMatrix</font><font class="text">::add_Mat_tMat( A, B, alpha ) ;
+   }
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( add_Mat_tMat_POST() ) ;
+}
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_PelMatrix</font><font class="text">:: factorize_MILU0( </font><font class="kw1">bool</font><font class="text"> modified, </font><font class="kw1">double</font><font class="text"> piv_min )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_PelMatrix:: factorize_MILU0&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( factorize_MILU0_PRE( modified, piv_min ) ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> n = nb_rows() ;
+
+   RowElm** diag = </font><font class="kw1">new</font><font class="text"> RowElm* [ NB_ROWS ] ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;n ; ++i )
+   {
+      RowElm* elm = ROW_TABLE[i] ;
+      RowElm* dummy = 0 ;
+      </font><font class="kw1">bool</font><font class="text"> found = </font><font class="kw1">false</font><font class="text"> ;
+      </font><font class="kw1">while</font><font class="text">( elm!=0 &amp;&amp; elm-&gt;iCol&lt;=i &amp;&amp; !found )
+      {
+         </font><font class="kw1">if</font><font class="text">( elm-&gt;iCol==i )
+         {
+            found = </font><font class="kw1">true</font><font class="text"> ;
+         }
+         </font><font class="kw1">else
+</font><font class="text">         {
+            dummy = elm ;
+            elm = elm-&gt;next ;
+         }
+      }
+      </font><font class="kw1">if</font><font class="text">( !found )
+      {
+         elm = create_element() ;
+         </font><font class="kw3">PEL_CHECK</font><font class="text">( elm != 0 ) ;
+         elm-&gt;iCol = i ;
+         elm-&gt;xVal = 0 ;
+         </font><font class="kw1">if</font><font class="text">( dummy == 0 )
+         {
+            elm-&gt;next = ROW_TABLE[i] ;
+            ROW_TABLE[i] = elm ;
+         }
+         </font><font class="kw1">else
+</font><font class="text">         {
+            elm-&gt;next = dummy-&gt;next ;
+            dummy-&gt;next  = elm ;
+         }
+
+      }
+      diag[i] = elm ;
+      </font><font class="kw3">PEL_CHECK</font><font class="text">( diag[i]-&gt;iCol == i ) ;
+   }
+
+   </font><font class="kw1">if</font><font class="text">( </font><font class="kw3">PEL</font><font class="text">::abs( diag[0]-&gt;xVal )&lt;piv_min )
+   {
+      nullify_row( 0 ) ;
+      diag[0]-&gt;xVal = 1. ;
+      raise_MILU0_zero_pivot( 0 ) ;
+   }
+
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=1 ; i&lt;n ; ++i )
+   {
+      RowElm* elm_ik = ROW_TABLE[i] ;
+      </font><font class="kw1">double</font><font class="text"> drop = 0.0 ;
+      </font><font class="kw1">while</font><font class="text">( elm_ik!=0 &amp;&amp; elm_ik-&gt;iCol&lt;i )
+      {
+         </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> k = elm_ik-&gt;iCol ;
+         </font><font class="kw1">double</font><font class="text"> </font><font class="kw1">const</font><font class="text"> akk = diag[k]-&gt;xVal ;
+         </font><font class="kw1">double</font><font class="text"> </font><font class="kw1">const</font><font class="text"> aik = elm_ik-&gt;xVal/akk ;
+         elm_ik-&gt;xVal = aik ;
+         RowElm* elm_kj = diag[k]-&gt;next ;
+         </font><font class="kw1">while</font><font class="text">( elm_kj != 0 )
+         {
+            </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> j = elm_kj-&gt;iCol ;
+            </font><font class="kw3">PEL_CHECK</font><font class="text">( j&gt;k ) ;
+            </font><font class="kw1">double</font><font class="text"> </font><font class="kw1">const</font><font class="text"> akj = elm_kj-&gt;xVal ;
+            </font><font class="kw1">bool</font><font class="text"> found = </font><font class="kw1">false</font><font class="text"> ;
+            RowElm* elm_ij = ROW_TABLE[i] ;
+            </font><font class="kw1">while</font><font class="text">( elm_ij != 0 &amp;&amp; elm_ij-&gt;iCol&lt;=j )
+            {
+               </font><font class="kw1">if</font><font class="text">( elm_ij-&gt;iCol == j )
+               {
+                  found = </font><font class="kw1">true</font><font class="text"> ;
+                  elm_ij-&gt;xVal -= aik*akj ;
+                  </font><font class="kw1">break</font><font class="text"> ;
+               }
+               elm_ij = elm_ij-&gt;next ;
+            }
+            </font><font class="kw1">if</font><font class="text">( !found ) drop -= aik*akj ;
+            elm_kj = elm_kj-&gt;next ;
+         }
+         elm_ik = elm_ik-&gt;next ;
+      }
+      </font><font class="kw1">double</font><font class="text"> aii = diag[i]-&gt;xVal ;
+      </font><font class="kw1">if</font><font class="text">( modified )
+      {
+         aii -= drop ;
+         diag[i]-&gt;xVal -= drop ;
+      }
+      </font><font class="kw1">if</font><font class="text">( </font><font class="kw3">PEL</font><font class="text">::abs( aii )&lt;piv_min )
+      {
+         nullify_row( i ) ;
+         diag[i]-&gt;xVal = 1. ;
+         raise_MILU0_zero_pivot( i ) ;
+      }
+   }
+   synchronize() ;
+
+   </font><font class="kw1">delete</font><font class="text"> [] diag ; diag = 0 ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( factorize_MILU0_POST() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_PelMatrix</font><font class="text">:: solve_LU( </font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* rhs,
+                         </font><font class="kw3">LA_SeqVector</font><font class="text">* sol ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_PelMatrix:: solve_LU&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( solve_LU_PRE( rhs, sol ) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> n = NB_ROWS ;
+
+   RowElm* elm = 0 ;
+   </font><font class="kw1">double</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ptr_rhs = rhs-&gt;data() ;
+   </font><font class="kw1">double</font><font class="text">* ptr_sol = sol-&gt;data() ;
+
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;n ; i++ )
+   {
+      elm = ROW_TABLE[i] ;
+      </font><font class="kw1">double</font><font class="text"> r = ptr_rhs[i] ;
+      </font><font class="kw1">while</font><font class="text">( elm!=0 )
+      {
+         </font><font class="kw2">size_t</font><font class="text"> j = elm-&gt;iCol ;
+         </font><font class="kw1">if</font><font class="text">( j&gt;= i ) </font><font class="kw1">break</font><font class="text"> ;
+         r -= elm-&gt;xVal * ptr_sol[j] ;
+         elm = elm-&gt;next ;
+      }
+      ptr_sol[i] = r ;
+   }
+
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=n-1 ; i&lt;n ; i-- )
+   {
+      elm = ROW_TABLE[i] ;
+      </font><font class="kw1">double</font><font class="text"> r = ptr_sol[i] ;
+      </font><font class="kw1">while</font><font class="text">( elm!=0 &amp;&amp; elm-&gt;iCol&lt;i )
+      {
+         elm = elm-&gt;next ;
+      }
+      </font><font class="kw3">PEL_CHECK</font><font class="text">( elm-&gt;iCol==i ) ;
+      </font><font class="kw1">double</font><font class="text"> d = elm-&gt;xVal ;
+      elm = elm-&gt;next ;
+      </font><font class="kw1">while</font><font class="text">( elm!=0 )
+      {
+         r -=  elm-&gt;xVal * ptr_sol[elm-&gt;iCol] ;
+         elm = elm-&gt;next ;
+      }
+      ptr_sol[i] = r/d ;
+   }
+
+   sol-&gt;synchronize() ;
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( solve_LU_POST( rhs, sol ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_PelMatrix</font><font class="text">:: relax( </font><font class="kw1">double</font><font class="text"> omega,
+                      </font><font class="kw3">LA_SeqMatrix</font><font class="text">::relaxation_mode mode,
+                      </font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* omega_inv_diag,
+                      </font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* rhs,
+                      </font><font class="kw3">LA_SeqVector</font><font class="text">* sol ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_PelMatrix:: relax&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( relax_PRE( omega, mode, omega_inv_diag, rhs, sol ) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> n = NB_ROWS ;
+
+   RowElm* elm = 0 ;
+
+   </font><font class="kw1">double</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ptr_rhs = rhs-&gt;data() ;
+   </font><font class="kw1">double</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ptr_omega_inv_diag = omega_inv_diag-&gt;data() ;
+   </font><font class="kw1">double</font><font class="text">* ptr_sol = sol-&gt;data() ;
+
+   </font><font class="kw1">if</font><font class="text">( mode == forward || mode == symmetric )
+   {
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;n ; ++i )
+      {
+         elm = ROW_TABLE[i] ;
+         </font><font class="kw1">double</font><font class="text"> xt =  ptr_rhs[i] ;
+         </font><font class="kw1">while</font><font class="text">( elm!=0 )
+         {
+            xt -= elm-&gt;xVal * ptr_sol[elm-&gt;iCol] ;
+            elm = elm-&gt;next ;
+         }
+         ptr_sol[i] += xt * ptr_omega_inv_diag[i] ;
+      }
+   }
+
+   </font><font class="kw1">if</font><font class="text">( mode == backward || mode == symmetric )
+   {
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=n-1 ; i&lt;n ; --i )
+      {
+         elm = ROW_TABLE[i] ;
+         </font><font class="kw1">double</font><font class="text"> xt =  ptr_rhs[i] ;
+         </font><font class="kw1">while</font><font class="text">( elm!=0 )
+         {
+            xt -= elm-&gt;xVal * ptr_sol[elm-&gt;iCol] ;
+            elm = elm-&gt;next ;
+         }
+         ptr_sol[i] += xt * ptr_omega_inv_diag[i] ;
+      }
+   }
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( relax_POST( omega, mode, omega_inv_diag, rhs, sol ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_PelMatrix</font><font class="text">:: add_Mat_Mat_IMP( </font><font class="kw3">LA_PelMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* A,
+                                </font><font class="kw3">LA_PelMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* B,
+                                </font><font class="kw1">double</font><font class="text"> alpha )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_PelMatrix:: add_Mat_Mat_IMP&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_SAVEOLD</font><font class="text">( </font><font class="kw3">LA</font><font class="text">::SyncState, state, state() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( add_Mat_Mat_PRE( A, B, alpha ) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   start_local_modifs() ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;A-&gt;NB_ROWS ; i++ )
+   {
+      RowElm* elmA = A-&gt;ROW_TABLE[i] ;
+      </font><font class="kw1">while</font><font class="text">( elmA!=0 )
+      {
+         </font><font class="kw2">size_t</font><font class="text"> k = elmA-&gt;iCol ;
+         RowElm* elmB = B-&gt;ROW_TABLE[k] ;
+         </font><font class="kw1">while</font><font class="text">( elmB != 0 )
+         {
+            </font><font class="kw2">size_t</font><font class="text"> j = elmB-&gt;iCol ;
+            </font><font class="kw1">double</font><font class="text"> x = alpha * elmA-&gt;xVal * elmB-&gt;xVal ;
+            add_to_item( i, j, x ) ; </font><font class="comment">//??? trop lent
+</font><font class="text">            elmB = elmB-&gt;next ;
+         }
+         elmA = elmA-&gt;next ;
+      }
+   }
+   stop_local_modifs() ;
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( add_Mat_Mat_POST( </font><font class="kw3">OLD</font><font class="text">( state ) ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_PelMatrix</font><font class="text">:: add_Mat_tMat_IMP( </font><font class="kw3">LA_PelMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* A,
+                                 </font><font class="kw3">LA_PelMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* B,
+                                 </font><font class="kw1">double</font><font class="text"> alpha )
+</font><font class="comment">//----------------------------------------------------------------------
+// M &lt;- alpha*A*d*transpose( B )+beta*M
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_PelMatrix:: add_Mat_tMat_IMP&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( add_Mat_tMat_PRE( A, B, alpha ) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   start_local_modifs() ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;NB_ROWS ; i++ )
+   {
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; j&lt;NB_COLS ; j++ )
+      {
+         RowElm* elmA = A-&gt;ROW_TABLE[i] ;
+         </font><font class="kw1">while</font><font class="text">( elmA!=0 )
+         {
+            </font><font class="kw2">size_t</font><font class="text"> k = elmA-&gt;iCol ;
+            RowElm* elmB = B-&gt;ROW_TABLE[j] ;
+            </font><font class="kw1">while</font><font class="text">( elmB!=0 )
+            {
+               </font><font class="kw1">if</font><font class="text">( elmB-&gt;iCol==k )
+               {
+                  </font><font class="kw1">double</font><font class="text"> x = alpha*elmA-&gt;xVal*elmB-&gt;xVal ;
+                  add_to_item( i, j, x ) ;
+                  </font><font class="kw1">break</font><font class="text"> ;
+               }
+               elmB = elmB-&gt;next ;
+            }
+            elmA = elmA-&gt;next ;
+         }
+      }
+   }
+   stop_local_modifs() ;
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( add_Mat_tMat_POST() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_PelMatrix</font><font class="text">::RowElm*
+</font><font class="kw3">LA_PelMatrix</font><font class="text">:: create_element( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">if</font><font class="text">( CURRENT_BUCKET-&gt;used == 128 )
+   {
+      CURRENT_BUCKET-&gt;next = </font><font class="kw1">new</font><font class="text"> RowElmBucket ;
+      CURRENT_BUCKET=CURRENT_BUCKET-&gt;next ;
+      CURRENT_BUCKET-&gt;used=0 ;
+      CURRENT_BUCKET-&gt;next=0 ;
+   }
+   </font><font class="kw1">return</font><font class="text"> &amp;(CURRENT_BUCKET-&gt;elem[ CURRENT_BUCKET-&gt;used++ ] ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_PelMatrix</font><font class="text">:: destroy_all_elements( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   RowElmBucket * ptr = FIRST_BUCKET ;
+   RowElmBucket * next ;
+
+   </font><font class="kw1">while</font><font class="text">( ptr!=0 )
+   {
+      next = ptr-&gt;next ;
+      </font><font class="kw1">delete</font><font class="text"> ptr ;
+      ptr = next ;
+   }
+   FIRST_BUCKET = 0 ;
+   CURRENT_BUCKET = 0 ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_PelMatrix</font><font class="text">:: init_allocating( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( FIRST_BUCKET==0 ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( CURRENT_BUCKET==0 ) ;
+
+   FIRST_BUCKET = CURRENT_BUCKET = </font><font class="kw1">new</font><font class="text"> RowElmBucket ;
+   CURRENT_BUCKET-&gt;next = 0 ;
+   CURRENT_BUCKET-&gt;used = 0 ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_PelMatrix</font><font class="text">:: invariant( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( </font><font class="kw3">EQUIVALENT</font><font class="text">( NB_ROWS==0, ROW_TABLE==0 ) ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( is_a_prototype() || (FIRST_BUCKET!=0 &amp;&amp; CURRENT_BUCKET!=0) ) ;
+   </font><font class="kw1">return</font><font class="text"> </font><font class="kw1">true</font><font class="text"> ;
+}
+
+</font>
+</pre>
+</body>
+</html>

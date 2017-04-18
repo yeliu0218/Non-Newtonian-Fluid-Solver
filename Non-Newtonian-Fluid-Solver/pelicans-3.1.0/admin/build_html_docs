@@ -1,0 +1,462 @@
+#!/bin/perl -w
+# Build HTML pages of documentation site
+#  concerned with ExamplesOfApplications
+#  and test cases.
+
+BEGIN {
+   push (@INC, "$ENV{PELICANSHOME}/admin" ) ;
+}
+
+my $PELICANS=$ENV{PELICANSHOME} ;
+my $tic = $ENV{sigal} ;
+my $pel_exe = 'qlnfdqsdgsdf' ;
+
+use vars qw( $PELICANS $tic ) ;
+use Cwd ;
+use strict ;
+use diagnostics ;
+use BuildDoc ;
+use File::Spec ;
+
+
+#-------------------------------------------------------------
+sub basename {
+#-------------------------------------------------------------
+  my @sp = split /\//, $_ ;
+  pop @sp ;
+}
+
+
+#-------------------------------------------------------------
+sub process_ps {
+#-------------------------------------------------------------
+  my ($ref) = @_ ;
+  # process tic file
+  my $doc = "doc" ;
+  my $rootticinput = "save.gene" ;
+  my $rootdirvisu = "visu" ;
+
+  my $ticinput = "$ref/$rootticinput" ;
+  my $dirvisu = "$ref/$rootdirvisu" ;
+  if( ( -f $ticinput ) && ( -d $dirvisu ) ) {
+    if( !-f $rootticinput ) {
+      symlink( $ticinput, $rootticinput ) or die("Unable to link $ticinput") ;
+    }
+    if( ! -x $rootdirvisu )  {
+      symlink( $dirvisu, $rootdirvisu ) or die( "Unable to link $dirvisu" ) ; 
+    }
+    if( ! -d $doc ) {
+      mkdir $doc or die( "Unable to build $doc" ) ; }
+    my $ticlst = `ls visu/*.tic` ;
+    my @ticcmd = split /\n/, $ticlst ;
+    chomp  @ticcmd ;
+    map {
+      my $target = basename $_ ;
+      print STDOUT "Target : $target\n" ;
+      $target =~ s/\.tic/.ps/ ;
+      if( ! -f $target ) {
+	my $cmd = "$tic < $_" ;
+	system $cmd and die( "Unable to run : $cmd\n" ) ;
+	system "mv $doc/*.ps ." and die( "Unable to move $doc/*.ps\n" ) ;
+      }
+    } @ticcmd ;
+    unlink( $rootticinput ) or die( "Unable to unlink $rootticinput" ) ;
+    unlink( $rootdirvisu ) or die( "Unable to unlink $rootticinput" ) ;
+  }
+}
+
+
+#-------------------------------------------------------------
+sub verify_stylecss_present {
+#-------------------------------------------------------------
+  my $css = "stylesheet.css" ;
+  if( ! ( -f $css ) ) {
+    my $src = "$PELICANS/doc/share/$css" ;
+    my $dir = cwd ;
+    
+    system( "cp $src $dir" ) and die( "Unable to copy $src at $dir" ) ;
+  }
+}
+
+#-------------------------------------------------------------
+sub convert_to_html {
+#-------------------------------------------------------------
+  my ( $src, $dest ) = @_ ;
+  my $machine = `uname` ;
+  chomp $machine ;
+  my $webview = "$pel_exe" ;
+  if( !-x $webview ) {
+    print STDOUT "\nUnable to execute webview : $webview !\n" ;
+  } else {
+    my $cmd = "$webview -A webview -p stylesheet.css -g --output=$dest $src" ;
+    system( $cmd ) and die ( "Error when executing : $cmd" ) ;
+  }
+}
+
+#-------------------------------------------------------------
+sub HTML_Begin {
+#-------------------------------------------------------------
+  my ( $title ) = @_ ;
+  my $res = "<html>\n" ;
+  verify_stylecss_present() ;
+  $res .= "<head><title>$title</title></head>\n" ;
+  $res .= "<LINK REL =\"stylesheet\" TYPE=\"text/css\" HREF=\"stylesheet.css\" TITLE=\"Style\">\n" ;  
+
+  $res ;
+}
+
+#-------------------------------------------------------------
+sub HTML_Header {
+#-------------------------------------------------------------
+  my ( $title ) = @_ ;
+  my $res = HTML_Begin($title) ;
+  $res .= "<body>\n" ;
+  $res .= "<center><H2>$title</H2></center>\n" ;
+  $res ;
+}
+
+#-------------------------------------------------------------
+sub HTML_End {
+#-------------------------------------------------------------
+  my $res = "</body></html>\n" ;
+  $res ;
+}
+
+#-------------------------------------------------------------
+sub do_frame_list {
+#-------------------------------------------------------------
+  my ( $src, $title ) = @_ ;
+  open OUT, ">$src" ;
+  print OUT HTML_Begin($title) ;
+  print OUT "<FRAMESET rows=\"70,*\">\n" ;
+  print OUT "<FRAME src=\"head.html\" name=\"headFrame\">\n" ;
+  print OUT "<FRAMESET cols=\"20%,80%\">\n" ;
+  print OUT "<FRAME src=\"list.html\" name=\"listFrame\">\n" ;
+  print OUT "<FRAME src=\"../../src.html\" name=\"contentFrame\">\n" ;
+  print OUT "</FRAMESET>\n" ;
+  print OUT "</FRAMESET>\n" ;
+  print OUT HTML_End ;
+  close OUT ;
+
+}
+
+#-------------------------------------------------------------
+sub do_browse_frame{
+#-------------------------------------------------------------
+    my ( $name, $dir, @test_list ) = @_ ;
+    print "<LI> <A HREF=\"$name/file_list.htm\">Browse</A>\n" ;
+    do_frame_list ( "file_list.htm", "$name source" ) ;
+    open OUT, ">head.html" ;
+    print OUT HTML_Begin( "$name" ) ;
+    print OUT "<body>\n" ;
+    print OUT "<TABLE BORDER=\"0\" WIDTH=\"100%\" CELLPADDING=\"1\" CELLSPACING=\"0\"><TR>\n" ;
+    print OUT "<TD ALIGN=\"left\" VALIGN=\"top\"><H2>$name</H2></TD>\n" ;
+    print OUT "<TD ALIGN=\"right\" VALIGN=\"top\"> <A HREF=\"../general.htm\" TARGET=\"_parent\">back to applications</A></TD>\n" ;
+    print OUT "</TR></TABLE>\n" ;
+    close OUT ;
+    open OUT, ">list.html" ;
+    print OUT HTML_Begin( "Sources" ) ;
+    print OUT "<body>\n" ;
+    print OUT "<H2>Sources</H2>\n" ;
+    print OUT "<TABLE BORDER=\"0\" WIDTH=\"100%\">\n" ;
+    print OUT "<TR>\n<TD NOWRAP>" ;
+    my @files = `ls $dir/include/*.hh $dir/src/*.cc` ;
+    @files = sort @files ;
+    my $file_dir = "$PELICANS/doc/Site/APPLICATION_Documentations/$name" ;
+    while( scalar @files ) {
+      my $file = shift @files ;
+      my @spl = split( "/", $file ) ;
+      my $fic = pop ( @spl ) ;
+      chomp $fic ;
+      my $dest = "$file_dir/$fic.html" ;
+      convert_to_html( $file, $dest ) ;
+      print OUT "<A HREF=\"$fic.html\" TARGET=\"contentFrame\">$fic</A>\n" ;
+      print OUT "<BR>\n" ;
+    }
+    print OUT "<BR>\n" ;
+    print OUT "<H2>Tests</H2>\n" ;
+    my $test ;
+    foreach $test (@test_list) {
+      my $ff = "tests/$test/doc/Html/doc.html" ;
+      if( ! -f $ff ) {
+         $ff = "tests/$test/data.pel.html" ;
+      }
+      print OUT "<A HREF=\"$ff\" TARGET=\"contentFrame\">$test</A>\n" ;
+      print OUT "<BR>\n" ;
+    }
+
+    print OUT "</TD></TR></TABLE>\n" ;
+    print OUT HTML_End ;
+    close OUT ;
+}
+
+#-------------------------------------------------------------
+sub delete_dir {
+#-------------------------------------------------------------
+  my ( $dir ) = @_ ;
+  system( "/bin/rm -fr $dir" ) ;
+}
+
+#-------------------------------------------------------------
+sub expand_TESTS{ 
+#-------------------------------------------------------------
+  my ( $appli_name, $test_name, $abs_appli_dir ) = @_ ;
+
+  my $has_doc = 0 ;
+  my $test_source_dir = 
+    "$PELICANS/ExamplesOfApplication/$appli_name/tests/$test_name" ;
+  my @splitted_name = split( '/', $test_name ) ;
+  my $option_name = pop( @splitted_name ) ;
+  my $head = 
+    "Test <em>$test_name</em> of Pelicans application <em>$appli_name</em>" ;
+
+  open FILOUT, ">head.htm" ;
+  print FILOUT HTML_Header( $head ) ;
+  my @files_to_convert ;
+  if( -f "$test_source_dir/doc/$option_name.tex" ) {
+        
+    print FILOUT "<A HREF=\"doc/$option_name.ps\">postscript</A>\n" ;
+    print FILOUT "<A HREF=\"doc/$option_name.pdf\">PDF</A>" ;
+    mkdir "doc" ;
+    chdir "doc" ;
+    process_ps( $test_source_dir ) ;
+    @files_to_convert = BuildDoc::do( $option_name, $test_source_dir, "test" ) ;
+    chdir ".." ;
+    $has_doc = 1 ;
+  }
+  print FILOUT HTML_End ;
+  close FILOUT ;
+  push @files_to_convert, "data.pel" if( -f "$test_source_dir/data.pel" ) ;
+  map { convert_to_html( "$test_source_dir/$_", "$_.html" ) ;}
+    ( @files_to_convert ) ;
+
+  open FILOUT, ">general.htm" ;
+  print FILOUT HTML_Begin( $head ) ;
+  print FILOUT "<FRAMESET rows=\"100,*\">" ;
+  print FILOUT "<FRAME src=\"head.htm\" name=\"headFrame\">" ;
+  if( $has_doc ) {
+     print FILOUT "<FRAME src=\"doc/Html/doc.html\" name=\"contentFrame\">" ;
+  }
+  else {
+     print FILOUT "<FRAME src=\"data.html\" name=\"contentFrame\">" ;
+  }
+#  if( $has_doc ) {
+#    print FILOUT "</FRAMESET>" ;
+#  }
+  print FILOUT "</FRAMESET>" ;
+  print FILOUT HTML_End ;
+  close FILOUT ;
+
+
+}
+
+#----------------------------------------------------------------------
+sub do_tests_recovering{
+#----------------------------------------------------------------------
+  my ( $appli_name, @test_list ) = @_ ;
+  my( @result ) ;
+  my $data_file = "data.pel" ;
+  my $t ;
+  my $prem = 1 ;
+  my $rel_dir = "$appli_name/tests" ;
+  my $appli_abs_dir = "$PELICANS/doc/Site/APPLICATION_Documentations/".$rel_dir ;
+  mkdir $appli_abs_dir unless -d  $appli_abs_dir ;
+  chdir $appli_abs_dir or die "unable to enter $appli_abs_dir" ;
+  my $item = "" ;
+  
+  for(my $i=0;$i<scalar @test_list ;$i++ ) 
+    {
+      my $t = $test_list[$i] ;
+      if ( $t =~ /\/$appli_name\// ) 
+	{
+	  if( $prem )
+	    {
+	      #-- print "<LI>Associated tests :\n" ;
+	      #-- print "<UL>\n" ;
+	      $prem = 0 ;
+	    }
+	  my $s = substr $t, 2, length($t)-length($data_file) - 3 ;
+	  my $n = substr $s, 0, index( $s, "/" ) ;
+	  my @prov_test_name = split( '/', $s ) ;
+	  shift( @prov_test_name ) ;
+	  shift( @prov_test_name ) ;
+	  foreach $item ( @prov_test_name ) 
+	    {
+              if ( !(-d $item ) )
+		{
+		  mkdir $item or die "Unable to create directory $item \n" ;
+		}
+	      chdir $item ;
+	    }
+	  $s = join( '/', @prov_test_name ) ;
+	  
+	  my $ref = "<A HREF=\"$rel_dir/$s/general.htm\" NAME=\"\">" ;
+	  #-- print "<LI>$ref$s</A></LI>\n" ;
+	  
+          push( @result, $s ) ;
+	  expand_TESTS( $appli_name, $s, $appli_abs_dir ) ;
+	}
+      chdir $appli_abs_dir ;
+    }
+  if( ! $prem ) 
+    {
+      #-- print "</UL>\n" ;
+      #-- print "</LI>\n" ; 
+    }
+  chdir( "$PELICANS/doc/Site/APPLICATION_Documentations/$appli_name" ) ;
+
+  return @result ;
+}
+
+#-------------------------------------------------------------
+sub do_source_recovering{
+#-------------------------------------------------------------
+    my ( $name, $dir ) = @_ ;
+    mkdir $name unless -d $name ;
+
+    chdir $name  or die "Unable to enter $name ($!)\n"  ;
+
+    #-- sources
+    mkdir "src" ;
+    system "cp -p $dir/include/*.hh src" ;
+    system "cp -p $dir/src/*.cc src" ;
+
+    #-- makefile
+    system "cp -p $PELICANS/etc/Makefile_for_appli Makefile" and
+                            die "unable to copy the generic Makefile ($!)\n" ;
+
+    #-- tests
+    my $testDir = 'RegressionTests' ;
+    mkdir $testDir unless -d $testDir ;
+    chdir $testDir or die "Unable to enter $testDir ($!)\n" ;
+    my @ttdirs = split( "\n", `find "$dir/tests" \\( -name "*.svn*" -o -name "doc" -o -name "CVS" \\) -prune -o -type f -o -print` ) ;
+    my %done = () ;
+    for my $refdir ( @ttdirs ) {
+       next if ( $refdir eq "$dir/tests" ) ;
+       my $locdir = $refdir ;
+       $locdir =~ s/^$dir\/tests\/(.*)$/$1/  ;
+       die "already exists : $locdir\n" if -d $locdir ;
+       system "mkdir -p $locdir" and die "unable to mkdir -p $locdir ($!)\n" ;
+       opendir( TEST, $refdir ) ;
+       foreach my $fichier ( readdir(TEST) ) {
+         my $fullname = "$refdir/$fichier" ;
+	 next if ( ! -f $fullname ) ;
+         next if ( $fichier eq 'resu' ) ;
+         if( $fichier =~ m/.tic$/ ) {
+           open( REFTIC, "$fullname" ) || die "open failed ($!)\n" ;
+           open( NEWTIC, ">$locdir/$fichier" ) || die "open failed ($!)\n" ;
+           while ( <REFTIC> ) {
+	     print NEWTIC $_ unless ( /PSFN|STAT/ ) ;
+           }
+           close( REFTIC ) ; close( NEWTIC ) ;
+         }
+         else {
+           system "cp -p $fullname $locdir/$fichier" ;
+         }
+       }
+       closedir( TEST ) ;
+    }
+    chdir ".." ;
+
+    chdir ".." ;
+    system "tar zcf $name.tgz $name" ;
+    delete_dir $name ;
+    print "<LI><A HREF=\"$name/$name.tgz\">Get source</A></LI>" ;
+}
+
+#-------------------------------------------------------------
+sub build_APPLICATIONS{
+#-------------------------------------------------------------
+
+  my $APPLI_DIR="$PELICANS/doc/Site/APPLICATION_Documentations";
+
+  if( ! -d $APPLI_DIR ) {
+    warn "$APPLI_DIR doesn't exist : I create it !" ;
+    mkdir "$APPLI_DIR" or die "Unable to create $APPLI_DIR" ; 
+  }
+
+  chdir "$APPLI_DIR" ;
+  open HANDLE, ">general.htm" ;
+  select HANDLE ;
+  print HTML_Header( "PELICANS : Examples of Applications" ) ;
+
+  my @ai = split( "\n", `find "$PELICANS/ExamplesOfApplication" -name src -type d` ) ;
+  my @APPLI_list = sort_appli_list( @ai ) ;
+  my @tests_list = split( "\n", `cd "$PELICANS/ExamplesOfApplication" ; find ./ -name data.pel` ) ;
+
+  while( scalar @APPLI_list ) {
+
+    my @path = split( "/", shift @APPLI_list) ;
+    pop @path ;
+    my $APPLI_path = join( "/", @path ) ;
+    my $APPLI_name = pop @path ;
+    print STDOUT "considering $APPLI_name...\n" ;
+
+    if ( ! -d "$APPLI_name" ) {
+      mkdir "$APPLI_name" or die "Unable to create $APPLI_name\n" ; }
+    chdir $APPLI_name ;
+
+    print "<blockquote>\n" ;
+    print "<H3><A NAME=\"$APPLI_name\"> $APPLI_name </A></H3>" ;
+    print "<blockquote>\n" ;
+    do_source_recovering ( $APPLI_name, $APPLI_path ) ;
+    my @listedetests ;
+    @listedetests = &do_tests_recovering ( $APPLI_name, @tests_list ) ;
+    do_browse_frame ( $APPLI_name, $APPLI_path, @listedetests ) ;
+    print "</blockquote>\n" ;
+    print "</blockquote>\n" ;
+
+    chdir ".." ;
+  }
+
+  print HTML_End ;
+  close HANDLE ;
+  select STDOUT ;
+}
+
+#--------------------------------------------------------------------------
+sub sort_appli_list {
+#--------------------------------------------------------------------------
+   my( @init_list ) = @_ ;
+   my( @result ) ;
+   my @list ;
+   push( @list, "Tutorial" ) ;
+   push( @list, "Galerkin" ) ;
+   push( @list, "ColocatedFiniteVolumes" ) ;
+   push( @list, "CharacteristicGalerkin" ) ;
+   push( @list, "CahnHilliardNavierStokes" ) ;
+   push( @list, "CodeCoupling" ) ;
+   my $test ;
+   foreach $test (@list) {
+      foreach (@init_list) {
+         if( /$test/ ) {
+            push( @result, $_ ) ;
+	 }
+      }
+   }
+   return @result ;
+}
+
+
+#-------------------------------------------------------------
+# MAIN
+#-------------------------------------------------------------
+
+if( @ARGV != 1 ) {
+  die "One argument is required : a PELICANS executable\n" ;
+}
+$pel_exe = File::Spec->rel2abs( $ARGV[0] ) ;
+if( ! -x $pel_exe ) {
+  die "Invalid executable : $pel_exe\n" ;
+}
+
+if($tic) {$tic .= "/com/unix/run ticbatch" } 
+else { die("No sigal variable defined" ) ; }
+
+if( ! -d $PELICANS )
+{ die "Bad PELICANS directory $PELICANS or undefined one" ; }
+
+print "\n********************************************\n" ;
+print "------ Building Applications pages \n" ;
+print "********************************************\n" ;
+build_APPLICATIONS ;

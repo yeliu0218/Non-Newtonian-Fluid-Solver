@@ -1,0 +1,110 @@
+MODULE PEL_Application
+
+   concrete_name = "PDE_DomainVisu"
+
+   $DS_x = component( $DV_X, 0 )
+   $DS_y = component( $DV_X, 1 )
+
+   check_meshing_connexity = true
+   
+   MODULE PDE_DomainAndFields
+      
+      verbose_level = 2
+      nb_space_dimensions = 2
+      type = "finite_element"
+      
+      MODULE GE_Meshing
+         
+         concrete_name = "GE_SplitMeshing"
+         security_bandwidth = 0
+         
+         MODULE splitting_strategy
+            concrete_name = "GE_CoordinateSplitting"
+            coordinate_splitting_formula =
+            unit_sort( $DS_x, 0.0, 2.0, nb_ranks() ) 
+         END MODULE splitting_strategy
+         
+         MODULE GE_Meshing
+            concrete_name = "GE_ComposedMeshing"
+            check_meshing = true
+            MODULE list_of_GE_Meshing
+               MODULE GE_Meshing#1
+                  concrete_name = "GE_RefinedMeshing"
+                  mesh_polyhedron = < "GE_Segment" "GE_Triangle" >
+                  MODULE list_of_GE_ReferencePolyhedronRefiner
+                     MODULE GE_ReferencePolyhedronRefiner
+                        concrete_name = "GE_ReferenceSquareWithTriangles"
+                        strategy = "\" //"
+                     END MODULE GE_ReferencePolyhedronRefiner
+                  END MODULE list_of_GE_ReferencePolyhedronRefiner
+                  MODULE GE_Meshing
+                     concrete_name = "GE_BoxWithBoxes"
+                     vertices_coordinate_0 = regular_vector( 0.0, 1, 1.0 )
+                     vertices_coordinate_1 = regular_vector( 0.0, 1, 1.0 )
+                     mesh_polyhedron = < "GE_Segment" "GE_Rectangle" > 
+                  END MODULE GE_Meshing
+               END MODULE GE_Meshing#1            
+               MODULE GE_Meshing#2
+                  concrete_name = "GE_BoxWithBoxes"
+                  vertices_coordinate_0 = regular_vector( 1.0, 1, 2.0 )
+                  vertices_coordinate_1 = regular_vector( 0.0, 1, 1.0 )
+                  mesh_polyhedron = < "GE_Segment" "GE_Rectangle" > 
+               END MODULE GE_Meshing#2
+            END MODULE list_of_GE_Meshing         
+         END MODULE GE_Meshing
+         
+      END MODULE GE_Meshing
+      
+      MODULE interior_fields
+         
+         MODULE uu
+            name = "uu"
+            nb_components = 1
+            element_names = < "PDE_2D_Q1_4nodes" "PDE_2D_P1_3nodes" >
+            storage_depth = 1
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = < 0.0 >
+            END MODULE DOFs_values
+            MODULE DOFs_imposed_value
+               MODULE left
+                  location = "on_bounds"
+                  type = "uniformly_defined"
+                  color = "left"
+                  value = < 1.0 >
+               END MODULE left
+               MODULE right
+                  location = "on_bounds"
+                  type = "uniformly_defined"
+                  color = "right"
+                  value = < 2.0 >
+               END MODULE right
+            END MODULE DOFs_imposed_value
+         END MODULE uu
+         
+      END MODULE interior_fields
+     
+      if( nb_ranks() > 1 )
+      MODULE PDE_ResultSaver
+         writers = < "PEL_CrossProcessWriter" >
+         sub_writers = < "PEL_GMVwriter" "PEL_PelWriter" >
+      END MODULE PDE_ResultSaver
+
+      if( nb_ranks() = 1 )
+      MODULE PDE_ResultSaver
+         writers = < "PEL_GMVwriter" "PEL_PelWriter" >
+      END MODULE PDE_ResultSaver
+       
+      MODULE PDE_ResultSaver
+         writing_mode = "text"
+         files_basename = "save"
+         MODULE uu
+            where_to_save = "at_vertices"
+            entry_name = "U"
+            field = "uu"
+         END MODULE uu
+      END MODULE PDE_ResultSaver
+       
+   END MODULE PDE_DomainAndFields
+
+END MODULE PEL_Application

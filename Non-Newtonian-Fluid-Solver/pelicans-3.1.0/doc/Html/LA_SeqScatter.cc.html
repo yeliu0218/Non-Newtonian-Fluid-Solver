@@ -1,0 +1,260 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>LA_SeqScatter.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="LA_SeqScatter.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="LApack-tree.html"><span>Tree</span></a>
+    <a href="LA_SeqScatter.html"><span>Class</span></a>
+    <a href="LA_SeqScatter.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="LApack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_SeqScatter</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_assertions</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_DistributedPartition</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_SeqImplementation</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_SeqVector</font><font class="text">.hh&gt;
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_SeqScatter</font><font class="text">*
+</font><font class="kw3">LA_SeqScatter</font><font class="text">:: create( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                        </font><font class="kw2">size_t</font><font class="text"> a_nb_rows,
+                        </font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_repatriated_items_table,
+                        </font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_local_indices_table )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_SeqScatter:: create&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( a_repatriated_items_table.size() ==
+                                        a_local_indices_table.size() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">(
+      </font><font class="kw3">FORALL</font><font class="text">(
+         ( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;a_repatriated_items_table.size() ; ++i ),
+         a_repatriated_items_table(i)&lt;a_nb_rows ) ) ;
+
+   </font><font class="kw3">LA_SeqScatter</font><font class="text">* result =
+      </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">LA_SeqScatter</font><font class="text">( a_owner,
+                         a_nb_rows,
+                         a_repatriated_items_table, a_local_indices_table ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;owner() == a_owner ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;size() == a_repatriated_items_table.size() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;repatriated_items() == a_repatriated_items_table ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;local_indices() == a_local_indices_table ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;distribution()-&gt;global_number() == a_nb_rows ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;distribution()-&gt;local_number() == a_nb_rows ) ;
+   
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_SeqScatter</font><font class="text">:: </font><font class="kw3">LA_SeqScatter</font><font class="text">(
+                     </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                     </font><font class="kw2">size_t</font><font class="text"> a_nb_rows,
+                     </font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_repatriated_items_table,
+                     </font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_local_indices_table )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">LA_Scatter</font><font class="text">( a_owner )
+   , NB_ROWS( a_nb_rows )
+   , NEEDED( a_repatriated_items_table )
+   , LOCAL( a_local_indices_table )
+   , DIST( 0 )
+{
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_SeqScatter</font><font class="text">:: ~</font><font class="kw3">LA_SeqScatter</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_Implementation</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">LA_SeqScatter</font><font class="text">:: implementation( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_SeqScatter:: implementation&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw3">LA_Implementation</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result = </font><font class="kw3">LA_SeqImplementation</font><font class="text">::object() ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( implementation_POST( result ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw2">size_t
+</font><font class="kw3">LA_SeqScatter</font><font class="text">:: size( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">return</font><font class="text">( NEEDED.size() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp;
+</font><font class="kw3">LA_SeqScatter</font><font class="text">:: repatriated_items( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_SeqScatter:: repatriated_items&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; result = NEEDED ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( repatriated_items_POST( result ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp;
+</font><font class="kw3">LA_SeqScatter</font><font class="text">:: local_indices( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_SeqScatter:: local_indices&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; result = LOCAL ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( local_indices_POST( result ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_DistributedPartition</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">LA_SeqScatter</font><font class="text">:: distribution( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_SeqScatter:: distribution&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">if</font><font class="text">( DIST == 0 )
+   {
+      DIST = </font><font class="kw3">PEL_DistributedPartition</font><font class="text">::create(
+                                </font><font class="kw1">const_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqScatter</font><font class="text">*&gt;( </font><font class="kw1">this</font><font class="text"> ) ) ;
+      DIST-&gt;set_global_number( NB_ROWS ) ;
+   }
+   
+   </font><font class="kw3">PEL_DistributedPartition</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result = DIST ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( distribution_POST( result ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_SeqScatter</font><font class="text">:: get( </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* source,
+                     </font><font class="kw3">LA_SeqVector</font><font class="text">* dest ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_SeqScatter:: get&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( get_PRE( source, dest) ) ;
+
+   </font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* bsource = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;( source ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( </font><font class="kw1">dynamic_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;( source ) != 0 ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> n = size() ;
+   
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;n ; ++i )
+   {
+      dest-&gt;set_item( LOCAL(i), bsource-&gt;item( NEEDED(i) ) ) ;
+   }
+
+   dest-&gt;synchronize() ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( get_POST( source, dest) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_SeqScatter</font><font class="text">:: </font><font class="kw2">set</font><font class="text">( </font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* source,
+                     </font><font class="kw3">LA_Vector</font><font class="text">* dest ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_SeqScatter:: set&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( set_PRE( source, dest) ) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( </font><font class="kw1">dynamic_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;( dest ) != 0 ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> n = size() ;
+   
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;n ; ++i )
+   {
+      dest-&gt;set_item( NEEDED(i), source-&gt;item( LOCAL(i) ) ) ;
+   }
+   
+   dest-&gt;synchronize() ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( set_POST( source, dest) ) ;
+
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_SeqScatter</font><font class="text">:: implementation_POST(
+                                 </font><font class="kw3">LA_Implementation</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( </font><font class="kw3">LA_Scatter</font><font class="text">::implementation_POST( result ) ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( result == </font><font class="kw3">LA_SeqImplementation</font><font class="text">::object() ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font>
+</pre>
+</body>
+</html>

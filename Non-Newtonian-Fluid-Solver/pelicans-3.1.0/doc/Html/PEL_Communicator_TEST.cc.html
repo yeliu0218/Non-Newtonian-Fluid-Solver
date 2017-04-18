@@ -1,0 +1,1769 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>PEL_Communicator_TEST.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="PEL_Communicator_TEST.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="PELpack-tree.html"><span>Tree</span></a>
+    <a href="PEL_Communicator_TEST.html"><span>Class</span></a>
+    <a href="PEL_Communicator_TEST.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="PELpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated
+ *  reusable components, whose purpose is to simplify the task of developing
+ *  softwares of numerical mathematics and scientific computing.
+ *
+ *  This software is governed by the CeCILL-C license under French law and
+ *  abiding by the rules of distribution of free software. You can use, modify
+ *  and/or redistribute the software under the terms of the CeCILL-C license
+ *  as circulated by CEA, CNRS and INRIA at the following URL
+ *  &quot;http://www.cecill.info&quot;.
+ *
+ *  As a counterpart to the access to the source code and rights to copy,
+ *  modify and redistribute granted by the license, users are provided only
+ *  with a limited warranty and the software's author, the holder of the
+ *  economic rights, and the successive licensors have only limited liability.
+ *
+ *  In this respect, the user's attention is drawn to the risks associated
+ *  with loading, using, modifying and/or developing or reproducing the
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also
+ *  therefore means that it is reserved for developers and experienced
+ *  professionals having in-depth computer knowledge. Users are therefore
+ *  encouraged to load and test the software's suitability as regards their
+ *  requirements in conditions enabling the security of their systems and/or
+ *  data to be ensured and, more generally, to use and operate it in the same
+ *  conditions as regards security.
+ *
+ *  The fact that you are presently reading this means that you have had
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Communicator_TEST</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_assertions</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Communicator</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_DoubleComparatorExact</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Exec</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">boolArray2D</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">boolVector</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">doubleArray2D</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">doubleVector</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">intVector</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">intArray2D</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">size_t_array2D</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">size_t_vector</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">stringVector</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw2">string</font><font class="text">&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;iostream&gt;
+
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+
+</font><font class="kw3">PEL_Communicator_TEST</font><font class="text">*
+</font><font class="kw3">PEL_Communicator_TEST</font><font class="text">::REGISTRATOR = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_Communicator_TEST</font><font class="text">() ;
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw3">PEL_Communicator_TEST</font><font class="text">:: </font><font class="kw3">PEL_Communicator_TEST</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_ObjectTest</font><font class="text">( </font><font class="string">&quot;PEL_Communicator&quot;</font><font class="text">, </font><font class="string">&quot;PEL_Communicator_TEST&quot;</font><font class="text"> )
+{
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw3">PEL_Communicator_TEST</font><font class="text">:: ~</font><font class="kw3">PEL_Communicator_TEST</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_Communicator_TEST</font><font class="text">:: process_one_test( </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp )
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_Communicator_TEST:: process_one_test&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw3">PEL_Communicator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* com = </font><font class="kw3">PEL_Exec</font><font class="text">::communicator() ;
+
+   out() &lt;&lt; </font><font class="string">&quot;| Communicator is &quot;</font><font class="text"> &lt;&lt; com-&gt;name() &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+
+   test_send_recv_size_t( com ) ;
+   test_send_recv_size_t_vector( com ) ;
+   test_send_recv_size_t_array2D( com ) ;
+   test_send_recv_int( com ) ;
+   test_send_recv_intVector( com ) ;
+   test_send_recv_intArray2D( com ) ;
+   test_send_recv_double( com ) ;
+   test_send_recv_doubleVector( com ) ;
+   test_send_recv_doubleArray2D( com ) ;
+   test_send_recv_bool( com ) ;
+   test_send_recv_boolVector( com ) ;
+   test_send_recv_boolArray2D( com ) ;
+   test_send_recv_string( com ) ;
+   test_send_recv_stringVector( com ) ;
+   test_send_recv_intPtr( com ) ;
+   test_send_recv_doublePtr( com ) ;
+   test_send_recv_charPtr( com ) ;
+
+   test_NB_send_recv_intPtr( com ) ;
+   test_NB_send_recv_doublePtr( com ) ;
+
+   test_broadcast( com ) ;
+
+   test_gather( com ) ;
+
+   test_all_gather( com ) ;
+
+   test_all_to_all( com ) ;
+
+   test_boolean_and_or( com ) ;
+
+   test_sum( com ) ;
+
+   test_max_min( com ) ;
+
+   test_same_value( com ) ;
+
+   test_merge( com, exp ) ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_Communicator_TEST</font><font class="text">:: test_send_recv_size_t( </font><font class="kw3">PEL_Communicator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* com )
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_Communicator_TEST:: test_send_recv_size_t&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> rank = com-&gt;rank() ;
+   </font><font class="kw2">size_t</font><font class="text"> nbrk = com-&gt;nb_ranks() ;
+
+   </font><font class="kw1">if</font><font class="text">( nbrk == 1 ) </font><font class="kw1">return</font><font class="text"> ;
+   </font><font class="comment">//              ------
+</font><font class="text">
+   </font><font class="kw2">size_t</font><font class="text"> next_proc = ( rank &lt; (nbrk-1) ? rank+1 : 0  ) ;
+   </font><font class="kw2">size_t</font><font class="text"> prev_proc = ( rank != 0 ? rank-1 : nbrk-1 ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> val0 = 10 ;
+
+   </font><font class="kw2">size_t</font><font class="text"> val = </font><font class="kw3">PEL</font><font class="text">::bad_index() ;
+   </font><font class="kw1">if</font><font class="text">( rank == 0 )
+   {
+      val = val0 ;
+      com-&gt;send( next_proc, val ) ;
+      com-&gt;receive( prev_proc, val ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      com-&gt;receive( prev_proc, val ) ;
+      com-&gt;send( next_proc, val+1 ) ;
+   }
+   </font><font class="kw1">bool</font><font class="text"> ok = ( rank==0 ? val==val0+nbrk-1 : val==val0+rank-1 ) ;
+
+   notify_one_test_result( </font><font class="string">&quot;send_receive(size_t)&quot;</font><font class="text">, ok ) ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_Communicator_TEST</font><font class="text">:: test_send_recv_size_t_vector( </font><font class="kw3">PEL_Communicator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* com )
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_Communicator_TEST:: test_send_recv_size_t_vector&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> rank = com-&gt;rank() ;
+   </font><font class="kw2">size_t</font><font class="text"> nbrk = com-&gt;nb_ranks() ;
+
+   </font><font class="kw1">if</font><font class="text">( nbrk == 1 ) </font><font class="kw1">return</font><font class="text"> ;
+   </font><font class="comment">//              ------
+</font><font class="text">
+   </font><font class="kw2">size_t</font><font class="text"> next_proc = ( rank &lt; (nbrk-1) ? rank+1 : 0  ) ;
+   </font><font class="kw2">size_t</font><font class="text"> prev_proc = ( rank != 0 ? rank-1 : nbrk-1 ) ;
+
+   </font><font class="kw3">size_t_vector</font><font class="text"> val0( 4 ) ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;val0.size() ; ++i )
+   {
+      val0( i ) = 2*i ;
+   }
+
+   </font><font class="kw3">size_t_vector</font><font class="text"> val( 0 ) ;
+   </font><font class="kw1">if</font><font class="text">( rank == 0 )
+   {
+      val = val0 ;
+      com-&gt;send( next_proc, val ) ;
+      com-&gt;receive( prev_proc, val ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      com-&gt;receive( prev_proc, val ) ;
+      </font><font class="kw3">size_t_vector</font><font class="text"> valp1 = val ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;valp1.size() ; ++i )
+      {
+         ++valp1( i ) ;
+      }
+      com-&gt;send( next_proc, valp1 ) ;
+   }
+   </font><font class="kw1">bool</font><font class="text"> ok = ( val.size() == val0.size() ) ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;val.size() ; ++i )
+   {
+      ok &amp;= ( rank==0 ? val(i)==val0(i)+nbrk-1 : val(i)==val0(i)+rank-1 ) ;
+   }
+
+   notify_one_test_result( </font><font class="string">&quot;send_receive(size_t_vector)&quot;</font><font class="text">, ok ) ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_Communicator_TEST</font><font class="text">:: test_send_recv_size_t_array2D( </font><font class="kw3">PEL_Communicator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* com )
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_Communicator_TEST:: test_send_recv_size_t_array2D&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> rank = com-&gt;rank() ;
+   </font><font class="kw2">size_t</font><font class="text"> nbrk = com-&gt;nb_ranks() ;
+
+   </font><font class="kw1">if</font><font class="text">( nbrk == 1 ) </font><font class="kw1">return</font><font class="text"> ;
+   </font><font class="comment">//              ------
+</font><font class="text">
+   </font><font class="kw2">size_t</font><font class="text"> next_proc = ( rank &lt; (nbrk-1) ? rank+1 : 0  ) ;
+   </font><font class="kw2">size_t</font><font class="text"> prev_proc = ( rank != 0 ? rank-1 : nbrk-1 ) ;
+
+   </font><font class="kw3">size_t_array2D</font><font class="text"> val0( 4, 3 ) ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;val0.index_bound( 0 ) ; ++i )
+   {
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; j&lt;val0.index_bound( 1 ) ; ++j )
+      {
+         val0( i, j ) = 2*i + 8*j ;
+      }
+   }
+
+   </font><font class="kw3">size_t_array2D</font><font class="text"> val( 0, 0 ) ;
+   </font><font class="kw1">if</font><font class="text">( rank == 0 )
+   {
+      val = val0 ;
+      com-&gt;send( next_proc, val ) ;
+      com-&gt;receive( prev_proc, val ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      com-&gt;receive( prev_proc, val ) ;
+      </font><font class="kw3">size_t_array2D</font><font class="text"> valp1 = val ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;valp1.index_bound( 0 ) ; ++i )
+      {
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; j&lt;valp1.index_bound( 1 ) ; ++j )
+         {
+            ++valp1( i, j ) ;
+         }
+      }
+      com-&gt;send( next_proc, valp1 ) ;
+   }
+   </font><font class="kw1">bool</font><font class="text"> ok = ( val.index_bound( 0 ) == val0.index_bound( 0 ) &amp;&amp;
+               val.index_bound( 1 ) == val0.index_bound( 1 ) ) ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;val.index_bound( 0 ) ; ++i )
+   {
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; j&lt;val.index_bound( 1 ) ; ++j )
+      {
+         ok &amp;= ( rank == 0 ?
+                    val( i, j ) == val0( i, j ) + nbrk-1
+               : val( i, j ) == val0( i, j ) + rank-1 ) ;
+      }
+   }
+
+   notify_one_test_result( </font><font class="string">&quot;send_receive(size_t_array2D)&quot;</font><font class="text">, ok ) ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_Communicator_TEST</font><font class="text">:: test_send_recv_int( </font><font class="kw3">PEL_Communicator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* com )
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_Communicator_TEST:: test_send_recv_int&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> rank = com-&gt;rank() ;
+   </font><font class="kw2">size_t</font><font class="text"> nbrk = com-&gt;nb_ranks() ;
+
+   </font><font class="kw1">if</font><font class="text">( nbrk == 1 ) </font><font class="kw1">return</font><font class="text"> ;
+   </font><font class="comment">//              ------
+</font><font class="text">
+   </font><font class="kw2">size_t</font><font class="text"> next_proc = ( rank &lt; (nbrk-1) ? rank+1 : 0  ) ;
+   </font><font class="kw2">size_t</font><font class="text"> prev_proc = ( rank != 0 ? rank-1 : nbrk-1 ) ;
+
+   </font><font class="kw1">int</font><font class="text"> val0 = -10 ;
+
+   </font><font class="kw1">int</font><font class="text"> val = </font><font class="kw3">PEL</font><font class="text">::bad_int() ;
+   </font><font class="kw1">if</font><font class="text">( rank == 0 )
+   {
+      val = val0 ;
+      com-&gt;send( next_proc, val ) ;
+      com-&gt;receive( prev_proc, val ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      com-&gt;receive( prev_proc, val ) ;
+      com-&gt;send( next_proc, val+1 ) ;
+   }
+   </font><font class="kw1">bool</font><font class="text"> ok = ( rank == 0 ?
+                  val == val0 + (</font><font class="kw1">int</font><font class="text">)nbrk-1
+               : val == val0 + (</font><font class="kw1">int</font><font class="text">)rank-1 ) ;
+
+   notify_one_test_result( </font><font class="string">&quot;send_receive(int)&quot;</font><font class="text">, ok ) ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_Communicator_TEST</font><font class="text">:: test_send_recv_intVector( </font><font class="kw3">PEL_Communicator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* com )
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_Communicator_TEST:: test_send_recv_intVector&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> rank = com-&gt;rank() ;
+   </font><font class="kw2">size_t</font><font class="text"> nbrk = com-&gt;nb_ranks() ;
+
+   </font><font class="kw1">if</font><font class="text">( nbrk == 1 ) </font><font class="kw1">return</font><font class="text"> ;
+   </font><font class="comment">//              ------
+</font><font class="text">
+   </font><font class="kw2">size_t</font><font class="text"> next_proc = ( rank &lt; (nbrk-1) ? rank+1 : 0  ) ;
+   </font><font class="kw2">size_t</font><font class="text"> prev_proc = ( rank != 0 ? rank-1 : nbrk-1 ) ;
+
+   </font><font class="kw3">intVector</font><font class="text"> val0( 4 ) ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;val0.size() ; ++i )
+   {
+      val0( i ) = -2*i ;
+   }
+
+   </font><font class="kw3">intVector</font><font class="text"> val( 0 ) ;
+   </font><font class="kw1">if</font><font class="text">( rank == 0 )
+   {
+      val = val0 ;
+      com-&gt;send( next_proc, val ) ;
+      com-&gt;receive( prev_proc, val ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      com-&gt;receive( prev_proc, val ) ;
+      </font><font class="kw3">intVector</font><font class="text"> valp1 = val ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;valp1.size() ; ++i )
+      {
+         ++valp1( i ) ;
+      }
+      com-&gt;send( next_proc, valp1 ) ;
+   }
+   </font><font class="kw1">bool</font><font class="text"> ok = ( val.size() == val0.size() ) ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;val.size() ; ++i )
+   {
+      ok &amp;= ( rank == 0 ?
+                 val( i ) == val0( i ) + (</font><font class="kw1">int</font><font class="text">)nbrk-1
+              : val( i ) == val0( i ) + (</font><font class="kw1">int</font><font class="text">)rank-1 ) ;
+   }
+
+   notify_one_test_result( </font><font class="string">&quot;send_receive(intVector)&quot;</font><font class="text">, ok ) ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_Communicator_TEST</font><font class="text">:: test_send_recv_intArray2D(
+                                               </font><font class="kw3">PEL_Communicator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* com )
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_Communicator_TEST:: test_send_recv_intArray2D&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> rank = com-&gt;rank() ;
+   </font><font class="kw2">size_t</font><font class="text"> nbrk = com-&gt;nb_ranks() ;
+
+   </font><font class="kw1">if</font><font class="text">( nbrk == 1 ) </font><font class="kw1">return</font><font class="text"> ;
+   </font><font class="comment">//              ------
+</font><font class="text">
+   </font><font class="kw2">size_t</font><font class="text"> next_proc = ( rank &lt; (nbrk-1) ? rank+1 : 0  ) ;
+   </font><font class="kw2">size_t</font><font class="text"> prev_proc = ( rank != 0 ? rank-1 : nbrk-1 ) ;
+
+   </font><font class="kw3">intArray2D</font><font class="text"> val0( 4, 3 ) ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;val0.index_bound( 0 ) ; ++i )
+   {
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; j&lt;val0.index_bound( 1 ) ; ++j )
+      {
+         val0( i, j ) = 2*i - 8*j ;
+      }
+   }
+
+   </font><font class="kw3">intArray2D</font><font class="text"> val( 0, 0 ) ;
+   </font><font class="kw1">if</font><font class="text">( rank == 0 )
+   {
+      val = val0 ;
+      com-&gt;send( next_proc, val ) ;
+      com-&gt;receive( prev_proc, val ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      com-&gt;receive( prev_proc, val ) ;
+      </font><font class="kw3">intArray2D</font><font class="text"> valp1 = val ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;valp1.index_bound( 0 ) ; ++i )
+      {
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; j&lt;valp1.index_bound( 1 ) ; ++j )
+         {
+            ++valp1( i, j ) ;
+         }
+      }
+      com-&gt;send( next_proc, valp1 ) ;
+   }
+   </font><font class="kw1">bool</font><font class="text"> ok = ( val.index_bound( 0 ) == val0.index_bound( 0 ) &amp;&amp;
+               val.index_bound( 1 ) == val0.index_bound( 1 ) ) ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;val.index_bound( 0 ) ; ++i )
+   {
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; j&lt;val.index_bound( 1 ) ; ++j )
+      {
+         ok &amp;= ( rank == 0 ?
+                    val( i, j ) == val0( i, j ) + (</font><font class="kw1">int</font><font class="text">)nbrk-1
+               : val( i, j ) == val0( i, j ) + (</font><font class="kw1">int</font><font class="text">)rank-1 ) ;
+      }
+   }
+
+   notify_one_test_result( </font><font class="string">&quot;send_receive(intArray2D)&quot;</font><font class="text">, ok ) ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_Communicator_TEST</font><font class="text">:: test_send_recv_double( </font><font class="kw3">PEL_Communicator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* com )
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_Communicator_TEST:: test_send_recv_double&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> rank = com-&gt;rank() ;
+   </font><font class="kw2">size_t</font><font class="text"> nbrk = com-&gt;nb_ranks() ;
+
+   </font><font class="kw1">if</font><font class="text">( nbrk == 1 ) </font><font class="kw1">return</font><font class="text"> ;
+   </font><font class="comment">//              ------
+</font><font class="text">
+   </font><font class="kw2">size_t</font><font class="text"> next_proc = ( rank &lt; (nbrk-1) ? rank+1 : 0  ) ;
+   </font><font class="kw2">size_t</font><font class="text"> prev_proc = ( rank != 0 ? rank-1 : nbrk-1 ) ;
+
+   </font><font class="kw1">double</font><font class="text"> val0 = 10.0 ;
+
+   </font><font class="kw1">double</font><font class="text"> val = </font><font class="kw3">PEL</font><font class="text">::bad_double() ;
+   </font><font class="kw1">if</font><font class="text">( rank == 0 )
+   {
+      val = val0 ;
+      com-&gt;send( next_proc, val ) ;
+      com-&gt;receive( prev_proc, val ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      com-&gt;receive( prev_proc, val ) ;
+      com-&gt;send( next_proc, val+1.0 ) ;
+   }
+   </font><font class="kw1">bool</font><font class="text"> ok = ( rank == 0 ?
+                  </font><font class="kw3">PEL</font><font class="text">::abs( 1.0 - val/(val0+nbrk-1.0) ) &lt; 1.e-10
+             : </font><font class="kw3">PEL</font><font class="text">::abs( 1.0 - val/(val0+rank-1.0) ) &lt; 1.e-10  ) ;
+
+   notify_one_test_result( </font><font class="string">&quot;send_receive(double)&quot;</font><font class="text">, ok ) ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_Communicator_TEST</font><font class="text">:: test_send_recv_doubleVector(
+                                             </font><font class="kw3">PEL_Communicator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* com )
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_Communicator_TEST:: test_send_recv_doubleVector&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> rank = com-&gt;rank() ;
+   </font><font class="kw2">size_t</font><font class="text"> nbrk = com-&gt;nb_ranks() ;
+
+   </font><font class="kw1">if</font><font class="text">( nbrk == 1 ) </font><font class="kw1">return</font><font class="text"> ;
+   </font><font class="comment">//              ------
+</font><font class="text">
+   </font><font class="kw2">size_t</font><font class="text"> next_proc = ( rank &lt; (nbrk-1) ? rank+1 : 0  ) ;
+   </font><font class="kw2">size_t</font><font class="text"> prev_proc = ( rank != 0 ? rank-1 : nbrk-1 ) ;
+
+   </font><font class="kw3">doubleVector</font><font class="text"> val0( 4 ) ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;val0.size() ; ++i )
+   {
+      val0( i ) = 2.0*i + 1.0 ;
+   }
+
+   </font><font class="kw3">doubleVector</font><font class="text"> val( 0 ) ;
+   </font><font class="kw1">if</font><font class="text">( rank == 0 )
+   {
+      val = val0 ;
+      com-&gt;send( next_proc, val ) ;
+      com-&gt;receive( prev_proc, val ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      com-&gt;receive( prev_proc, val ) ;
+      </font><font class="kw3">doubleVector</font><font class="text"> valp1 = val ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;valp1.size() ; ++i )
+      {
+         valp1( i ) += 1.0 ;
+      }
+      com-&gt;send( next_proc, valp1 ) ;
+   }
+   </font><font class="kw1">bool</font><font class="text"> ok = ( val.size() == val0.size() ) ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;val.size() ; ++i )
+   {
+      ok &amp;= ( rank == 0 ?
+                 </font><font class="kw3">PEL</font><font class="text">::abs( 1.0 - val(i)/(val0(i)+nbrk-1.0) ) &lt; 1.e-10
+            : </font><font class="kw3">PEL</font><font class="text">::abs( 1.0 - val(i)/(val0(i)+rank-1.0) ) &lt; 1.e-10 ) ;
+   }
+
+   notify_one_test_result( </font><font class="string">&quot;send_receive(doubleVector)&quot;</font><font class="text">, ok ) ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_Communicator_TEST</font><font class="text">:: test_send_recv_doubleArray2D(
+                                             </font><font class="kw3">PEL_Communicator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* com )
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_Communicator_TEST:: test_send_recv_doubleArray2D&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> rank = com-&gt;rank() ;
+   </font><font class="kw2">size_t</font><font class="text"> nbrk = com-&gt;nb_ranks() ;
+
+   </font><font class="kw1">if</font><font class="text">( nbrk == 1 ) </font><font class="kw1">return</font><font class="text"> ;
+   </font><font class="comment">//              ------
+</font><font class="text">
+   </font><font class="kw2">size_t</font><font class="text"> next_proc = ( rank &lt; (nbrk-1) ? rank+1 : 0  ) ;
+   </font><font class="kw2">size_t</font><font class="text"> prev_proc = ( rank != 0 ? rank-1 : nbrk-1 ) ;
+
+   </font><font class="kw3">doubleArray2D</font><font class="text"> val0( 4, 3 ) ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;val0.index_bound( 0 ) ; ++i )
+   {
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; j&lt;val0.index_bound( 1 ) ; ++j )
+      {
+         val0( i, j ) = 2.0*i + 8.0*j + 1.0 ;
+      }
+   }
+
+   </font><font class="kw3">doubleArray2D</font><font class="text"> val( 0, 0 ) ;
+   </font><font class="kw1">if</font><font class="text">( rank == 0 )
+   {
+      val = val0 ;
+      com-&gt;send( next_proc, val ) ;
+      com-&gt;receive( prev_proc, val ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      com-&gt;receive( prev_proc, val ) ;
+      </font><font class="kw3">doubleArray2D</font><font class="text"> valp1 = val ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;valp1.index_bound( 0 ) ; ++i )
+      {
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; j&lt;valp1.index_bound( 1 ) ; ++j )
+         {
+            valp1( i, j ) += 1.0 ;
+         }
+      }
+      com-&gt;send( next_proc, valp1 ) ;
+   }
+   </font><font class="kw1">bool</font><font class="text"> ok = ( val.index_bound( 0 ) == val0.index_bound( 0 ) &amp;&amp;
+               val.index_bound( 1 ) == val0.index_bound( 1 ) ) ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;val.index_bound( 0 ) ; ++i )
+   {
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; j&lt;val.index_bound( 1 ) ; ++j )
+      {
+         ok &amp;= ( rank == 0 ?
+                    </font><font class="kw3">PEL</font><font class="text">::abs( 1.0 - val(i,j)/(val0(i,j)+nbrk-1.0) ) &lt; 1.e-10
+               : </font><font class="kw3">PEL</font><font class="text">::abs( 1.0 - val(i,j)/(val0(i,j)+rank-1.0) ) &lt; 1.e-10 ) ;
+      }
+   }
+
+   notify_one_test_result( </font><font class="string">&quot;send_receive(doubleArray2D)&quot;</font><font class="text">, ok ) ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_Communicator_TEST</font><font class="text">:: test_send_recv_bool( </font><font class="kw3">PEL_Communicator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* com )
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_Communicator_TEST:: test_send_recv_bool&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> rank = com-&gt;rank() ;
+   </font><font class="kw2">size_t</font><font class="text"> nbrk = com-&gt;nb_ranks() ;
+
+   </font><font class="kw1">if</font><font class="text">( nbrk == 1 ) </font><font class="kw1">return</font><font class="text"> ;
+   </font><font class="comment">//              ------
+</font><font class="text">
+   </font><font class="kw2">size_t</font><font class="text"> next_proc = ( rank &lt; (nbrk-1) ? rank+1 : 0  ) ;
+   </font><font class="kw2">size_t</font><font class="text"> prev_proc = ( rank != 0 ? rank-1 : nbrk-1 ) ;
+
+   </font><font class="kw1">bool</font><font class="text"> val0 = </font><font class="kw1">true</font><font class="text"> ;
+
+   </font><font class="kw1">bool</font><font class="text"> val ;
+   </font><font class="kw1">if</font><font class="text">( rank == 0 )
+   {
+      val = val0 ;
+      com-&gt;send( next_proc, val ) ;
+      com-&gt;receive( prev_proc, val ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      com-&gt;receive( prev_proc, val ) ;
+      com-&gt;send( next_proc, !val ) ;
+   }
+   </font><font class="kw1">bool</font><font class="text"> ok = ( rank==0 ? val==((</font><font class="kw1">int</font><font class="text">)nbrk%2==1) : val==((</font><font class="kw1">int</font><font class="text">)rank%2==1) ) ;
+
+   notify_one_test_result( </font><font class="string">&quot;send_receive(bool)&quot;</font><font class="text">, ok ) ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_Communicator_TEST</font><font class="text">:: test_send_recv_boolVector( </font><font class="kw3">PEL_Communicator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* com )
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_Communicator_TEST:: test_send_recv_boolVector&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> rank = com-&gt;rank() ;
+   </font><font class="kw2">size_t</font><font class="text"> nbrk = com-&gt;nb_ranks() ;
+
+   </font><font class="kw1">if</font><font class="text">( nbrk == 1 ) </font><font class="kw1">return</font><font class="text"> ;
+   </font><font class="comment">//              ------
+</font><font class="text">
+   </font><font class="kw2">size_t</font><font class="text"> next_proc = ( rank &lt; (nbrk-1) ? rank+1 : 0  ) ;
+   </font><font class="kw2">size_t</font><font class="text"> prev_proc = ( rank != 0 ? rank-1 : nbrk-1 ) ;
+
+   </font><font class="kw3">boolVector</font><font class="text"> val0( 4 ) ;
+   val0.</font><font class="kw2">set</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+
+   </font><font class="kw3">boolVector</font><font class="text"> val( 0 ) ;
+   </font><font class="kw1">if</font><font class="text">( rank == 0 )
+   {
+      val = val0 ;
+      com-&gt;send( next_proc, val ) ;
+      com-&gt;receive( prev_proc, val ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      com-&gt;receive( prev_proc, val ) ;
+      </font><font class="kw3">boolVector</font><font class="text"> nval = val ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;nval.size() ; ++i )
+      {
+         nval( i ) = !nval( i ) ;
+      }
+      com-&gt;send( next_proc, nval ) ;
+   }
+   </font><font class="kw1">bool</font><font class="text"> ok = ( val.size() == val0.size() ) ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;val.size() ; ++i )
+   {
+      ok &amp;= ( rank == 0 ?
+                 val( i ) == ( (</font><font class="kw1">int</font><font class="text">)nbrk%2 == 1 )
+            : val( i ) == ( (</font><font class="kw1">int</font><font class="text">)rank%2 == 1 ) ) ;
+   }
+
+   notify_one_test_result( </font><font class="string">&quot;send_receive(boolVector)&quot;</font><font class="text">, ok ) ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_Communicator_TEST</font><font class="text">:: test_send_recv_boolArray2D(
+                                           </font><font class="kw3">PEL_Communicator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* com )
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_Communicator_TEST:: test_send_recv_boolArray2D&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> rank = com-&gt;rank() ;
+   </font><font class="kw2">size_t</font><font class="text"> nbrk = com-&gt;nb_ranks() ;
+
+   </font><font class="kw1">if</font><font class="text">( nbrk == 1 ) </font><font class="kw1">return</font><font class="text"> ;
+   </font><font class="comment">//              ------
+</font><font class="text">
+   </font><font class="kw2">size_t</font><font class="text"> next_proc = ( rank &lt; (nbrk-1) ? rank+1 : 0  ) ;
+   </font><font class="kw2">size_t</font><font class="text"> prev_proc = ( rank != 0 ? rank-1 : nbrk-1 ) ;
+
+   </font><font class="kw3">boolArray2D</font><font class="text"> val0( 4, 3 ) ;
+   val0.</font><font class="kw2">set</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+
+   </font><font class="kw3">boolArray2D</font><font class="text"> val( 0, 0 ) ;
+   </font><font class="kw1">if</font><font class="text">( rank == 0 )
+   {
+      val = val0 ;
+      com-&gt;send( next_proc, val ) ;
+      com-&gt;receive( prev_proc, val ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      com-&gt;receive( prev_proc, val ) ;
+      </font><font class="kw3">boolArray2D</font><font class="text"> nval = val ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;nval.index_bound( 0 ) ; ++i )
+      {
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; j&lt;nval.index_bound( 1 ) ; ++j )
+         {
+            nval( i, j ) = !nval( i, j ) ;
+         }
+      }
+      com-&gt;send( next_proc, nval ) ;
+   }
+   </font><font class="kw1">bool</font><font class="text"> ok = ( val.index_bound( 0 ) == val0.index_bound( 0 ) &amp;&amp;
+               val.index_bound( 1 ) == val0.index_bound( 1 ) ) ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;val.index_bound( 0 ) ; ++i )
+   {
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; j&lt;val.index_bound( 1 ) ; ++j )
+      {
+         ok &amp;= ( rank == 0 ?
+                    val( i, j ) == ( (</font><font class="kw1">int</font><font class="text">)nbrk%2 == 1 )
+               : val( i, j ) == ( (</font><font class="kw1">int</font><font class="text">)rank%2 == 1 ) ) ;
+      }
+   }
+
+   notify_one_test_result( </font><font class="string">&quot;send_receive(boolArray2D)&quot;</font><font class="text">, ok ) ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_Communicator_TEST</font><font class="text">:: test_send_recv_string( </font><font class="kw3">PEL_Communicator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* com )
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_Communicator_TEST:: test_send_recv_string&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> rank = com-&gt;rank() ;
+   </font><font class="kw2">size_t</font><font class="text"> nbrk = com-&gt;nb_ranks() ;
+
+   </font><font class="kw1">if</font><font class="text">( nbrk == 1 ) </font><font class="kw1">return</font><font class="text"> ;
+   </font><font class="comment">//              ------
+</font><font class="text">
+   </font><font class="kw2">size_t</font><font class="text"> next_proc = ( rank &lt; (nbrk-1) ? rank+1 : 0  ) ;
+   </font><font class="kw2">size_t</font><font class="text"> prev_proc = ( rank != 0 ? rank-1 : nbrk-1 ) ;
+
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> val ;
+   </font><font class="kw1">if</font><font class="text">( rank == 0 )
+   {
+      val = </font><font class="string">&quot;&quot;</font><font class="text"> ;
+      com-&gt;send( next_proc, val ) ;
+      com-&gt;receive( prev_proc, val ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      com-&gt;receive( prev_proc, val ) ;
+      val += </font><font class="string">&quot;*&quot;</font><font class="text"> ;
+      com-&gt;send( next_proc, val ) ;
+   }
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text"> s = </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text">( (rank == 0 ? nbrk-1 : rank), </font><font class="string">'*'</font><font class="text"> ) ;
+   </font><font class="kw1">bool</font><font class="text"> ok = ( val == s ) ;
+
+   notify_one_test_result( </font><font class="string">&quot;send_receive(string)&quot;</font><font class="text">, ok ) ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_Communicator_TEST</font><font class="text">:: test_send_recv_stringVector( </font><font class="kw3">PEL_Communicator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* com )
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_Communicator_TEST:: test_send_recv_stringVector&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> rank = com-&gt;rank() ;
+   </font><font class="kw2">size_t</font><font class="text"> nbrk = com-&gt;nb_ranks() ;
+
+   </font><font class="kw1">if</font><font class="text">( nbrk == 1 ) </font><font class="kw1">return</font><font class="text"> ;
+   </font><font class="comment">//              ------
+</font><font class="text">
+   </font><font class="kw2">size_t</font><font class="text"> next_proc = ( rank &lt; (nbrk-1) ? rank+1 : 0  ) ;
+   </font><font class="kw2">size_t</font><font class="text"> prev_proc = ( rank != 0 ? rank-1 : nbrk-1 ) ;
+
+   </font><font class="kw3">stringVector</font><font class="text"> </font><font class="kw1">const</font><font class="text"> val0 = </font><font class="string">&quot;Hello, ,World&quot;</font><font class="text"> ;
+
+   </font><font class="kw3">stringVector</font><font class="text"> val(0) ;
+   </font><font class="kw1">if</font><font class="text">( rank == 0 )
+   {
+      val = val0 ;
+      com-&gt;send( next_proc, val ) ;
+      com-&gt;receive( prev_proc, val ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      com-&gt;receive( prev_proc, val ) ;
+      com-&gt;send( next_proc, val ) ;
+   }
+   </font><font class="kw1">bool</font><font class="text"> ok = ( val == val0 ) ;
+
+   notify_one_test_result( </font><font class="string">&quot;send_receive(stringVector)&quot;</font><font class="text">, ok ) ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_Communicator_TEST</font><font class="text">:: test_send_recv_intPtr( </font><font class="kw3">PEL_Communicator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* com )
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_Communicator_TEST:: test_send_recv_intPtr&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> rank = com-&gt;rank() ;
+   </font><font class="kw2">size_t</font><font class="text"> nbrk = com-&gt;nb_ranks() ;
+
+   </font><font class="kw1">if</font><font class="text">( nbrk == 1 ) </font><font class="kw1">return</font><font class="text"> ;
+   </font><font class="comment">//              ------
+</font><font class="text">
+   </font><font class="kw2">size_t</font><font class="text"> next_proc = ( rank &lt; (nbrk-1) ? rank+1 : 0  ) ;
+   </font><font class="kw2">size_t</font><font class="text"> prev_proc = ( rank != 0 ? rank-1 : nbrk-1 ) ;
+
+   </font><font class="kw1">int</font><font class="text"> </font><font class="kw1">const</font><font class="text"> nb_vals = 4 ;
+   </font><font class="kw1">int</font><font class="text">* val0 = </font><font class="kw1">new</font><font class="text"> </font><font class="kw1">int</font><font class="text">[ nb_vals ] ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw1">int</font><font class="text"> i=0 ; i&lt;nb_vals ; ++i )
+   {
+      val0[i] = -2*i ;
+   }
+
+   </font><font class="kw1">int</font><font class="text">* val = </font><font class="kw1">new</font><font class="text"> </font><font class="kw1">int</font><font class="text">[ nb_vals ] ;
+   </font><font class="kw1">if</font><font class="text">( rank == 0 )
+   {
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw1">int</font><font class="text"> i=0 ; i&lt;nb_vals ; ++i )
+      {
+         val[i] = val0[i] ;
+      }
+      com-&gt;send( next_proc, val, nb_vals ) ;
+      com-&gt;receive( prev_proc, val, nb_vals ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      com-&gt;receive( prev_proc, val, nb_vals ) ;
+      </font><font class="kw1">int</font><font class="text">* valp1 = </font><font class="kw1">new</font><font class="text"> </font><font class="kw1">int</font><font class="text">[ nb_vals ] ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw1">int</font><font class="text"> i=0 ; i&lt;nb_vals ; ++i )
+      {
+         valp1[ i ] = val[ i ] + 1 ;
+      }
+      com-&gt;send( next_proc, valp1, nb_vals ) ;
+      </font><font class="kw1">delete</font><font class="text"> [] valp1 ;
+   }
+
+   </font><font class="kw1">bool</font><font class="text"> ok = </font><font class="kw1">true</font><font class="text"> ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw1">int</font><font class="text"> i=0 ; i&lt;nb_vals ; ++i )
+   {
+      ok &amp;= ( rank == 0 ?
+                 val[i] == val0[i] + (</font><font class="kw1">int</font><font class="text">)nbrk-1
+            : val[i] == val0[i] + (</font><font class="kw1">int</font><font class="text">)rank-1 ) ;
+   }
+   notify_one_test_result( </font><font class="string">&quot;send_receive(int*)&quot;</font><font class="text">, ok ) ;
+
+   </font><font class="kw1">delete</font><font class="text"> [] val  ;
+   </font><font class="kw1">delete</font><font class="text"> [] val0 ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_Communicator_TEST</font><font class="text">:: test_send_recv_doublePtr( </font><font class="kw3">PEL_Communicator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* com )
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_Communicator_TEST:: test_send_recv_doublePtr&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> rank = com-&gt;rank() ;
+   </font><font class="kw2">size_t</font><font class="text"> nbrk = com-&gt;nb_ranks() ;
+
+   </font><font class="kw1">if</font><font class="text">( nbrk == 1 ) </font><font class="kw1">return</font><font class="text"> ;
+   </font><font class="comment">//              ------
+</font><font class="text">
+   </font><font class="kw2">size_t</font><font class="text"> next_proc = ( rank &lt; (nbrk-1) ? rank+1 : 0  ) ;
+   </font><font class="kw2">size_t</font><font class="text"> prev_proc = ( rank != 0 ? rank-1 : nbrk-1 ) ;
+
+   </font><font class="kw1">int</font><font class="text"> </font><font class="kw1">const</font><font class="text"> nb_vals = 4 ;
+   </font><font class="kw1">double</font><font class="text">* val0 = </font><font class="kw1">new</font><font class="text"> </font><font class="kw1">double</font><font class="text">[ nb_vals ] ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw1">int</font><font class="text"> i=0 ; i&lt;nb_vals ; ++i )
+   {
+      val0[i] = 2.0*i + 1.0 ;
+   }
+
+   </font><font class="kw1">double</font><font class="text">* val = </font><font class="kw1">new</font><font class="text"> </font><font class="kw1">double</font><font class="text">[ nb_vals ] ;
+   </font><font class="kw1">if</font><font class="text">( rank == 0 )
+   {
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw1">int</font><font class="text"> i=0 ; i&lt;nb_vals ; ++i )
+      {
+         val[i] = val0[i] ;
+      }
+      com-&gt;send( next_proc, val, nb_vals ) ;
+      com-&gt;receive( prev_proc, val, nb_vals ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      com-&gt;receive( prev_proc, val, nb_vals ) ;
+      </font><font class="kw1">double</font><font class="text">* valp1 = </font><font class="kw1">new</font><font class="text"> </font><font class="kw1">double</font><font class="text">[ nb_vals ] ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw1">int</font><font class="text"> i=0 ; i&lt;nb_vals ; ++i )
+      {
+         valp1[ i ] = val[ i ] + 1.0 ;
+      }
+      com-&gt;send( next_proc, valp1, nb_vals ) ;
+      </font><font class="kw1">delete</font><font class="text"> [] valp1 ;
+   }
+
+   </font><font class="kw1">bool</font><font class="text"> ok = </font><font class="kw1">true</font><font class="text"> ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw1">int</font><font class="text"> i=0 ; i&lt;nb_vals ; ++i )
+   {
+      ok &amp;= ( rank == 0 ?
+                 </font><font class="kw3">PEL</font><font class="text">::abs( 1.0 - val[i]/(val0[i]+nbrk-1.0) ) &lt; 1.e-10
+            : </font><font class="kw3">PEL</font><font class="text">::abs( 1.0 - val[i]/(val0[i]+rank-1.0) ) &lt; 1.e-10 ) ;
+   }
+   notify_one_test_result( </font><font class="string">&quot;send_receive(double*)&quot;</font><font class="text">, ok ) ;
+
+   </font><font class="kw1">delete</font><font class="text"> [] val  ;
+   </font><font class="kw1">delete</font><font class="text"> [] val0 ;
+}
+
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_Communicator_TEST</font><font class="text">:: test_send_recv_charPtr( </font><font class="kw3">PEL_Communicator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* com )
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_Communicator_TEST:: test_send_recv_charPtr&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> rank = com-&gt;rank() ;
+   </font><font class="kw2">size_t</font><font class="text"> nbrk = com-&gt;nb_ranks() ;
+
+   </font><font class="kw1">if</font><font class="text">( nbrk == 1 ) </font><font class="kw1">return</font><font class="text"> ;
+   </font><font class="comment">//              ------
+</font><font class="text">
+   </font><font class="kw2">size_t</font><font class="text"> next_proc = ( rank &lt; (nbrk-1) ? rank+1 : 0  ) ;
+   </font><font class="kw2">size_t</font><font class="text"> prev_proc = ( rank != 0 ? rank-1 : nbrk-1 ) ;
+
+   </font><font class="kw1">int</font><font class="text"> </font><font class="kw1">const</font><font class="text"> nb_vals = 4 ;
+   </font><font class="kw1">char</font><font class="text">* val0 = </font><font class="kw1">new</font><font class="text"> </font><font class="kw1">char</font><font class="text">[ nb_vals ] ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw1">int</font><font class="text"> i=0 ; i&lt;nb_vals ; ++i )
+   {
+      val0[i] = (</font><font class="kw1">char</font><font class="text">) 2*i ;
+   }
+
+   </font><font class="kw1">char</font><font class="text">* val = </font><font class="kw1">new</font><font class="text"> </font><font class="kw1">char</font><font class="text">[ nb_vals ] ;
+   </font><font class="kw1">if</font><font class="text">( rank == 0 )
+   {
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw1">int</font><font class="text"> i=0 ; i&lt;nb_vals ; ++i )
+      {
+         val[i] = val0[i] ;
+      }
+      com-&gt;send( next_proc, val, nb_vals ) ;
+      com-&gt;receive( prev_proc, val, nb_vals ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      com-&gt;receive( prev_proc, val, nb_vals ) ;
+      </font><font class="kw1">char</font><font class="text">* valp1 = </font><font class="kw1">new</font><font class="text"> </font><font class="kw1">char</font><font class="text">[ nb_vals ] ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw1">int</font><font class="text"> i=0 ; i&lt;nb_vals ; ++i )
+      {
+         valp1[ i ] = val[ i ] + 1 ;
+      }
+      com-&gt;send( next_proc, valp1, nb_vals ) ;
+      </font><font class="kw1">delete</font><font class="text"> [] valp1 ;
+   }
+
+   </font><font class="kw1">bool</font><font class="text"> ok = </font><font class="kw1">true</font><font class="text"> ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw1">int</font><font class="text"> i=0 ; i&lt;nb_vals ; ++i )
+   {
+      ok &amp;= ( rank == 0 ? val[i] == (</font><font class="kw1">char</font><font class="text">) (val0[i]+nbrk-1)
+                        : val[i] == (</font><font class="kw1">char</font><font class="text">) (val0[i]+rank-1) ) ;
+   }
+   notify_one_test_result( </font><font class="string">&quot;send_receive(char*)&quot;</font><font class="text">, ok ) ;
+
+   </font><font class="kw1">delete</font><font class="text"> [] val  ;
+   </font><font class="kw1">delete</font><font class="text"> [] val0 ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_Communicator_TEST</font><font class="text">:: test_NB_send_recv_intPtr( </font><font class="kw3">PEL_Communicator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* com )
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_Communicator_TEST:: test_NB_send_recv_intPtr&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> rank = com-&gt;rank() ;
+   </font><font class="kw2">size_t</font><font class="text"> nbrk = com-&gt;nb_ranks() ;
+
+   </font><font class="kw1">if</font><font class="text">( nbrk == 1 ) </font><font class="kw1">return</font><font class="text"> ;
+   </font><font class="comment">//              ------
+</font><font class="text">
+   </font><font class="kw2">size_t</font><font class="text"> next_proc = ( rank &lt; (nbrk-1) ? rank+1 : 0  ) ;
+   </font><font class="kw2">size_t</font><font class="text"> prev_proc = ( rank != 0 ? rank-1 : nbrk-1 ) ;
+
+   </font><font class="kw1">int</font><font class="text"> </font><font class="kw1">const</font><font class="text"> nb_vals = 4 ;
+   </font><font class="kw1">int</font><font class="text">* val0 = </font><font class="kw1">new</font><font class="text"> </font><font class="kw1">int</font><font class="text">[ nb_vals ] ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw1">int</font><font class="text"> i=0 ; i&lt;nb_vals ; ++i )
+   {
+      val0[i] = -2*i ;
+   }
+
+   </font><font class="kw1">int</font><font class="text">* val = </font><font class="kw1">new</font><font class="text"> </font><font class="kw1">int</font><font class="text">[ nb_vals ] ;
+   </font><font class="kw1">if</font><font class="text">( rank == 0 )
+   {
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw1">int</font><font class="text"> i=0 ; i&lt;nb_vals ; ++i )
+      {
+         val[i] = val0[i] ;
+      }
+      com-&gt;Isend( next_proc, val, nb_vals ) ;
+      </font><font class="kw1">void</font><font class="text">* r_request = com-&gt;Ireceive( prev_proc, val, nb_vals ) ;
+      com-&gt;wait( r_request ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      </font><font class="kw1">void</font><font class="text">* r_request = com-&gt;Ireceive( prev_proc, val, nb_vals ) ;
+      com-&gt;wait( r_request ) ;
+      </font><font class="kw1">int</font><font class="text">* valp1 = </font><font class="kw1">new</font><font class="text"> </font><font class="kw1">int</font><font class="text">[ nb_vals ] ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw1">int</font><font class="text"> i=0 ; i&lt;nb_vals ; ++i )
+      {
+         valp1[ i ] = val[ i ] + 1 ;
+      }
+      </font><font class="kw1">void</font><font class="text">* s_request = com-&gt;Isend( next_proc, valp1, nb_vals ) ;
+      com-&gt;wait( s_request ) ;
+      </font><font class="kw1">delete</font><font class="text"> [] valp1 ;
+   }
+
+   </font><font class="kw1">bool</font><font class="text"> ok = </font><font class="kw1">true</font><font class="text"> ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw1">int</font><font class="text"> i=0 ; i&lt;nb_vals ; ++i )
+   {
+      ok &amp;= ( rank == 0 ? val[i] == val0[i] + (</font><font class="kw1">int</font><font class="text">)nbrk-1
+                        : val[i] == val0[i] + (</font><font class="kw1">int</font><font class="text">)rank-1 ) ;
+   }
+   notify_one_test_result( </font><font class="string">&quot;Isend_Ireceive(int*)&quot;</font><font class="text">, ok ) ;
+
+   </font><font class="kw1">delete</font><font class="text"> [] val  ;
+   </font><font class="kw1">delete</font><font class="text"> [] val0 ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_Communicator_TEST</font><font class="text">:: test_NB_send_recv_doublePtr( </font><font class="kw3">PEL_Communicator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* com )
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_Communicator_TEST:: test_NB_send_recv_doublePtr&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> rank = com-&gt;rank() ;
+   </font><font class="kw2">size_t</font><font class="text"> nbrk = com-&gt;nb_ranks() ;
+
+   </font><font class="kw1">if</font><font class="text">( nbrk == 1 ) </font><font class="kw1">return</font><font class="text"> ;
+   </font><font class="comment">//              ------
+</font><font class="text">
+   </font><font class="kw2">size_t</font><font class="text"> next_proc = ( rank &lt; (nbrk-1) ? rank+1 : 0  ) ;
+   </font><font class="kw2">size_t</font><font class="text"> prev_proc = ( rank != 0 ? rank-1 : nbrk-1 ) ;
+
+   </font><font class="kw1">int</font><font class="text"> </font><font class="kw1">const</font><font class="text"> nb_vals = 4 ;
+   </font><font class="kw1">double</font><font class="text">* val0 = </font><font class="kw1">new</font><font class="text"> </font><font class="kw1">double</font><font class="text">[ nb_vals ] ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw1">int</font><font class="text"> i=0 ; i&lt;nb_vals ; ++i )
+   {
+      val0[i] = 2.0*i + 1.0 ;
+   }
+
+   </font><font class="kw1">double</font><font class="text">* val = </font><font class="kw1">new</font><font class="text"> </font><font class="kw1">double</font><font class="text">[ nb_vals ] ;
+   </font><font class="kw1">if</font><font class="text">( rank == 0 )
+   {
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw1">int</font><font class="text"> i=0 ; i&lt;nb_vals ; ++i )
+      {
+         val[i] = val0[i] ;
+      }
+      com-&gt;Isend( next_proc, val, nb_vals ) ;
+      </font><font class="kw1">void</font><font class="text">* r_request = com-&gt;Ireceive( prev_proc, val, nb_vals ) ;
+      com-&gt;wait( r_request ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      </font><font class="kw1">void</font><font class="text">* r_request = com-&gt;Ireceive( prev_proc, val, nb_vals ) ;
+      com-&gt;wait( r_request ) ;
+      </font><font class="kw1">double</font><font class="text">* valp1 = </font><font class="kw1">new</font><font class="text"> </font><font class="kw1">double</font><font class="text">[ nb_vals ] ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw1">int</font><font class="text"> i=0 ; i&lt;nb_vals ; ++i )
+      {
+         valp1[ i ] = val[ i ] + 1.0 ;
+      }
+      </font><font class="kw1">void</font><font class="text">* s_request = com-&gt;Isend( next_proc, valp1, nb_vals ) ;
+      com-&gt;wait( s_request ) ;
+      </font><font class="kw1">delete</font><font class="text"> [] valp1 ;
+   }
+
+   </font><font class="kw1">bool</font><font class="text"> ok = </font><font class="kw1">true</font><font class="text"> ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw1">int</font><font class="text"> i=0 ; i&lt;nb_vals ; ++i )
+   {
+      ok &amp;= ( rank == 0 ?
+                 </font><font class="kw3">PEL</font><font class="text">::abs( 1.0 - val[i]/(val0[i]+nbrk-1.0) ) &lt; 1.e-10
+            : </font><font class="kw3">PEL</font><font class="text">::abs( 1.0 - val[i]/(val0[i]+rank-1.0) ) &lt; 1.e-10 ) ;
+   }
+   notify_one_test_result( </font><font class="string">&quot;Isend_Ireceive(double*)&quot;</font><font class="text">, ok ) ;
+
+   </font><font class="kw1">delete</font><font class="text"> [] val  ;
+   </font><font class="kw1">delete</font><font class="text"> [] val0 ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_Communicator_TEST</font><font class="text">:: test_broadcast( </font><font class="kw3">PEL_Communicator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* com )
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_Communicator_TEST:: test_broadcast&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> rank = com-&gt;rank() ;
+   </font><font class="kw2">size_t</font><font class="text"> nbrk = com-&gt;nb_ranks() ;
+
+   </font><font class="kw2">size_t</font><font class="text"> root = nbrk-1 ;
+
+   </font><font class="comment">// ---------------
+</font><font class="text">   </font><font class="comment">// broadcast(size_t)
+</font><font class="text">   {
+      </font><font class="kw2">size_t</font><font class="text"> val = rank+10 ;
+      com-&gt;broadcast( val, root ) ;
+      </font><font class="kw1">bool</font><font class="text"> ok = ( val == root+10 ) ;
+      notify_one_test_result( </font><font class="string">&quot;broadcast(size_t)&quot;</font><font class="text">, ok ) ;
+   }
+
+   </font><font class="comment">// ---------------
+</font><font class="text">   </font><font class="comment">// broadcast(size_t_vector)
+</font><font class="text">   {
+      </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> nb_vals = 10 ;
+      </font><font class="kw3">size_t_vector</font><font class="text"> vals(0) ;
+      </font><font class="kw1">if</font><font class="text">( rank == root )
+      {
+         vals.re_initialize( nb_vals ) ;
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;nb_vals ; ++i )
+         {
+            vals(i) = rank+10*i ;
+         }
+      }
+      com-&gt;broadcast( vals, root ) ;
+      </font><font class="kw1">bool</font><font class="text"> ok = ( vals.size() == nb_vals ) ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; ok &amp;&amp; i&lt;nb_vals ; ++i )
+      {
+         ok &amp;= ( vals(i) == root+10*i ) ;
+      }
+      notify_one_test_result( </font><font class="string">&quot;broadcast(size_t_vector)&quot;</font><font class="text">, ok ) ;
+   }
+
+   </font><font class="comment">// ---------------
+</font><font class="text">   </font><font class="comment">// broadcast(size_t_array2D)
+</font><font class="text">   {
+      </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> nb_vals = 10 ;
+      </font><font class="kw3">size_t_array2D</font><font class="text"> vals(0,0) ;
+      </font><font class="kw1">if</font><font class="text">( rank == root )
+      {
+         vals.re_initialize( nb_vals, nb_vals ) ;
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;nb_vals ; ++i )
+         {
+            </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; j&lt;nb_vals ; ++j )
+            {
+               vals(i,j) = rank+10*i+20*j ;
+            }
+         }
+      }
+      com-&gt;broadcast( vals, root ) ;
+      </font><font class="kw1">bool</font><font class="text"> ok = ( vals.index_bound(0) == nb_vals &amp;&amp;
+                  vals.index_bound(1) == nb_vals ) ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; ok &amp;&amp; i&lt;nb_vals ; ++i )
+      {
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; ok &amp;&amp; j&lt;nb_vals ; ++j )
+         {
+            ok &amp;= ( vals(i,j) == root+10*i+20*j ) ;
+         }
+      }
+      notify_one_test_result( </font><font class="string">&quot;broadcast(size_t_array2D)&quot;</font><font class="text">, ok ) ;
+   }
+
+   </font><font class="comment">// ---------------
+</font><font class="text">   </font><font class="comment">// broadcast(int)
+</font><font class="text">   {
+      </font><font class="kw1">int</font><font class="text"> val = rank+10 ;
+      com-&gt;broadcast( val, root ) ;
+      </font><font class="kw1">bool</font><font class="text"> ok = ( val == </font><font class="kw1">int</font><font class="text">( root+10 ) ) ;
+      notify_one_test_result( </font><font class="string">&quot;broadcast(int)&quot;</font><font class="text">, ok ) ;
+   }
+
+   </font><font class="comment">// ---------------
+</font><font class="text">   </font><font class="comment">// broadcast(intVector)
+</font><font class="text">   {
+      </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> nb_vals = 10 ;
+      </font><font class="kw3">intVector</font><font class="text"> vals(0) ;
+      </font><font class="kw1">if</font><font class="text">( rank == root )
+      {
+         vals.re_initialize( nb_vals ) ;
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;nb_vals ; ++i )
+         {
+            vals(i) = </font><font class="kw1">int</font><font class="text">( rank+10*i ) ;
+         }
+      }
+      com-&gt;broadcast( vals, root ) ;
+      </font><font class="kw1">bool</font><font class="text"> ok = ( vals.size() == nb_vals ) ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; ok &amp;&amp; i&lt;nb_vals ; ++i )
+      {
+         ok &amp;= ( vals(i) == </font><font class="kw1">int</font><font class="text">( root+10*i ) ) ;
+      }
+      notify_one_test_result( </font><font class="string">&quot;broadcast(intVector)&quot;</font><font class="text">, ok ) ;
+   }
+
+   </font><font class="comment">// ---------------
+</font><font class="text">   </font><font class="comment">// broadcast(intArray2D)
+</font><font class="text">   {
+      </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> nb_vals = 10 ;
+      </font><font class="kw3">intArray2D</font><font class="text"> vals(0,0) ;
+      </font><font class="kw1">if</font><font class="text">( rank == root )
+      {
+         vals.re_initialize( nb_vals, nb_vals ) ;
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;nb_vals ; ++i )
+         {
+            </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; j&lt;nb_vals ; ++j )
+            {
+               vals(i,j) = </font><font class="kw1">int</font><font class="text">( rank+10*i-20*j ) ;
+            }
+         }
+      }
+      com-&gt;broadcast( vals, root ) ;
+      </font><font class="kw1">bool</font><font class="text"> ok = ( vals.index_bound(0) == nb_vals &amp;&amp;
+                  vals.index_bound(1) == nb_vals ) ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; ok &amp;&amp; i&lt;nb_vals ; ++i )
+      {
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; ok &amp;&amp; j&lt;nb_vals ; ++j )
+         {
+            ok &amp;= ( vals(i,j) == </font><font class="kw1">int</font><font class="text">( root+10*i-20*j ) ) ;
+         }
+      }
+      notify_one_test_result( </font><font class="string">&quot;broadcast(intArray2D)&quot;</font><font class="text">, ok ) ;
+   }
+
+   </font><font class="comment">// ---------------
+</font><font class="text">   </font><font class="comment">// broadcast(bool)
+</font><font class="text">   {
+      </font><font class="kw1">bool</font><font class="text"> val = ( rank == root ) ;
+      com-&gt;broadcast( val, root ) ;
+      </font><font class="kw1">bool</font><font class="text"> ok = ( val == </font><font class="kw1">true</font><font class="text"> ) ;
+      notify_one_test_result( </font><font class="string">&quot;broadcast(bool)&quot;</font><font class="text">, ok ) ;
+   }
+
+   </font><font class="comment">// ---------------
+</font><font class="text">   </font><font class="comment">// broadcast(boolVector)
+</font><font class="text">   {
+      </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> nb_vals = 10 ;
+      </font><font class="kw3">boolVector</font><font class="text"> vals(0) ;
+      </font><font class="kw1">if</font><font class="text">( rank == root )
+      {
+         vals.re_initialize( nb_vals ) ;
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;nb_vals ; ++i )
+         {
+            vals(i) = ( i%2 == 0 ) ;
+         }
+      }
+      com-&gt;broadcast( vals, root ) ;
+      </font><font class="kw1">bool</font><font class="text"> ok = ( vals.size() == nb_vals ) ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; ok &amp;&amp; i&lt;nb_vals ; ++i )
+      {
+         ok &amp;= ( vals(i) == ( i%2 == 0 ) ) ;
+      }
+      notify_one_test_result( </font><font class="string">&quot;broadcast(boolVector)&quot;</font><font class="text">, ok ) ;
+   }
+
+   </font><font class="comment">// ---------------
+</font><font class="text">   </font><font class="comment">// broadcast(boolArray2D)
+</font><font class="text">   {
+      </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> nb_vals = 10 ;
+      </font><font class="kw3">boolArray2D</font><font class="text"> vals(0,0) ;
+      </font><font class="kw1">if</font><font class="text">( rank == root )
+      {
+         vals.re_initialize( nb_vals, nb_vals ) ;
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;nb_vals ; ++i )
+         {
+            </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; j&lt;nb_vals ; ++j )
+            {
+               vals(i,j) = ( i%2 == 0 &amp;&amp; j%3 == 0 ) ;
+            }
+         }
+      }
+      com-&gt;broadcast( vals, root ) ;
+      </font><font class="kw1">bool</font><font class="text"> ok = ( vals.index_bound(0) == nb_vals &amp;&amp;
+                  vals.index_bound(1) == nb_vals ) ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; ok &amp;&amp; i&lt;nb_vals ; ++i )
+      {
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; ok &amp;&amp; j&lt;nb_vals ; ++j )
+         {
+            ok &amp;= ( vals(i,j) == ( i%2 == 0 &amp;&amp; j%3 == 0 ) ) ;
+         }
+      }
+      notify_one_test_result( </font><font class="string">&quot;broadcast(boolArray2D)&quot;</font><font class="text">, ok ) ;
+   }
+
+   </font><font class="comment">// ---------------
+</font><font class="text">   </font><font class="comment">// broadcast(double)
+</font><font class="text">   {
+      </font><font class="kw1">double</font><font class="text"> val = rank+10. ;
+      com-&gt;broadcast( val, root ) ;
+      </font><font class="kw1">bool</font><font class="text"> ok = ( val == root+10. ) ;
+      notify_one_test_result( </font><font class="string">&quot;broadcast(double)&quot;</font><font class="text">, ok ) ;
+   }
+
+   </font><font class="comment">// ---------------
+</font><font class="text">   </font><font class="comment">// broadcast(doubleVector)
+</font><font class="text">   {
+      </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> nb_vals = 10 ;
+      </font><font class="kw3">doubleVector</font><font class="text"> vals( nb_vals ) ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;nb_vals ; ++i )
+      {
+         vals( i ) = </font><font class="kw1">double</font><font class="text">( rank+10*i ) ;
+      }
+      com-&gt;broadcast( vals, root ) ;
+      </font><font class="kw1">bool</font><font class="text"> ok = ( vals.size() == nb_vals ) ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; ok &amp;&amp; i&lt;nb_vals ; ++i )
+      {
+         ok &amp;= ( vals(i) == </font><font class="kw1">double</font><font class="text">( root+10*i ) ) ;
+      }
+      notify_one_test_result( </font><font class="string">&quot;broadcast(doubleVector)&quot;</font><font class="text">, ok ) ;
+   }
+
+   </font><font class="comment">// ---------------
+</font><font class="text">   </font><font class="comment">// broadcast(doubleArray2D)
+</font><font class="text">   {
+      </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> nb_vals = 10 ;
+      </font><font class="kw3">doubleArray2D</font><font class="text"> vals(0,0) ;
+      </font><font class="kw1">if</font><font class="text">( rank == root )
+      {
+         vals.re_initialize( nb_vals, nb_vals ) ;
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;nb_vals ; ++i )
+         {
+            </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; j&lt;nb_vals ; ++j )
+            {
+               vals(i,j) = </font><font class="kw1">double</font><font class="text">( rank+10*i-20*j ) ;
+            }
+         }
+      }
+      com-&gt;broadcast( vals, root ) ;
+      </font><font class="kw1">bool</font><font class="text"> ok = ( vals.index_bound(0) == nb_vals &amp;&amp;
+                  vals.index_bound(1) == nb_vals ) ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; ok &amp;&amp; i&lt;nb_vals ; ++i )
+      {
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; ok &amp;&amp; j&lt;nb_vals ; ++j )
+         {
+            ok &amp;= ( vals(i,j) == </font><font class="kw1">double</font><font class="text">( root+10*i-20*j ) ) ;
+         }
+      }
+      notify_one_test_result( </font><font class="string">&quot;broadcast(doubleArray2D)&quot;</font><font class="text">, ok ) ;
+   }
+
+   </font><font class="comment">// ---------------
+</font><font class="text">   </font><font class="comment">// broadcast(string)
+</font><font class="text">   {
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text"> string_val0 = </font><font class="string">&quot;Hello world&quot;</font><font class="text"> ;
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> string_val = ( rank == root ? string_val0 : </font><font class="string">&quot;other string&quot;</font><font class="text"> ) ;
+      com-&gt;broadcast( string_val, root ) ;
+      notify_one_test_result( </font><font class="string">&quot;broadcast(string)&quot;</font><font class="text">,
+                              string_val==string_val0 ) ;
+   }
+
+   </font><font class="comment">// ---------------
+</font><font class="text">   </font><font class="comment">// broadcast(stringVector)
+</font><font class="text">   {
+      </font><font class="kw3">stringVector</font><font class="text"> </font><font class="kw1">const</font><font class="text"> stringVec_val0 = </font><font class="string">&quot;Hello, ,world&quot;</font><font class="text"> ;
+      </font><font class="kw3">stringVector</font><font class="text"> stringVec_val =
+         ( rank == root ? stringVec_val0 : </font><font class="string">&quot;other, ,stringVector&quot;</font><font class="text"> ) ;
+      com-&gt;broadcast( stringVec_val, root ) ;
+      notify_one_test_result( </font><font class="string">&quot;broadcast(stringVector)&quot;</font><font class="text">,
+                              stringVec_val==stringVec_val0 ) ;
+   }
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_Communicator_TEST</font><font class="text">:: test_gather( </font><font class="kw3">PEL_Communicator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* com )
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_Communicator_TEST:: test_gather&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> rank = com-&gt;rank() ;
+   </font><font class="kw2">size_t</font><font class="text"> nbrk = com-&gt;nb_ranks() ;
+
+   </font><font class="kw2">size_t</font><font class="text"> root = 0 ;
+
+   </font><font class="comment">// ---------------
+</font><font class="text">   </font><font class="comment">// gather(double)
+</font><font class="text">   {
+      </font><font class="kw1">double</font><font class="text"> val = 1.0*rank ;
+      </font><font class="kw3">doubleVector</font><font class="text"> result( 0 ) ;
+      </font><font class="kw1">if</font><font class="text">( rank == root ) result.re_initialize( nbrk ) ;
+      com-&gt;gather( val, result, root ) ;
+      </font><font class="kw1">bool</font><font class="text"> ok = </font><font class="kw1">true</font><font class="text"> ;
+      </font><font class="kw1">if</font><font class="text">( rank == root )
+      {
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;nbrk ; ++i )
+         {
+            ok &amp;= ( result(i) == 1.0*i ) ;
+         }
+      }
+      </font><font class="kw1">else
+</font><font class="text">      {
+         ok = ( result.size() == 0 ) ;
+      }
+      notify_one_test_result( </font><font class="string">&quot;gather(double)&quot;</font><font class="text">, ok ) ;
+   }
+
+   </font><font class="comment">// ---------------
+</font><font class="text">   </font><font class="comment">// gather(doubleVector)
+</font><font class="text">   {
+      </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> nb_vals = 10 ;
+      </font><font class="kw3">doubleVector</font><font class="text"> dvals( nb_vals ) ;
+      dvals.</font><font class="kw2">set</font><font class="text">( 1.0*rank ) ;
+      </font><font class="kw3">doubleVector</font><font class="text"> result( 0 ) ;
+      </font><font class="kw1">if</font><font class="text">( rank == root ) result.re_initialize( nbrk * nb_vals ) ;
+      com-&gt;gather( dvals, result, root ) ;
+      </font><font class="kw1">bool</font><font class="text"> ok = </font><font class="kw1">true</font><font class="text"> ;
+      </font><font class="kw1">if</font><font class="text">( rank == root )
+      {
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;nbrk*nb_vals ; ++i )
+         {
+            ok &amp;= ( result(i) == 1.0*(i/nb_vals) ) ;
+         }
+      }
+      </font><font class="kw1">else
+</font><font class="text">      {
+         ok = ( result.size() == 0 ) ;
+      }
+      notify_one_test_result( </font><font class="string">&quot;gather(doubleVector)&quot;</font><font class="text">, ok ) ;
+   }
+
+   </font><font class="comment">// ---------------
+</font><font class="text">   </font><font class="comment">// gather(int)
+</font><font class="text">   {
+      </font><font class="kw1">int</font><font class="text"> val = (</font><font class="kw1">int</font><font class="text">) rank ;
+      </font><font class="kw3">intVector</font><font class="text"> result( 0 ) ;
+      </font><font class="kw1">if</font><font class="text">( rank == root ) result.re_initialize( nbrk ) ;
+      com-&gt;gather( val, result, root ) ;
+      </font><font class="kw1">bool</font><font class="text"> ok = </font><font class="kw1">true</font><font class="text"> ;
+      </font><font class="kw1">if</font><font class="text">( rank == root )
+      {
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;nbrk ; ++i )
+         {
+            ok &amp;= ( result(i) == (</font><font class="kw1">int</font><font class="text">) i ) ;
+         }
+      }
+      </font><font class="kw1">else
+</font><font class="text">      {
+         ok = ( result.size() == 0 ) ;
+      }
+      notify_one_test_result( </font><font class="string">&quot;gather(int)&quot;</font><font class="text">, ok ) ;
+   }
+
+   </font><font class="comment">// ---------------
+</font><font class="text">   </font><font class="comment">// gather(doubleVector)
+</font><font class="text">   {
+      </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> nb_vals = 10 ;
+      </font><font class="kw3">intVector</font><font class="text"> ivals( nb_vals ) ;
+      ivals.</font><font class="kw2">set</font><font class="text">( (</font><font class="kw1">int</font><font class="text">) rank ) ;
+      </font><font class="kw3">intVector</font><font class="text"> result( 0 ) ;
+      </font><font class="kw1">if</font><font class="text">( rank == root ) result.re_initialize( nbrk * nb_vals ) ;
+      com-&gt;gather( ivals, result, root ) ;
+      </font><font class="kw1">bool</font><font class="text"> ok = </font><font class="kw1">true</font><font class="text"> ;
+      </font><font class="kw1">if</font><font class="text">( rank == root )
+      {
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;nbrk*nb_vals ; ++i )
+         {
+            ok &amp;= ( result(i) == 1.0*(i/nb_vals) ) ;
+         }
+      }
+      </font><font class="kw1">else
+</font><font class="text">      {
+         ok = ( result.size() == 0 ) ;
+      }
+      notify_one_test_result( </font><font class="string">&quot;gather(doubleVector)&quot;</font><font class="text">, ok ) ;
+   }
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_Communicator_TEST</font><font class="text">:: test_all_gather( </font><font class="kw3">PEL_Communicator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* com )
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_Communicator_TEST:: test_all_gather&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> rank = com-&gt;rank() ;
+   </font><font class="kw2">size_t</font><font class="text"> nbrk = com-&gt;nb_ranks() ;
+
+   </font><font class="comment">// ---------------
+</font><font class="text">   </font><font class="comment">// all_gather(int)
+</font><font class="text">   </font><font class="kw1">int</font><font class="text"> ival = rank ;
+
+   </font><font class="kw3">intVector</font><font class="text"> result( nbrk ) ;
+   com-&gt;all_gather( ival, result ) ;
+
+   </font><font class="kw1">bool</font><font class="text"> ok = </font><font class="kw1">true</font><font class="text"> ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;nbrk ; ++i )
+   {
+      ok &amp;= ( result(i) == (</font><font class="kw1">int</font><font class="text">)i ) ;
+   }
+   notify_one_test_result( </font><font class="string">&quot;all_gather(int)&quot;</font><font class="text">, ok ) ;
+
+   </font><font class="comment">// ---------------
+</font><font class="text">   </font><font class="comment">// all_gather(intVector)
+</font><font class="text">   </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> nb_vals = 10 ;
+   </font><font class="kw3">intVector</font><font class="text"> ivals( nb_vals ) ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;nb_vals ; ++i )
+   {
+      ivals(i) = nb_vals*rank + i ;
+   }
+
+   </font><font class="kw3">intVector</font><font class="text"> iresult( nb_vals*nbrk ) ;
+   com-&gt;all_gather( ivals, iresult ) ;
+
+   ok = </font><font class="kw1">true</font><font class="text"> ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;nb_vals*nbrk ; ++i )
+   {
+      ok = ok &amp;&amp; ( iresult(i) == (</font><font class="kw1">int</font><font class="text">)i ) ;
+   }
+
+   notify_one_test_result( </font><font class="string">&quot;all_gather(intVector)&quot;</font><font class="text">, ok ) ;
+
+   </font><font class="comment">// ---------------
+</font><font class="text">   </font><font class="comment">// all_gather_v(doubleVector)
+</font><font class="text">   </font><font class="kw3">doubleVector</font><font class="text"> dvals( nb_vals ) ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;nb_vals ; ++i )
+   {
+      dvals(i) = nb_vals*rank + i ;
+   }
+   </font><font class="kw3">intVector</font><font class="text"> partition( nbrk ) ;
+   </font><font class="kw3">intVector</font><font class="text"> start( nbrk ) ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;nbrk ; i++ )
+   {
+      partition( i ) = (</font><font class="kw1">int</font><font class="text">)nb_vals ;
+      start( i ) = (</font><font class="kw1">int</font><font class="text">)nb_vals*i ;
+   }
+
+   </font><font class="kw3">doubleVector</font><font class="text"> dresult( nb_vals*nbrk ) ;
+   com-&gt;all_gather_v( dvals.data(), nb_vals,
+                      </font><font class="kw1">const_cast</font><font class="text">&lt;</font><font class="kw1">double</font><font class="text">*&gt;( dresult.data() ),
+                      partition, start ) ;
+   ok = </font><font class="kw1">true</font><font class="text"> ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;nb_vals*nbrk ; i++ )
+   {
+      ok = ok &amp;&amp; ( dresult(i) == 1.0*i ) ;
+   }
+   notify_one_test_result( </font><font class="string">&quot;all_gather_v(doubleVector)&quot;</font><font class="text">, ok ) ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_Communicator_TEST</font><font class="text">:: test_all_to_all( </font><font class="kw3">PEL_Communicator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* com )
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_Communicator_TEST:: test_all_to_all&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> rank = com-&gt;rank() ;
+   </font><font class="kw2">size_t</font><font class="text"> nbrk = com-&gt;nb_ranks() ;
+
+   </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> nb_vals = 10 ;
+   </font><font class="kw3">intVector</font><font class="text"> send_array( nb_vals*nbrk ) ;
+   </font><font class="kw3">intVector</font><font class="text"> recv_array( nb_vals*nbrk ) ;
+
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> p=0 ; p&lt;nbrk ; ++p )
+   {
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;nb_vals ; ++i )
+      {
+         send_array(p*nb_vals+i) = 50*rank+p-12*i ;
+      }
+   }
+
+   com-&gt;all_to_all( send_array, recv_array ) ;
+
+   </font><font class="kw1">bool</font><font class="text"> ok = </font><font class="kw1">true</font><font class="text"> ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> p=0 ; p&lt;nbrk ; ++p )
+   {
+      </font><font class="kw1">for</font><font class="text">(  </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;nb_vals ; ++i )
+      {
+         ok = ok &amp;&amp; recv_array(p*nb_vals+i) == (</font><font class="kw1">int</font><font class="text">)(50*p+rank-12*i) ;
+      }
+   }
+
+   notify_one_test_result( </font><font class="string">&quot;all_to_all(intVector)&quot;</font><font class="text">, ok ) ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_Communicator_TEST</font><font class="text">:: test_boolean_and_or( </font><font class="kw3">PEL_Communicator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* com )
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_Communicator_TEST:: test_boolean_and_or&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> rank = com-&gt;rank() ;
+   </font><font class="kw2">size_t</font><font class="text"> nbrk = com-&gt;nb_ranks() ;
+
+   </font><font class="kw1">bool</font><font class="text"> btrue  = true ;
+   </font><font class="kw1">bool</font><font class="text"> bfalse = false ;
+   </font><font class="kw1">bool</font><font class="text"> bmixed = ( rank==0 ? </font><font class="kw1">false</font><font class="text"> : </font><font class="kw1">true</font><font class="text"> ) ;
+
+   </font><font class="kw1">bool</font><font class="text"> ok = ( !com-&gt;boolean_and( bfalse ) ) &amp;&amp;
+             ( !com-&gt;boolean_and( bmixed ) ) &amp;&amp;
+             (  com-&gt;boolean_and( btrue  ) ) ;
+   notify_one_test_result( </font><font class="string">&quot;boolean_and&quot;</font><font class="text">, ok ) ;
+
+   ok = ( !com-&gt;boolean_or( bfalse ) ) &amp;&amp;
+        ( (nbrk==1) || com-&gt;boolean_or( bmixed ) ) &amp;&amp;
+        ( com-&gt;boolean_or( btrue ) ) ;
+   notify_one_test_result( </font><font class="string">&quot;boolean_or&quot;</font><font class="text">, ok ) ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_Communicator_TEST</font><font class="text">:: test_sum( </font><font class="kw3">PEL_Communicator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* com )
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_Communicator_TEST:: test_sum&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> rank = com-&gt;rank() ;
+   </font><font class="kw2">size_t</font><font class="text"> nbrk = com-&gt;nb_ranks() ;
+
+   </font><font class="kw1">double</font><font class="text"> dval = 1.0*rank ;
+   </font><font class="kw1">double</font><font class="text"> dsum = 1.0*nbrk*(nbrk-1)/2.0 ;
+
+   </font><font class="kw1">bool</font><font class="text"> ok = ( com-&gt;sum( dval ) == dsum ) ;
+   notify_one_test_result( </font><font class="string">&quot;sum&quot;</font><font class="text">, ok ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> nb_vals = 10 ;
+   </font><font class="kw3">doubleVector</font><font class="text"> dvals( nb_vals ) ;
+   dvals.</font><font class="kw2">set</font><font class="text">( dval ) ;
+   com-&gt;sum_vector( dvals ) ;
+   ok = </font><font class="kw1">true</font><font class="text"> ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;nb_vals ; ++i )
+   {
+      ok &amp;= ( dvals(i) == dsum ) ;
+   }
+   notify_one_test_result( </font><font class="string">&quot;sum_vector&quot;</font><font class="text">, ok ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> nb_vals2 = 10 ;
+   </font><font class="kw3">doubleArray2D</font><font class="text"> dvals2( nb_vals, nb_vals2 ) ;
+   dvals2.</font><font class="kw2">set</font><font class="text">( dval ) ;
+   com-&gt;sum_array( dvals2 ) ;
+   ok = </font><font class="kw1">true</font><font class="text"> ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;nb_vals ; ++i )
+   {
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; j&lt;nb_vals2 ; ++j )
+      {
+         ok &amp;= ( dvals2(i,j) == dsum ) ;
+      }
+   }
+   notify_one_test_result( </font><font class="string">&quot;sum_array&quot;</font><font class="text">, ok ) ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_Communicator_TEST</font><font class="text">:: test_max_min( </font><font class="kw3">PEL_Communicator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* com )
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_Communicator_TEST:: test_max_min&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> rank = com-&gt;rank() ;
+   </font><font class="kw2">size_t</font><font class="text"> nbrk = com-&gt;nb_ranks() ;
+
+   </font><font class="kw1">double</font><font class="text"> dval = 1.0*rank ;
+
+   </font><font class="kw1">bool</font><font class="text"> ok = ( com-&gt;max( dval ) == 1.0*(nbrk-1) ) ;
+   ok &amp;= ( com-&gt;max( rank ) == nbrk - 1 ) ;
+   notify_one_test_result( </font><font class="string">&quot;max&quot;</font><font class="text">, ok ) ;
+
+   ok = ( com-&gt;min( dval ) == 0.0 ) ;
+   ok &amp;= ( com-&gt;min( rank ) == 0 ) ;
+   notify_one_test_result( </font><font class="string">&quot;min&quot;</font><font class="text">, ok ) ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_Communicator_TEST</font><font class="text">:: test_same_value( </font><font class="kw3">PEL_Communicator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* com )
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_Communicator_TEST:: test_same_value&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> rank = com-&gt;rank() ;
+   </font><font class="kw2">size_t</font><font class="text"> nbrk = com-&gt;nb_ranks() ;
+
+   {
+      </font><font class="kw1">double</font><font class="text"> val1 = 3.14 ;
+      </font><font class="kw1">double</font><font class="text"> val2 = ( rank==0 ? 12.0 : -4.0 ) ;
+
+      </font><font class="kw1">bool</font><font class="text"> ok = com-&gt;same_value_everywhere( val1 ) ;
+      </font><font class="kw1">if</font><font class="text">( nbrk != 1 )
+      {
+         ok &amp;= !com-&gt;same_value_everywhere( val2 ) ;
+      }
+      </font><font class="kw1">else
+</font><font class="text">      {
+         ok &amp;= com-&gt;same_value_everywhere( val2 ) ;
+      }
+      notify_one_test_result( </font><font class="string">&quot;same_value_eveywhere(double)&quot;</font><font class="text">, ok ) ;
+   }
+
+   {
+      </font><font class="kw1">int</font><font class="text"> val1 = 3 ;
+      </font><font class="kw1">int</font><font class="text"> val2 = ( rank==0 ? 12 : -4 ) ;
+
+      </font><font class="kw1">bool</font><font class="text"> ok = com-&gt;same_value_everywhere( val1 ) ;
+      </font><font class="kw1">if</font><font class="text">( nbrk != 1 )
+      {
+         ok &amp;= !com-&gt;same_value_everywhere( val2 ) ;
+      }
+      </font><font class="kw1">else
+</font><font class="text">      {
+         ok &amp;= com-&gt;same_value_everywhere( val2 ) ;
+      }
+      notify_one_test_result( </font><font class="string">&quot;same_value_eveywhere(int)&quot;</font><font class="text">, ok ) ;
+   }
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_Communicator_TEST</font><font class="text">:: test_merge( </font><font class="kw3">PEL_Communicator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* com,
+                                    </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp )
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_Communicator_TEST:: test_merge&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> rank = com-&gt;rank() ;
+
+   </font><font class="kw1">if</font><font class="text">( exp-&gt;has_module( </font><font class="string">&quot;merge&quot;</font><font class="text"> ) )
+   {
+      </font><font class="kw3">PEL_DoubleComparator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dbl_cmp = </font><font class="kw3">PEL_DoubleComparatorExact</font><font class="text">::object() ;
+
+      </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* se = exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;merge&quot;</font><font class="text"> ) ;
+      se-&gt;start_module_iterator() ;
+      </font><font class="kw1">for</font><font class="text">( ; se-&gt;is_valid_module() ; se-&gt;go_next_module() )
+      {
+         </font><font class="kw1">bool</font><font class="text"> ok = </font><font class="kw1">true</font><font class="text"> ;
+         </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* sse = se-&gt;create_subexplorer( 0 ) ;
+         </font><font class="kw3">doubleArray2D</font><font class="text"> coord = sse-&gt;doubleArray2D_data( </font><font class="string">&quot;coord&quot;</font><font class="text"> ) ;
+         </font><font class="kw3">doubleArray2D</font><font class="text"> merge = sse-&gt;doubleArray2D_data( </font><font class="string">&quot;merge&quot;</font><font class="text"> ) ;
+
+         </font><font class="kw3">size_t_vector</font><font class="text"> idx( 0 ) ;
+         </font><font class="kw3">doubleArray2D</font><font class="text"> old_coord = coord ;
+         com-&gt;merge( dbl_cmp, coord, idx ) ;
+
+         ok &amp;= ( coord.index_bound( 0 ) == old_coord.index_bound( 0 ) ) ;
+         </font><font class="kw1">if</font><font class="text">( rank == 0 )
+         {
+            ok &amp;= ( coord == merge ) ;
+         }
+         </font><font class="kw1">else
+</font><font class="text">         {
+            ok &amp;= ( coord == old_coord ) ;
+         }
+         ok &amp;= ( idx.size() == old_coord.index_bound( 1 ) ) ;
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;old_coord.index_bound( 1 ) ; ++i )
+         {
+            </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> d=0 ; d&lt;old_coord.index_bound( 0 ) ; ++d )
+            {
+               ok &amp;= ( old_coord( d, i ) == merge( d, idx( i ) ) ) ;
+            }
+         }
+         notify_one_test_result( sse-&gt;name(), ok ) ;
+         sse-&gt;destroy() ;
+      }
+      se-&gt;destroy() ; se = 0 ;
+   }
+}
+
+</font>
+</pre>
+</body>
+</html>

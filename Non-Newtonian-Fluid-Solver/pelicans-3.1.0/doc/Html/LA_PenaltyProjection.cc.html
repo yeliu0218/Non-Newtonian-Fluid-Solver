@@ -1,0 +1,484 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>LA_PenaltyProjection.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="LA_PenaltyProjection.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="LApack-tree.html"><span>Tree</span></a>
+    <a href="LA_PenaltyProjection.html"><span>Class</span></a>
+    <a href="LA_PenaltyProjection.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="LApack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_PenaltyProjection</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ObjectRegister</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Timer</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_assertions</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_Matrix</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_Solver</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_Vector</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;ios&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;iostream&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;iomanip&gt;
+
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ; 
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ios_base</font><font class="text"> ;
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">setprecision</font><font class="text"> ; </font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">setw</font><font class="text"> ;
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> ;
+
+</font><font class="kw3">LA_PenaltyProjection</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">LA_PenaltyProjection</font><font class="text">:: PROTOTYPE = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">LA_PenaltyProjection</font><font class="text">() ;
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_PenaltyProjection</font><font class="text">:: </font><font class="kw3">LA_PenaltyProjection</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">LA_TwoBlocksMethod</font><font class="text">( </font><font class="string">&quot;LA_PenaltyProjection&quot;</font><font class="text"> )
+{
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_PenaltyProjection</font><font class="text">*
+</font><font class="kw3">LA_PenaltyProjection</font><font class="text">:: create_replica( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                       </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_PenaltyProjection:: create_replica&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_PRE( a_owner, exp ) ) ;
+   
+   </font><font class="kw3">LA_PenaltyProjection</font><font class="text">* result = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">LA_PenaltyProjection</font><font class="text">( a_owner, exp ) ;
+   
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( create_replica_POST( result, a_owner, exp ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_PenaltyProjection</font><font class="text">:: </font><font class="kw3">LA_PenaltyProjection</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                             </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">LA_TwoBlocksMethod</font><font class="text">( a_owner, exp )
+   , A( 0 )
+   , B( 0 )
+   , L( 0 )
+   , M( 0 )
+   , F( 0 )
+   , G( 0 )
+   , S( 0 )
+   , K( 0 )
+   , BtS( 0 )
+   , P0( 0 )
+   , SOLVER_A( 0 )
+   , SOLVER_L( 0 )
+   , SOLVER_M( 0 )
+   , RR( exp-&gt;double_data( </font><font class="string">&quot;augmentation_parameter&quot;</font><font class="text"> ) )
+   , PROJP( </font><font class="kw1">false</font><font class="text"> )
+   , TIMER_RR( 0 )
+{
+   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ee = exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;solver_A&quot;</font><font class="text"> ) ;
+   SOLVER_A = </font><font class="kw3">LA_Solver</font><font class="text">::make( </font><font class="kw1">this</font><font class="text">, ee ) ;
+   ee-&gt;destroy() ; ee = 0 ;
+   
+   ee = exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;solver_L&quot;</font><font class="text"> ) ;
+   SOLVER_L = </font><font class="kw3">LA_Solver</font><font class="text">::make( </font><font class="kw1">this</font><font class="text">, ee ) ;
+   ee-&gt;destroy() ; ee = 0 ;
+   
+   ee = exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;solver_Mv&quot;</font><font class="text"> ) ;
+   SOLVER_M = </font><font class="kw3">LA_Solver</font><font class="text">::make( </font><font class="kw1">this</font><font class="text">, ee ) ;
+   ee-&gt;destroy() ; ee = 0 ;
+   
+   </font><font class="kw1">if</font><font class="text">( exp-&gt;has_entry( </font><font class="string">&quot;H1_projection_of_explicit_pressure&quot;</font><font class="text"> ) )
+   {
+      PROJP = exp-&gt;bool_data( </font><font class="string">&quot;H1_projection_of_explicit_pressure&quot;</font><font class="text"> ) ;
+   }
+   
+   </font><font class="kw1">if</font><font class="text">( RR != 0 )
+   {
+      TIMER_RR = </font><font class="kw3">PEL_Timer</font><font class="text">::create( </font><font class="kw1">this</font><font class="text"> ) ;
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_PenaltyProjection</font><font class="text">:: ~</font><font class="kw3">LA_PenaltyProjection</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_PenaltyProjection</font><font class="text">:: set_matrix_prototype_sub( </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* mat )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_PenaltyProjection:: set_matrix_prototype_sub&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( BtS == 0 ) ;
+   BtS = mat-&gt;create_matrix( </font><font class="kw1">this</font><font class="text"> ) ;
+   
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( P0 == 0 ) ;
+   P0 = mat-&gt;create_vector( </font><font class="kw1">this</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_PenaltyProjection</font><font class="text">:: re_initialize_internals_sub( </font><font class="kw2">size_t</font><font class="text"> nv_glob, 
+                                                    </font><font class="kw2">size_t</font><font class="text"> np_glob,
+                                                    </font><font class="kw2">size_t</font><font class="text"> nv_loc, 
+                                                    </font><font class="kw2">size_t</font><font class="text"> np_loc,
+                                                    </font><font class="kw2">size_t</font><font class="text">&amp; nv_loc_final,
+                                                    </font><font class="kw2">size_t</font><font class="text">&amp; np_loc_final )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_PenaltyProjection:: re_initialize_internals_sub&quot;</font><font class="text"> ) ;
+   
+   BtS-&gt;re_initialize( nv_glob, np_glob, nv_loc, np_loc ) ;
+   P0-&gt;re_initialize( np_glob, np_loc ) ;
+   
+   np_loc_final = P0-&gt;nb_local_rows() ;
+   nv_loc_final = BtS-&gt;nb_local_rows() ;
+   
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( BtS-&gt;nb_local_cols()  == np_loc_final ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( P0-&gt;nb_local_rows()   == np_loc_final ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_PenaltyProjection</font><font class="text">:: dtinv_is_required( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_PenaltyProjection</font><font class="text">:: S_is_required( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_PenaltyProjection</font><font class="text">:: set_S( </font><font class="kw3">LA_Vector</font><font class="text">* a_S )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_PenaltyProjection:: set_S&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( set_S_PRE( a_S ) ) ;
+   
+   S = a_S ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_PenaltyProjection</font><font class="text">:: L_is_required( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_PenaltyProjection</font><font class="text">:: set_L( </font><font class="kw3">LA_Matrix</font><font class="text">* a_L )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_PenaltyProjection:: set_L&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( set_L_PRE( a_L ) ) ;
+   
+   L = a_L ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_PenaltyProjection</font><font class="text">:: K_is_required( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">return</font><font class="text">( PROJP ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_PenaltyProjection</font><font class="text">:: set_K( </font><font class="kw3">LA_Vector</font><font class="text">* a_K )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_PenaltyProjection:: set_K&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( set_K_PRE( a_K ) ) ;
+   
+   K = a_K ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_PenaltyProjection</font><font class="text">:: MV_is_required( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_PenaltyProjection</font><font class="text">:: set_MV( </font><font class="kw3">LA_Matrix</font><font class="text">* a_MV )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_PenaltyProjection:: set_MV&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( set_MV_PRE( a_MV ) ) ;
+   
+   M = a_MV ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_PenaltyProjection</font><font class="text">:: set_system_sub( </font><font class="kw3">LA_Matrix</font><font class="text">* a_A, </font><font class="kw3">LA_Matrix</font><font class="text">* a_B,
+                                       </font><font class="kw3">LA_Vector</font><font class="text">* a_F, </font><font class="kw3">LA_Vector</font><font class="text">* a_G,
+                                       </font><font class="kw3">LA_Matrix</font><font class="text">* a_C )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_PenaltyProjection:: set_system_sub&quot;</font><font class="text"> ) ;
+   
+   check_zero_C( a_C ) ;
+   
+   </font><font class="kw1">if</font><font class="text">( dtinv()==</font><font class="kw3">PEL</font><font class="text">::bad_double() || M==0 || L==0 || S==0 || ( K==0 &amp;&amp; PROJP ) ) 
+      raise_invalid_usage() ;
+   
+   A = a_A ;
+   B = a_B ;
+   F = a_F ;
+   G = a_G ;
+   
+   augment_system( RR ) ;
+   
+   SOLVER_A-&gt;set_matrix( A ) ;
+   SOLVER_L-&gt;set_matrix( L ) ;
+   SOLVER_M-&gt;set_matrix( M ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_PenaltyProjection</font><font class="text">:: unset_system_sub( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   SOLVER_A-&gt;unset_matrix() ;
+   SOLVER_L-&gt;unset_matrix() ;
+   SOLVER_M-&gt;unset_matrix() ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_PenaltyProjection</font><font class="text">:: estimate_unknowns_sub( </font><font class="kw1">bool</font><font class="text"> has_init_U, </font><font class="kw3">LA_Vector</font><font class="text">* U, 
+                                              </font><font class="kw1">bool</font><font class="text"> has_init_P, </font><font class="kw3">LA_Vector</font><font class="text">* P )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_PenaltyProjection:: estimate_unknowns_sub&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw1">if</font><font class="text">( has_init_P )
+   {
+      P0-&gt;</font><font class="kw2">set</font><font class="text">( P ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      P0-&gt;nullify() ;
+   }
+   
+   </font><font class="kw1">if</font><font class="text">( PROJP )
+   {
+      start_substep( </font><font class="string">&quot;   0. projection of explicit pressure&quot;</font><font class="text"> ) ;
+      </font><font class="comment">//******************************************************
+</font><font class="text">      </font><font class="comment">// Solve L.P0 = K
+</font><font class="text">      
+      </font><font class="kw1">if</font><font class="text">( !inner_solve( SOLVER_L, K, P0, </font><font class="kw1">false</font><font class="text"> ) ) </font><font class="kw1">return</font><font class="text"> ; </font><font class="comment">//??? false
+</font><font class="text">   }
+   
+   start_substep( </font><font class="string">&quot;   1. velocity prediction&quot;</font><font class="text"> ) ;
+   </font><font class="comment">//******************************************
+</font><font class="text">   </font><font class="comment">// F -= BT.P0
+</font><font class="text">   </font><font class="comment">// Solve A.U = F
+</font><font class="text">   
+   B-&gt;tr_multiply_vec_then_add( P0, F, -1.0, 1.0 ) ;
+   </font><font class="kw1">if</font><font class="text">( !inner_solve( SOLVER_A, F, U, has_init_U ) ) </font><font class="kw1">return</font><font class="text"> ;
+   
+   start_substep( </font><font class="string">&quot;   2. pressure increment&quot;</font><font class="text"> ) ;
+   </font><font class="comment">//*****************************************
+</font><font class="text">   </font><font class="comment">// G = B.U - G
+</font><font class="text">   </font><font class="comment">// Solve L.P = G
+</font><font class="text">   
+   B-&gt;multiply_vec_then_add( U, G, 1.0, -1.0 ) ;   
+   </font><font class="kw1">if</font><font class="text">( !inner_solve( SOLVER_L, G, P, </font><font class="kw1">false</font><font class="text"> ) ) </font><font class="kw1">return</font><font class="text"> ;
+   
+   start_substep( </font><font class="string">&quot;   3. velocity correction&quot;</font><font class="text"> ) ;
+   </font><font class="comment">//******************************************
+</font><font class="text">   </font><font class="comment">// F = M.U
+</font><font class="text">   </font><font class="comment">// F -= BT.PHI
+</font><font class="text">   </font><font class="comment">// Solve M.U = F
+</font><font class="text">   
+   M-&gt;multiply_vec_then_add( U, F, 1.0, 0.0 ) ;
+   B-&gt;tr_multiply_vec_then_add( P, F, -1.0, 1.0 ) ;
+   </font><font class="kw1">if</font><font class="text">( !inner_solve( SOLVER_M, F, U, </font><font class="kw1">true</font><font class="text"> ) ) </font><font class="kw1">return</font><font class="text"> ;
+      
+   start_substep( </font><font class="string">&quot;   4. pressure update&quot;</font><font class="text"> ) ;
+   </font><font class="comment">//**************************************
+</font><font class="text">   </font><font class="comment">// P = P0 + beta*PHI/DT
+</font><font class="text">   
+   P-&gt;scale( dtinv() ) ;
+   P-&gt;sum( P0 ) ;
+         
+   </font><font class="kw1">if</font><font class="text">( RR != 0.0 )
+   {
+      </font><font class="comment">// G = S*G
+</font><font class="text">      </font><font class="comment">// P = P + RR*G
+</font><font class="text">      
+      G-&gt;set_as_v_product( G, S ) ;            
+      P-&gt;sum( G, RR ) ;
+   }
+
+   </font><font class="kw1">if</font><font class="text">( verbose_level() &gt; 0 ) </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;   
+   notify_success( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_PenaltyProjection</font><font class="text">:: inner_solve( </font><font class="kw3">LA_Solver</font><font class="text">* solver, 
+                                    </font><font class="kw3">LA_Vector</font><font class="text">* rhs, 
+                                    </font><font class="kw3">LA_Vector</font><font class="text">* sol,
+                                    </font><font class="kw1">bool</font><font class="text"> sol_is_init )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_PenaltyProjection:: inner_solve&quot;</font><font class="text"> ) ;
+   
+   solver-&gt;set_initial_guess_nonzero( sol_is_init ) ;
+   solver-&gt;solve( rhs, sol ) ;
+
+   </font><font class="kw1">bool</font><font class="text"> result = </font><font class="kw1">true</font><font class="text"> ;
+   </font><font class="kw1">if</font><font class="text">( !solver-&gt;solution_is_achieved() )
+   {
+      result = </font><font class="kw1">false</font><font class="text"> ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      </font><font class="kw1">if</font><font class="text">( verbose_level() &gt; 0 &amp;&amp; solver-&gt;is_iterative() )
+         </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="string">&quot;: &quot;</font><font class="text"> &lt;&lt; solver-&gt;nb_iterations_achieved()
+                    &lt;&lt; </font><font class="string">&quot; iterations&quot;</font><font class="text"> ;
+      </font><font class="kw1">if</font><font class="text">( verbose_level() &gt; 0 ) </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   }
+   
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_PenaltyProjection</font><font class="text">:: print_times( </font><font class="kw2">size_t</font><font class="text"> indent_width ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_PenaltyProjection:: print_times&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> space( indent_width, </font><font class="string">' '</font><font class="text"> ) ;
+   </font><font class="kw1">if</font><font class="text">( TIMER_RR != 0 )
+   {
+      </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; space &lt;&lt; </font><font class="string">&quot;LA_PenaltyProjection&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; space &lt;&lt; </font><font class="string">&quot;   augmentation: &quot;</font><font class="text"> ;
+      TIMER_RR-&gt;print( </font><font class="kw3">PEL</font><font class="text">::out(), 0 ) ;
+      </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_PenaltyProjection</font><font class="text">:: augment_system( </font><font class="kw1">double</font><font class="text"> augmentation_parameter )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_PenaltyProjection:: augment_system&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw1">if</font><font class="text">( augmentation_parameter &gt; 0.0 )
+   {
+      </font><font class="comment">// Bt = transpose( B )
+</font><font class="text">      BtS-&gt;nullify() ;
+      BtS-&gt;add_tMat( B ) ;
+      BtS-&gt;synchronize() ;
+      
+      </font><font class="comment">// BtS = Bt.S
+</font><font class="text">      BtS-&gt;scale_as_mat_diag_mat( S ) ;
+      
+      </font><font class="comment">// BtS = r.Bt.S
+</font><font class="text">      BtS-&gt;scale( augmentation_parameter ) ;
+   
+      </font><font class="comment">// A += BBT.B
+</font><font class="text">      A-&gt;add_Mat_Mat( BtS, B, 1.0 ) ;
+      A-&gt;synchronize() ;
+   
+      </font><font class="comment">// F += BtS.G
+</font><font class="text">      BtS-&gt;multiply_vec_then_add( G, F, 1.0, 1.0 ) ;
+   }
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_PenaltyProjection</font><font class="text">:: start_substep( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; title ) </font><font class="kw1">const
+</font><font class="comment">//-----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_PenaltyProjection:: start_substep&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">if</font><font class="text">( verbose_level() &gt; 0 ) </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; indent() &lt;&lt; </font><font class="string">&quot;   &quot;</font><font class="text"> &lt;&lt; title ;
+}
+
+
+</font>
+</pre>
+</body>
+</html>

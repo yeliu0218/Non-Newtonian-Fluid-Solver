@@ -1,0 +1,37 @@
+MODULE PEL_Application
+   
+   concrete_name = "PEL_TestSuite"
+   $SS_MATPATH = join( this_file_dir(), "..", "..", "..", "..",
+                                        "LinearAlgebra", "tests", "Data" )
+                                        
+   MODULE with_data_deck
+      
+      if( $SS_PETSc_REV = "2.3.3" )
+      MODULE PEL_ObjectTest#LA_Matrix_TEST
+         concrete_name = "LA_Matrix_TEST"
+         #include "LA_Matrix_TEST.pel"
+      END MODULE PEL_ObjectTest#LA_Matrix_TEST
+      
+      if( $SS_PETSc_REV = "2.3.3" )
+      MODULE PEL_ObjectTest#LA_MatrixSynchronization_TEST
+         concrete_name = "LA_MatrixSynchronization_TEST"
+         #include "LA_MatrixSynchronization_TEST.pel"
+      END MODULE PEL_ObjectTest#LA_MatrixSynchronization_TEST
+      
+      if( $SS_PETSc_REV = "2.3.3" )
+      MODULE PEL_ObjectTest#LA_Solver_TEST
+         concrete_name = "LA_Solver_TEST"
+         #include "LA_PelSolver_PETScMatrix.pel"
+        // #include "EXT_PETScExternalSolver_1.pel"
+         #include "EXT_PETScSolver_2.pel"
+         test_matrices_path = $SS_MATPATH
+      END MODULE PEL_ObjectTest#LA_Solver_TEST
+      
+      if( $SS_PETSc_REV = "2.3.3" && !is_defined( "BS_PAR_TESTS" ) )
+      MODULE PEL_ObjectTest#LA_Solver_TEST
+         #include "EXT_PETScSolver_1.pel"
+      END MODULE PEL_ObjectTest#LA_Solver_TEST
+      
+   END MODULE with_data_deck
+
+END MODULE PEL_Application

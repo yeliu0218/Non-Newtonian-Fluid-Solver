@@ -1,0 +1,63 @@
+MODULE PDE_DomainAndFields
+   verbose_level = 1
+   nb_space_dimensions = 2
+   type = "finite_element"
+   
+   MODULE GE_Meshing
+      
+      concrete_name = "GE_BoxWithBoxes"
+      
+      vertices_coordinate_0 = regular_vector( 0.0, 1, 8.0 )
+      vertices_coordinate_1 = regular_vector( 0.0, 2, 16.0 )
+      mesh_polyhedron = < "GE_Segment" "GE_Rectangle" >
+      
+   END MODULE GE_Meshing
+   
+   MODULE interior_fields
+      
+      MODULE uu
+         name = "uu"
+         nb_components = 1
+         element_name = "PDE_2D_Q2_9nodes"
+         storage_depth = 1
+         MODULE DOFs_values
+            type = "uniformly_defined"
+            value = < 0.0 >
+         END MODULE DOFs_values
+      END MODULE uu
+      
+      MODULE vv
+         name = "vv"
+         nb_components = 1
+         element_name = "PDE_2D_Q1_4nodes"
+         storage_depth = 1
+         MODULE DOFs_values
+            type = "uniformly_defined"
+            value = < 0.0 >
+         END MODULE DOFs_values
+      END MODULE vv
+      
+   END MODULE interior_fields
+   
+   MODULE PDE_AdapterCHARMS
+      verbose_level = 2
+      type = "quasi_hierarchical_basis"
+      one_level_difference_rule =  $SS_one_level_rules
+      MODULE PDE_AdaptationIndicator
+         concrete_name = "PDE_GeometricIndicator"
+         refinement_indicator = ( $IS_ITER = 0 ?
+                                  in_box( $DV_X, < 3.999 11.999 >,
+                                                 < 4.001 16.001 > )
+                                  : $IS_ITER = 1 ?
+                                    in_box( $DV_X, < 1.999 9.999 >,
+                                                   < 6.001 10.001 > ) ||
+                                    in_box( $DV_X, < 7.999 7.999 >,
+                                                   < 8.001 8.001 > )
+                                    : in_box( $DV_X, < 3.999 7.999 >,
+                                                     <  4.001  8.001 > ) )         
+         nb_steps = 3
+      END MODULE PDE_AdaptationIndicator
+   END MODULE PDE_AdapterCHARMS
+   
+END MODULE PDE_DomainAndFields
+

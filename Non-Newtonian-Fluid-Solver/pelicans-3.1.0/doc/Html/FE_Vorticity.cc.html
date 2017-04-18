@@ -1,0 +1,250 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>FE_Vorticity.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="FE_Vorticity.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="FEpack-tree.html"><span>Tree</span></a>
+    <a href="FE_Vorticity.html"><span>Class</span></a>
+    <a href="FE_Vorticity.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="FEpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE_Vorticity</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">GE_QRprovider</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_Matrix</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_SeqVector</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_Solver</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_DomainAndFields</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_DiscreteField</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_LocalEquation</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_LocalFEcell</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_SetOfDiscreteFields</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_SystemNumbering</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;iostream&gt;
+
+</font><font class="kw3">PDE_LocalFE</font><font class="text">::field_id </font><font class="kw1">const</font><font class="text"> row = </font><font class="kw3">PDE_LocalFE</font><font class="text">::row ;
+</font><font class="kw3">PDE_LocalFE</font><font class="text">::field_id </font><font class="kw1">const</font><font class="text"> col = </font><font class="kw3">PDE_LocalFE</font><font class="text">::col ;
+
+</font><font class="kw3">FE_Vorticity</font><font class="text"> </font><font class="kw1">const</font><font class="text">* </font><font class="kw3">FE_Vorticity</font><font class="text">::PROTOTYPE = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">FE_Vorticity</font><font class="text">() ;
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">FE_Vorticity</font><font class="text">:: </font><font class="kw3">FE_Vorticity</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">FE_OneStepIteration</font><font class="text">( </font><font class="string">&quot;FE_Vorticity&quot;</font><font class="text"> )
+{
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">FE_Vorticity</font><font class="text">*
+</font><font class="kw3">FE_Vorticity</font><font class="text">:: create_replica( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner, 
+                               </font><font class="kw3">PDE_DomainAndFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dom,
+                               </font><font class="kw3">FE_SetOfParameters</font><font class="text"> </font><font class="kw1">const</font><font class="text">* prms,
+                               </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* exp ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_Vorticity:: create_replica&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_PRE( a_owner, dom, prms, exp ) ) ;
+
+   </font><font class="kw1">if</font><font class="text">( dom-&gt;nb_space_dimensions() != 2 )
+   {
+      </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( </font><font class="string">&quot;FE_Vorticity requires 2D&quot;</font><font class="text"> ) ;
+   }
+
+   </font><font class="kw3">FE_Vorticity</font><font class="text">* result = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">FE_Vorticity</font><font class="text">( a_owner, dom, prms, exp ) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_POST( result, a_owner, dom, prms, exp ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">FE_Vorticity</font><font class="text">:: </font><font class="kw3">FE_Vorticity</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+			     </font><font class="kw3">PDE_DomainAndFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dom,
+			     </font><font class="kw3">FE_SetOfParameters</font><font class="text"> </font><font class="kw1">const</font><font class="text">* prms,
+ 			     </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">FE_OneStepIteration</font><font class="text">( a_owner, dom, exp )
+   , VORT( dom-&gt;set_of_discrete_fields()-&gt;item( 
+                                    exp-&gt;string_data( </font><font class="string">&quot;vorticity&quot;</font><font class="text"> ) ) )
+   , L_UPDATE( exp-&gt;int_data( </font><font class="string">&quot;level_to_update&quot;</font><font class="text"> ) )
+   , VV( dom-&gt;set_of_discrete_fields()-&gt;item( 
+                                    exp-&gt;string_data( </font><font class="string">&quot;velocity&quot;</font><font class="text"> ) ) )
+   , L_VV( exp-&gt;int_data( </font><font class="string">&quot;level_of_velocity&quot;</font><font class="text"> ) )
+   , ELEMENT_EQ( </font><font class="kw3">PDE_LocalEquation</font><font class="text">::create( </font><font class="kw1">this</font><font class="text"> ) )
+   , QRP( </font><font class="kw3">GE_QRprovider</font><font class="text">::object( </font><font class="string">&quot;GE_QRprovider_5&quot;</font><font class="text"> ) )
+   , cFE( dom-&gt;create_LocalFEcell( </font><font class="kw1">this</font><font class="text"> ) )
+   , X_LOC( </font><font class="kw3">LA_SeqVector</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, 0 ) )
+{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_Vorticity:: FE_Vorticity&quot;</font><font class="text"> ) ;
+
+   check_field_storage_depth( VORT, L_UPDATE ) ;
+   check_field_storage_depth( VV, L_VV ) ;
+
+   cFE-&gt;require_field_calculation( VORT, </font><font class="kw3">PDE_LocalFE</font><font class="text">::N ) ;
+   cFE-&gt;require_field_calculation( VV, </font><font class="kw3">PDE_LocalFE</font><font class="text">::N ) ;
+   cFE-&gt;require_field_calculation( VV, </font><font class="kw3">PDE_LocalFE</font><font class="text">::dN ) ;
+
+   </font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text">* ll = </font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text">::create( 0, VORT, </font><font class="kw1">true</font><font class="text"> ) ;
+   NMB = </font><font class="kw3">PDE_SystemNumbering</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, ll ) ;
+   
+   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ee = exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;LA_Matrix&quot;</font><font class="text"> ) ;
+   A = </font><font class="kw3">LA_Matrix</font><font class="text">::make( </font><font class="kw1">this</font><font class="text">, ee ) ;
+   ee-&gt;destroy() ; ee = 0 ;
+
+   F = A-&gt;create_vector( </font><font class="kw1">this</font><font class="text"> ) ;
+   X = A-&gt;create_vector( </font><font class="kw1">this</font><font class="text"> ) ;
+
+   ee = exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;LA_Solver&quot;</font><font class="text"> ) ;
+   SOLVER = </font><font class="kw3">LA_Solver</font><font class="text">::make( </font><font class="kw1">this</font><font class="text">, ee ) ;
+   ee-&gt;destroy() ; ee = 0 ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">FE_Vorticity</font><font class="text">:: ~</font><font class="kw3">FE_Vorticity</font><font class="text">( </font><font class="kw1">void</font><font class="text"> ) 
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_Vorticity</font><font class="text">:: do_one_inner_iteration( </font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* t_it )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_Vorticity</font><font class="text">:: save_other_than_time_and_fields( </font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* t_it,
+                                                </font><font class="kw3">PDE_ResultSaver</font><font class="text">* rs )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_Vorticity:: save_other_than_time_and_fields&quot;</font><font class="text"> ) ;
+
+   start_total_timer( </font><font class="string">&quot;FE_Vorticity:: save_other_than_time_and_fields&quot;</font><font class="text"> ) ;
+
+   NMB-&gt;reset() ;
+   
+   </font><font class="kw2">size_t</font><font class="text"> n_glob = NMB-&gt;nb_global_unknowns() ;
+   </font><font class="kw2">size_t</font><font class="text"> n_loc  = NMB-&gt;nb_unknowns_on_current_process() ;
+
+   A-&gt;re_initialize( n_glob, n_glob, n_loc, n_loc ) ;
+   F-&gt;re_initialize( n_glob, n_loc ) ;
+   X-&gt;re_initialize( n_glob, n_loc ) ;
+   
+   X_LOC-&gt;re_initialize( NMB-&gt;link()-&gt;unknown_vector_size() ) ;
+   
+   NMB-&gt;define_scatters( X ) ;
+   
+   start_assembling_timer() ;
+   </font><font class="comment">// ---------------------
+</font><font class="text">   
+   </font><font class="kw1">for</font><font class="text">( cFE-&gt;start() ; cFE-&gt;is_valid() ; cFE-&gt;go_next() )
+   {
+      cFE-&gt;set_row_and_col_fields( VORT, VORT ) ;
+      ELEMENT_EQ-&gt;initialize( cFE-&gt;row_field_node_connectivity(), 1,
+                              cFE-&gt;col_field_node_connectivity(), 1 ) ;
+      cFE-&gt;start_IP_iterator( QRP ) ;
+      </font><font class="kw1">for</font><font class="text">( ; cFE-&gt;valid_IP() ; cFE-&gt;go_next_IP() ) 
+      {
+         </font><font class="kw1">double</font><font class="text"> vort = cFE-&gt;gradient_at_IP( VV, L_VV, 0, 1 )
+ 	                  - cFE-&gt;gradient_at_IP( VV, L_VV, 1, 0 ) ;
+         </font><font class="kw3">FE</font><font class="text">::add_row( ELEMENT_EQ, cFE, vort ) ;
+
+         </font><font class="kw3">FE</font><font class="text">::add_row_col_S( ELEMENT_EQ, cFE, 1.0 ) ;
+      }
+      </font><font class="kw3">PDE</font><font class="text">::assemble_in_matrix_vector_0( A, F, ELEMENT_EQ, NMB ) ;
+   }
+   
+   stop_assembling_timer() ;
+   start_solving_timer() ;
+   </font><font class="comment">// ------------------
+</font><font class="text">   
+   A-&gt;synchronize() ;
+   F-&gt;synchronize() ;
+   
+   SOLVER-&gt;set_matrix( A ) ;
+   SOLVER-&gt;solve( F, X ) ;
+   SOLVER-&gt;unset_matrix() ;
+   stop_solving_timer() ;
+   
+   </font><font class="kw3">LA_Scatter</font><font class="text"> </font><font class="kw1">const</font><font class="text">* sca = NMB-&gt;scatter() ;
+   sca-&gt;get( X, X_LOC ) ;
+   VORT-&gt;update_free_DOFs_value( L_UPDATE, X_LOC, NMB-&gt;link() ) ;
+   
+   stop_total_timer() ;
+}
+
+
+</font>
+</pre>
+</body>
+</html>

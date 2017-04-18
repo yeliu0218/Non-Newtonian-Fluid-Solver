@@ -1,0 +1,41 @@
+MODULE PEL_Application
+   
+   concrete_name = "PDE_DomainVisu"
+
+   check_meshing_connexity = true
+
+   MODULE PDE_DomainAndFields
+      
+      verbose_level = 1
+      nb_space_dimensions = 3
+      type = "finite_element"
+      
+      MODULE GE_Meshing
+         concrete_name = "GE_RefinedMeshing"
+         mesh_polyhedron = < "GE_Triangle" "GE_Tetrahedron" >
+         MODULE GE_Meshing
+            concrete_name = "GE_BoxWithBoxes"
+            vertices_coordinate_0 = regular_vector( 0.0, 1, 1.0 )
+            vertices_coordinate_1 = regular_vector( 0.0, 1, 1.0 )
+            vertices_coordinate_2 = regular_vector( 0.0, 1, 1.0 )
+            mesh_polyhedron = < "GE_Rectangle" "GE_Cuboid" >
+         END MODULE GE_Meshing
+         MODULE list_of_GE_ReferencePolyhedronRefiner
+            MODULE GE_ReferencePolyhedronRefiner#1
+               concrete_name = "GE_ReferenceCubeWithTetrahedra"
+            END MODULE GE_ReferencePolyhedronRefiner#1
+         END MODULE list_of_GE_ReferencePolyhedronRefiner
+      END MODULE GE_Meshing
+      
+      MODULE interior_fields
+      END MODULE interior_fields
+      
+      MODULE PDE_ResultSaver
+         writers = < "PEL_TICwriter" >
+         writing_mode = "text"
+         files_basename = "save"
+      END MODULE PDE_ResultSaver
+      
+   END MODULE PDE_DomainAndFields
+   
+END MODULE PEL_Application

@@ -1,0 +1,182 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>FE_LocalBCsBuilder.hh</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="FE_LocalBCsBuilder.hh_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="FEpack-tree.html"><span>Tree</span></a>
+    <a href="FE_LocalBCsBuilder.html"><span>Class</span></a>
+    <span class=selected>Header</span>
+    <a href="FE_LocalBCsBuilder.cc.html"><span>Implementation</span></a>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="FEpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#ifndef</font><font class="text"> FE_LOCAL_BCS_BUILDER_HH
+</font><font class="kw2">#define</font><font class="text"> FE_LOCAL_BCS_BUILDER_HH
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Object</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw2">map</font><font class="text">&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw2">string</font><font class="text">&gt;
+
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">GE_QRprovider</font><font class="text"> ;
+
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">PDE_DiscreteField</font><font class="text"> ;
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">PDE_DomainAndFields</font><font class="text"> ;
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">PDE_LocalEquation</font><font class="text"> ;
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">PDE_LocalFEbound</font><font class="text"> ;
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">FE_TimeIterator</font><font class="text"> ;
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">stringVector</font><font class="text"> ;
+
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">FE_OneBCbuilder</font><font class="text"> ;
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">FE_Parameter</font><font class="text"> ;
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">FE_SetOfParameters</font><font class="text"> ;
+
+</font><font class="comment">/*
+Builders of local discrete systems 
+   - due to a given set of boundary conditions ;
+   - related to a given field.
+</font><font class="text">
+</font><font class="comment">The given set of boundary conditions is extracted from the
+&quot;MODULE boudary_conditions&quot; of the Hierarchical Data System
+attached to a PDE_DomainAndFields object.
+</font><font class="text">
+</font><font class="comment">PUBLISHED
+*/
+</font><font class="text">
+</font><font class="kw1">class</font><font class="text"> PEL_EXPORT </font><font class="kw3">FE_LocalBCsBuilder</font><font class="text"> : </font><font class="kw1">public</font><font class="text"> </font><font class="kw3">PEL_Object
+</font><font class="text">{
+   </font><font class="kw1">public</font><font class="text">: </font><font class="comment">//-----------------------------------------------------------------
+</font><font class="text">
+   </font><font class="comment">//-- Instance delivery and initialization
+</font><font class="text">
+      </font><font class="comment">/* 
+      Create, initialize and return an instance, attached to the field
+      called `field_name'. The handled boundary conditions will be those
+         - defined in the &quot;MODULE boundary_conditions&quot; of the data hierarchy
+           attached to `dom' ;
+         - such that the value of the data of keyword &quot;type&quot; is an item
+           of `bc_types'.
+      Each item of `bc_types' should be the name of a class derived
+      from `FE_OneBCbuilder::'.
+      */</font><font class="text"> 
+      </font><font class="kw1">static</font><font class="text"> </font><font class="kw3">FE_LocalBCsBuilder</font><font class="text">* create( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+			                 </font><font class="kw3">PDE_DomainAndFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dom,
+                                         </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; field_name,
+		    	                 </font><font class="kw3">stringVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; bc_types,
+			                 </font><font class="kw3">FE_SetOfParameters</font><font class="text"> </font><font class="kw1">const</font><font class="text">* prms ) ;
+
+   </font><font class="comment">//-- Characteristics
+</font><font class="text">
+      </font><font class="comment">// the attached field
+</font><font class="text">      </font><font class="kw3">PDE_DiscreteField</font><font class="text"> </font><font class="kw1">const</font><font class="text">* field( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+
+   </font><font class="comment">//-- Loop on recorded BCs
+</font><font class="text">
+      </font><font class="comment">// Notify to `fe' of the spatial derivatives of the fields basis 
+</font><font class="text">      </font><font class="comment">// functions that will be requested during the iterations over the
+</font><font class="text">      </font><font class="comment">// bounds performed in `::build_current_BC'.
+</font><font class="text">      </font><font class="kw1">void</font><font class="text"> transfer_calculation_requirements( </font><font class="kw3">PDE_LocalFEbound</font><font class="text">* fe ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="comment">// Notify that the subsequent call to `::build_current_BC' will handle
+</font><font class="text">      </font><font class="comment">// the boundary conditions defined in the &quot;MODULE boundary_conditions&quot; 
+</font><font class="text">      </font><font class="comment">// (Data Structure attached to the argument &quot;dom&quot; of `::create')
+</font><font class="text">      </font><font class="comment">// with `bc_type' as data of keyword &quot;type&quot;.
+</font><font class="text">      </font><font class="kw1">void</font><font class="text"> set_current_BC_type( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; bc_type ) ;
+
+      </font><font class="comment">// Does the previous call to `::set_current_BC_type' allows a
+</font><font class="text">      </font><font class="comment">// subsequent call to `::build_current_BC' ?
+</font><font class="text">      </font><font class="kw1">bool</font><font class="text"> current_BC_type_is_ok( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="comment">// Add to `leq' the various terms of the discrete problem local to the
+</font><font class="text">      </font><font class="comment">// current bound of `fe', related to the boundary condition
+</font><font class="text">      </font><font class="comment">// identified by the revious call to `::set_current_BC_type'.
+</font><font class="text">      </font><font class="kw1">void</font><font class="text"> build_current_BC( </font><font class="kw3">PDE_LocalEquation</font><font class="text">* leq,
+ 		             </font><font class="kw3">PDE_LocalFEbound</font><font class="text">* fe,
+		             </font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* t_it,
+                             </font><font class="kw3">GE_QRprovider</font><font class="text"> </font><font class="kw1">const</font><font class="text">* qrp ) ;
+
+   </font><font class="kw1">protected</font><font class="text">: </font><font class="comment">//--------------------------------------------------------------
+</font><font class="text">
+   </font><font class="kw1">private</font><font class="text">: </font><font class="comment">//----------------------------------------------------------------
+</font><font class="text">
+      </font><font class="kw3">FE_LocalBCsBuilder</font><font class="text">( </font><font class="kw1">void</font><font class="text"> ) ;
+     ~</font><font class="kw3">FE_LocalBCsBuilder</font><font class="text">( </font><font class="kw1">void</font><font class="text"> ) ;
+      </font><font class="kw3">FE_LocalBCsBuilder</font><font class="text">( </font><font class="kw3">FE_LocalBCsBuilder</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; other ) ;
+      </font><font class="kw3">FE_LocalBCsBuilder</font><font class="text">&amp; </font><font class="kw1">operator</font><font class="text">=( </font><font class="kw3">FE_LocalBCsBuilder</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; other ) ;
+
+      </font><font class="kw3">FE_LocalBCsBuilder</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+			  </font><font class="kw3">PDE_DomainAndFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dom,
+                          </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; field_name,
+			  </font><font class="kw3">stringVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; bc_types,
+			  </font><font class="kw3">FE_SetOfParameters</font><font class="text"> </font><font class="kw1">const</font><font class="text">* prms ) ;
+
+   </font><font class="comment">//-- Attributes
+</font><font class="text">
+      </font><font class="kw3">PDE_DiscreteField</font><font class="text"> </font><font class="kw1">const</font><font class="text">* FF ;
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">map</font><font class="text">&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text">, </font><font class="kw3">FE_OneBCbuilder</font><font class="text">* &gt; BUILDERS ;
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">map</font><font class="text">&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text">, </font><font class="kw3">FE_OneBCbuilder</font><font class="text">* &gt;::const_iterator IT_BC_to_build ;
+} ;
+
+</font><font class="kw2">#endif
+</font><font class="text">
+</font>
+</pre>
+</body>
+</html>

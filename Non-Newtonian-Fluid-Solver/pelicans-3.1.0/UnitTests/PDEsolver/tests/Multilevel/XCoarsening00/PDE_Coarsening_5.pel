@@ -1,0 +1,145 @@
+MODULE PEL_ObjectTest#PDE_Coarsening_TEST
+   
+   MODULE PDE_Coarsening_5
+      
+      $DS_x = component( $DV_X, 0 )
+      $DS_y = component( $DV_X, 1 )
+      $DS_solution_0 = sinh( pi()*$DS_x ) / sinh( pi() ) *
+                       sin( pi()*$DS_y )
+      $DS_solution_1 = sinh( pi()*(1.0-$DS_x) ) / sinh( pi() ) *
+                       sin( pi()*$DS_y )
+                       
+      dbl_epsilon = 1.e-12
+      dbl_minimum = 1.e-100
+      
+      quadrature_rule_provider = "GE_ProductQRprovider_5"
+
+      if( nb_ranks() = 1 )
+      MODULE LA_Matrix
+         concrete_name = "LA_PelMatrix"
+      END MODULE LA_Matrix
+
+      if( nb_ranks() > 1 )
+      MODULE LA_Matrix
+         concrete_name = "LA_DistMatrix"
+      END MODULE LA_Matrix
+
+      MODULE PDE_DomainAndFields
+         
+         verbose_level = 1
+         nb_space_dimensions = 2
+         type = "finite_element"
+         
+         MODULE GE_Meshing
+            
+            concrete_name = "GE_BoxWithBoxes"
+            
+            vertices_coordinate_0 = regular_vector( 0.0, 3, 1.0 )
+            vertices_coordinate_1 = regular_vector( 0.0, 3, 1.0 )
+            mesh_polyhedron = < "GE_Segment" "GE_Rectangle" >
+            
+         END MODULE GE_Meshing
+         
+         MODULE macro_colors
+            zero = < "bottom" "top" >
+         END MODULE macro_colors
+
+         MODULE interior_fields
+            
+            MODULE vv
+               name = "vv"
+               nb_components = 1
+               element_name = "PDE_2D_Q2_9nodes"
+               storage_depth = 1
+               MODULE DOFs_values
+                  mode = "set_by_L2_projection"
+                  type = "uniformly_defined"
+                  value = < 0.0 >
+               END MODULE DOFs_values
+               MODULE DOFs_imposed_value
+                  MODULE all
+                     location = "on_bounds"
+                     type = "uniformly_defined"
+                     value = < 0.0 >
+                  END MODULE all
+               END MODULE DOFs_imposed_value
+            END MODULE vv
+            
+            MODULE uu
+               name = "uu"
+               nb_components = 2
+               element_name = "PDE_2D_Q1_4nodes"
+               storage_depth = 1
+               MODULE DOFs_values
+                  mode = "set_by_L2_projection"
+                  type = "uniformly_defined"
+                  value = < 0.0 0.0 >
+               END MODULE DOFs_values
+               MODULE DOFs_imposed_value
+                  MODULE zero
+                     location = "on_bounds"
+                     color = "zero"
+                     type = "uniformly_defined"
+                     value = < 0.0 0.0 >
+                  END MODULE zero
+                  MODULE right
+                     location = "on_bounds"
+                     color = "right"
+                     component = 0
+                     type = "uniformly_defined"
+                     value = vector( $DS_solution_0 )
+                  END MODULE right
+                  MODULE left
+                     location = "on_bounds"
+                     color = "left"
+                     component = 1
+                     type = "uniformly_defined"
+                     value = vector( $DS_solution_1 )
+                  END MODULE left
+               END MODULE DOFs_imposed_value
+            END MODULE uu
+            
+         END MODULE interior_fields
+         
+         MODULE L2_projection
+            QRprovider_name = "GE_ProductQRprovider_5"
+            MODULE LA_Matrix
+               concrete_name = "LA_PelMatrix"
+            END MODULE LA_Matrix
+            MODULE LA_Solver
+               concrete_name = "LA_PreconditionedSolver"
+               MODULE LA_IterativeSolver
+                  concrete_name = "LA_CG_IS"
+                  verbose = false
+                  nb_iterations_max = 2000
+                  MODULE LA_ConvergenceTest
+                     concrete_name = "LA_DefaultConvergenceTest"
+                     relative_tolerance = 1.e-12
+                     absolute_tolerance = 1.e-50
+                  END MODULE LA_ConvergenceTest
+               END MODULE LA_IterativeSolver
+               MODULE LA_Preconditioner
+                  concrete_name = "LA_Jacobi_PC"
+                  smallest_inverted_item = 1.0e-300
+               END MODULE LA_Preconditioner
+            END MODULE LA_Solver
+         END MODULE L2_projection
+      
+         MODULE PDE_AdapterCHARMS
+            verbose_level = 0
+            type = "quasi_hierarchical_basis"
+            MODULE PDE_AdaptationIndicator
+               concrete_name = "PDE_GeometricIndicator"
+               refinement_indicator =
+                     ( $DS_x >  0.49 ) &&
+                     ( ($DS_x - 0.5)*($DS_x - 0.5) +
+                       ($DS_y - 0.5)*($DS_y - 0.5)  <  0.25*0.25 )
+               nb_steps = 4
+            END MODULE PDE_AdaptationIndicator
+         END MODULE PDE_AdapterCHARMS
+         
+      END MODULE PDE_DomainAndFields
+        
+   END MODULE PDE_Coarsening_5
+         
+END MODULE PEL_ObjectTest#PDE_Coarsening_TEST

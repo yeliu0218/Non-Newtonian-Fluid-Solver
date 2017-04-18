@@ -1,0 +1,1029 @@
+MODULE PEL_Application
+   
+   concrete_name = "FE_StepByStepProgression"
+      
+   $DS_x = component( $DV_X, 0 )
+   $DS_y = component( $DV_X, 1 )
+
+   //***
+   // Three phase problem:
+   //    upper liquid ( y > $DS_yup )
+   //    lower liquid ( y < $DS_yup )
+   //    bubble initially at rest in the lower liquid
+   //***
+
+   // bubble:
+   // $DS_dcir: distance to the circle of center ($DS_xc,$DS_yc)
+   //           and radius $DS_radius, positive inside, negative outside
+   $DS_dcirc = $DS_radius - sqrt( sqr( $DS_x-$DS_xc ) + sqr( $DS_y-$DS_yc ) )
+   $DS_bubble = 0.5 + 0.5 * tanh( 2.0*$DS_dcirc/$DS_e )
+
+   // upper liquid
+   $DS_dup = $DS_y-$DS_yup
+   $DS_liq_up   = ( $DS_yup > $DS_ymax ? 0.0 :
+                    0.5 + 0.5 * tanh( 2.0*min(-$DS_dcirc,$DS_dup)/$DS_e ) )
+
+   // lower liquid
+   $DS_liq_down = 1.0 - $DS_bubble - $DS_liq_up
+
+   // choice of phase 1 and 2
+   $DV_cc_1_init = ( $SS_phase_1 = "bubble"      ? vector( $DS_bubble )   :
+                     $SS_phase_1 = "liquid_up"   ? vector( $DS_liq_up )   :
+                     $SS_phase_1 = "liquid_down" ? vector( $DS_liq_down ) :
+                                                   vector( -1000.0 ) )
+                                                   
+   $DV_cc_2_init = ( $SS_phase_2 = "bubble"      ? vector( $DS_bubble )   :
+                     $SS_phase_2 = "liquid_up"   ? vector( $DS_liq_up )   :
+                     $SS_phase_2 = "liquid_down" ? vector( $DS_liq_down ) :
+                                                   vector( -1000.0 ) )
+
+   // opposite of the spreading coefficients
+   $DS_Sig1 = $DS_sigma_12 + $DS_sigma_13 - $DS_sigma_23
+   $DS_Sig2 = $DS_sigma_12 + $DS_sigma_23 - $DS_sigma_13
+   $DS_Sig3 = $DS_sigma_13 + $DS_sigma_23 - $DS_sigma_12
+   
+   MODULE FE_TimeIterator
+      time_initial = 0.
+      time_end  = $DS_time_end
+      time_step = $DS_time_step
+   END MODULE FE_TimeIterator
+   
+   graphics_output_times = regular_vector( 0.0, $IS_nb_saves, $DS_time_end )
+   
+   MODULE PDE_DomainAndFields
+      verbose_level = 1
+      nb_space_dimensions = 2
+      type = "finite_element"
+
+      if( nb_ranks() = 1 )
+      MODULE GE_Meshing
+         concrete_name = "GE_BoxWithBoxes"
+         vertices_coordinate_0 = $DV_vertices_coordinate_0
+         vertices_coordinate_1 = $DV_vertices_coordinate_1
+         mesh_polyhedron = < "GE_Segment" "GE_Rectangle" >
+      END MODULE GE_Meshing
+
+      if( nb_ranks() > 1 )
+      MODULE GE_Meshing
+         concrete_name = "GE_SplitMeshing"
+         security_bandwidth = 0
+
+         if( $SS_splitting_strategy  = "METIS" )
+         MODULE splitting_strategy
+            concrete_name = "EXT_METISsplitting"
+         END MODULE splitting_strategy
+         if( $SS_splitting_strategy  = "CoordinateSplitting" )
+         MODULE splitting_strategy
+            concrete_name = "GE_CoordinateSplitting"
+            coordinate_splitting_formula = $IS_coordinate_splitting_formula
+         END MODULE splitting_strategy
+         
+         MODULE GE_Meshing
+            concrete_name = "GE_BoxWithBoxes"
+            vertices_coordinate_0 = $DV_vertices_coordinate_0
+            vertices_coordinate_1 = $DV_vertices_coordinate_1
+            mesh_polyhedron = < "GE_Segment" "GE_Rectangle" >
+         END MODULE GE_Meshing
+
+      END MODULE GE_Meshing
+
+      if( is_defined( "SV_symmetry_0" ) )
+      MODULE macro_colors
+         symmetry_0 = $SV_symmetry_0
+      END MODULE macro_colors
+      
+      if( is_defined( "SV_symmetry_1" ) )
+      MODULE macro_colors
+         symmetry_1 = $SV_symmetry_1
+      END MODULE macro_colors
+      
+      if( is_defined( "SV_Dirichlet" ) )
+      MODULE macro_colors
+         Dirichlet = $SV_Dirichlet
+      END MODULE macro_colors
+      
+      if( is_defined( "SV_Neumann" ) )
+      MODULE macro_colors
+         Neumann = $SV_Neumann
+      END MODULE macro_colors
+      
+      MODULE interior_fields
+         
+         MODULE cc_1
+            name = "cc_1"
+            nb_components = 1
+            element_name = "PDE_2D_Q1_4nodes"
+            storage_depth = 1
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = $DV_cc_1_init
+            END MODULE DOFs_values
+         END MODULE cc_1
+         
+         MODULE cc_1_explicit
+            name = "cc_1_explicit"
+            nb_components = 1
+            element_name = "PDE_2D_Q1_4nodes"
+            storage_depth = 1
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = $DV_cc_1_init
+            END MODULE DOFs_values
+         END MODULE cc_1_explicit
+         
+         MODULE mm_1
+            name = "mm_1"
+            nb_components = 1
+            element_name = "PDE_2D_Q1_4nodes"
+            storage_depth = 1
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = < 0.0 >
+            END MODULE DOFs_values
+         END MODULE mm_1
+         
+         MODULE cc_2
+            name = "cc_2"
+            nb_components = 1
+            element_name = "PDE_2D_Q1_4nodes"
+            storage_depth = 1
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = $DV_cc_2_init
+            END MODULE DOFs_values
+         END MODULE cc_2
+         
+         MODULE cc_2_explicit
+            name = "cc_2_explicit"
+            nb_components = 1
+            element_name = "PDE_2D_Q1_4nodes"
+            storage_depth = 1
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = $DV_cc_2_init
+            END MODULE DOFs_values
+         END MODULE cc_2_explicit
+         
+         MODULE mm_2
+            name = "mm_2"
+            nb_components = 1
+            element_name = "PDE_2D_Q1_4nodes"
+            storage_depth = 1
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = < 0.0 >
+            END MODULE DOFs_values
+         END MODULE mm_2
+         
+         if( $BS_NavierStokes )
+         MODULE vv
+            name = "vv"
+            nb_components = 2
+            element_name = "PDE_2D_Q2_9nodes"
+            storage_depth = 1
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = < 0.0 0.0 >
+            END MODULE DOFs_values
+            MODULE DOFs_imposed_value
+               if( is_defined( "SV_symmetry_0" ) )
+               MODULE symmetry_0
+                  location = "on_bounds"
+                  color = "symmetry_0"
+                  type = "uniformly_defined"
+                  component = 0
+                  value = < 0.0 >
+               END MODULE symmetry_0
+               if( is_defined( "SV_symmetry_1" ) )
+               MODULE symmetry_1
+                  location = "on_bounds"
+                  color = "symmetry_1"
+                  type = "uniformly_defined"
+                  component = 1
+                  value = < 0.0 >
+               END MODULE symmetry_1
+               if( is_defined( "SV_Dirichlet" ) )
+               MODULE Dirichlet
+                  location = "on_bounds"
+                  color = "Dirichlet"
+                  type = "uniformly_defined"
+                  value = < 0.0 0.0 >
+               END MODULE Dirichlet
+            END MODULE DOFs_imposed_value
+         END MODULE vv
+         
+         if( $BS_NavierStokes )
+         MODULE vv_explicit
+            name = "vv_explicit"
+            nb_components = 2
+            element_name = "PDE_2D_Q2_9nodes"
+            storage_depth = 1
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = < 0.0 0.0 >
+            END MODULE DOFs_values
+            MODULE DOFs_imposed_value
+               if( is_defined( "SV_symmetry_0" ) )
+               MODULE symmetry_0
+                  location = "on_bounds"
+                  color = "symmetry_0"
+                  type = "uniformly_defined"
+                  component = 0
+                  value = < 0.0 >
+               END MODULE symmetry_0
+               if( is_defined( "SV_symmetry_1" ) )
+               MODULE symmetry_1
+                  location = "on_bounds"
+                  color = "symmetry_1"
+                  type = "uniformly_defined"
+                  component = 1
+                  value = < 0.0 >
+               END MODULE symmetry_1
+               if( is_defined( "SV_Dirichlet" ) )
+               MODULE Dirichlet
+                  location = "on_bounds"
+                  color = "Dirichlet"
+                  type = "uniformly_defined"
+                  value = < 0.0 0.0 >
+               END MODULE Dirichlet
+            END MODULE DOFs_imposed_value
+         END MODULE vv_explicit
+         
+         if( $BS_NavierStokes )
+         MODULE pp
+            name = "pp"
+            nb_components = 1
+            element_name = "PDE_2D_Q1_4nodes"
+            storage_depth = 1
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = < 0.0 >
+            END MODULE DOFs_values
+         END MODULE pp
+         
+         if( $BS_NavierStokes )
+         MODULE pp_explicit
+            name = "pp_explicit"
+            nb_components = 1
+            element_name = "PDE_2D_Q1_4nodes"
+            storage_depth = 1
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = < 0.0 >
+            END MODULE DOFs_values
+         END MODULE pp_explicit
+
+         if( $BS_StreamFunction )
+         MODULE stream_function
+            name = "stream_function"
+            nb_components =   1
+            element_name = "PDE_2D_Q1_4nodes"
+            storage_depth = 1
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = < 0.0 >
+            END MODULE DOFs_values
+         END MODULE stream_function
+         
+      END MODULE interior_fields
+
+      if( $BS_NavierStokes )
+      MODULE boundary_conditions
+
+         if( ( $SS_NS_method = "penalty_projection" ) &&
+             is_defined( "SV_Neumann" ) )
+         MODULE pp_out_for_projection
+            field = "pp"
+            type = "Dirichlet_pressure_penalization"
+            color = "Neumann"
+            penalization_coefficient = 1.e+6
+         END MODULE pp_out_for_projection
+         
+         if( is_defined( "SV_Neumann" ) )
+         MODULE L2_stab
+            field = "vv"
+            type = "NeumannVelocity"
+            color = "Neumann"
+         END MODULE L2_stab
+         
+      END MODULE boundary_conditions
+            
+      if( $BS_refinement )
+      MODULE PDE_AdapterCHARMS
+         verbose_level = 0
+         type = "quasi_hierarchical_basis"
+         one_level_difference_rule = $SS_one_level_difference_rule
+         MODULE PDE_AdaptationIndicator
+            concrete_name = "CH_InterfaceIndicator"
+            phase_field_1 = "cc_1_explicit"
+            phase_field_2 = "cc_2_explicit"
+            level = 0
+            quadrature_rule_provider = "GE_ProductQRprovider_5"
+            h_for_interface = $DS_h_for_interface
+            refinement_limit = $DS_refinement_limit
+            unrefinement_limit = $DS_unrefinement_limit
+         END MODULE PDE_AdaptationIndicator
+      END MODULE PDE_AdapterCHARMS
+
+      if( ! $BS_refinement )
+      MODULE PDE_AdapterCHARMS
+         verbose_level = 0
+         type = "quasi_hierarchical_basis"
+         MODULE PDE_AdaptationIndicator
+            concrete_name = "PDE_GeometricIndicator"
+            refinement_indicator = false
+            nb_steps = 0
+         END MODULE PDE_AdaptationIndicator
+      END MODULE PDE_AdapterCHARMS
+
+      if( nb_ranks()=1 )
+      MODULE PDE_ResultSaver
+         writers = $SV_writers
+      END MODULE PDE_ResultSaver
+      
+      if( nb_ranks()>1 )
+      MODULE PDE_ResultSaver
+         writers = < "PEL_CrossProcessWriter" >
+         sub_writers = $SV_writers
+      END MODULE PDE_ResultSaver
+ 
+      MODULE PDE_ResultSaver
+         
+         writing_mode = $SS_writing_mode
+         
+         files_basename = "save"
+         
+         MODULE cc_1
+            where_to_save = "at_vertices"
+            entry_name = "c1"
+            field = "cc_1"
+         END MODULE cc_1
+         
+         MODULE cc_2
+            where_to_save = "at_vertices"
+            entry_name = "c2"
+            field = "cc_2"
+         END MODULE cc_2
+
+         if( $BS_SaveChemicalPotential )
+         MODULE mm_1
+            where_to_save = "at_vertices"
+            entry_name = "gp1"
+            field = "mm_1"   
+         END MODULE mm_1
+         
+         if( $BS_SaveChemicalPotential )
+         MODULE mm_2
+            where_to_save = "at_vertices"
+            entry_name = "gp2"
+            field = "mm_2"   
+         END MODULE mm_2
+         
+         if( $BS_NavierStokes )
+         MODULE vv
+            where_to_save = "at_vertices"
+            entry_name = "v"
+            field = "vv"
+         END MODULE vv
+         
+         if( $BS_NavierStokes )
+         MODULE pp
+            where_to_save = "at_vertices"
+            entry_name = "p"
+            field = "pp"
+         END MODULE pp
+         
+         if( $BS_StreamFunction )
+         MODULE stream_function
+            where_to_save = "at_vertices"
+            entry_name = "sf"
+            field = "stream_function"
+         END MODULE stream_function
+         
+      END MODULE PDE_ResultSaver
+
+   END MODULE PDE_DomainAndFields
+   
+   MODULE FE_SetOfParameters
+      
+      if( $BS_NavierStokes )
+      MODULE FE_Parameter#dens
+         concrete_name = "CH_MeanParameter"
+         name = "dens"
+         average = "smoothed_Heavyside"
+         MODULE phase_fields
+            MODULE xx1
+               field = "cc_1"
+               level_of_phase_field = 0
+               parameter_value = $DS_dens_1
+            END MODULE xx1
+            MODULE xx2
+               field = "cc_2"
+               level_of_phase_field = 0
+               parameter_value = $DS_dens_2
+            END MODULE xx2
+         END MODULE phase_fields
+         parameter_value_in_last_phase = $DS_dens_3         
+      END MODULE FE_Parameter#dens
+      
+      if( $BS_NavierStokes )
+      MODULE FE_Parameter#dens_explicit
+         concrete_name = "CH_MeanParameter"
+         name = "dens_explicit"
+         average = "smoothed_Heavyside"
+         MODULE phase_fields
+            MODULE xx1
+               field = "cc_1_explicit"
+               level_of_phase_field = 0
+               parameter_value = $DS_dens_1
+            END MODULE xx1
+            MODULE xx2
+               field = "cc_2_explicit"
+               level_of_phase_field = 0
+               parameter_value = $DS_dens_2
+            END MODULE xx2
+         END MODULE phase_fields
+         parameter_value_in_last_phase = $DS_dens_3         
+      END MODULE FE_Parameter#dens_explicit
+      
+      if( $BS_NavierStokes )
+      MODULE FE_Parameter#visc
+         concrete_name = "CH_MeanParameter"
+         name = "visc"
+         average = "smoothed_Heavyside"
+         MODULE phase_fields
+            MODULE xx1
+               field = "cc_1"
+               level_of_phase_field = 0
+               parameter_value = $DS_visc_1
+            END MODULE xx1
+            MODULE xx2
+               field = "cc_2"
+               level_of_phase_field = 0
+               parameter_value = $DS_visc_2
+            END MODULE xx2
+         END MODULE phase_fields
+         parameter_value_in_last_phase = $DS_visc_3         
+      END MODULE FE_Parameter#visc
+      
+      if( $BS_NavierStokes )
+      MODULE FE_Parameter#adv
+         concrete_name = "FE_ProductOfParameters"
+         name = "advective_velocity"
+         MODULE list_of_parameters
+            MODULE xxx
+               type = "already_defined"
+               name = "dens"
+            END MODULE xxx
+            MODULE yyy
+               type = "to_be_defined"
+               MODULE FE_Parameter
+                  concrete_name = "FE_FieldParameter"
+                  name = "vexp"
+                  field_name = "vv_explicit"
+                  field_level = 0
+               END MODULE FE_Parameter
+            END MODULE yyy
+         END MODULE list_of_parameters
+      END MODULE FE_Parameter#adv
+      
+      if( $BS_NavierStokes )
+      MODULE FE_Parameter#body_force
+         concrete_name = "FE_SumOfParameters"
+         name = "body_force"
+         
+         MODULE list_of_parameters
+            MODULE capillarity
+               coefficient = 1.0
+               type = "to_be_defined"
+               MODULE FE_Parameter
+                  concrete_name = "CH_CapillaryForce"
+                  name = "capf"
+                  coef_sigma_1 = $DS_Sig1
+                  coef_sigma_2 = $DS_Sig2
+                  coef_sigma_3 = $DS_Sig3
+                  MODULE fields
+                     MODULE xx1
+                        phase_field = "cc_1"
+                        generalized_potential = "mm_1"
+                        level_of_fields = 0
+                     END MODULE xx1
+                     MODULE xx2
+                        phase_field = "cc_2"
+                        generalized_potential = "mm_2"
+                        level_of_fields = 0
+                     END MODULE xx2
+                  END MODULE fields
+               END MODULE FE_Parameter
+            END MODULE capillarity
+
+            if( is_defined( "DV_gravity" ) )
+            MODULE gravity
+               coefficient = 1.0
+               type ="to_be_defined"
+               MODULE FE_Parameter
+                  concrete_name = "FE_GravityParameter"
+                  name = "gravity"
+                  rho_shift = 0.0
+                  rho = "dens"
+                  gravity = $DV_gravity
+               END MODULE FE_Parameter
+            END MODULE gravity
+            
+         END MODULE list_of_parameters
+      END MODULE FE_Parameter#body_force
+      
+   END MODULE FE_SetOfParameters
+   
+   MODULE FE_OneStepIteration
+      
+      concrete_name = "FE_SplitSystem"
+      
+      MODULE list_of_FE_OneStepIteration
+         
+         MODULE FE_OneStepIteration#adapt
+            concrete_name = "FE_AdaptationStepCHARMS"                  
+            nb_iterations_max_before_time_stepping = 10
+            nb_iterations_max_during_time_stepping = 10
+            MODULE list_of_PDE_DiscreteField
+               
+               MODULE cc_1
+                  current = "cc_1"
+                  explicit = "cc_1_explicit"
+               END MODULE cc_1
+               
+               MODULE cc_2
+                  current = "cc_2"
+                  explicit = "cc_2_explicit"
+               END MODULE cc_2
+
+               if( $BS_NavierStokes )
+               MODULE vv
+                  current = "vv"
+                  explicit = "vv_explicit"
+               END MODULE vv
+               
+               if( $BS_NavierStokes )
+               MODULE pp
+                  current = "pp"
+                  explicit = "pp_explicit"
+               END MODULE pp
+               
+            END MODULE list_of_PDE_DiscreteField
+         END MODULE FE_OneStepIteration#adapt
+
+         if( $BS_refinement )
+         MODULE FE_OneStepIteration#init
+            concrete_name = "FE_InitAfterAdaptation"
+            verbose_level = 1
+            
+            MODULE list_of_PDE_DiscreteField
+               
+               MODULE cc_1
+                  type = "L2_projection_of_explicit"
+                  current = "cc_1"
+                  level_of_current = 0
+                  explicit = "cc_1_explicit"
+                  level_of_explicit = 0
+               END MODULE cc_1
+               
+               MODULE cc_2
+                  type = "L2_projection_of_explicit"
+                  current = "cc_2"
+                  level_of_current = 0
+                  explicit = "cc_2_explicit"
+                  level_of_explicit = 0
+               END MODULE cc_2
+               
+               MODULE mm_1
+                  type = "nullify_new_DOFs"
+                  current = "mm_1"
+                  level_of_current = 0
+               END MODULE mm_1
+               
+               MODULE mm_2
+                  type = "nullify_new_DOFs"
+                  current = "mm_2"
+                  level_of_current = 0
+               END MODULE mm_2
+
+               if( $BS_NavierStokes )
+               MODULE pp
+                  type = "L2_projection_of_explicit"
+                  current = "pp"
+                  level_of_current = 0
+                  explicit = "pp_explicit"
+                  level_of_explicit = 0
+               END MODULE pp
+               
+            END MODULE list_of_PDE_DiscreteField
+            
+            MODULE L2_projection
+               QRprovider_name = "GE_ProductQRprovider_3"
+               
+               if(  nb_ranks() = 1 )
+               MODULE LA_Matrix
+                  concrete_name = "LA_PelMatrix"
+               END MODULE LA_Matrix
+               if( nb_ranks() > 1 )
+               MODULE LA_Matrix
+                  concrete_name = "LA_DistMatrix"
+               END MODULE LA_Matrix
+               
+               MODULE LA_Solver
+                  concrete_name = "LA_PreconditionedSolver"
+                  MODULE LA_IterativeSolver
+                     verbose = false
+                     concrete_name = "LA_CG_IS"
+                     nb_iterations_max = 2000
+                     MODULE LA_ConvergenceTest
+                        concrete_name = "LA_DefaultConvergenceTest"
+                        relative_tolerance = 1.0e-8
+                        absolute_tolerance = 1.0e-50
+                     END MODULE LA_ConvergenceTest
+                  END MODULE LA_IterativeSolver
+                  MODULE LA_Preconditioner
+                     concrete_name = "LA_Jacobi_PC"
+                     smallest_inverted_item = 1.e-300
+                  END MODULE LA_Preconditioner
+               END MODULE LA_Solver
+            END MODULE L2_projection
+            
+         END MODULE FE_OneStepIteration#init
+         
+         MODULE FE_OneStepIteration#CH1
+            concrete_name = "CH_CahnHilliard"            
+            verbose_level = 1
+            
+            phase_field_1 = "cc_1"
+            phase_field_1_explicit = "cc_1_explicit"
+            generalized_potential_1 = "mm_1"
+            phase_field_2 = "cc_2"
+            phase_field_2_explicit = "cc_2_explicit"
+            generalized_potential_2 = "mm_2"
+            level_to_update = 0
+            level_of_explicit = 0
+            
+            if( $BS_NavierStokes )
+            MODULE advection
+               field = "vv_explicit"
+               level = 0
+            END MODULE advection
+            
+            explicit_mobility = $BS_explicit_mobility
+            mobility_deg = $DS_mobility_deg
+            mobility_cst = $DS_mobility_cst
+            
+            theta_coef = $DS_theta
+
+            thickness = $DS_e
+            
+            MODULE CH_BulkChemicalPotential
+               coef_Sigma_1 = $DS_Sig1
+               coef_Sigma_2 = $DS_Sig2
+               coef_Sigma_3 = $DS_Sig3
+               
+               MODULE CH_BulkEnergy#F0
+                  concrete_name = $SS_bulk_energy_F0
+               END MODULE CH_BulkEnergy#F0
+               
+               if( is_defined ( "SS_bulk_energy_P" ) )
+               MODULE CH_BulkEnergy#P
+                  concrete_name = $SS_bulk_energy_P
+                  coef_lambda = $DS_coef_lambda
+               END MODULE CH_BulkEnergy#P
+               
+            END MODULE CH_BulkChemicalPotential
+            
+            quadrature_rule_provider = "GE_ProductQRprovider_5"
+            
+            nb_iterations_max = 200
+            newton_tolerance = 1.e-10
+            
+            if( nb_ranks() = 1 )
+            MODULE LA_Matrix
+               concrete_name = "LA_PelMatrix"
+            END MODULE LA_Matrix
+
+            if( nb_ranks() > 1 )
+            MODULE LA_Matrix
+               concrete_name = "LA_DistMatrix"
+            END MODULE LA_Matrix
+
+            if( $SS_CH_solver = "LA_GMRES_IS" )
+            MODULE LA_Solver
+               concrete_name = "LA_PreconditionedSolver"
+               MODULE LA_IterativeSolver
+                  concrete_name = "LA_GMRES_IS"
+                  nb_iterations_max = 2000
+                  restart = 50
+                  MODULE LA_ConvergenceTest
+                     concrete_name = "LA_DefaultConvergenceTest"
+                     relative_tolerance = 1.e-8
+                     absolute_tolerance = 1.e-15
+                  END MODULE LA_ConvergenceTest
+                  verbose = false
+               END MODULE LA_IterativeSolver
+               if( nb_ranks() = 1 )
+               MODULE LA_Preconditioner
+                  concrete_name = "LA_ILU0_PC"
+                  diagonal_compensation = false
+                  smallest_nonzero_pivot = 1.e-12
+               END MODULE LA_Preconditioner
+               if( nb_ranks() > 1 ) 
+               MODULE LA_Preconditioner
+                  concrete_name = "LA_BlockJacobi_DPC"
+                  MODULE LA_Solver
+                     concrete_name = "LA_PreconditionedSolver"
+                     MODULE LA_IterativeSolver
+                        concrete_name = "LA_Identity_IS"
+                        verbose = false
+                     END MODULE LA_IterativeSolver
+                     MODULE LA_Preconditioner
+                        concrete_name = "LA_ILU0_PC"
+                        diagonal_compensation = false
+                        smallest_nonzero_pivot = 1.e-12
+                     END MODULE LA_Preconditioner
+                  END MODULE LA_Solver
+               END MODULE LA_Preconditioner
+            END MODULE LA_Solver
+            if( $SS_CH_solver = "EXT_UMFsolver_DS" )
+            MODULE LA_Solver
+               concrete_name = "EXT_UMFsolver_DS"
+            END MODULE LA_Solver
+            
+         END MODULE FE_OneStepIteration#CH1
+
+         if( $BS_NavierStokes )
+         MODULE FE_OneStepIteration#NS
+            concrete_name = "AP_NavierStokes1G"
+            
+            velocity = "vv"
+            level_of_velocity = 0
+            
+            pressure = "pp"
+            level_of_pressure = 0
+
+            MODULE time_discretization
+               type = "Euler"
+               velocity_explicit = "vv_explicit"
+               level_of_velocity_explicit = 0
+               pressure_explicit = "pp_explicit"
+               level_of_pressure_explicit = 0
+               param_unsteady = "dens"
+               MODULE kinetic_energy_control
+                  param_unsteady_explicit = "dens_explicit"
+               END MODULE kinetic_energy_control
+            END MODULE time_discretization
+            
+            viscosity_term = "div_mu_D_uu"
+            
+            quadrature_rule_provider = "GE_ProductQRprovider_5"
+            
+            param_viscous = "visc"
+            param_source  = "body_force"         
+
+            MODULE advection
+               param_advective_velocity = "advective_velocity"
+            END MODULE advection
+            
+            //???????????????? voir
+            initialize_discrete_pressure = true
+
+            if(  nb_ranks() = 1 )
+            MODULE LA_Matrix
+               concrete_name = "LA_PelMatrix"
+            END MODULE LA_Matrix
+            
+            if( nb_ranks() > 1 )
+            MODULE LA_Matrix
+               concrete_name = "LA_DistMatrix"
+            END MODULE LA_Matrix
+
+            if( $SS_NS_method = "augmented_Lagrangian" )
+            MODULE LA_TwoBlocksMethod
+               concrete_name = "LA_Uzawa"
+               verbose_level = 2
+               augmentation_parameter  = $DS_augmentation_parameter
+               tolerance_on_divergence = $DS_tolerance_on_divergence
+               tolerance_on_velocity_increment =
+                                         $DS_tolerance_on_velocity_increment
+            END MODULE LA_TwoBlocksMethod            
+            
+            if( $SS_NS_method = "penalty_projection" )
+            MODULE LA_TwoBlocksMethod
+               concrete_name = "LA_PenaltyProjection"
+               verbose_level = 2
+               H1_projection_of_explicit_pressure = $BS_refinement
+               augmentation_parameter = $DS_augmentation_parameter
+            END MODULE LA_TwoBlocksMethod
+
+            MODULE LA_TwoBlocksMethod
+               if( $SS_NS_A_solver = "LA_GMRES_IS" )
+               MODULE solver_A
+                  concrete_name = "LA_PreconditionedSolver"
+                  MODULE LA_IterativeSolver
+                     concrete_name = "LA_GMRES_IS"
+                     nb_iterations_max = 200000
+                     restart = 50
+                     MODULE LA_ConvergenceTest
+                        concrete_name = "LA_DefaultConvergenceTest"
+                        relative_tolerance = 1.e-8
+                        absolute_tolerance = 1.e-15
+                     END MODULE LA_ConvergenceTest
+                     verbose = false
+                  END MODULE LA_IterativeSolver
+                  MODULE LA_Preconditioner
+                     concrete_name = "LA_Jacobi_PC"
+                     smallest_inverted_item = 1.e-20
+                  END MODULE LA_Preconditioner
+               END MODULE solver_A
+            END MODULE LA_TwoBlocksMethod
+
+            if( $SS_NS_method = "penalty_projection" )
+            MODULE LA_TwoBlocksMethod
+               if( $SS_NS_L_solver = "LA_CG_IS" )
+               MODULE solver_L
+                  concrete_name = "LA_PreconditionedSolver"
+                  MODULE LA_IterativeSolver
+                     concrete_name = "LA_CG_IS"
+                     nb_iterations_max = 2000
+                     MODULE LA_ConvergenceTest
+                        concrete_name = "LA_DefaultConvergenceTest"
+                        relative_tolerance = 1.0e-10
+                        absolute_tolerance = 1.0e-50
+                     END MODULE LA_ConvergenceTest
+                     verbose = false
+                  END MODULE LA_IterativeSolver
+                  MODULE LA_Preconditioner
+                     concrete_name = "LA_Jacobi_PC"
+                     smallest_inverted_item = 1.0e-20
+                  END MODULE LA_Preconditioner
+               END MODULE solver_L
+                  
+               if( $SS_NS_L_solver = "EXT_UMFsolver_DS" )
+               MODULE solver_L
+                  concrete_name = "EXT_UMFsolver_DS"
+               END MODULE solver_L
+                  
+               if( $SS_NS_Mv_solver = "LA_CG_IS" )
+               MODULE solver_Mv
+                  concrete_name = "LA_PreconditionedSolver"
+                  MODULE LA_IterativeSolver
+                     concrete_name = "LA_CG_IS"
+                     nb_iterations_max = 2000
+                     MODULE LA_ConvergenceTest
+                        concrete_name = "LA_DefaultConvergenceTest"
+                        relative_tolerance = 1.0e-12
+                        absolute_tolerance = 1.0e-50
+                     END MODULE LA_ConvergenceTest
+                     verbose = false
+                  END MODULE LA_IterativeSolver
+                  MODULE LA_Preconditioner
+                     concrete_name = "LA_Jacobi_PC"
+                     smallest_inverted_item = 1.0e-20
+                  END MODULE LA_Preconditioner
+               END MODULE solver_Mv
+               
+               if( $SS_NS_Mv_solver = "EXT_UMFsolver_DS" )
+               MODULE solver_Mv
+                  concrete_name = "EXT_UMFsolver_DS"
+               END MODULE solver_Mv
+               
+            END MODULE LA_TwoBlocksMethod
+            
+         END MODULE FE_OneStepIteration#NS
+
+         if( $BS_StreamFunction )
+         MODULE FE_OneStepIteration#SF
+            concrete_name = "FE_StreamFunction"
+            
+            stream_function = "stream_function"
+            level_to_update = 0
+            
+            velocity = "vv"
+            level_of_velocity = 0
+            
+            if(  nb_ranks() = 1 )
+            MODULE LA_Matrix
+               concrete_name = "LA_PelMatrix"
+            END MODULE LA_Matrix
+            
+            if( nb_ranks() > 1 )
+            MODULE LA_Matrix
+               concrete_name = "LA_DistMatrix"
+            END MODULE LA_Matrix
+            
+            MODULE LA_Solver
+               concrete_name = "LA_PreconditionedSolver"
+               MODULE LA_IterativeSolver
+                  verbose = false
+                  concrete_name = "LA_CG_IS"
+                  nb_iterations_max = 2000
+                  MODULE LA_ConvergenceTest
+                     concrete_name = "LA_DefaultConvergenceTest"
+                     relative_tolerance = 1.0e-8
+                     absolute_tolerance = 1.0e-50
+                  END MODULE LA_ConvergenceTest
+               END MODULE LA_IterativeSolver
+               MODULE LA_Preconditioner
+                  concrete_name = "LA_Jacobi_PC"
+                  smallest_inverted_item = 1.e-20
+               END MODULE LA_Preconditioner
+            END MODULE LA_Solver
+         END MODULE FE_OneStepIteration#SF
+         
+         MODULE FE_OneStepIteration#Saver
+            concrete_name = "CH_AveragesSaver"
+            output_file = "averages.txt"
+            saving_times = regular_vector( 0.0, 500, $DS_time_end )
+            MODULE total_free_energy
+               thickness = $DS_e
+               quadrature_rule_provider = "GE_ProductQRprovider_5"
+               phase_field_1 = "cc_1"
+               level_1 = 0
+               phase_field_2 = "cc_2"
+               level_2 = 0
+               MODULE CH_BulkChemicalPotential
+                  coef_Sigma_1 = $DS_Sig1
+                  coef_Sigma_2 = $DS_Sig2
+                  coef_Sigma_3 = $DS_Sig3
+                  MODULE CH_BulkEnergy#F0
+                     concrete_name = $SS_bulk_energy_F0
+                  END MODULE CH_BulkEnergy#F0
+                  if( is_defined ( "SS_bulk_energy_P" ) )
+                  MODULE CH_BulkEnergy#P
+                     concrete_name = $SS_bulk_energy_P
+                     coef_lambda = $DS_coef_lambda
+                  END MODULE CH_BulkEnergy#P
+               END MODULE CH_BulkChemicalPotential
+            END MODULE total_free_energy
+            if( $BS_NavierStokes )
+            MODULE kinetic_energy
+               velocity = "vv"
+               level_of_velocity = 0
+               param_density = "dens"
+               quadrature_rule_provider = "GE_ProductQRprovider_5"
+            END MODULE kinetic_energy
+            if( $SS_phase_1 = "bubble" )
+            MODULE center_volume
+               phase_field = "cc_1"
+               level_of_phase_field = 0
+               velocity = "vv"
+               level_of_velocity = 0
+               thresholds = < 0.5 >
+               quadrature_rule_provider = "GE_ProductQRprovider_5"
+            END MODULE center_volume
+            if( $SS_phase_2 = "bubble" )
+            MODULE center_volume
+               phase_field = "cc_2"
+               level_of_phase_field = 0
+               velocity = "vv"
+               level_of_velocity = 0
+               thresholds = < 0.5 0.8 >
+               quadrature_rule_provider = "GE_ProductQRprovider_5"
+            END MODULE center_volume
+            if( $SS_phase_1 = "bubble" )
+            MODULE perimeter
+               phase_field = "cc_1"
+               level_of_phase_field = 0
+               quadrature_rule_provider = "GE_ProductQRprovider_5"
+            END MODULE perimeter
+            if( $SS_phase_2 = "bubble" )
+            MODULE perimeter
+               phase_field = "cc_2"
+               level_of_phase_field = 0
+               thresholds = < 0.5 0.8 >
+               quadrature_rule_provider = "GE_ProductQRprovider_5"
+            END MODULE perimeter
+         END MODULE FE_OneStepIteration#Saver
+
+         if( $BS_SaveCutlines )
+         MODULE FE_OneStepIteration#cl
+            concrete_name = "FE_FieldValue"
+            MODULE post_processing
+               type = "separated_files"
+               file_basename = "cutline"
+               banner = true
+            END MODULE post_processing
+            MODULE points_definition
+               type = "regular_cutline"
+               first_endpoint  = vector( $DS_xmin, $DS_ymin )
+               second_endpoint = vector( $DS_xmin, $DS_ymax )
+               number_of_points = 200
+            END MODULE points_definition
+            MODULE fields
+               MODULE field#1
+                  name = "cc_1"
+               END MODULE field#1
+               MODULE field#2
+                  name = "cc_2"
+               END MODULE field#2
+            END MODULE fields
+         END MODULE FE_OneStepIteration#cl
+         
+      END MODULE list_of_FE_OneStepIteration
+      
+   END MODULE FE_OneStepIteration
+   
+END MODULE PEL_Application

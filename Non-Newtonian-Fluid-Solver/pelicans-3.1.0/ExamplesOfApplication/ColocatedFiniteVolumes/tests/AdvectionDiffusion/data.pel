@@ -1,0 +1,224 @@
+MODULE PEL_Application
+  
+   concrete_name = "FE_StepByStepProgression"
+
+   $DS_velocity = 1.0
+   $DS_kappa = 0.5
+   
+   $DS_x = component( $DV_X, 0 )
+   $DS_Pe = $DS_velocity * 1.0 / $DS_kappa
+
+   $DV_solution = vector( 2.0 - ( exp( $DS_Pe * $DS_x ) - 1.0 )/
+                                (  exp( $DS_Pe ) - 1.0 ) )
+   
+   MODULE FE_TimeIterator
+      time_initial = 0.0
+      time_end = 0.01
+      time_step = 1.
+   END MODULE FE_TimeIterator
+
+   MODULE memory_trace
+      type = "trace_all_iterations"
+   END MODULE memory_trace
+   
+   graphics_output_times = regular_vector( 0.0, 1, 0.01 )
+
+   MODULE PDE_DomainAndFields
+   
+      verbose_level = 0
+      nb_space_dimensions = 2
+      type = "finite_element"
+   
+      MODULE GE_Meshing
+
+         concrete_name = "GE_BoxWithBoxes"
+
+         vertices_coordinate_0 = regular_vector( 0., 10, 1. )
+         vertices_coordinate_1 = regular_vector( 0., 3, 1. )
+         mesh_polyhedron = < "GE_Segment" "GE_Rectangle" >
+         
+      END MODULE GE_Meshing
+
+      MODULE macro_colors
+         horizontal = < "bottom" "top" >
+      END MODULE macro_colors
+
+      MODULE interior_fields
+         
+         MODULE u
+            name = "uu"
+            nb_components = 1
+            element_name = "PDE_2D_Q0_1node"
+            storage_depth = 1
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = < 0.0 >
+            END MODULE DOFs_values
+         END MODULE u
+ 
+      END MODULE interior_fields
+
+      MODULE boundary_conditions
+         
+         MODULE left
+            field = "uu"
+            type  = "Dirichlet"
+            color = "left"
+            imposed_value = < 2.0 >
+         END MODULE left
+         
+         MODULE right
+            field = "uu"
+            type  = "Dirichlet"
+            color = "right"
+            imposed_value = < 1.0 >
+         END MODULE right
+
+         MODULE horizontal
+            field = "uu"
+            type = "NeumannScalarCFV"
+            color = "horizontal"
+            flux_value = < 0.0 >
+         END MODULE horizontal
+        
+      END MODULE boundary_conditions
+
+      MODULE PDE_ResultSaver   
+         writers = < "PEL_TICwriter" >
+         
+         writing_mode = "text"
+         files_basename = "save" 
+
+         MODULE u
+            where_to_save = "at_cell_centers"
+            entry_name = "UU"
+            field = "uu"
+         END MODULE u
+         
+      END MODULE PDE_ResultSaver
+
+   END MODULE PDE_DomainAndFields
+
+   MODULE FE_SetOfParameters
+      advective_velocity = vector( $DS_velocity, 0.0 )
+      pi = < 0.0 >
+      MODULE FE_Parameter#solution
+         concrete_name = "FE_SpaceTimeParameter"
+         name = "solution"
+         nb_components = 1
+         value = $DV_solution
+      END MODULE FE_Parameter#solution
+   END MODULE FE_SetOfParameters
+
+   MODULE FE_OneStepIteration
+      
+      concrete_name = "FE_SplitSystem"
+      
+      MODULE list_of_FE_OneStepIteration
+         
+         MODULE FE_OneStepIteration#check
+            concrete_name = "AP_CheckDiscretizationCFV"
+            fields = < "uu" >
+            fields_with_BCs = < "uu" >
+            max_allowed_negative_distance_to_face = -1.e-8
+            max_allowed_normal_scalar_VtoFVcenter = 1.e-8
+            min_distance_between_centers = 1.e-8
+         END MODULE FE_OneStepIteration#check
+         
+         MODULE FE_OneStepIteration#cvadv
+            
+            concrete_name = "AP_AdvectionDiffusion1CFV"
+            
+            unknown_field = "uu"
+            level_to_update = 0
+            level_of_explicit = 0
+            
+            coef_unsteady = 0.0
+            coef_diffusion = $DS_kappa
+            param_source = "pi"
+            
+            param_advective_velocity = "advective_velocity"
+            
+            quadrature_rule_provider_for_advective_velocity = "GE_QRprovider_1"
+            quadrature_rule_provider_for_source = "GE_QRprovider_1"
+            
+            MODULE LA_Matrix
+               concrete_name = "LA_PelMatrix"
+            END MODULE LA_Matrix
+            
+            MODULE LA_Solver
+               concrete_name = "LA_PreconditionedSolver"
+               MODULE LA_IterativeSolver
+                  concrete_name = "LA_GMRES_IS"
+                  nb_iterations_max = 200000
+                  restart = 50
+                  MODULE LA_ConvergenceTest
+                     concrete_name = "LA_DefaultConvergenceTest"
+                     relative_tolerance = 1.e-12
+                     absolute_tolerance = 1.e-20
+                  END MODULE LA_ConvergenceTest
+                  verbose = true
+               END MODULE LA_IterativeSolver
+               MODULE LA_Preconditioner
+                  concrete_name = "LA_Jacobi_PC"
+                  smallest_inverted_item = 1.e-12
+               END MODULE LA_Preconditioner
+            END MODULE LA_Solver
+            
+         END MODULE FE_OneStepIteration#cvadv
+         
+         MODULE FE_OneStepIteration#cl
+            concrete_name = "FE_FieldValue"
+            MODULE post_processing
+               type = "separated_files"
+               file_basename = "cutline"
+               banner = false
+            END MODULE post_processing
+            MODULE points_definition
+               type = "regular_cutline"
+               first_endpoint  = < 0.0 0.5 >
+               second_endpoint = < 1.0 0.5 >
+               number_of_points = 100
+            END MODULE points_definition
+            MODULE fields
+               MODULE field#1
+                  name = "uu"
+               END MODULE field#1
+            END MODULE fields
+            MODULE expressions
+               MODULE expr#1
+                  value = $DV_solution
+               END MODULE expr#1
+            END MODULE expressions
+         END MODULE FE_OneStepIteration#cl
+
+         MODULE FE_OneStepIteration#ca
+            concrete_name = "FE_ComparatorWithAnalytic"
+            field = "uu"
+            level = 0
+            norms = vector( "L2_error_norm" )
+            norm_saving_names = vector( "XLDU" )
+            solution = $DV_solution
+            quadrature_rule_provider = "GE_QRprovider_5"
+         END MODULE FE_OneStepIteration#ca
+
+         MODULE FE_OneStepIteration#saver
+            concrete_name = "FE_ParameterSaver"
+            MODULE parameters
+               MODULE sol
+                  parameter_name = "solution"
+                  entry_name = "SOL"
+                  type = "at_cell_centers"
+               END MODULE sol
+               MODULE adv_velo
+                  parameter_name = "advective_velocity"
+                  entry_name = "ADV"
+                  type = "at_cell_centers"
+               END MODULE adv_velo
+            END MODULE parameters
+         END MODULE FE_OneStepIteration#saver
+         
+      END MODULE list_of_FE_OneStepIteration
+      
+   END MODULE FE_OneStepIteration
+END MODULE PEL_Application

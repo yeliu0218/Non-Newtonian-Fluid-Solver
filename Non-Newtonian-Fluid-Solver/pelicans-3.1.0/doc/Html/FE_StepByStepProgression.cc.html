@@ -1,0 +1,673 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>FE_StepByStepProgression.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="FE_StepByStepProgression.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="FEpack-tree.html"><span>Tree</span></a>
+    <a href="FE_StepByStepProgression.html"><span>Class</span></a>
+    <a href="FE_StepByStepProgression.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="FEpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE_StepByStepProgression</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Communicator</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Exec</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ListIdentity</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_MemoryTracer</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_System</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Root</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Timer</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_DomainAndFields</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_InterfaceAndFields</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_ResultSaver</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_SetOfDomains</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE_OneStepIteration</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE_SetOfParameters</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE_TimeIteratorAdapter</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE_TimeIterator</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">intVector</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">doubleVector</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;iomanip&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;iostream&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;sstream&gt;
+
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> ;
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> ;
+
+</font><font class="kw2">size_t</font><font class="text"> </font><font class="kw3">FE_StepByStepProgression</font><font class="text">::graphics_level = 0 ;
+
+</font><font class="kw3">FE_StepByStepProgression</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">FE_StepByStepProgression</font><font class="text">:: PROTOTYPE = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">FE_StepByStepProgression</font><font class="text">() ;
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">FE_StepByStepProgression</font><font class="text">:: </font><font class="kw3">FE_StepByStepProgression</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_Application</font><font class="text">( </font><font class="string">&quot;FE_StepByStepProgression&quot;</font><font class="text"> )
+   , TIME_ADAPT( 0 )
+   , TIME_IT( 0 )
+   , ONE_IT( 0 )
+   , GRAPHICS_TIMES( 0 )
+   , GRAPHICS_NEXT_TIME( </font><font class="kw3">PEL</font><font class="text">::bad_double() )
+   , SAVER_TIMES( 0 )
+   , SAVER_NEXT_TIME( </font><font class="kw3">PEL</font><font class="text">::bad_double() )
+   , overall( 0 )
+   , POST_TIMER( 0 )
+   , SAVE_TIMER( 0 )
+   , SAVEFG( </font><font class="kw1">true</font><font class="text"> )
+   , VERBOSE( </font><font class="kw1">true</font><font class="text"> )
+{
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">FE_StepByStepProgression</font><font class="text">*
+</font><font class="kw3">FE_StepByStepProgression</font><font class="text">:: create( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_StepByStepProgression:: create&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( exp != 0 ) ;
+
+   </font><font class="kw3">FE_StepByStepProgression</font><font class="text">* result = 
+                              </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">FE_StepByStepProgression</font><font class="text">( a_owner, exp ) ;
+   result-&gt;register_storable_objects() ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;owner() == a_owner ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">FE_StepByStepProgression</font><font class="text">*
+</font><font class="kw3">FE_StepByStepProgression</font><font class="text">:: create_replica( 
+                                      </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                      </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_StepByStepProgression:: create_replica&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_PRE( a_owner, exp ) ) ;
+
+   </font><font class="kw3">FE_StepByStepProgression</font><font class="text">* result = 
+                              </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">FE_StepByStepProgression</font><font class="text">( a_owner, exp ) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_POST( result, a_owner, exp ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">FE_StepByStepProgression</font><font class="text">:: </font><font class="kw3">FE_StepByStepProgression</font><font class="text">( 
+                                            </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                            </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_Application</font><font class="text">( a_owner, exp )
+   , TIME_ADAPT( 0 )
+   , TIME_IT( 0 )
+   , DOM( 0 )
+   , SDOMS( 0 )
+   , PRMS( 0 )
+   , ONE_IT( 0 )
+   , GRAPHICS_TIMES( 0 )
+   , GRAPHICS_NEXT_TIME( </font><font class="kw3">PEL</font><font class="text">::max_double() )
+   , SAVER_TIMES( 0 )
+   , SAVER_NEXT_TIME( </font><font class="kw3">PEL</font><font class="text">::max_double() )
+   , overall( </font><font class="kw3">PEL_Timer</font><font class="text">::create( </font><font class="kw1">this</font><font class="text"> ) )
+   , POST_TIMER( </font><font class="kw3">PEL_Timer</font><font class="text">::create( </font><font class="kw1">this</font><font class="text"> ) )
+   , SAVE_TIMER( </font><font class="kw3">PEL_Timer</font><font class="text">::create( </font><font class="kw1">this</font><font class="text"> ) )
+   , SAVEFG( </font><font class="kw1">true</font><font class="text"> )
+   , LAST_MEM_IT( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+   , VERBOSE( </font><font class="kw1">true</font><font class="text"> )
+{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_StepByStepProgression:: FE_StepByStepProgression&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">if</font><font class="text">( exp-&gt;has_entry( </font><font class="string">&quot;verbose&quot;</font><font class="text"> ) ) VERBOSE = exp-&gt;bool_data( </font><font class="string">&quot;verbose&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw1">if</font><font class="text">( exp-&gt;has_module( </font><font class="string">&quot;memory_trace&quot;</font><font class="text"> ) )
+   {
+      </font><font class="kw3">PEL_MemoryTracer</font><font class="text">::object()-&gt;enable_memory_trace() ;
+      </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* ee =
+                       exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;memory_trace&quot;</font><font class="text"> ) ;
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; type = ee-&gt;string_data( </font><font class="string">&quot;type&quot;</font><font class="text"> ) ;
+      ee-&gt;test_data_in( </font><font class="string">&quot;type&quot;</font><font class="text">, </font><font class="string">&quot;trace_all_iterations,trace_first_iterations&quot;</font><font class="text"> ) ;
+      </font><font class="kw1">if</font><font class="text">( type == </font><font class="string">&quot;trace_first_iterations&quot;</font><font class="text"> )
+      {
+         LAST_MEM_IT = ee-&gt;int_data( </font><font class="string">&quot;last_iteration_checked&quot;</font><font class="text"> ) ;
+      }
+      ee-&gt;destroy() ; ee = 0 ;
+   }
+   
+   </font><font class="kw1">if</font><font class="text">( VERBOSE ) display_memory_usage( </font><font class="kw3">PEL</font><font class="text">::out(), 4 ) ;
+
+   </font><font class="kw1">if</font><font class="text">( </font><font class="kw3">PEL_MemoryTracer</font><font class="text">::object()-&gt;memory_trace_enabled() )
+   {
+      </font><font class="kw3">PEL_MemoryTracer</font><font class="text">::object()-&gt;trace(
+                   </font><font class="kw3">PEL_MemoryTracer</font><font class="text">::object()-&gt;message( </font><font class="string">&quot;Start program&quot;</font><font class="text"> ) ) ;
+   }
+   
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> geom = </font><font class="string">&quot;cartesian&quot;</font><font class="text"> ;
+   </font><font class="kw1">if</font><font class="text">( exp-&gt;has_entry( </font><font class="string">&quot;geometry&quot;</font><font class="text"> ) )
+   {
+      geom = exp-&gt;string_data( </font><font class="string">&quot;geometry&quot;</font><font class="text"> ) ;
+      exp-&gt;test_data_in( </font><font class="string">&quot;geometry&quot;</font><font class="text">, </font><font class="string">&quot;cartesian,axisymmetrical&quot;</font><font class="text"> ) ;
+      exp-&gt;set_default( </font><font class="string">&quot;geometry&quot;</font><font class="text">, </font><font class="string">&quot;cartesian&quot;</font><font class="text"> ) ;
+   }
+   </font><font class="kw1">if</font><font class="text">( geom == </font><font class="string">&quot;cartesian&quot;</font><font class="text"> )
+   {
+      </font><font class="kw3">FE</font><font class="text">::set_geometry( </font><font class="kw3">FE</font><font class="text">::cartesian ) ;
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( geom == </font><font class="string">&quot;axisymmetrical&quot;</font><font class="text"> )
+   {
+      </font><font class="kw3">FE</font><font class="text">::set_geometry( </font><font class="kw3">FE</font><font class="text">::axisymmetrical ) ;
+   }
+   </font><font class="kw1">if</font><font class="text">( VERBOSE )
+   {   
+      </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="string">&quot;*** Building geometry&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+      </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="string">&quot;    geometry : \&quot;&quot; &lt;&lt; geom &lt;&lt; &quot;</font><font class="text">\</font><font class="string">&quot;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+      </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   }
+
+   </font><font class="comment">// PDE_DomainAndFields:
+</font><font class="text">   </font><font class="kw1">if</font><font class="text">( exp-&gt;has_module( </font><font class="string">&quot;PDE_DomainAndFields&quot;</font><font class="text"> ) )
+   {
+      </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* ee =
+                       exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;PDE_DomainAndFields&quot;</font><font class="text"> ) ;
+      </font><font class="kw3">PEL_MemoryTracer</font><font class="text">::object()-&gt;start_event( </font><font class="string">&quot;Building PDE_DomainAndFields&quot;</font><font class="text"> ) ;
+      DOM = </font><font class="kw3">PDE_DomainAndFields</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, ee, </font><font class="kw3">PEL_Exec</font><font class="text">::communicator() ) ;
+      </font><font class="kw3">PEL_MemoryTracer</font><font class="text">::object()-&gt;stop_event() ;
+      ee-&gt;destroy() ; ee = 0 ;
+      
+      </font><font class="kw1">if</font><font class="text">( geom == </font><font class="string">&quot;axisymmetrical&quot;</font><font class="text"> &amp;&amp; DOM-&gt;nb_space_dimensions() != 2 )
+      {
+         </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_bad_data_value(
+            exp, </font><font class="string">&quot;geometry&quot;</font><font class="text">,
+            </font><font class="string">&quot;\&quot;</font><font class="text">axisymmetrical\</font><font class="string">&quot; is only allowed in 2D geometry&quot;</font><font class="text"> ) ;
+      }
+   }
+
+   </font><font class="comment">// PDE_SetOfDomains:
+</font><font class="text">   </font><font class="kw1">if</font><font class="text">( exp-&gt;has_module( </font><font class="string">&quot;PDE_SetOfDomains&quot;</font><font class="text"> ) )
+   {
+      </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* ee =
+                         exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;PDE_SetOfDomains&quot;</font><font class="text"> ) ;
+      </font><font class="kw3">PEL_MemoryTracer</font><font class="text">::object()-&gt;start_event( </font><font class="string">&quot;Building PDE_SetOfDomains&quot;</font><font class="text"> ) ;
+      SDOMS = </font><font class="kw3">PDE_SetOfDomains</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, ee ) ;
+      </font><font class="kw3">PEL_MemoryTracer</font><font class="text">::object()-&gt;stop_event() ;
+      ee-&gt;destroy() ; ee = 0 ;
+
+      </font><font class="kw1">if</font><font class="text">( geom == </font><font class="string">&quot;axisymmetrical&quot;</font><font class="text"> )
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;SDOMS-&gt;nb_domains() ; ++i )
+            </font><font class="kw1">if</font><font class="text">( SDOMS-&gt;domain( i )-&gt;nb_space_dimensions() != 2 )
+               </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_bad_data_value(
+                  exp, </font><font class="string">&quot;geometry&quot;</font><font class="text">,
+                  </font><font class="string">&quot;\&quot;</font><font class="text">axisymmetrical\</font><font class="string">&quot; is only allowed in 2D geometry&quot;</font><font class="text"> ) ;
+   }
+   </font><font class="kw1">if</font><font class="text">( ( DOM == 0 &amp;&amp; SDOMS == 0 ) || ( DOM != 0 &amp;&amp; SDOMS != 0 ) )
+   {
+      </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_module_error(
+         exp,
+         </font><font class="string">&quot;A sub-module \&quot;</font><font class="kw3">PDE_DomainAndFields</font><font class="text">\</font><font class="string">&quot;\n&quot;
+</font><font class="text">         </font><font class="string">&quot;          or \&quot;</font><font class="kw3">PDE_SetOfDomains</font><font class="text">\</font><font class="string">&quot;\n&quot;
+</font><font class="text">         </font><font class="string">&quot;is expected&quot;</font><font class="text"> ) ;
+   }
+
+   </font><font class="kw1">if</font><font class="text">( VERBOSE ) display_memory_usage( </font><font class="kw3">PEL</font><font class="text">::out(), 4 ) ;
+
+   </font><font class="comment">// FE_SetOfParameters:
+</font><font class="text">   {
+      </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* ee =
+                     exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;FE_SetOfParameters&quot;</font><font class="text"> ) ;
+      </font><font class="kw3">PEL_MemoryTracer</font><font class="text">::object()-&gt;start_event( </font><font class="string">&quot;Building FE_SetOfParameters&quot;</font><font class="text"> ) ;
+      PRMS = 
+         ( DOM != 0 ? </font><font class="kw3">FE_SetOfParameters</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, DOM, ee )
+                    : </font><font class="kw3">FE_SetOfParameters</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, SDOMS, ee ) ) ;
+      </font><font class="kw3">PEL_MemoryTracer</font><font class="text">::object()-&gt;stop_event() ;
+      ee-&gt;destroy() ; ee = 0 ;
+   }
+   
+   </font><font class="comment">// FE_OneStepIteration:
+</font><font class="text">   {
+      </font><font class="kw1">if</font><font class="text">( VERBOSE ) </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="string">&quot;*** building FE_OneStepIteration&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* ee =
+                         exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;FE_OneStepIteration&quot;</font><font class="text"> ) ;
+      </font><font class="kw3">PEL_MemoryTracer</font><font class="text">::object()-&gt;start_event( </font><font class="string">&quot;Building FE_OneStepIteration&quot;</font><font class="text"> ) ;
+      ONE_IT = 
+         ( DOM != 0 ? </font><font class="kw3">FE_OneStepIteration</font><font class="text">::make( </font><font class="kw1">this</font><font class="text">, DOM, PRMS,  ee )
+                    : </font><font class="kw3">FE_OneStepIteration</font><font class="text">::make( </font><font class="kw1">this</font><font class="text">, SDOMS, PRMS,  ee ) ) ;
+      </font><font class="kw3">PEL_MemoryTracer</font><font class="text">::object()-&gt;stop_event() ;
+      ee-&gt;destroy() ; ee = 0 ;
+      </font><font class="kw3">FE_OneStepIteration</font><font class="text">::reset_standard_times() ;
+   }
+
+   </font><font class="comment">// FE_TimeIterator:
+</font><font class="text">   {
+      </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* ee = exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;FE_TimeIterator&quot;</font><font class="text"> ) ;
+      TIME_IT = </font><font class="kw3">FE_TimeIterator</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, ee ) ;
+      ee-&gt;destroy() ; ee = 0 ;
+   
+      </font><font class="kw1">if</font><font class="text">( exp-&gt;has_module( </font><font class="string">&quot;FE_TimeIteratorAdapter&quot;</font><font class="text"> ) )
+      {
+         ee = exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;FE_TimeIteratorAdapter&quot;</font><font class="text"> ) ;
+         TIME_ADAPT =
+            ( DOM != 0 ? </font><font class="kw3">FE_TimeIteratorAdapter</font><font class="text">::make( TIME_IT, DOM, PRMS, ee )
+                       : </font><font class="kw3">FE_TimeIteratorAdapter</font><font class="text">::make( TIME_IT, SDOMS, PRMS, ee ) ) ;
+         ee-&gt;destroy() ; ee = 0 ;
+      }
+      </font><font class="kw1">else
+</font><font class="text">      {
+         TIME_ADAPT =
+            ( DOM != 0 ? </font><font class="kw3">FE_TimeIteratorAdapter</font><font class="text">::make_default( TIME_IT,   DOM, PRMS )
+                       : </font><font class="kw3">FE_TimeIteratorAdapter</font><font class="text">::make_default( TIME_IT, SDOMS, PRMS ) ) ;
+      }
+   }
+
+   </font><font class="kw1">if</font><font class="text">( exp-&gt;has_entry( </font><font class="string">&quot;graphics_output_times&quot;</font><font class="text"> ) )
+   {
+      GRAPHICS_TIMES = exp-&gt;doubleVector_data( </font><font class="string">&quot;graphics_output_times&quot;</font><font class="text"> ) ;
+   }
+
+   </font><font class="kw1">if</font><font class="text">( exp-&gt;has_entry( </font><font class="string">&quot;state_saving_times&quot;</font><font class="text"> ) )
+   {
+      SAVER_TIMES = exp-&gt;doubleVector_data( </font><font class="string">&quot;state_saving_times&quot;</font><font class="text"> ) ;
+   }
+   </font><font class="kw1">if</font><font class="text">( exp-&gt;has_entry( </font><font class="string">&quot;save_grid_and_fields_for_postprocessing&quot;</font><font class="text"> ) )
+   {
+      SAVEFG = exp-&gt;bool_data( </font><font class="string">&quot;save_grid_and_fields_for_postprocessing&quot;</font><font class="text"> ) ;
+   }
+
+   </font><font class="kw1">if</font><font class="text">( VERBOSE &amp;&amp; </font><font class="kw3">PEL_Exec</font><font class="text">::communicator()-&gt;rank() == 0 )
+   {
+      ONE_IT-&gt;print( </font><font class="kw3">PEL</font><font class="text">::out(), 4 ) ;
+   }
+
+   overall-&gt;start() ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">FE_StepByStepProgression</font><font class="text">:: ~</font><font class="kw3">FE_StepByStepProgression</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">FE_StepByStepProgression</font><font class="text">:: time_iterator( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_StepByStepProgression:: time_iterator&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result = TIME_IT ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;is_under_ownership_of( </font><font class="kw1">this</font><font class="text"> ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">FE_SetOfParameters</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">FE_StepByStepProgression</font><font class="text">:: set_of_parameters( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_StepByStepProgression:: set_of_parameters&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw3">FE_SetOfParameters</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result = PRMS ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;is_under_ownership_of( </font><font class="kw1">this</font><font class="text"> ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PDE_DomainAndFields</font><font class="text">* 
+</font><font class="kw3">FE_StepByStepProgression</font><font class="text">:: domain_and_fields( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_StepByStepProgression:: domain_and_fields&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw3">PDE_DomainAndFields</font><font class="text">* result = DOM ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;is_under_ownership_of( </font><font class="kw1">this</font><font class="text"> ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_StepByStepProgression</font><font class="text">:: display_memory_usage(
+                                 </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostream</font><font class="text">&amp; os, </font><font class="kw2">size_t</font><font class="text"> indent_width )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_StepByStepProgression:: display_memory_usage&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( os ) ;
+
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text"> s( indent_width, </font><font class="string">' '</font><font class="text"> ) ;
+   os &lt;&lt; s &lt;&lt; </font><font class="string">&quot;Memory usage: &quot;</font><font class="text"> ;
+   </font><font class="kw3">PEL_MemoryTracer</font><font class="text">::display_memory( os, </font><font class="kw3">PEL_MemoryTracer</font><font class="text">::used_memory() ) ;
+   os &lt;&lt; </font><font class="kw2">endl
+</font><font class="text">      &lt;&lt; s &lt;&lt; </font><font class="string">&quot;Number of objects: &quot;
+</font><font class="text">      &lt;&lt; </font><font class="kw3">PEL_Object</font><font class="text">::GetNumberOf_PEL_objects()
+      &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;   
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_StepByStepProgression</font><font class="text">:: add_storable_objects( </font><font class="kw3">PEL_ListIdentity</font><font class="text">* list )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_StepByStepProgression:: add_storable_objects&quot;</font><font class="text"> ) ;
+   list-&gt;extend( TIME_ADAPT ) ;
+   </font><font class="kw1">if</font><font class="text">( DOM != 0 )
+   {
+      list-&gt;extend( DOM ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;SDOMS-&gt;nb_domains() ; ++i )
+      {
+         list-&gt;extend( SDOMS-&gt;domain( i ) ) ;
+      }
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;SDOMS-&gt;nb_interfaces() ; ++i )
+      {
+         list-&gt;extend( SDOMS-&gt;interface( i ) ) ;
+      }
+   }
+   ONE_IT-&gt;register_storable_objects( list ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_StepByStepProgression</font><font class="text">:: run( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_StepByStepProgression:: run&quot;</font><font class="text"> ) ; 
+
+   check_times( </font><font class="string">&quot;graphics_output_times&quot;</font><font class="text">, GRAPHICS_TIMES ) ;
+   check_times( </font><font class="string">&quot;state_saving_times&quot;</font><font class="text">, SAVER_TIMES ) ;
+   
+   GRAPHICS_NEXT_TIME = TIME_IT-&gt;next_time_in_table( GRAPHICS_TIMES ) ;
+   SAVER_NEXT_TIME = TIME_IT-&gt;next_time_in_table( SAVER_TIMES ) ;
+   
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="kw2">endl</font><font class="text"> &lt;&lt; </font><font class="string">&quot;++++++ TIME STEPPING &quot;</font><font class="text"> 
+              &lt;&lt; </font><font class="string">&quot; *** INITIAL TIME = &quot;</font><font class="text"> &lt;&lt; TIME_IT-&gt;initial_time()
+              &lt;&lt; </font><font class="string">&quot; *** FINAL TIME = &quot;</font><font class="text"> &lt;&lt; TIME_IT-&gt;final_time()
+              &lt;&lt; </font><font class="string">&quot; ++++++&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+
+   </font><font class="kw3">PEL_MemoryTracer</font><font class="text">::object()-&gt;start_event( </font><font class="string">&quot;Time step initialization&quot;</font><font class="text"> ) ;
+   ONE_IT-&gt;do_before_time_stepping( TIME_IT ) ;
+   </font><font class="kw3">PEL_MemoryTracer</font><font class="text">::object()-&gt;stop_event() ;
+
+   save_for_post_processing( </font><font class="kw1">true</font><font class="text"> ) ;
+
+   </font><font class="kw1">for</font><font class="text">( TIME_IT-&gt;start() ; !TIME_IT-&gt;is_finished() ; TIME_IT-&gt;go_next_time() )
+   {
+      </font><font class="kw1">if</font><font class="text">( VERBOSE )
+      {
+         </font><font class="kw2">std</font><font class="text">::streamsize p = </font><font class="kw3">PEL</font><font class="text">::out().precision() ;
+         </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">setprecision</font><font class="text">( 12 ) &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;;
+         </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="string">&quot;++++++ ITERATION = &quot;</font><font class="text"> &lt;&lt; TIME_IT-&gt;iteration_number()
+                    &lt;&lt; </font><font class="string">&quot; *** TIME = &quot;</font><font class="text"> &lt;&lt; TIME_IT-&gt;time()
+                    &lt;&lt; </font><font class="string">&quot; *** TIME STEP = &quot;</font><font class="text"> &lt;&lt; TIME_IT-&gt;time_step()
+                    &lt;&lt; </font><font class="string">&quot; ++++++&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+         </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">setprecision</font><font class="text">( p ) ;
+      }
+
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> mem_label ;
+      mem_label &lt;&lt; </font><font class="string">&quot;Time iteration &quot;</font><font class="text"> &lt;&lt; TIME_IT-&gt;iteration_number() ;
+      </font><font class="kw3">PEL_MemoryTracer</font><font class="text">::object()-&gt;start_event( mem_label.str() ) ;
+
+      TIME_ADAPT-&gt;initialize_time_step() ;
+      ONE_IT-&gt;do_before_inner_iterations_stage( TIME_IT ) ;
+      ONE_IT-&gt;do_inner_iterations_stage( TIME_IT ) ;
+      </font><font class="kw1">if</font><font class="text">( ONE_IT-&gt;inner_iterations_stage_failed() )
+      {
+         TIME_ADAPT-&gt;set_time_iteration_failed() ;
+         ONE_IT-&gt;reset_after_inner_iterations_stage_failure() ;
+      }
+      </font><font class="kw1">else
+</font><font class="text">      {
+         ONE_IT-&gt;do_after_inner_iterations_stage( TIME_IT ) ;
+         ONE_IT-&gt;adapt_time_iterator( TIME_ADAPT ) ;
+         TIME_ADAPT-&gt;adapt_time_iterator() ;
+         </font><font class="kw1">if</font><font class="text">( !TIME_IT-&gt;just_went_back() )
+         {
+            ONE_IT-&gt;do_after_time_adaptation( TIME_IT ) ;
+            save_for_post_processing( </font><font class="kw1">false</font><font class="text"> ) ;
+            save_for_restart() ;
+         }
+      }
+
+      </font><font class="kw1">if</font><font class="text">( VERBOSE )
+      {
+         </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+         display_memory_usage( </font><font class="kw3">PEL</font><font class="text">::out(), 3 ) ;
+      }
+
+      </font><font class="kw3">PEL_MemoryTracer</font><font class="text">::object()-&gt;stop_event() ;
+      </font><font class="kw1">if</font><font class="text">( </font><font class="kw3">PEL_MemoryTracer</font><font class="text">::object()-&gt;memory_trace_enabled() &amp;&amp;
+          TIME_IT-&gt;iteration_number() == LAST_MEM_IT )
+      {
+         </font><font class="kw3">PEL_MemoryTracer</font><font class="text">::object()-&gt;disable_memory_trace() ;
+         </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+      }
+   }
+
+   </font><font class="kw1">if</font><font class="text">( VERBOSE )
+   {
+      </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      </font><font class="kw1">if</font><font class="text">( TIME_IT-&gt;finished_reason() == </font><font class="kw3">FE_TimeIterator</font><font class="text">::UserCheckpoint )
+         </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="string">&quot;++++++ TIME STEPPING ENDED BY USER &quot;</font><font class="text"> ;
+      </font><font class="kw1">else
+</font><font class="text">         </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="string">&quot;++++++ TIME STEPPING COMPLETED &quot;</font><font class="text"> ;
+      </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="string">&quot; ++++++&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   }
+
+   ONE_IT-&gt;do_after_time_stepping() ;
+
+   save_for_post_processing( </font><font class="kw1">true</font><font class="text"> ) ;
+   
+   overall-&gt;stop() ;
+   
+   </font><font class="kw1">if</font><font class="text">( !VERBOSE ) 
+   {
+      </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="kw2">endl</font><font class="text"> &lt;&lt; </font><font class="string">&quot;++++++ &quot;</font><font class="text"> &lt;&lt; TIME_IT-&gt;iteration_number() 
+                 &lt;&lt; </font><font class="string">&quot; ITERATIONS ++++++&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   }
+   
+   display_timers( 0 ) ;
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_StepByStepProgression</font><font class="text">:: save_for_post_processing( </font><font class="kw1">bool</font><font class="text"> force )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_StepByStepProgression:: save_for_post_processing&quot;</font><font class="text"> ) ;
+   POST_TIMER-&gt;start() ;
+   
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw2">size_t</font><font class="text"> last_iter_saved = </font><font class="kw3">PEL</font><font class="text">::bad_index() ;
+   </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> iter =
+      TIME_IT-&gt;is_started() ? TIME_IT-&gt;iteration_number() : 0 ;
+   </font><font class="kw1">bool</font><font class="text"> </font><font class="kw1">const</font><font class="text"> save_iteration =
+      force || </font><font class="kw3">FE_TimeIterator</font><font class="text">::greater_or_equal( TIME_IT-&gt;time(),
+                                                  GRAPHICS_NEXT_TIME ) ;
+   
+   </font><font class="kw1">if</font><font class="text">( save_iteration &amp;&amp; iter!=last_iter_saved )
+   {
+      </font><font class="kw1">if</font><font class="text">( DOM != 0 )
+      {
+         do_save_for_post( DOM-&gt;result_saver() ) ;
+         display_timers( 3 ) ;
+      }
+      </font><font class="kw1">else
+</font><font class="text">      {
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;SDOMS-&gt;nb_domains() ; ++i )
+         {
+            do_save_for_post( SDOMS-&gt;domain( i )-&gt;result_saver() )  ;
+            display_timers( 3 ) ;
+         }
+      }
+      last_iter_saved = iter ;
+      GRAPHICS_NEXT_TIME = TIME_IT-&gt;next_time_in_table( GRAPHICS_TIMES ) ;
+   }
+   POST_TIMER-&gt;stop() ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_StepByStepProgression</font><font class="text">:: display_timers( </font><font class="kw2">size_t</font><font class="text"> indent_width ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_StepByStepProgression:: display_timers&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> space( indent_width, </font><font class="string">' '</font><font class="text"> ) ;
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="kw2">endl</font><font class="text"> &lt;&lt; space &lt;&lt; </font><font class="string">&quot;++++++ TIMERS  ++++++&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; space &lt;&lt; </font><font class="string">&quot;total time : &quot;</font><font class="text"> ;
+   overall-&gt;print( </font><font class="kw3">PEL</font><font class="text">::out(), 0 ) ; </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; space &lt;&lt; </font><font class="string">&quot;   including \&quot;</font><font class="text">save_for_post_processing\</font><font class="string">&quot; : &quot;</font><font class="text"> ;
+   POST_TIMER-&gt;print( </font><font class="kw3">PEL</font><font class="text">::out(), 0 ) ; </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; space &lt;&lt; </font><font class="string">&quot;   including \&quot;</font><font class="text">save_for_restart\</font><font class="string">&quot; : &quot;</font><font class="text"> ;
+   SAVE_TIMER-&gt;print( </font><font class="kw3">PEL</font><font class="text">::out(), 0 ) ; </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw3">FE_OneStepIteration</font><font class="text">::print_standard_times( </font><font class="kw3">PEL</font><font class="text">::out(), indent_width ) ;
+   ONE_IT-&gt;print_additional_times( </font><font class="kw3">PEL</font><font class="text">::out(), indent_width ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_StepByStepProgression</font><font class="text">:: do_save_for_post( </font><font class="kw3">PDE_ResultSaver</font><font class="text">* rs )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   rs-&gt;start_cycle() ;
+
+   </font><font class="kw2">std</font><font class="text">::streamsize p = </font><font class="kw3">PEL</font><font class="text">::out().precision() ;
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">setprecision</font><font class="text">(12) ;
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="kw2">endl
+</font><font class="text">              &lt;&lt; </font><font class="string">&quot;   +++ SAVE FOR POSTPROCESSING&quot;
+</font><font class="text">              &lt;&lt; </font><font class="string">&quot; *** CYCLE = &quot;</font><font class="text"> &lt;&lt; rs-&gt;cycle_number()
+              &lt;&lt; </font><font class="string">&quot; *** TIME = &quot;</font><font class="text">  &lt;&lt; TIME_IT-&gt;time()
+              &lt;&lt; </font><font class="string">&quot; ++++++&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">setprecision</font><font class="text">(p) ;
+
+   </font><font class="kw1">if</font><font class="text">( SAVEFG ) </font><font class="kw1">if</font><font class="text">( !TIME_IT-&gt;is_started() ) rs-&gt;save_grid() ;
+   ONE_IT-&gt;do_additional_savings( TIME_IT, rs ) ;
+   </font><font class="kw1">if</font><font class="text">( SAVEFG ) rs-&gt;save_fields( graphics_level ) ;
+   rs-&gt;save_time( TIME_IT-&gt;time() ) ;
+
+   rs-&gt;terminate_cycle() ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_StepByStepProgression</font><font class="text">:: check_times( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; list_name,
+                                        </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; dates ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_StepByStepProgression:: check_times&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">if</font><font class="text">( !TIME_IT-&gt;table_of_times_is_valid( dates ) )
+   {
+      TIME_IT-&gt;raise_invalid_table_of_times( </font><font class="string">&quot;FE_StepByStepProgression&quot;</font><font class="text">,
+                                             list_name,
+                                             dates ) ;
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_StepByStepProgression</font><font class="text">:: save_for_restart( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   SAVE_TIMER-&gt;start() ;
+   
+   </font><font class="kw1">bool</font><font class="text"> save_iteration =
+      </font><font class="kw3">FE_TimeIterator</font><font class="text">::greater_or_equal( TIME_IT-&gt;time(), SAVER_NEXT_TIME ) ;
+   </font><font class="kw1">if</font><font class="text">( save_iteration )
+   {
+      write_storable_objects() ;
+      SAVER_NEXT_TIME = TIME_IT-&gt;next_time_in_table( SAVER_TIMES ) ;
+   }
+   SAVE_TIMER-&gt;stop() ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">FE_StepByStepProgression</font><font class="text">:: invariant( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( </font><font class="kw3">PEL_Application</font><font class="text">::invariant() ) ;
+
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+
+
+
+</font>
+</pre>
+</body>
+</html>

@@ -1,0 +1,40 @@
+BATCH
+ECHO 0 STAT PS
+
+FRAME WHITE 29. 21.
+
+FILE 'save.gene' FORM END
+
+(i_cycle=1)
+
+(XF=SR1)
+(XT=SR1)
+(XFE=SR1)
+
+LOOP
+
+   CYCLE (i_cycle)
+
+   PHYS TIME TABL TIME
+   PHYS 0 XNOD  TABL X
+
+   ANAL X TIME
+      XT(0) <- TIME:1
+      XF(0) <- MAX( X )
+      XFE(0) <- 0.754*SQRT( 1.3471E-7*(TIME:1+1301.) )
+   END-ANAL XF XT XFE XTE
+
+   (i_cycle=i_cycle+1)
+   IF (i_cycle>13) EXIT
+
+ENDLOOP
+
+$ Analytical solution
+
+CURV XT XFE "theorical"
+
+COLOR BLACK DASH 0 0 0 NUME SMOO POIN MARK '*' 0
+CURV XT XF "computed"
+
+PSFN "doc/front.ps"
+DRAW CURV

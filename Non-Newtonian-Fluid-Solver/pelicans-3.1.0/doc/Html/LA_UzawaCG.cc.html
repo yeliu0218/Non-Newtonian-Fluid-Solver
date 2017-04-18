@@ -1,0 +1,492 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>LA_UzawaCG.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="LA_UzawaCG.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="LApack-tree.html"><span>Tree</span></a>
+    <a href="LA_UzawaCG.html"><span>Class</span></a>
+    <a href="LA_UzawaCG.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="LApack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_UzawaCG</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ObjectRegister</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_assertions</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_Matrix</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_Solver</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;LA_UzawaPreconditioner.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_Vector</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;ios&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;iostream&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;iomanip&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;sstream&gt;
+
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ; 
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ios_base</font><font class="text"> ;
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">setprecision</font><font class="text"> ; </font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">setw</font><font class="text"> ;
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> ;
+
+</font><font class="kw3">LA_UzawaCG</font><font class="text"> </font><font class="kw1">const</font><font class="text">* </font><font class="kw3">LA_UzawaCG</font><font class="text">:: PROTOTYPE = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">LA_UzawaCG</font><font class="text">() ;
+
+</font><font class="kw1">struct</font><font class="text"> LA_UzawaCG_ERROR
+{
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> n0( </font><font class="kw1">void</font><font class="text"> ) ;
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> n1( </font><font class="kw2">size_t</font><font class="text"> i_iter ) ;
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> n3( </font><font class="kw1">void</font><font class="text"> ) ;
+} ;
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_UzawaCG</font><font class="text">:: </font><font class="kw3">LA_UzawaCG</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">LA_TwoBlocksMethod</font><font class="text">( </font><font class="string">&quot;LA_UzawaCG&quot;</font><font class="text"> )
+{
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_UzawaCG</font><font class="text">*
+</font><font class="kw3">LA_UzawaCG</font><font class="text">:: create_replica( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                             </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_UzawaCG:: create_replica&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_PRE( a_owner, exp ) ) ;
+   
+   </font><font class="kw3">LA_UzawaCG</font><font class="text">* result = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">LA_UzawaCG</font><font class="text">( a_owner, exp ) ;
+   
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( create_replica_POST( result, a_owner, exp ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_UzawaCG</font><font class="text">:: </font><font class="kw3">LA_UzawaCG</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                         </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">LA_TwoBlocksMethod</font><font class="text">( a_owner, exp )
+   , A( 0 )
+   , B( 0 )
+   , C( 0 )
+   , F( 0 )
+   , G( 0 )
+   , S( 0 )
+   , PREC( 0 )
+   , SOLVER_A( 0 )
+   , TOL( exp-&gt;double_data( </font><font class="string">&quot;tolerance&quot;</font><font class="text"> ) )
+   , MAXITS( 10000 )
+{
+   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ee = exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;solver_A&quot;</font><font class="text"> ) ;
+   SOLVER_A = </font><font class="kw3">LA_Solver</font><font class="text">::make( </font><font class="kw1">this</font><font class="text">, ee ) ;
+   ee-&gt;destroy() ; ee = 0 ;
+   
+   ee = exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;LA_UzawaPreconditioner&quot;</font><font class="text"> ) ;
+   PREC = LA_UzawaPreconditioner::create( </font><font class="kw1">this</font><font class="text">, ee ) ;
+   ee-&gt;destroy() ; ee = 0 ;
+   
+   </font><font class="kw1">if</font><font class="text">( exp-&gt;has_entry( </font><font class="string">&quot;nb_iterations_max&quot;</font><font class="text"> ) )
+   {
+      MAXITS = exp-&gt;int_data( </font><font class="string">&quot;nb_iterations_max&quot;</font><font class="text"> ) ;
+      exp-&gt;test_data( </font><font class="string">&quot;nb_iterations_max&quot;</font><font class="text">, </font><font class="string">&quot;nb_iterations_max&gt;0&quot;</font><font class="text"> ) ;
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_UzawaCG</font><font class="text">:: ~</font><font class="kw3">LA_UzawaCG</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_UzawaCG</font><font class="text">:: set_matrix_prototype_sub( </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* mat )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_UzawaCG</font><font class="text">:: re_initialize_internals_sub( </font><font class="kw2">size_t</font><font class="text"> nv_glob, 
+                                          </font><font class="kw2">size_t</font><font class="text"> np_glob,
+                                          </font><font class="kw2">size_t</font><font class="text"> nv_loc, 
+                                          </font><font class="kw2">size_t</font><font class="text"> np_loc,
+                                          </font><font class="kw2">size_t</font><font class="text">&amp; nv_loc_final, 
+                                          </font><font class="kw2">size_t</font><font class="text">&amp; np_loc_final  )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="comment">//??? completely false
+</font><font class="text">   nv_loc_final = nv_loc ;
+   np_loc_final = np_loc ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_UzawaCG</font><font class="text">:: S_is_required( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_UzawaCG</font><font class="text">:: set_S( </font><font class="kw3">LA_Vector</font><font class="text">* a_S )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_UzawaCG:: set_S&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( set_S_PRE( a_S ) ) ;
+   
+   S = a_S ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_UzawaCG</font><font class="text">:: set_system_sub( </font><font class="kw3">LA_Matrix</font><font class="text">* a_A, </font><font class="kw3">LA_Matrix</font><font class="text">* a_B,
+                             </font><font class="kw3">LA_Vector</font><font class="text">* a_F, </font><font class="kw3">LA_Vector</font><font class="text">* a_G,
+                             </font><font class="kw3">LA_Matrix</font><font class="text">* a_C )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_UzawaCG:: set_system_sub&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw1">if</font><font class="text">( S == 0 ) raise_invalid_usage() ;
+   
+   A = a_A ;
+   B = a_B ;
+   C = a_C ;
+   F = a_F ;
+   G = a_G ;
+   
+   SOLVER_A-&gt;set_matrix( A ) ;
+   
+   PREC-&gt;build( A, B, C ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_UzawaCG</font><font class="text">:: unset_system_sub( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   SOLVER_A-&gt;unset_matrix() ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_UzawaCG</font><font class="text">:: estimate_unknowns_sub( </font><font class="kw1">bool</font><font class="text"> has_init_U, </font><font class="kw3">LA_Vector</font><font class="text">* U, 
+                                    </font><font class="kw1">bool</font><font class="text"> has_init_P, </font><font class="kw3">LA_Vector</font><font class="text">* P )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_UzawaCG:: estimate_unknowns_sub&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( C != 0 ) ; </font><font class="comment">//??? this case should be taken into account
+</font><font class="text">
+   </font><font class="kw2">size_t</font><font class="text"> iter = 0 ;
+      
+   </font><font class="comment">//??? reduce the number of local vectors
+</font><font class="text">   </font><font class="comment">//??? make them attributes
+</font><font class="text">   </font><font class="kw3">LA_Vector</font><font class="text">* r   = G-&gt;create_vector( 0 ) ;
+   </font><font class="kw3">LA_Vector</font><font class="text">* r0  = G-&gt;create_vector( 0 ) ;
+   </font><font class="kw3">LA_Vector</font><font class="text">* gg  = G-&gt;create_vector( 0 ) ;
+   </font><font class="kw3">LA_Vector</font><font class="text">* g0  = G-&gt;create_vector( 0 ) ;
+   </font><font class="kw3">LA_Vector</font><font class="text">* d   = G-&gt;create_vector( 0 ) ;
+   </font><font class="kw3">LA_Vector</font><font class="text">* zt  = F-&gt;create_vector( 0 ) ;
+   </font><font class="kw3">LA_Vector</font><font class="text">* z   = G-&gt;create_vector( 0 ) ;
+   </font><font class="kw3">LA_Vector</font><font class="text">* residCV = G-&gt;create_vector( 0 ) ;
+
+   </font><font class="kw1">double</font><font class="text"> rho, rNorm, rg, r0g0 ;
+
+   </font><font class="kw1">bool</font><font class="text"> no_error = </font><font class="kw1">true</font><font class="text"> ;
+   
+   </font><font class="comment">//--- INITIALIZATION OF y
+</font><font class="text">   
+   </font><font class="kw1">if</font><font class="text">( !has_init_P )
+   {
+      </font><font class="kw3">LA_Vector</font><font class="text">* vecAux = F-&gt;create_vector( 0 ) ;
+      </font><font class="kw3">LA_Vector</font><font class="text">* rhsB = G-&gt;create_vector( 0 ) ;
+      
+      SOLVER_A-&gt;set_initial_guess_nonzero( </font><font class="kw1">true</font><font class="text"> ) ;
+      vecAux-&gt;</font><font class="kw2">set</font><font class="text">( F ) ;
+      SOLVER_A-&gt;solve( F, vecAux ) ;
+      no_error = SOLVER_A-&gt;solution_is_achieved() ;
+      </font><font class="kw1">if</font><font class="text">( !no_error )
+      {
+         P-&gt;nullify() ;
+         LA_UzawaCG_ERROR::n3() ;
+      }
+      </font><font class="kw1">else
+</font><font class="text">      {
+         rhsB-&gt;</font><font class="kw2">set</font><font class="text">( G ) ;
+         B-&gt;multiply_vec_then_add( vecAux, rhsB, 1.0, -1.0 ) ;
+         PREC-&gt;solve( rhsB, P ) ;
+         no_error = PREC-&gt;successful_solve() ;
+         </font><font class="kw1">if</font><font class="text">( !no_error )
+         {
+            P-&gt;nullify() ;
+            LA_UzawaCG_ERROR::n3() ;
+         }
+      }
+
+      vecAux-&gt;destroy() ; vecAux = 0 ;
+      rhsB-&gt;destroy() ; rhsB = 0 ;
+   }
+
+   </font><font class="comment">//--- INITIALIZATION OF x
+</font><font class="text">   </font><font class="kw3">LA_Vector</font><font class="text">* rhsA = F-&gt;create_vector( 0 ) ;
+   rhsA-&gt;</font><font class="kw2">set</font><font class="text">( F ) ;
+   B-&gt;tr_multiply_vec_then_add( P, rhsA, -1.0, 1.0 ) ;
+
+   SOLVER_A-&gt;set_initial_guess_nonzero( </font><font class="kw1">false</font><font class="text"> ) ;
+   SOLVER_A-&gt;solve( rhsA, U ) ;
+   </font><font class="kw1">if</font><font class="text">( !SOLVER_A-&gt;solution_is_achieved() )
+   {
+      U-&gt;nullify() ;
+      no_error = </font><font class="kw1">false</font><font class="text"> ;
+      LA_UzawaCG_ERROR::n0() ;
+   }
+      
+   </font><font class="comment">//--- COMPUTATION OF THE INITIAL RESIDUAL
+</font><font class="text">   r-&gt;</font><font class="kw2">set</font><font class="text">( G ) ;
+   B-&gt;multiply_vec_then_add( U, r, -1.0, 1.0 ) ;
+   C-&gt;multiply_vec_then_add( P, r, -1.0, 1.0 ) ;
+   
+   iter = 0 ;
+
+   residCV-&gt;set_as_v_product( r, S ) ;
+   rNorm = residCV-&gt;max_norm() ;
+   </font><font class="kw1">bool</font><font class="text"> converged = ( rNorm &lt; TOL ) ;
+
+   </font><font class="kw1">if</font><font class="text">( no_error &amp;&amp; verbose_level() &gt; 1 )
+   {
+      print_iteration( iter, rNorm, SOLVER_A ) ;
+   }
+   converged = ( rNorm &lt; TOL ) ;
+
+   </font><font class="kw1">while</font><font class="text">( no_error &amp;&amp; (!converged) &amp;&amp; (iter &lt; MAXITS) )
+   {
+      iter++ ;
+   
+      </font><font class="comment">//--- COMPUTATION OF THE DESCENT DIRECTION FOR Y
+</font><font class="text">      PREC-&gt;solve( r, gg ) ;
+      no_error = PREC-&gt;successful_solve() ;
+      </font><font class="kw1">if</font><font class="text">( !no_error )
+      {
+         LA_UzawaCG_ERROR::n3() ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      }
+      </font><font class="kw1">if</font><font class="text">( iter==1 )
+      {
+         d-&gt;</font><font class="kw2">set</font><font class="text">( gg ) ;
+      }
+      </font><font class="kw1">else
+</font><font class="text">      {
+         r0g0 = r0-&gt;dot( g0 ) ;
+         rg = r-&gt;dot( gg ) ;
+         d-&gt;scale( rg/r0g0 ) ;
+         d-&gt;sum( gg ) ;
+       }
+
+      </font><font class="comment">//--- COMPUTATION OF THE DESCENT DIRECTION FOR X
+</font><font class="text">      B-&gt;tr_multiply_vec_then_add( d, rhsA ) ;
+      SOLVER_A-&gt;solve( rhsA, zt ) ;
+      </font><font class="kw1">if</font><font class="text">( !SOLVER_A-&gt;solution_is_achieved() )
+      {
+         no_error = </font><font class="kw1">false</font><font class="text"> ;
+         LA_UzawaCG_ERROR::n1( iter ) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      }
+
+      </font><font class="comment">//--- COMPUTATION OF THE DESCENT INCREMENT
+</font><font class="text">      B-&gt;multiply_vec_then_add( zt, z ) ;
+      C-&gt;multiply_vec_then_add( d, z, -1.0, 1.0 ) ;
+      rho = d-&gt;dot( r ) / d-&gt;dot( z ) ;
+
+      </font><font class="comment">//--- UPDATE OF X AND Y
+</font><font class="text">      U-&gt;sum( zt, rho ) ;
+      P-&gt;sum( d, -rho ) ;
+
+      </font><font class="comment">//--- UPDATE OF THE RESIDUAL
+</font><font class="text">      r0-&gt;</font><font class="kw2">set</font><font class="text">( r ) ;
+      g0-&gt;</font><font class="kw2">set</font><font class="text">( gg ) ;
+      r-&gt;sum( z, -rho ) ;
+
+      </font><font class="comment">//--- Convergence test :      
+</font><font class="text">      residCV-&gt;set_as_v_product( r, S ) ;
+      rNorm = residCV-&gt;max_norm() ;
+      </font><font class="kw1">if</font><font class="text">( verbose_level() &gt; 1 ) 
+      {
+         print_iteration( iter, rNorm, SOLVER_A ) ;
+      }
+      converged = ( rNorm &lt; TOL ) ;
+   }
+
+   </font><font class="kw1">if</font><font class="text">( no_error &amp;&amp; verbose_level() &gt; 1 ) print_residuals( U, P ) ;
+   
+   </font><font class="kw1">if</font><font class="text">( no_error &amp;&amp; converged )
+   {
+      notify_success( </font><font class="kw1">true</font><font class="text"> ) ;
+   }
+   
+   rhsA-&gt;destroy() ; rhsA = 0 ;
+   r-&gt;destroy()    ; r  = 0   ;
+   r0-&gt;destroy()   ; r0 = 0   ;
+   gg-&gt;destroy()   ; gg = 0   ;
+   g0-&gt;destroy()   ; g0 = 0   ;
+   d-&gt;destroy()    ; d  = 0   ;
+   zt-&gt;destroy()   ; zt = 0   ;
+   z-&gt;destroy()    ; z  = 0   ;
+   residCV-&gt;destroy() ; residCV = 0 ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_UzawaCG</font><font class="text">:: print_iteration( </font><font class="kw2">size_t</font><font class="text"> iter, </font><font class="kw1">double</font><font class="text"> residual,
+                              </font><font class="kw3">LA_Solver</font><font class="text"> </font><font class="kw1">const</font><font class="text">* Asolver ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_UzawaCG:: print_iteration&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ios_base</font><font class="text">::</font><font class="kw2">fmtflags</font><font class="text"> original_flags = </font><font class="kw3">PEL</font><font class="text">::out().</font><font class="kw2">flags</font><font class="text">() ;
+   </font><font class="kw3">PEL</font><font class="text">::out().setf( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ios_base</font><font class="text">::</font><font class="kw2">uppercase</font><font class="text"> | </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ios_base</font><font class="text">::</font><font class="kw2">scientific</font><font class="text"> ) ;
+   </font><font class="kw2">std</font><font class="text">::streamsize p = </font><font class="kw3">PEL</font><font class="text">::out().precision() ;
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">setprecision</font><font class="text">( 7 ) ;
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="string">&quot;   &quot;
+</font><font class="text">              &lt;&lt; </font><font class="string">&quot;iteration &quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">setw</font><font class="text">( 3 ) &lt;&lt; iter
+              &lt;&lt; </font><font class="string">&quot; : residual = &quot;</font><font class="text"> &lt;&lt; residual ;
+   </font><font class="kw1">if</font><font class="text">( Asolver-&gt;is_iterative() )
+   {
+      </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="string">&quot; ( &quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">setw</font><font class="text">( 4 )
+                 &lt;&lt; Asolver-&gt; nb_iterations_achieved()
+                 &lt;&lt; </font><font class="string">&quot; internal iterations)&quot;</font><font class="text"> ;
+   }
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="string">&quot;\n&quot;</font><font class="text"> ;
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">setprecision</font><font class="text">(p) ;
+   </font><font class="kw3">PEL</font><font class="text">::out().</font><font class="kw2">flags</font><font class="text">( original_flags ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_UzawaCG</font><font class="text">:: print_residuals( </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* U,
+                              </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* P ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_UzawaCG:: print_residuals&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw3">LA_Vector</font><font class="text">* err1 = F-&gt;create_vector( 0 ) ;
+   err1-&gt;</font><font class="kw2">set</font><font class="text">( F ) ;
+   A-&gt;multiply_vec_then_add( U, err1, -1., 1. ) ;
+   B-&gt;tr_multiply_vec_then_add( P, err1, -1., 1. ) ;
+
+   </font><font class="kw3">LA_Vector</font><font class="text">* err2=  G-&gt;create_vector( 0 ) ;
+   err2-&gt;</font><font class="kw2">set</font><font class="text">( G ) ;
+   B-&gt;multiply_vec_then_add( U, err2, -1., 1. ) ;
+   C-&gt;multiply_vec_then_add( P, err2, -1., 1. ) ;
+
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ios_base</font><font class="text">::</font><font class="kw2">fmtflags</font><font class="text"> original_flags = </font><font class="kw3">PEL</font><font class="text">::out().</font><font class="kw2">flags</font><font class="text">() ;
+   </font><font class="kw3">PEL</font><font class="text">::out().setf( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ios_base</font><font class="text">::</font><font class="kw2">uppercase</font><font class="text"> | </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ios_base</font><font class="text">::</font><font class="kw2">scientific</font><font class="text"> ) ;
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">setprecision</font><font class="text">( 7 ) ;
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="string">&quot;            ||A*x+tB*y-F||=&quot;</font><font class="text"> &lt;&lt; err1-&gt;two_norm() &lt;&lt; </font><font class="string">&quot;\n&quot;
+</font><font class="text">              &lt;&lt; </font><font class="string">&quot;            ||B*x+C*y-g||=&quot;</font><font class="text"> &lt;&lt; err2-&gt;two_norm() &lt;&lt; </font><font class="string">&quot;\n&quot;</font><font class="text"> ;
+   </font><font class="kw3">PEL</font><font class="text">::out().</font><font class="kw2">flags</font><font class="text">( original_flags ) ;
+   err1-&gt;destroy() ; err1 = 0 ;
+   err2-&gt;destroy() ; err2 = 0 ;
+}
+
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="kw1">void</font><font class="text"> 
+LA_UzawaCG_ERROR:: n0( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> mesg ;
+   mesg &lt;&lt; </font><font class="string">&quot;*** LA_UzawaCG:&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;***   internal solve failure during the&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;***   computation of the initial residual&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;display_info( mesg.str() ) ;
+}
+
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="kw1">void</font><font class="text"> 
+LA_UzawaCG_ERROR:: n1( </font><font class="kw2">size_t</font><font class="text"> i_iter )
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> mesg ;
+   mesg &lt;&lt; </font><font class="string">&quot;*** LA_UzawaCG:&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;***   internal solve failure&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;***   iteration number : &quot;</font><font class="text"> &lt;&lt; i_iter &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;display_info( mesg.str() ) ;
+}
+
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="kw1">void</font><font class="text"> 
+LA_UzawaCG_ERROR:: n3( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> mesg ;
+   mesg &lt;&lt; </font><font class="string">&quot;*** LA_UzawaCG:&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;***   preconditioner inversion failure&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;display_info( mesg.str() ) ;
+}
+
+
+</font>
+</pre>
+</body>
+</html>

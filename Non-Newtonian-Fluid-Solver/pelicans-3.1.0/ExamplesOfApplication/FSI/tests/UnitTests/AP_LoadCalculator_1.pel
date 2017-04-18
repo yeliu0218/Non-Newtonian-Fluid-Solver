@@ -1,0 +1,245 @@
+MODULE PEL_ObjectTest#AP_LoadCalculator_TEST
+   
+   MODULE AP_LoadCalculator_1
+      
+      MODULE FE_TimeIterator
+         time_initial = 0.0
+         time_end = 1.0
+         time_step = 1.0
+      END MODULE FE_TimeIterator
+      
+      $IS_CURRENT = 0
+      
+      $DS_T = 0.0
+      $DS_x = component( $DV_X, 0 )
+      $DS_y = component( $DV_X, 1 )
+      
+      $DS_Re = 10.0 
+      $DV_Poiseuille_velocity = vector( 0.0, 6.0 * $DS_x * (1.0 - $DS_x )  )
+      $DV_Poiseuille_pressure = vector( -12.0 * ($DS_y - 1.0 ) / $DS_Re )
+      
+      MODULE PDE_SetOfDomains
+         
+         verbose_level = 1
+         
+         MODULE list_of_PDE_DomainAndFields
+            
+            MODULE PDE_DomainAndFields#fluid
+               
+               name = "fluid"
+               
+               verbose_level = 1
+               nb_space_dimensions = 2
+               type = "finite_element"
+               
+               MODULE GE_Meshing
+                  concrete_name = "GE_RefinedMeshing"
+                  mesh_polyhedron = < "GE_Segment" "GE_Triangle" >
+                  MODULE list_of_GE_ReferencePolyhedronRefiner
+                     MODULE GE_ReferencePolyhedronRefiner#1
+                        concrete_name = "GE_ReferenceSquareWithTriangles"
+                        strategy = "X"
+                     END MODULE GE_ReferencePolyhedronRefiner#1
+                  END MODULE list_of_GE_ReferencePolyhedronRefiner
+                  MODULE GE_Meshing
+                     concrete_name = "GE_BoxWithBoxes"
+                     vertices_coordinate_0 = regular_vector( 0.0, 3, 1.0 )
+                     vertices_coordinate_1 = regular_vector( 0.0, 10, 1.0 )
+                     mesh_polyhedron = < "GE_Segment" "GE_Rectangle" >
+                  END MODULE GE_Meshing
+               END MODULE GE_Meshing
+               
+               MODULE macro_colors
+                  Wall1  = < "bottom" "top" >
+                  no_slip = < "left" "right" >
+               END MODULE macro_colors
+               
+               MODULE interior_fields
+                  
+                  MODULE fluid_velocity
+                     name = "fluid_velocity"
+                     nb_components = 2
+                     element_name = "PDE_2D_P2_6nodes"
+                     storage_depth = 2
+                     MODULE DOFs_values
+                        type = "uniformly_defined"
+                        value = $DV_Poiseuille_velocity
+                     END MODULE DOFs_values
+                     MODULE DOFs_imposed_value
+                        MODULE no_slip
+                           location = "on_bounds"
+                           color = "no_slip"
+                           type = "uniformly_defined"
+                           value = < 0.0 0.0 >
+                        END MODULE no_slip
+                        MODULE entree
+                           location = "on_bounds"
+                           color = "bottom"
+                           type = "uniformly_defined"
+                           value = $DV_Poiseuille_velocity
+                        END MODULE entree
+                     END MODULE DOFs_imposed_value
+                  END MODULE fluid_velocity
+                  
+                  MODULE pressure
+                     name = "fluid_pressure"
+                     nb_components = 1
+                     element_name = "PDE_2D_P1_3nodes"
+                     storage_depth = 1
+                     MODULE DOFs_values
+                        type = "uniformly_defined"
+                        value = $DV_Poiseuille_pressure
+                     END MODULE DOFs_values
+                  END MODULE pressure
+                  
+                  MODULE fluid_grid_displacement
+                     name = "fluid_grid_displacement"
+                     nb_components = 2
+                     element_name = "PDE_2D_P1_3nodes"
+                     storage_depth = 2
+                     MODULE DOFs_values
+                        type = "uniformly_defined"
+                        value = vector( 0.0, 0.0 )
+                     END MODULE DOFs_values
+                     MODULE DOFs_imposed_value
+                        MODULE Wall1
+                           location = "on_bounds"
+                           color = "Wall1"
+                           component = 1
+                           type = "uniformly_defined"
+                           value = < 0.0 >
+                        END MODULE Wall1
+                        MODULE left
+                           location = "on_bounds"
+                           color = "left"
+                           type = "uniformly_defined"
+                           value = vector( 0.0, 0.0 )
+                        END MODULE left
+                        MODULE right
+                           location = "on_bounds"
+                           color = "right"
+                           type = "uniformly_defined"
+                           value = < 0.0 0.0 >
+                        END MODULE right
+                     END MODULE DOFs_imposed_value
+                  END MODULE fluid_grid_displacement
+                  
+               END MODULE interior_fields
+               
+            END MODULE PDE_DomainAndFields#fluid
+            
+            MODULE PDE_DomainAndFields#structure
+               
+               name = "structure"
+               
+               verbose_level = 1
+               nb_space_dimensions = 2
+               type = "finite_element"
+               
+               MODULE GE_Meshing                  
+                  concrete_name = "GE_BoxWithBoxes"                  
+                  vertices_coordinate_0 = regular_vector( 1.0, 1, 1.1 )
+                  vertices_coordinate_1 = regular_vector( 0.0, 10, 1.0 )
+                  mesh_polyhedron = < "GE_Segment" "GE_Rectangle" >
+               END MODULE GE_Meshing
+               
+               MODULE macro_colors
+                  botop  = < "bottom" "top" >
+               END MODULE macro_colors
+               
+               MODULE interior_fields
+                  
+                  MODULE uu_0
+                     name = "structure_displacement"
+                     nb_components = 2
+                     element_name = "PDE_2D_Q1_4nodes"
+                     storage_depth = 2
+                     MODULE DOFs_values
+                        type = "uniformly_defined"
+                        value = < 0.0 0.0 >
+                     END MODULE DOFs_values
+                     MODULE DOFs_imposed_value
+                        MODULE xxx
+                           location = "on_bounds"
+                           color = "botop"
+                           type = "uniformly_defined"
+                           value = < 0.0 0.0 >
+                        END MODULE xxx
+                     END MODULE DOFs_imposed_value
+                  END MODULE uu_0
+                  
+               END MODULE interior_fields
+               
+            END MODULE PDE_DomainAndFields#structure
+            
+         END MODULE list_of_PDE_DomainAndFields
+         
+         MODULE list_of_conformal_adjacencies
+            
+            MODULE adjacency#0
+               adjacent_domain_0 = "fluid"
+               adjacent_domain_1 = "structure"
+            END MODULE adjacency#0
+            
+         END MODULE list_of_conformal_adjacencies
+         
+      END MODULE PDE_SetOfDomains
+      
+      MODULE FE_SetOfParameters
+         mu = vector( 1.0 / $DS_Re )
+      END MODULE FE_SetOfParameters
+      
+      MODULE FE_OneStepIteration
+         
+         concrete_name = "FE_SplitSystem"
+         
+         MODULE list_of_FE_OneStepIteration
+            
+            MODULE FE_OneStepIteration#load_computation
+               concrete_name = "AP_LoadCalculator"
+               
+               name = "lcalc"
+               
+               domain_of_fluid = "fluid"
+               fluid_velocity = "fluid_velocity"
+               level_of_fluid_velocity = $IS_CURRENT
+               fluid_pressure = "fluid_pressure"
+               level_of_fluid_pressure = $IS_CURRENT
+               param_viscous = "mu"
+               
+               domain_of_structure = "structure"
+               structure_displacement = "structure_displacement"
+               
+               color_of_fluid_interface_with_structure = "right"
+               
+               quadrature_rule_provider = "GE_QRprovider_5" 
+            END MODULE FE_OneStepIteration#load_computation
+            
+            MODULE FE_OneStepIteration#surface_force
+               concrete_name = "FE_SurfaceForce"
+               
+               name = "sforce"
+               
+               domain = "fluid"
+               velocity = "fluid_velocity"
+               level_of_velocity = $IS_CURRENT
+               pressure = "fluid_pressure"
+               level_of_pressure = $IS_CURRENT
+               param_visc = "mu"
+               surface_color = "right"
+            END MODULE FE_OneStepIteration#surface_force
+            
+         END MODULE list_of_FE_OneStepIteration
+         
+      END MODULE FE_OneStepIteration
+      
+      MODULE load_test
+         load_calculator = "lcalc"
+         surface_force = "sforce"
+         dbl_epsilon = 1.e-14
+         dbl_minimum = 1.e-30
+      END MODULE load_test
+      
+   END MODULE AP_LoadCalculator_1
+   
+END MODULE PEL_ObjectTest#AP_LoadCalculator_TEST

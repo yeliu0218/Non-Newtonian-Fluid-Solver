@@ -1,0 +1,230 @@
+MODULE PEL_Application
+   
+   concrete_name = "FE_StepByStepProgression"
+
+   $DS_DENSITY = 0.25
+   $DS_YOUNG   = pi()*pi()
+   $DS_POISSON = 0.0
+   $DS_c = sqrt( $DS_YOUNG/$DS_DENSITY )
+
+   $IS_CURRENT = 0
+   $IS_INITIAL = 1
+
+   $DS_TIME_END  = 0.9999
+   
+   // $DS_TIME_STEP = 0.1
+   // $IS_NB_MESHES = 80
+   
+   MODULE FE_TimeIterator
+      time_initial = 0.0
+      time_end  = $DS_TIME_END
+      time_step = $DS_TIME_STEP
+   END MODULE FE_TimeIterator
+
+   graphics_output_times = regular_vector( 0., 2, $DS_TIME_END )
+
+   $DS_x = component( $DV_X, 0 )
+   $DS_y = component( $DV_X, 1 )
+   $DS_T = 0.0
+   $DS_eta = sin( $DS_x + $DS_y ) * cos( $DS_c * $DS_T )
+   $DS_dt_eta = -$DS_c * sin( $DS_x + $DS_y ) * sin( $DS_c * $DS_T )
+   $DS_dx_eta = cos( $DS_x + $DS_y ) * cos( $DS_c * $DS_T )
+   $DV_analytical_displacement = vector( $DS_eta, -$DS_eta )
+   $DA_analytical_grad_displacement =
+                               array( vector( $DS_dx_eta, $DS_dx_eta ),
+                                      vector( -$DS_dx_eta, -$DS_dx_eta ) )
+   $DV_analytical_velocity = vector( $DS_dt_eta, -$DS_dt_eta )
+   
+   MODULE PDE_DomainAndFields
+      
+      verbose_level = 1
+      nb_space_dimensions = 2
+      type = "finite_element"
+      
+      MODULE GE_Meshing
+         concrete_name = "GE_BoxWithBoxes"
+         
+         vertices_coordinate_0 = regular_vector( 0.0, $IS_NB_MESHES, pi() )
+         vertices_coordinate_1 = regular_vector( 0.0, $IS_NB_MESHES, pi() )
+         
+         mesh_polyhedron = < "GE_Segment" "GE_Quadrilateral" >
+      END MODULE GE_Meshing
+      
+      MODULE interior_fields
+         
+         MODULE displacement
+            name = "displacement"
+            nb_components = 2
+            element_name = "PDE_2D_Q1_4nodes"
+            storage_depth = 2
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = $DV_analytical_displacement
+            END MODULE DOFs_values
+            MODULE DOFs_imposed_value
+               MODULE xxx
+                  location = "on_bounds"
+                  type = "uniformly_defined"
+                  value = $DV_analytical_displacement
+               END MODULE xxx
+            END MODULE DOFs_imposed_value
+         END MODULE displacement
+
+         MODULE velocity
+            name = "velocity"
+            nb_components = 2
+            element_name = "PDE_2D_Q1_4nodes"
+            storage_depth = 2
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = $DV_analytical_velocity
+            END MODULE DOFs_values
+            MODULE DOFs_imposed_value
+               MODULE xxx
+                  location = "on_bounds"
+                  type = "uniformly_defined"
+                  value = $DV_analytical_velocity
+               END MODULE xxx
+            END MODULE DOFs_imposed_value
+         END MODULE velocity
+
+      END MODULE interior_fields
+      
+      MODULE boundary_conditions
+         
+         MODULE displacement
+            field = "displacement"
+            type = "Dirichlet_to_update"
+            value = $DV_analytical_displacement
+         END MODULE displacement
+         
+         MODULE velocity
+            field = "velocity"
+            type = "Dirichlet_to_update"
+            value = $DV_analytical_velocity
+         END MODULE velocity
+         
+      END MODULE boundary_conditions
+      
+      MODULE PDE_ResultSaver
+         
+         writers = < "PEL_TICwriter" >
+         
+         writing_mode = "text"
+         files_basename = "save"
+         
+         MODULE displacement
+            where_to_save = "at_vertices"
+            entry_name = "SD"
+            field = "displacement"
+         END MODULE displacement
+
+      END MODULE PDE_ResultSaver
+      
+   END MODULE PDE_DomainAndFields
+
+   MODULE FE_SetOfParameters
+      no_source = < 0.0 0.0 >
+   END MODULE FE_SetOfParameters
+
+   MODULE FE_OneStepIteration
+
+      concrete_name = "FE_SplitSystem"
+
+      MODULE list_of_FE_OneStepIteration
+
+         MODULE FE_OneStepIteration#cld
+            concrete_name = "FE_BCupdate"
+            field = "displacement"
+            levels_of_field = vector( $IS_CURRENT )
+         END MODULE FE_OneStepIteration#cld
+         
+         MODULE FE_OneStepIteration#clv
+            concrete_name = "FE_BCupdate"
+            field = "velocity"
+            levels_of_field = vector( $IS_CURRENT )
+         END MODULE FE_OneStepIteration#clv
+
+         MODULE FE_OneStepIteration#str
+
+            concrete_name = "AP_FiniteHyperElStructure"
+            verbose_level = 1
+
+            small_deformations = true
+	    param_source = "no_source"
+            
+            displacement = "displacement"
+            level_to_update = $IS_CURRENT
+            level_of_explicit = $IS_INITIAL
+
+            MODULE AP_ConstitutiveLaw
+               concrete_name = "AP_LinearElasticity"
+               Young_modulus = $DS_YOUNG
+               Poisson_coefficient = $DS_POISSON
+            END MODULE AP_ConstitutiveLaw
+            
+            MODULE dynamic
+               velocity = "velocity"
+               density = $DS_DENSITY
+            END MODULE dynamic
+            
+            quadrature_rule_provider = "GE_QRprovider_5" //????
+
+            max_nb_iterations = 100
+            disp_tolerance = 1.e-8
+            
+            MODULE LA_Matrix
+               concrete_name = "LA_PelMatrix"
+            END MODULE LA_Matrix
+            
+            MODULE LA_Solver
+               concrete_name = "LA_PreconditionedSolver"
+               MODULE LA_IterativeSolver
+                  concrete_name = "LA_CG_IS"
+                  nb_iterations_max = 2000
+                  MODULE LA_ConvergenceTest
+                     concrete_name = "LA_DefaultConvergenceTest"
+                     relative_tolerance =  1.E-12
+                     absolute_tolerance = 1.E-20
+                  END MODULE LA_ConvergenceTest
+                  verbose = false
+               END MODULE LA_IterativeSolver
+               MODULE LA_Preconditioner
+                  concrete_name = "LA_Jacobi_PC"
+                  smallest_inverted_item = 1.0e-300
+               END MODULE LA_Preconditioner
+            END MODULE LA_Solver
+                        
+         END MODULE FE_OneStepIteration#str
+
+         MODULE  FE_OneStepIteration#errord
+            concrete_name = "FE_ComparatorWithAnalytic"
+            field = "displacement"
+            level = $IS_CURRENT
+            norms = vector( "L2_error_norm", "H1_error_norm",
+                            "L2_solution_norm" )
+            norm_saving_names = vector( "XLDU", "XHUU", "XLDS" )
+            solution = $DV_analytical_displacement
+            d_solution = $DA_analytical_grad_displacement
+            quadrature_rule_provider = "GE_QRprovider_5"
+         END MODULE FE_OneStepIteration#errord
+
+         MODULE FE_OneStepIteration#cp
+            concrete_name = "FE_DOFsCopy"
+            MODULE xxx
+               field = "displacement"
+               source = $IS_CURRENT
+               target = $IS_INITIAL
+            END MODULE xxx
+            MODULE yyy
+               field = "velocity"
+               source = $IS_CURRENT
+               target = $IS_INITIAL
+            END MODULE yyy
+         END MODULE FE_OneStepIteration#cp
+
+      END MODULE list_of_FE_OneStepIteration
+      
+   END MODULE FE_OneStepIteration
+   
+END MODULE PEL_Application

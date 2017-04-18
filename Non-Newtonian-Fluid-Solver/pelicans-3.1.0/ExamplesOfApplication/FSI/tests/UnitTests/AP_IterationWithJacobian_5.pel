@@ -1,0 +1,145 @@
+MODULE PEL_ObjectTest#AP_IterationWithJacobian_TEST
+   
+   MODULE AP_IterationWithJacobian_5
+
+      $DS_x = component( $DV_X, 0 )
+      $DS_y = component( $DV_X, 1 ) 
+      
+      MODULE FE_TimeIterator
+         time_initial = 0.0
+         time_end = 1.99
+         time_step = 0.5
+      END MODULE FE_TimeIterator
+            
+      MODULE PDE_DomainAndFields
+         
+         verbose_level = 1
+         nb_space_dimensions = 2
+         type = "finite_element"
+         
+         MODULE GE_Meshing
+            concrete_name = "GE_BoxWithBoxes"
+            
+            vertices_coordinate_0 = regular_vector( 0.0, 2, 1. )
+            vertices_coordinate_1 = regular_vector( 0.0, 2, 1. )
+           
+            mesh_polyhedron = < "GE_Segment" "GE_Rectangle" >
+         END MODULE GE_Meshing
+         
+         MODULE interior_fields
+            
+            MODULE uu
+               name = "uu"
+               nb_components = 2
+               element_name = "PDE_2D_Q1_4nodes"
+               storage_depth = 1
+               MODULE DOFs_values
+                  type = "uniformly_defined"
+                  value = vector( $DS_x*$DS_x*$DS_y, $DS_x/2./pi() )
+               END MODULE DOFs_values
+               MODULE DOFs_imposed_value
+                  MODULE left
+                     location = "on_bounds"
+                     type = "uniformly_defined"
+                     component = 0
+                     color = "left"
+                     value = < 0.0 >
+                  END MODULE left
+                  MODULE bottom
+                     location = "on_bounds"
+                     type = "uniformly_defined"
+                     component = 1
+                     color = "bottom"
+                     value = < 0.0 >
+                  END MODULE bottom
+                  MODULE top
+                     location = "on_bounds"
+                     type = "uniformly_defined"
+                     component = 1
+                     color = "top"
+                     value = < -0.05 >
+                  END MODULE top
+               END MODULE DOFs_imposed_value
+            END MODULE uu
+            
+         END MODULE interior_fields
+         
+      END MODULE PDE_DomainAndFields
+      
+      MODULE FE_SetOfParameters
+         no_load = < 0.0 0.0 >
+	 no_source = < 0.0 0.0 >
+      END MODULE FE_SetOfParameters
+      
+      MODULE FE_OneStepIteration
+         
+         concrete_name = "FE_SplitSystem"
+         
+         MODULE list_of_FE_OneStepIteration
+            
+            MODULE FE_OneStepIteration#2
+               
+               concrete_name = "AP_FiniteHyperElStructure"
+
+               name = "finhyp"
+               
+               verbose_level = 1
+               
+               displacement = "uu"
+               level_to_update = 0
+               level_of_explicit = 0 
+               
+               quadrature_rule_provider = "GE_QRprovider_5" //????
+               
+               param_external_load = "no_load"
+	       param_source = "no_source"
+              
+               max_nb_iterations = 300
+               disp_tolerance = 1.e-8
+              
+               MODULE AP_ConstitutiveLaw
+                  concrete_name = "AP_StVenantKirchhoff"              
+                  Young_modulus = 1.E+5
+                  Poisson_coefficient = 0.3
+               END MODULE AP_ConstitutiveLaw
+               
+               MODULE LA_Matrix
+                  concrete_name = "LA_PelMatrix"
+               END MODULE LA_Matrix
+               
+               MODULE LA_Solver
+                  concrete_name = "LA_PreconditionedSolver"
+                  MODULE LA_IterativeSolver
+                     concrete_name = "LA_CG_IS"
+                     nb_iterations_max = 2000
+                     MODULE LA_ConvergenceTest
+                        concrete_name = "LA_DefaultConvergenceTest"
+                        relative_tolerance =  1.E-10
+                        absolute_tolerance = 1.E-20
+                     END MODULE LA_ConvergenceTest
+                     verbose = false
+                  END MODULE LA_IterativeSolver
+                  MODULE LA_Preconditioner
+                     concrete_name = "LA_Jacobi_PC"
+                     smallest_inverted_item = 1.0e-20
+                  END MODULE LA_Preconditioner   
+               END MODULE LA_Solver
+               
+            END MODULE FE_OneStepIteration#2
+            
+         END MODULE list_of_FE_OneStepIteration
+         
+      END MODULE FE_OneStepIteration
+
+      MODULE jacobian_test         
+         hh = 1.e-8
+         dbl_epsilon = 1.e-5
+         dbl_minimum = 1.e-20
+         one_step_iteration_with_jacobian = "finhyp"
+      END MODULE jacobian_test
+      
+   END MODULE AP_IterationWithJacobian_5
+   
+END MODULE PEL_ObjectTest#AP_IterationWithJacobian_TEST
+            
+            

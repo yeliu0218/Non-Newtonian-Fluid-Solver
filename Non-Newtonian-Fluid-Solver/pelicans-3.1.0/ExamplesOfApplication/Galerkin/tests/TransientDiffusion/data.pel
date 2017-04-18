@@ -1,0 +1,212 @@
+MODULE PEL_Application
+  
+   concrete_name = "FE_StepByStepProgression"
+   
+   MODULE FE_TimeIterator
+      time_initial = 0.0
+      time_end = 10.0
+      time_step = 0.1
+   END MODULE FE_TimeIterator
+   
+   graphics_output_times = regular_vector( 0.0, 150, 10.0 )
+
+   MODULE PDE_DomainAndFields
+   
+      verbose_level = 0
+      nb_space_dimensions = 2
+      type = "finite_element"
+   
+      MODULE GE_Meshing
+
+         concrete_name = "GE_BoxWithBoxes"
+
+         vertices_coordinate_0 = regular_vector( -1., 30, 1. )
+         vertices_coordinate_1 = regular_vector( -0.5,  2,  0.5 )
+         mesh_polyhedron = < "GE_Segment" "GE_Rectangle" >
+         
+      END MODULE GE_Meshing
+
+      MODULE macro_colors
+         vertical = < "left" "right" >
+      END MODULE macro_colors
+
+      MODULE interior_fields
+         
+         MODULE uu
+            name = "uu"
+            nb_components = 1
+            element_name = "PDE_2D_Q1_4nodes"
+            storage_depth = 1
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = < 0.0 >
+            END MODULE DOFs_values
+            MODULE DOFs_imposed_value
+               MODULE uu_boundary
+                  location = "on_bounds"
+                  type = "uniformly_defined"
+                  color = "vertical"
+                  value = < 1.0 >
+               END MODULE uu_boundary
+            END MODULE DOFs_imposed_value
+         END MODULE uu
+ 
+      END MODULE interior_fields
+
+      MODULE PDE_ResultSaver   
+         writers = < "PEL_TICwriter" >
+         
+         writing_mode = "text"
+         files_basename = "save" 
+
+         MODULE uu
+            where_to_save = "at_vertices"
+            entry_name = "UU"
+            field = "uu"
+         END MODULE uu
+         
+      END MODULE PDE_ResultSaver
+
+   END MODULE PDE_DomainAndFields
+
+   MODULE FE_SetOfParameters
+
+      alpha = < 4.0 >
+      kappa = < 1.0 >
+      pi = < 0.0 >
+
+      MODULE FE_Parameter#delta_u
+         concrete_name = "FE_SumOfParameters"
+         name = "delta_u"
+         MODULE list_of_parameters
+            MODULE FE_Parameter#u_computed
+               type = "to_be_defined"
+               coefficient = 1.
+               MODULE FE_Parameter
+                 concrete_name = "FE_FieldParameter"
+                 name = "u_computed"
+                 field_name = "uu"
+                 field_level = 0
+               END MODULE FE_Parameter
+            END MODULE FE_Parameter#u_computed
+            MODULE FE_Parameter#u_sol
+               type = "to_be_defined"
+               coefficient = -1.
+               MODULE FE_Parameter
+                  concrete_name = "FE_SpaceTimeParameter"
+                  name = "u_sol"
+                  nb_components = 1
+                  value = vector( RS_TransientDiffusion1EXP( $DS_T ) )
+               END MODULE FE_Parameter
+            END MODULE FE_Parameter#u_sol
+         END MODULE list_of_parameters
+      END MODULE FE_Parameter#delta_u
+      
+   END MODULE FE_SetOfParameters
+
+   MODULE FE_OneStepIteration
+      concrete_name = "FE_SplitSystem"
+      MODULE list_of_FE_OneStepIteration
+         MODULE FE_OneStepIteration#diffusion
+            
+            concrete_name = "AP_AdvectionDiffusion1G"
+            
+            field = "uu"
+            level_of_field = 0
+
+            MODULE time_discretization
+               type = "Euler"
+               field_explicit = "uu"
+               level_of_field_explicit = 0
+               param_unsteady = "alpha"
+            END MODULE time_discretization
+            
+            param_diffusion = "kappa"
+            param_source = "pi"
+
+            quadrature_rule_provider = "GE_QRprovider_5"
+            
+            MODULE LA_Matrix
+               concrete_name = "LA_PelMatrix"
+            END MODULE LA_Matrix
+            
+            MODULE LA_Solver
+               concrete_name = "LA_PreconditionedSolver"
+               MODULE LA_Preconditioner
+                  concrete_name = "LA_Jacobi_PC"
+                  smallest_inverted_item = 1.e-300
+               END MODULE LA_Preconditioner
+               MODULE LA_IterativeSolver
+                  concrete_name = "LA_CG_IS"
+                  verbose = false
+                  nb_iterations_max = 2000
+                  MODULE LA_ConvergenceTest
+                     concrete_name = "LA_DefaultConvergenceTest"
+                     relative_tolerance = 1.0e-8
+                     absolute_tolerance = 1.0e-50
+                  END MODULE LA_ConvergenceTest
+               END MODULE LA_IterativeSolver
+            END MODULE LA_Solver
+            
+         END MODULE FE_OneStepIteration#diffusion
+         
+         MODULE FE_OneStepIteration#save_value_tic
+            concrete_name = "FE_FieldValue"
+            MODULE points_definition
+               type = "list_of_points"
+               points = array( < 0. 0. > )
+            END MODULE points_definition
+            MODULE fields
+               MODULE fields#uu
+                  name = "uu"
+               END MODULE fields#uu
+            END MODULE fields
+            MODULE parameters
+               MODULE fields#du
+                  type = "at_points"
+                  name = "delta_u"
+               END MODULE fields#du
+            END MODULE parameters
+            MODULE expressions
+               MODULE fields#uu_ana
+                  value = vector( RS_TransientDiffusion1EXP( $DS_T ) )
+               END MODULE fields#uu_ana
+            END MODULE expressions
+            MODULE post_processing
+               type = "result_saver"
+               variable_name = "VAL"
+            END MODULE post_processing
+         END MODULE FE_OneStepIteration#save_value_tic
+
+         MODULE FE_OneStepIteration#save_value_file
+            concrete_name = "FE_FieldValue"
+            MODULE points_definition
+               type = "list_of_points"
+               points = array( < 0. 0. > )
+            END MODULE points_definition
+            MODULE fields
+               MODULE fields#uu
+                  name = "uu"
+               END MODULE fields#uu
+            END MODULE fields
+            MODULE parameters
+               MODULE fields#du
+                  type = "at_points"
+                  name = "delta_u"
+               END MODULE fields#du
+            END MODULE parameters
+            MODULE expressions
+               MODULE fields#uu_ana
+                  value = vector( RS_TransientDiffusion1EXP( $DS_T ) )
+               END MODULE fields#uu_ana
+            END MODULE expressions
+            MODULE post_processing
+               type = "one_file"
+               file_name = "values_at_center"
+            END MODULE post_processing
+         END MODULE FE_OneStepIteration#save_value_file
+         
+      END MODULE list_of_FE_OneStepIteration
+   END MODULE FE_OneStepIteration
+   
+END MODULE PEL_Application

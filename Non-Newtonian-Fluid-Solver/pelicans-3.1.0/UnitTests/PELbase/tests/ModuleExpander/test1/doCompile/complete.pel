@@ -1,0 +1,241 @@
+MODULE PEL_Application
+  $DS_zero = 0.e+00
+  $DS_Pr = 7.1e-01
+  $DS_Ra = 1.e+05
+  concrete_name = "FE_StepByStepProgression"
+  graphics_output_times = vector($DS_zero, 1.e-02)
+  MODULE PDE_DomainAndFields
+    type = "finite_element"
+    verbose_level = 1
+    nb_space_dimensions = 2
+    MODULE GE_Meshing
+      $IS_NX = 20
+      $IS_NY = 20
+      concrete_name = "GE_BoxWithBoxes"
+      vertices_coordinate_0 = regular_vector(0.e+00, $IS_NX, 1.e+00)
+      vertices_coordinate_1 = regular_vector(0.e+00, $IS_NY, 1.e+00)
+      mesh_polyhedron = < "GE_Segment" "GE_Rectangle"  >
+    END MODULE GE_Meshing
+    MODULE interior_fields
+      MODULE velocity
+        name = "velocity"
+        nb_components = 2
+        element_name = "PDE_2D_Q1_4nodes"
+        storage_depth = 2
+        MODULE DOFs_values
+          type = "uniformly_defined"
+          value = < 0.e+00 0.e+00 > 
+        END MODULE DOFs_values
+        MODULE DOFs_imposed_value
+          MODULE xxx
+            type = "uniformly_defined"
+            location = "on_bounds"
+            value = < 0.e+00 0.e+00 > 
+          END MODULE xxx
+        END MODULE DOFs_imposed_value
+      END MODULE velocity
+      MODULE pressure
+        name = "pressure"
+        nb_components = 1
+        element_name = "PDE_2D_Q0_1node"
+        storage_depth = 1
+        MODULE DOFs_values
+          type = "uniformly_defined"
+          value = < 0.e+00 > 
+        END MODULE DOFs_values
+      END MODULE pressure
+      MODULE temperature
+        name = "temperature"
+        nb_components = 1
+        element_name = "PDE_2D_Q1_4nodes"
+        storage_depth = 2
+        MODULE DOFs_values
+          type = "uniformly_defined"
+          value = vector(data_with_context(( $DS_x<5.e-01 ? 0.e+00 : 1.e+00 ) , "DS_TITI", 1.e+00, "IS_N", 10, "DS_x", component($DV_X, 0)))
+        END MODULE DOFs_values
+        MODULE DOFs_imposed_value
+          MODULE temperature_left
+            type = "uniformly_defined"
+            location = "on_bounds"
+            color = "left"
+            value = < 1.e+00 > 
+          END MODULE temperature_left
+          MODULE temperature_right
+            type = "uniformly_defined"
+            location = "on_bounds"
+            color = "right"
+            value = < 0.e+00 > 
+          END MODULE temperature_right
+        END MODULE DOFs_imposed_value
+      END MODULE temperature
+    END MODULE interior_fields
+    MODULE PDE_ResultSaver
+      $DS_TITI = 1.1e+01
+      $DS_TOTO = 1.e+00
+      writers = < "PEL_TICwriter"  >
+      writing_mode = "text"
+      files_basename = "save"
+      MODULE velocity
+        where_to_save = "at_vertices"
+        entry_name = "V"
+        field = "velocity"
+      END MODULE velocity
+      MODULE pressure
+        where_to_save = "at_cell_centers"
+        entry_name = "P"
+        field = "pressure"
+      END MODULE pressure
+      MODULE temperature
+        where_to_save = "at_vertices"
+        entry_name = "T"
+        field = "temperature"
+      END MODULE temperature
+    END MODULE PDE_ResultSaver
+  END MODULE PDE_DomainAndFields
+  MODULE FE_SetOfParameters
+    density = < 1.e+00 > 
+    conductivity = < 1.e+00 > 
+    specific_heat = < 1.e+00 > 
+    volumic_power = < 0.e+00 > 
+    viscosity = vector($DS_Pr)
+    MODULE FE_Parameter#thexp
+      concrete_name = "FE_LinearParameter"
+      name = "rho_th_exp"
+      field_name = "temperature"
+      field_level = 0
+      reference_field_value = 5.e-01
+      slope = -$DS_Ra*$DS_Pr/1.e+01
+    END MODULE FE_Parameter#thexp
+    MODULE FE_Parameter#force
+      concrete_name = "FE_GravityParameter"
+      name = "force"
+      gravity = < 0.e+00 -1.e+01 > 
+      rho_shift = -1.e+00
+      rho = "rho_th_exp"
+    END MODULE FE_Parameter#force
+  END MODULE FE_SetOfParameters
+  MODULE FE_OneStepIteration
+    concrete_name = "FE_SplitSystem"
+    MODULE list_of_FE_OneStepIteration
+      MODULE FE_OneStepIteration#gc
+        concrete_name = "FE_GalerkinCharacteristic"
+        advective_field = "velocity"
+        advective_field_level = 1
+        MODULE PDE_CFootFinder
+          concrete_name = "PDE_ForwardEulerFinder"
+          nb_iter_max_when_searching_in_cell = 5
+          nb_iter_max_when_searching_in_bound = 5
+          distance_max_characteristic_foot = 5.e+00
+        END MODULE PDE_CFootFinder
+        MODULE list_of_FE_Galerkin
+          MODULE FE_Galerkin#1
+            concrete_name = "AP_DiffusionCG"
+            param_density = "density"
+            param_conductivity = "conductivity"
+            param_specific_heat = "specific_heat"
+            param_volumic_power = "volumic_power"
+            level_to_update = 0
+            level_of_explicit = 1
+            quadrature_rule_provider = "GE_QRprovider_5"
+            MODULE LA_Matrix
+              concrete_name = "LA_DistMatrix"
+            END MODULE LA_Matrix
+            MODULE LA_Solver
+              concrete_name = "LA_PreconditionedSolver"
+              MODULE LA_IterativeSolver
+                concrete_name = "LA_CG_IS"
+                verbose = true
+                nb_iterations_max = 2000
+                MODULE LA_ConvergenceTest
+                  concrete_name = "LA_DefaultConvergenceTest"
+                  relative_tolerance = 1.e-08
+                  absolute_tolerance = 1.e-50
+                END MODULE LA_ConvergenceTest
+              END MODULE LA_IterativeSolver
+              MODULE LA_Preconditioner
+                concrete_name = "LA_Jacobi_PC"
+                smallest_inverted_item = 1.e-20
+              END MODULE LA_Preconditioner
+            END MODULE LA_Solver
+          END MODULE FE_Galerkin#1
+          MODULE FE_Galerkin#2
+            concrete_name = "AP_StokesCG"
+            param_density = "density"
+            param_viscosity = "viscosity"
+            param_force = "force"
+            level_to_update = 0
+            level_of_explicit = 1
+            quadrature_rule_provider = "GE_QRprovider_5"
+            MODULE LA_Matrix
+              concrete_name = "LA_PelMatrix"
+            END MODULE LA_Matrix
+            MODULE LA_TwoBlocksMethod
+              concrete_name = "LA_UzawaCG"
+              nb_iterations_max = 5000
+              tolerance = 1.e-04
+              verbose_level = 2
+              MODULE solver_A
+                concrete_name = "LA_PreconditionedSolver"
+                MODULE LA_IterativeSolver
+                  concrete_name = "LA_CG_IS"
+                  verbose = true
+                  nb_iterations_max = 2000
+                  MODULE LA_ConvergenceTest
+                    concrete_name = "LA_DefaultConvergenceTest"
+                    relative_tolerance = 1.e-08
+                    absolute_tolerance = 1.e-50
+                  END MODULE LA_ConvergenceTest
+                END MODULE LA_IterativeSolver
+                MODULE LA_Preconditioner
+                  concrete_name = "LA_Jacobi_PC"
+                  smallest_inverted_item = 1.e-20
+                END MODULE LA_Preconditioner
+              END MODULE solver_A
+              MODULE LA_UzawaPreconditioner
+                concrete_name = "LA_CahouetChabard_UP"
+                MODULE LA_Solver
+                  concrete_name = "LA_PreconditionedSolver"
+                  MODULE LA_IterativeSolver
+                    concrete_name = "LA_CG_IS"
+                    verbose = true
+                    nb_iterations_max = 2000
+                    MODULE LA_ConvergenceTest
+                      concrete_name = "LA_DefaultConvergenceTest"
+                      relative_tolerance = 1.e-08
+                      absolute_tolerance = 1.e-50
+                    END MODULE LA_ConvergenceTest
+                  END MODULE LA_IterativeSolver
+                  MODULE LA_Preconditioner
+                    concrete_name = "LA_Jacobi_PC"
+                    smallest_inverted_item = 1.e-20
+                  END MODULE LA_Preconditioner
+                END MODULE LA_Solver
+                MODULE LA_Matrix
+                  concrete_name = "LA_PelMatrix"
+                END MODULE LA_Matrix
+              END MODULE LA_UzawaPreconditioner
+           END MODULE LA_TwoBlocksMethod
+          END MODULE FE_Galerkin#2
+        END MODULE list_of_FE_Galerkin
+      END MODULE FE_OneStepIteration#gc
+      MODULE FE_OneStepIteration#DOF_copy
+        concrete_name = "FE_DOFsCopy"
+        MODULE velocity
+          field = "velocity"
+          source = 0
+          target = 1
+        END MODULE velocity
+        MODULE temperature
+          field = "temperature"
+          source = 0
+          target = 1
+        END MODULE temperature
+      END MODULE FE_OneStepIteration#DOF_copy
+    END MODULE list_of_FE_OneStepIteration
+  END MODULE FE_OneStepIteration
+  MODULE FE_TimeIterator
+    time_initial = $DS_zero
+    time_end = 1.e-02
+    time_step = 1.e-03
+  END MODULE FE_TimeIterator
+END MODULE PEL_Application

@@ -1,0 +1,1005 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>PEL_CrossProcessWriter.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="PEL_CrossProcessWriter.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="PELpack-tree.html"><span>Tree</span></a>
+    <a href="PEL_CrossProcessWriter.html"><span>Class</span></a>
+    <a href="PEL_CrossProcessWriter.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="PELpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_CrossProcessWriter</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">size_t_array2D</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw2">string</font><font class="text">&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">stringVector</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">doubleVector</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">intVector</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">doubleArray2D</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">intArray2D</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Communicator</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_DataWithContext</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_DoubleComparatorFloat</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Exec</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Int</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_IntVector</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_IntArray2D</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Double</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_DoubleVector</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_DoubleArray2D</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_List</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Module</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_String</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_StringVector</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_assertions</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">boolVector</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;iostream&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;fstream&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;sstream&gt;
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> ;
+
+
+</font><font class="kw3">PEL_CrossProcessWriter</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">PEL_CrossProcessWriter</font><font class="text">::PROTOTYPE = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_CrossProcessWriter</font><font class="text">() ;
+
+</font><font class="kw1">struct</font><font class="text"> PEL_CrossProcessWriter_ERROR
+{
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> n1( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; fname,
+                   </font><font class="kw2">size_t</font><font class="text"> ic,
+                   </font><font class="kw1">double</font><font class="text"> val1, </font><font class="kw1">double</font><font class="text"> val2 ) ;
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> n3( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; name,
+                   </font><font class="kw1">double</font><font class="text"> val1, </font><font class="kw1">double</font><font class="text"> val2 ) ;
+} ;
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">PEL_CrossProcessWriter</font><font class="text">:: is_parallel_writer( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_CrossProcessWriter</font><font class="text">:: </font><font class="kw3">PEL_CrossProcessWriter</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_DataOnMeshingWriter</font><font class="text">( </font><font class="string">&quot;PEL_CrossProcessWriter&quot;</font><font class="text"> )
+   , SUB_WRITERS( 0 )
+   , COM( 0 )
+   , COORDS_CMP( 0 )
+   , DBL_EPSI( </font><font class="kw3">PEL</font><font class="text">::bad_double() )
+   , DBL_MINI( </font><font class="kw3">PEL</font><font class="text">::bad_double() )
+   , loc2glob_VERTS( 0 )
+   , loc2glob_FACES( 0 )
+   , loc2glob_CELLS( 0 )
+   , NB_VERTS( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+   , NB_FACES( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+   , NB_CELLS( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+   , HALO_COLOR_INDEX( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_CrossProcessWriter:: PEL_CrossProcessWriter&quot;</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_CrossProcessWriter</font><font class="text">*
+</font><font class="kw3">PEL_CrossProcessWriter</font><font class="text">:: create_replica( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                     </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_CrossProcessWriter:: create_replica&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_PRE( a_owner, exp ) ) ;
+
+   </font><font class="kw3">PEL_CrossProcessWriter</font><font class="text">* result = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_CrossProcessWriter</font><font class="text">( a_owner, exp ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( create_replica_POST( result, a_owner, exp ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_CrossProcessWriter</font><font class="text">:: </font><font class="kw3">PEL_CrossProcessWriter</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                         </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_DataOnMeshingWriter</font><font class="text">( a_owner )
+   , SUB_WRITERS( </font><font class="kw3">PEL_List</font><font class="text">::create( </font><font class="kw1">this</font><font class="text"> ) )
+   , COM( </font><font class="kw3">PEL_Exec</font><font class="text">::communicator() )
+   , COORDS_CMP( </font><font class="kw3">PEL_DoubleComparatorFloat</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, 1.e-12 ) )
+   , DBL_EPSI( exp-&gt;has_entry( </font><font class="string">&quot;dbl_epsilon&quot;</font><font class="text"> ) ?
+                 exp-&gt;double_data( </font><font class="string">&quot;dbl_epsilon&quot;</font><font class="text"> ) : 1.E-4 )
+   , DBL_MINI( exp-&gt;has_entry( </font><font class="string">&quot;dbl_minimum&quot;</font><font class="text"> ) ?
+                 exp-&gt;double_data( </font><font class="string">&quot;dbl_minimum&quot;</font><font class="text"> ) : 1.E-8 )
+   , loc2glob_VERTS( 0 )
+   , loc2glob_FACES( 0 )
+   , loc2glob_CELLS( 0 )
+   , NB_VERTS( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+   , NB_FACES( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+   , NB_CELLS( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+   , HALO_COLOR_INDEX( -12 )
+{
+   </font><font class="kw1">if</font><font class="text">( DBL_EPSI &lt;= 0. )
+   {
+      </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_bad_data_value(
+         exp, </font><font class="string">&quot;dbl_epsilon&quot;</font><font class="text">, </font><font class="string">&quot;A positive value is expected&quot;</font><font class="text"> ) ;
+   }
+   </font><font class="kw1">if</font><font class="text">( DBL_MINI &lt;= 0. )
+   {
+      </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_bad_data_value(
+         exp, </font><font class="string">&quot;dbl_minimum&quot;</font><font class="text">, </font><font class="string">&quot;A positive value is expected&quot;</font><font class="text"> ) ;
+   }
+   
+   </font><font class="kw1">if</font><font class="text">( COM-&gt;rank()==0 )
+   {
+      </font><font class="kw1">if</font><font class="text">( exp-&gt;has_entry( </font><font class="string">&quot;sub_writers&quot;</font><font class="text"> ) )
+      {
+         </font><font class="kw3">stringVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; subs = exp-&gt;stringVector_data( </font><font class="string">&quot;sub_writers&quot;</font><font class="text"> ) ;
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;subs.size() ; ++i )
+         {
+            </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=i+1 ; j&lt;subs.size() ; ++j )
+            {
+               </font><font class="kw1">if</font><font class="text">( subs(i) == subs(j) )
+               {
+                  </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_bad_data_value(
+                     exp, </font><font class="string">&quot;sub_writers&quot;</font><font class="text">,
+                     </font><font class="string">&quot;The writer \&quot;&quot;+subs(i)+&quot;</font><font class="text">\</font><font class="string">&quot; is defined twice.&quot;</font><font class="text"> ) ;
+               }
+            }
+            </font><font class="kw3">PEL_DataOnMeshingWriter</font><font class="text">* sub =
+               </font><font class="kw3">PEL_DataOnMeshingWriter</font><font class="text">::make( </font><font class="kw1">this</font><font class="text">, subs(i), exp ) ;
+            </font><font class="kw1">if</font><font class="text">( sub-&gt;is_parallel_writer() )
+            {
+               </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain(
+                  </font><font class="string">&quot;Parallel writer \&quot;&quot; + subs(i) +&quot;</font><font class="text">\</font><font class="string">&quot;\n&quot;
+</font><font class="text">                  </font><font class="string">&quot;can't be used as sub-writer of PEL_CrossProcessWriter instance&quot;</font><font class="text"> ) ;
+            }
+            SUB_WRITERS-&gt;append( sub ) ;
+         }
+      }
+      </font><font class="kw1">else
+</font><font class="text">      {
+         </font><font class="comment">// for the error message
+</font><font class="text">         exp-&gt;stringVector_data( </font><font class="string">&quot;sub_writers&quot;</font><font class="text"> ) ;
+      }
+   }
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_CrossProcessWriter</font><font class="text">:: ~</font><font class="kw3">PEL_CrossProcessWriter</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_CrossProcessWriter:: ~PEL_CrossProcessWriter&quot;</font><font class="text"> ) ;
+   </font><font class="kw1">if</font><font class="text">( is_a_prototype() )
+   {
+      PROTOTYPE = 0 ;
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_CrossProcessWriter</font><font class="text">:: write_cycle( </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_CrossProcessWriter:: write_cycle&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( write_cycle_PRE( exp ) ) ;   
+
+   </font><font class="kw3">PEL_Module</font><font class="text">* mod = collect_data( 0, exp ) ;
+
+   </font><font class="kw1">if</font><font class="text">( COM-&gt;rank()==0 )
+   {
+      </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* explorer = </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">::create( mod, mod ) ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;SUB_WRITERS-&gt;index_limit() ; i++ )
+      {
+         </font><font class="kw3">PEL_DataOnMeshingWriter</font><font class="text"> * writer =
+            </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">PEL_DataOnMeshingWriter</font><font class="text">*&gt;( SUB_WRITERS-&gt;at( i ) ) ;
+         writer-&gt;write_cycle( explorer ) ;
+      }
+      mod-&gt;destroy() ; mod=0 ;
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw3">PEL_ASSERT</font><font class="text">( mod == 0 ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_Module</font><font class="text">*
+</font><font class="kw3">PEL_CrossProcessWriter</font><font class="text">:: collect_data( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                       </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_CrossProcessWriter:: collect_data&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw2">size_t</font><font class="text"> rank = COM-&gt;rank() ;
+
+   </font><font class="kw3">PEL_Module</font><font class="text">* result = 0 ;
+   </font><font class="kw1">if</font><font class="text">( rank == 0 )
+   {
+      result = </font><font class="kw3">PEL_Module</font><font class="text">::create( a_owner, exp-&gt;name() ) ;
+      </font><font class="kw1">int</font><font class="text"> cycle = exp-&gt;int_data( </font><font class="string">&quot;cycle_number&quot;</font><font class="text"> ) ;
+      result-&gt;add_entry( </font><font class="string">&quot;cycle_number&quot;</font><font class="text">, </font><font class="kw3">PEL_Int</font><font class="text">::create( result, cycle ) ) ;
+   }
+                      
+   </font><font class="comment">// First, we save common scalar variables
+</font><font class="text">
+   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* sexp ;
+   </font><font class="kw1">if</font><font class="text">( exp-&gt;has_module( </font><font class="string">&quot;variables&quot;</font><font class="text"> ) )
+   {
+      sexp = exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;variables&quot;</font><font class="text"> ) ;
+      </font><font class="kw2">size_t</font><font class="text"> nb ;
+      </font><font class="kw3">PEL_Module</font><font class="text">* variables = collect_variables( result, sexp, nb ) ;
+      </font><font class="kw1">if</font><font class="text">( rank == 0 )
+      {
+         result-&gt;add_module( variables ) ;
+         result-&gt;add_entry( </font><font class="string">&quot;nb_variables&quot;</font><font class="text">,
+                            </font><font class="kw3">PEL_Int</font><font class="text">::create( result, (</font><font class="kw1">int</font><font class="text">)nb ) ) ;
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw3">PEL_ASSERT</font><font class="text">( variables == 0 ) ;
+      sexp-&gt;destroy() ;
+   }
+   
+   </font><font class="kw1">if</font><font class="text">( exp-&gt;has_module( </font><font class="string">&quot;meshing&quot;</font><font class="text"> ) )
+   {
+      sexp = exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;meshing&quot;</font><font class="text"> ) ;
+      </font><font class="kw3">PEL_Module</font><font class="text">* meshing = collect_meshing( result, sexp ) ;
+      </font><font class="kw1">if</font><font class="text">( rank == 0 )
+      {
+         result-&gt;add_module( meshing ) ;
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw3">PEL_ASSERT</font><font class="text">( meshing == 0 ) ;
+      sexp-&gt;destroy() ;
+   }
+   
+   </font><font class="kw1">if</font><font class="text">( exp-&gt;has_module( </font><font class="string">&quot;fields&quot;</font><font class="text"> ) )
+   {
+      sexp = exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;fields&quot;</font><font class="text"> ) ;
+      </font><font class="kw2">size_t</font><font class="text"> nbf ;
+      </font><font class="kw3">PEL_Module</font><font class="text">* fields = collect_field( result, sexp, nbf ) ;
+      </font><font class="kw1">if</font><font class="text">( rank == 0 )
+      {
+         result-&gt;add_module( fields ) ;
+         result-&gt;add_entry( </font><font class="string">&quot;nb_fields&quot;</font><font class="text">,
+                            </font><font class="kw3">PEL_Int</font><font class="text">::create( result, (</font><font class="kw1">int</font><font class="text">)nbf ) ) ;
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw3">PEL_ASSERT</font><font class="text">( fields == 0 ) ;
+      sexp-&gt;destroy() ;
+   }
+   </font><font class="kw1">if</font><font class="text">( exp-&gt;has_module( </font><font class="string">&quot;integration_domain&quot;</font><font class="text"> ) )
+   {
+      sexp = exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;integration_domain&quot;</font><font class="text"> ) ;
+      </font><font class="kw2">size_t</font><font class="text"> nb ;
+      </font><font class="kw3">PEL_Module</font><font class="text">* idom = collect_variables( result, sexp, nb ) ;
+      </font><font class="kw1">if</font><font class="text">( rank == 0 )
+      {
+         result-&gt;add_module( idom ) ;
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw3">PEL_ASSERT</font><font class="text">( idom == 0 ) ;
+      sexp-&gt;destroy() ;
+   }
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_Module</font><font class="text">*
+</font><font class="kw3">PEL_CrossProcessWriter</font><font class="text">:: collect_variables( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                            </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* exp,
+                                            </font><font class="kw2">size_t</font><font class="text">&amp; nb )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_CrossProcessWriter:: collect_variables&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw3">PEL_Module</font><font class="text">* result = 0 ;
+   </font><font class="kw2">size_t</font><font class="text"> last = COM-&gt;nb_ranks()-1 ;
+   </font><font class="kw2">size_t</font><font class="text"> rank = COM-&gt;rank() ;
+   nb = 0 ;
+
+   </font><font class="kw1">if</font><font class="text">( rank == 0 )
+   {
+      result = </font><font class="kw3">PEL_Module</font><font class="text">::create( a_owner, exp-&gt;name() ) ;
+   }
+   
+   exp-&gt;start_entry_iterator() ;
+   </font><font class="kw1">for</font><font class="text">( ; exp-&gt;is_valid_entry() ; exp-&gt;go_next_entry() )
+   {
+      </font><font class="kw3">PEL_Data</font><font class="text"> </font><font class="kw1">const</font><font class="text">* data = exp-&gt;data(0) ;
+      </font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; key = exp-&gt;keyword() ;
+      </font><font class="kw1">bool</font><font class="text"> same0 = </font><font class="kw1">false</font><font class="text"> ;
+      </font><font class="kw1">if</font><font class="text">( data-&gt;data_type()==</font><font class="kw3">PEL_Data</font><font class="text">::Double )
+      {
+         same0 = </font><font class="kw1">true</font><font class="text"> ;
+         </font><font class="kw1">double</font><font class="text"> val = data-&gt;to_double() ;
+         </font><font class="kw1">if</font><font class="text">( rank == 0  )
+         {
+            </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=1 ; i&lt;=last ; i++ )
+            {
+               COM-&gt;send( i, val ) ;
+               </font><font class="kw1">bool</font><font class="text"> same ;
+               COM-&gt;receive( i, same ) ;
+               same0 = same0 &amp;&amp; same ;
+            }
+         }
+         </font><font class="kw1">else
+</font><font class="text">         {
+            </font><font class="kw1">double</font><font class="text"> val0 ;
+            COM-&gt;receive( 0, val0 ) ;
+            </font><font class="kw1">bool</font><font class="text"> same = </font><font class="kw3">PEL</font><font class="text">::double_equality( val0, val, DBL_EPSI, DBL_MINI ) ;
+            </font><font class="kw1">if</font><font class="text">( !same )
+            {
+               PEL_CrossProcessWriter_ERROR:: n3( key, val0, val ) ;
+            }
+            COM-&gt;send( 0, same ) ;
+         }
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( data-&gt;data_type()==</font><font class="kw3">PEL_Data</font><font class="text">::DoubleVector )
+      {
+         same0 = </font><font class="kw1">true</font><font class="text"> ;
+         </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; val = data-&gt;to_double_vector() ;
+         </font><font class="kw1">if</font><font class="text">( rank == 0  )
+         {
+            </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=1 ; i&lt;=last ; i++ )
+            {
+               COM-&gt;send( i, val ) ;
+               </font><font class="kw1">bool</font><font class="text"> same ;
+               COM-&gt;receive( i, same ) ;
+               same0 = same0 &amp;&amp; same ;
+            }
+         }
+         </font><font class="kw1">else
+</font><font class="text">         {
+            </font><font class="kw3">doubleVector</font><font class="text"> val0(0) ;
+            COM-&gt;receive( 0, val0 ) ;
+            </font><font class="kw1">bool</font><font class="text"> same = val0.size()==val.size() ;
+            </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;val.size() &amp;&amp; same ; i++ )
+            {
+               same &amp;= </font><font class="kw3">PEL</font><font class="text">::double_equality( val0(i), val(i),
+                                             DBL_EPSI, DBL_MINI ) ;
+               </font><font class="kw1">if</font><font class="text">( !same )
+               {
+                  PEL_CrossProcessWriter_ERROR:: n3( key, val0(i), val(i) ) ;
+               }
+            }
+            COM-&gt;send( 0, same ) ;
+         }
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( data-&gt;data_type()==</font><font class="kw3">PEL_Data</font><font class="text">::DoubleArray2D )
+      {
+         same0 = </font><font class="kw1">true</font><font class="text"> ;
+         </font><font class="kw3">doubleArray2D</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; val = data-&gt;to_double_array2D() ;
+         </font><font class="kw1">if</font><font class="text">( rank == 0  )
+         {
+            </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=1 ; i&lt;=last ; i++ )
+            {
+               COM-&gt;send( i, val ) ;
+               </font><font class="kw1">bool</font><font class="text"> same ;
+               COM-&gt;receive( i, same ) ;
+               same0 = same0 &amp;&amp; same ;
+            }
+         }
+         </font><font class="kw1">else
+</font><font class="text">         {
+            </font><font class="kw3">doubleArray2D</font><font class="text"> val0(0,0) ;
+            COM-&gt;receive( 0, val0 ) ;
+            </font><font class="kw1">bool</font><font class="text"> same = val0.index_bound(0)==val.index_bound(0) &amp;&amp;
+                                     val0.index_bound(1)==val.index_bound(1) ;
+            </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;val.index_bound(0) &amp;&amp; same ; i++ )
+            {
+               </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; j&lt;val.index_bound(1) &amp;&amp; same ; j++ )
+               {
+                  same &amp;= </font><font class="kw3">PEL</font><font class="text">::double_equality( val0(i,j), val(i,j),
+                                                DBL_EPSI, DBL_MINI ) ;
+                  </font><font class="kw1">if</font><font class="text">( !same )
+                  {
+                     PEL_CrossProcessWriter_ERROR:: n3( key, val0(i,j), val(i,j) ) ;
+                  }
+               }
+            }
+            COM-&gt;send( 0, same ) ;
+         }
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( data-&gt;data_type()==</font><font class="kw3">PEL_Data</font><font class="text">::Int )
+      {
+         same0 = </font><font class="kw1">true</font><font class="text"> ;
+         </font><font class="kw1">int</font><font class="text"> val = data-&gt;to_int() ;
+         </font><font class="kw1">if</font><font class="text">( rank == 0  )
+         {
+            </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=1 ; i&lt;=last ; i++ )
+            {
+               COM-&gt;send( i, val ) ;
+               </font><font class="kw1">bool</font><font class="text"> same ;
+               COM-&gt;receive( i, same ) ;
+               same0 = same0 &amp;&amp; same ;
+            }
+         }
+         </font><font class="kw1">else
+</font><font class="text">         {
+            </font><font class="kw1">int</font><font class="text"> val0 ;
+            COM-&gt;receive( 0, val0 ) ;
+            </font><font class="kw1">bool</font><font class="text"> same = val0==val ;
+            COM-&gt;send( 0, same ) ;
+         }
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( data-&gt;data_type()==</font><font class="kw3">PEL_Data</font><font class="text">::IntVector )
+      {
+         same0 = </font><font class="kw1">true</font><font class="text"> ;
+         </font><font class="kw3">intVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; val = data-&gt;to_int_vector() ;
+         </font><font class="kw1">if</font><font class="text">( rank == 0  )
+         {
+            </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=1 ; i&lt;=last ; i++ )
+            {
+               COM-&gt;send( i, val ) ;
+               </font><font class="kw1">bool</font><font class="text"> same ;
+               COM-&gt;receive( i, same ) ;
+               same0 = same0 &amp;&amp; same ;
+            }
+         }
+         </font><font class="kw1">else
+</font><font class="text">         {
+            </font><font class="kw3">intVector</font><font class="text"> val0(0) ;
+            COM-&gt;receive( 0, val0 ) ;
+            </font><font class="kw1">bool</font><font class="text"> same = val0.size()==val.size() ;
+            </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;val.size() &amp;&amp; same ; i++ )
+               same &amp;= val0(i)==val(i) ;
+            COM-&gt;send( 0, same ) ;
+         }
+      }
+      </font><font class="kw1">else
+</font><font class="text">      {
+         </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> m ;
+         m &lt;&lt; </font><font class="string">&quot;*** PEL_CrossProcessWriter : saving of \&quot;&quot;
+           &lt;&lt; key &lt;&lt; &quot;</font><font class="text">\</font><font class="string">&quot; values.&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+         m &lt;&lt; </font><font class="string">&quot;    type \&quot;&quot; &lt;&lt; data-&gt;data_type() &lt;&lt; &quot;</font><font class="text">\</font><font class="string">&quot; not supported.&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+         </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( m.str() ) ;
+      }
+
+      </font><font class="kw1">if</font><font class="text">( same0 )
+      {
+         nb++ ;
+         </font><font class="kw1">if</font><font class="text">( rank == 0 )
+            result-&gt;add_entry( key, data-&gt;create_clone( result ) ) ;
+      }
+      </font><font class="kw1">else
+</font><font class="text">      {
+         </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> m ;
+         m &lt;&lt; </font><font class="string">&quot;*** PEL_CrossProcessWriter : saving of \&quot;&quot;
+           &lt;&lt; key &lt;&lt; &quot;</font><font class="text">\</font><font class="string">&quot; values.&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+         m &lt;&lt; </font><font class="string">&quot;    Not the same values on processes.&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+         </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( m.str() ) ;
+      }
+      data-&gt;destroy() ;
+   }
+   </font><font class="kw1">return</font><font class="text"> result ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_Module</font><font class="text">*
+</font><font class="kw3">PEL_CrossProcessWriter</font><font class="text">:: collect_meshing( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                          </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* exp )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_CrossProcessWriter:: collect_meshing&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw3">PEL_Module</font><font class="text">* result = 0 ;
+   
+   </font><font class="kw2">size_t</font><font class="text"> rank = COM-&gt;rank() ;
+
+   </font><font class="kw3">stringVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; color_table = exp-&gt;stringVector_data( </font><font class="string">&quot;color_table&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">intArray2D</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; color_table_connectivity =
+                           exp-&gt;intArray2D_data( </font><font class="string">&quot;color_table_connectivity&quot;</font><font class="text"> ) ;
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; halo_color_name = exp-&gt;string_data( </font><font class="string">&quot;halo_color_name&quot;</font><font class="text"> ) ;
+   </font><font class="kw1">if</font><font class="text">( color_table.has( halo_color_name ) )
+   {
+      HALO_COLOR_INDEX = color_table.index_of( halo_color_name ) ;
+   }
+      
+   </font><font class="comment">//**Recovering cross-process vertices coordinates
+</font><font class="text">   </font><font class="kw3">doubleArray2D</font><font class="text"> verts = exp-&gt;doubleArray2D_data( </font><font class="string">&quot;vertices&quot;</font><font class="text"> ) ;
+   COM-&gt;merge( COORDS_CMP, verts, loc2glob_VERTS ) ;
+   </font><font class="kw2">size_t</font><font class="text"> glo_nb_verts = ( rank == 0 ) ? verts.index_bound(1) : 0 ;
+   
+   </font><font class="comment">//**Recovering cross-process vertices color
+</font><font class="text">   </font><font class="kw3">intVector</font><font class="text"> glob_vert_color( glo_nb_verts ) ;
+   compute_global_vector_of_indices( glob_vert_color, 
+                                     exp-&gt;intVector_data( </font><font class="string">&quot;vertex_color&quot;</font><font class="text"> ), 
+                                     loc2glob_VERTS, HALO_COLOR_INDEX ) ;
+
+   </font><font class="comment">//**Recovering cross-process cell vertices
+</font><font class="text">   </font><font class="kw3">intArray2D</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; c2v = exp-&gt;intArray2D_data( </font><font class="string">&quot;cell2vertex&quot;</font><font class="text"> ) ;
+   </font><font class="kw2">size_t</font><font class="text"> loc_nb_verts_per_cell = c2v.index_bound( 0 ) ;
+   </font><font class="kw2">size_t</font><font class="text"> loc_nb_cells = c2v.index_bound( 1 ) ;
+   </font><font class="kw2">size_t</font><font class="text"> glo_nb_verts_per_cell = COM-&gt;max( loc_nb_verts_per_cell ) ;   
+   </font><font class="kw3">doubleArray2D</font><font class="text"> d_cell2vert( glo_nb_verts_per_cell, loc_nb_cells ) ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> f = 0 ; f &lt; loc_nb_cells ; f++ )
+   {
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i = 0 ; i &lt; loc_nb_verts_per_cell ; i++ )
+      {
+         d_cell2vert( i, f ) = (</font><font class="kw1">double</font><font class="text">)( loc2glob_VERTS( c2v( i, f ) ) ) ; 
+      }
+   }
+   COM-&gt;merge( COORDS_CMP, d_cell2vert, loc2glob_CELLS ) ;
+   </font><font class="kw2">size_t</font><font class="text"> glo_nb_cells = ( rank == 0 ) ? d_cell2vert.index_bound( 1 ) : 0 ;
+
+   </font><font class="comment">//**Recovering cross-process number of vertices per cell
+</font><font class="text">   </font><font class="kw3">intVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; cell_nb_verts = exp-&gt;intVector_data( </font><font class="string">&quot;cell_nb_vertices&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">intVector</font><font class="text"> glob_cell_nb_verts( glo_nb_cells ) ;
+   compute_global_vector_of_indices( glob_cell_nb_verts, cell_nb_verts,
+                                     loc2glob_CELLS, -100 ) ;
+
+   </font><font class="comment">//**Recovering cross-process cell colors
+</font><font class="text">   </font><font class="kw3">intVector</font><font class="text"> glob_cell_color( glo_nb_cells ) ;
+   compute_global_vector_of_indices( glob_cell_color, 
+                                     exp-&gt;intVector_data( </font><font class="string">&quot;cell_color&quot;</font><font class="text"> ), 
+                                     loc2glob_CELLS, HALO_COLOR_INDEX ) ;
+   
+   </font><font class="comment">//**Recovering cross-process face vertices
+</font><font class="text">   </font><font class="kw3">intArray2D</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; f2v = exp-&gt;intArray2D_data( </font><font class="string">&quot;face2vertex&quot;</font><font class="text"> ) ;
+   </font><font class="kw2">size_t</font><font class="text"> nb_verts_per_face = f2v.index_bound( 0 ) ;
+   </font><font class="kw2">size_t</font><font class="text"> loc_nb_faces = f2v.index_bound( 1 ) ;
+   </font><font class="kw2">size_t</font><font class="text"> glo_nb_verts_per_face = COM-&gt;max( nb_verts_per_face ) ;   
+   </font><font class="kw3">doubleArray2D</font><font class="text"> d_face2vert( glo_nb_verts_per_face, loc_nb_faces ) ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> f = 0 ; f &lt; loc_nb_faces ; f++ )
+   {
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i = 0 ; i &lt; nb_verts_per_face ; i++ )
+      {
+         d_face2vert( i, f ) = (</font><font class="kw1">double</font><font class="text">)( loc2glob_VERTS( f2v( i, f ) ) ) ;
+      }
+   }
+   COM-&gt;merge( COORDS_CMP, d_face2vert, loc2glob_FACES ) ;    
+   </font><font class="kw2">size_t</font><font class="text"> glo_nb_faces = (rank == 0 ) ? d_face2vert.index_bound( 1 ) : 0 ;
+   
+   </font><font class="comment">//**Recovering cross-process number of vertices per face
+</font><font class="text">   </font><font class="kw3">intVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; loc_face_nb_verts = exp-&gt;intVector_data( </font><font class="string">&quot;face_nb_vertices&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">intVector</font><font class="text"> glob_face_nb_verts( glo_nb_faces ) ;
+   compute_global_vector_of_indices( glob_face_nb_verts, loc_face_nb_verts,
+                                     loc2glob_FACES, -100 ) ;
+
+   </font><font class="comment">//**Recovering cross-process face colors
+</font><font class="text">   </font><font class="kw3">intVector</font><font class="text"> glob_face_color( glo_nb_faces ) ;
+   compute_global_vector_of_indices( glob_face_color,
+                                     exp-&gt;intVector_data( </font><font class="string">&quot;face_color&quot;</font><font class="text"> ), 
+                                     loc2glob_FACES, HALO_COLOR_INDEX ) ;
+
+   </font><font class="comment">//**Recovering cell&lt;--&gt;face correspondence
+</font><font class="text">   </font><font class="comment">//cell--&gt;face
+</font><font class="text">   </font><font class="kw3">intArray2D</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; cell2face = exp-&gt;intArray2D_data( </font><font class="string">&quot;cell2face&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">intVector</font><font class="text"> glob_cell_nb_faces( glo_nb_cells ) ;
+   </font><font class="kw2">size_t</font><font class="text"> glo_nb_face_max_per_cell = COM-&gt;max( cell2face.index_bound( 0 ) ) ;
+   </font><font class="kw1">if</font><font class="text">( rank &gt; 0 ) glo_nb_face_max_per_cell = 0 ;
+   
+   </font><font class="kw3">intArray2D</font><font class="text"> glob_cell2face( glo_nb_face_max_per_cell, glo_nb_cells ) ;
+   compute_global_cell2face( glob_cell_nb_faces, glob_cell2face, 
+                             exp-&gt;intVector_data( </font><font class="string">&quot;cell_nb_faces&quot;</font><font class="text"> ),
+                             cell2face, loc2glob_CELLS ) ;
+   </font><font class="comment">//face--&gt;cell
+</font><font class="text">   </font><font class="kw3">intArray2D</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; face2cell = exp-&gt;intArray2D_data( </font><font class="string">&quot;face2cell&quot;</font><font class="text"> ) ;
+   </font><font class="kw2">size_t</font><font class="text"> glo_nb_cell_max_per_face = COM-&gt;max( face2cell.index_bound( 0 ) ) ;
+   </font><font class="kw1">if</font><font class="text">( rank &gt; 0 ) glo_nb_cell_max_per_face = 0 ;
+   </font><font class="kw3">intArray2D</font><font class="text"> glob_face2cell( glo_nb_cell_max_per_face, glo_nb_faces ) ;
+   compute_global_face2cell( glob_face2cell, face2cell, 
+                             loc2glob_CELLS, loc2glob_FACES ) ;
+
+   </font><font class="comment">//Construction of meshing module on process 0
+</font><font class="text">   </font><font class="kw1">if</font><font class="text">( rank == 0 )
+   {
+      NB_VERTS = glo_nb_verts ;         
+      NB_FACES = glo_nb_faces ;
+      NB_CELLS = glo_nb_cells ;
+
+      </font><font class="kw3">intArray2D</font><font class="text"> glob_cell2vert( glo_nb_verts_per_cell, glo_nb_cells ) ;
+      
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; j &lt; glo_nb_cells ; j++ )
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> s=0 ; s&lt;glo_nb_verts_per_cell ; s++ )
+            glob_cell2vert(s,j) = (</font><font class="kw1">int</font><font class="text">)d_cell2vert(s,j) ;
+
+      </font><font class="kw3">intArray2D</font><font class="text"> glob_face2vert( glo_nb_verts_per_face, glo_nb_faces ) ;
+
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; j &lt; glo_nb_faces ; j++ )
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> s=0 ; s&lt;glo_nb_verts_per_face ; s++ )
+            glob_face2vert(s,j) = (</font><font class="kw1">int</font><font class="text">)d_face2vert(s,j) ;
+
+      result = </font><font class="kw3">PEL_DataOnMeshingWriter</font><font class="text">::create_meshing_module( 
+              a_owner, 
+              exp-&gt;string_data( </font><font class="string">&quot;name&quot;</font><font class="text"> ), exp-&gt;int_data( </font><font class="string">&quot;nb_sp_dims&quot;</font><font class="text"> ),
+              verts,
+              glob_cell_nb_verts, glob_cell2vert,
+              glob_cell_nb_faces, glob_cell2face,
+              glob_face_nb_verts, glob_face2vert, glob_face2cell,
+              color_table, halo_color_name,
+              color_table_connectivity,
+              glob_vert_color, glob_cell_color, glob_face_color ) ;
+
+   }
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_CrossProcessWriter</font><font class="text">:: compute_global_vector_of_indices( 
+                                        </font><font class="kw3">intVector</font><font class="text">&amp; glob_vect_indices,
+                                        </font><font class="kw3">intVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; loc_vect_indices,
+                                        </font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; loc2glob,
+                                        </font><font class="kw1">int</font><font class="text"> index_to_ignore ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_CrossProcessWriter:: compute_global_vector_of_indices&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> rank = COM-&gt;rank() ;
+   </font><font class="kw2">size_t</font><font class="text"> nb_ranks = COM-&gt;nb_ranks() ;
+   
+   </font><font class="kw1">if</font><font class="text">( rank==0 )
+   {
+      </font><font class="kw3">size_t_vector</font><font class="text"> a_loc2glob( loc2glob ) ;
+      </font><font class="kw3">intVector</font><font class="text"> a_loc_vect_indices( loc_vect_indices ) ;
+      
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> iproc=0 ; iproc&lt;nb_ranks ; ++iproc )
+      {
+         </font><font class="kw1">if</font><font class="text">( iproc&gt;0 )
+         {
+            COM-&gt;receive( iproc, a_loc2glob ) ;
+            COM-&gt;receive( iproc, a_loc_vect_indices ) ;
+         }
+         
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; j&lt;a_loc2glob.size() ; ++j )
+         {
+            </font><font class="kw1">if</font><font class="text">( a_loc_vect_indices( j ) != index_to_ignore )
+               glob_vect_indices( a_loc2glob( j ) ) = a_loc_vect_indices( j ) ;
+         }
+      }
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      COM-&gt;send( 0, loc2glob ) ;
+      COM-&gt;send( 0, loc_vect_indices ) ;
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_CrossProcessWriter</font><font class="text">:: compute_global_cell2face( 
+                                   </font><font class="kw3">intVector</font><font class="text">&amp; glob_cell_nb_faces,
+                                   </font><font class="kw3">intArray2D</font><font class="text">&amp; glob_cell2face,
+                                   </font><font class="kw3">intVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; loc_cell_nb_faces,
+                                   </font><font class="kw3">intArray2D</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; loc_cell2face,
+                                   </font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; loc2glob_cells ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_CrossProcessWriter:: compute_global_cell2face&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> rank = COM-&gt;rank() ;
+   </font><font class="kw2">size_t</font><font class="text"> nb_ranks = COM-&gt;nb_ranks() ;
+   
+   </font><font class="kw1">if</font><font class="text">( rank==0 )
+   {
+      </font><font class="kw3">size_t_vector</font><font class="text"> a_loc2glob_cells( loc2glob_cells ) ;
+      </font><font class="kw3">intVector</font><font class="text"> a_loc_cell_nb_faces( loc_cell_nb_faces ) ;
+      </font><font class="kw3">intArray2D</font><font class="text"> a_loc_cell2face( loc_cell2face ) ;
+      
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> iproc=0 ; iproc&lt;nb_ranks ; ++iproc )
+      {
+         </font><font class="kw1">if</font><font class="text">( iproc&gt;0 )
+         {
+            COM-&gt;receive( iproc, a_loc2glob_cells ) ;
+            COM-&gt;receive( iproc, a_loc_cell_nb_faces ) ;
+            COM-&gt;receive( iproc, a_loc_cell2face ) ;
+         }
+         
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; j&lt;a_loc2glob_cells.size() ; ++j )
+         {
+            </font><font class="kw2">size_t</font><font class="text"> nn = a_loc_cell_nb_faces( j ) ;
+            glob_cell_nb_faces( a_loc2glob_cells( j ) ) = nn ;
+            </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;nn ; ++i )
+            {
+               glob_cell2face( i, a_loc2glob_cells( j ) ) = 
+                                                    a_loc_cell2face( i, j ) ;
+            }
+         }
+      }
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      COM-&gt;send( 0, loc2glob_cells ) ;
+      COM-&gt;send( 0, loc_cell_nb_faces ) ;
+      COM-&gt;send( 0, loc_cell2face ) ;
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_CrossProcessWriter</font><font class="text">:: compute_global_face2cell( 
+                                   </font><font class="kw3">intArray2D</font><font class="text">&amp; glob_face2cell,
+                                   </font><font class="kw3">intArray2D</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; loc_face2cell,
+                                   </font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; loc2glob_cells,
+                                   </font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; loc2glob_faces ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_CrossProcessWriter:: compute_global_face2cell&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> rank = COM-&gt;rank() ;
+   </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> nb_ranks = COM-&gt;nb_ranks() ;
+
+   </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> nn = glob_face2cell.index_bound( 0 ) ;
+   
+   </font><font class="kw1">if</font><font class="text">( rank==0 )
+   {
+      </font><font class="kw3">size_t_vector</font><font class="text"> a_loc2glob_cells( loc2glob_cells ) ;
+      </font><font class="kw3">size_t_vector</font><font class="text"> a_loc2glob_faces( loc2glob_faces ) ;
+      </font><font class="kw3">intArray2D</font><font class="text"> a_loc_face2cell( loc_face2cell ) ;
+      
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> iproc=0 ; iproc&lt;nb_ranks ; ++iproc )
+      {
+         </font><font class="kw1">if</font><font class="text">( iproc&gt;0 )
+         {
+            COM-&gt;receive( iproc, a_loc2glob_cells ) ;
+            COM-&gt;receive( iproc, a_loc2glob_faces ) ;
+            COM-&gt;receive( iproc, a_loc_face2cell ) ;
+         }
+         
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; j&lt;a_loc2glob_faces.size() ; ++j )
+         {
+            </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;nn ; ++i )
+            {
+               </font><font class="kw1">int</font><font class="text"> i_loc = a_loc_face2cell( i, j ) ;
+
+               </font><font class="kw1">int</font><font class="text"> i_glob = index_for_trash() ;
+               </font><font class="kw1">if</font><font class="text">( i_loc != index_for_trash() ) 
+               {
+                  i_glob = a_loc2glob_cells( i_loc ) ;
+               }
+               glob_face2cell( i, a_loc2glob_faces( j ) ) =  i_glob ;
+            }
+         }
+      }
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      COM-&gt;send( 0, loc2glob_cells ) ;
+      COM-&gt;send( 0, loc2glob_faces ) ;
+      COM-&gt;send( 0, loc_face2cell ) ;
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_Module</font><font class="text">*
+</font><font class="kw3">PEL_CrossProcessWriter</font><font class="text">:: collect_field( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                        </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* exp,
+                                        </font><font class="kw2">size_t</font><font class="text">&amp; nbf )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_CrossProcessWriter:: collect_field&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> size = COM-&gt;nb_ranks() ;
+   </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> last = size-1 ;
+   </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> rank = COM-&gt;rank() ;
+   
+   </font><font class="kw3">PEL_Module</font><font class="text">* result = 0 ;
+   </font><font class="kw1">if</font><font class="text">( rank == 0 )
+   {
+      result = </font><font class="kw3">PEL_Module</font><font class="text">::create( a_owner, </font><font class="string">&quot;fields&quot;</font><font class="text"> ) ;
+   }
+   nbf = 0 ;
+   
+   exp-&gt;start_module_iterator() ;
+   </font><font class="kw1">for</font><font class="text">( ; exp-&gt;is_valid_module() ; exp-&gt;go_next_module() )
+   {
+      </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* sexp = exp-&gt;create_subexplorer( 0 ) ;
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp;  fname = sexp-&gt;string_data( </font><font class="string">&quot;name&quot;</font><font class="text"> ) ;
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp;  location = sexp-&gt;string_data( </font><font class="string">&quot;location&quot;</font><font class="text"> ) ;
+      </font><font class="kw3">doubleArray2D</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; value = sexp-&gt;doubleArray2D_data( </font><font class="string">&quot;value&quot;</font><font class="text"> ) ;
+      </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> nbcomp = value.index_bound(0) ;
+      
+      </font><font class="kw3">doubleArray2D</font><font class="text"> val(0,0) ;
+      
+      </font><font class="kw1">if</font><font class="text">( rank==0 )
+      {
+         </font><font class="kw1">if</font><font class="text">( location==</font><font class="string">&quot;at_vertices&quot;</font><font class="text"> ) 
+            val.re_initialize( nbcomp, NB_VERTS ) ;
+         </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( location == </font><font class="string">&quot;at_cell_centers&quot;</font><font class="text"> )
+            val.re_initialize( nbcomp, NB_CELLS ) ;
+         </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( location == </font><font class="string">&quot;at_face_centers&quot;</font><font class="text"> )
+            val.re_initialize( nbcomp, NB_FACES ) ;
+         val.</font><font class="kw2">set</font><font class="text">( undefined_value() ) ;
+      }
+      </font><font class="kw1">else
+</font><font class="text">      {
+         COM-&gt;receive( rank-1, val ) ;
+      }
+
+      </font><font class="kw1">if</font><font class="text">( location==</font><font class="string">&quot;at_vertices&quot;</font><font class="text"> )
+      {
+         </font><font class="kw3">PEL_ASSERT</font><font class="text">( value.index_bound(1) == loc2glob_VERTS.size() ) ;
+         </font><font class="kw2">size_t</font><font class="text"> n = value.index_bound(1) ;
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;n ; i++ )
+         {
+            </font><font class="kw2">size_t</font><font class="text"> idx = loc2glob_VERTS( i ) ;
+            </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; j&lt;nbcomp ; j++ )
+            {
+               </font><font class="kw1">if</font><font class="text">( value(j,i) != undefined_value() )
+               {
+                  </font><font class="kw1">if</font><font class="text">( val( j, idx ) != undefined_value() &amp;&amp;
+                      !</font><font class="kw3">PEL</font><font class="text">::double_equality( val( j, idx ), value(j,i),
+                                             DBL_EPSI, DBL_MINI ) )
+                  {
+                     PEL_CrossProcessWriter_ERROR::n1( fname, j,
+                                                       val( j, idx ),
+                                                       value(j,i) ) ;
+                  }
+                  val( j, idx ) = value(j,i) ;
+               }
+            }
+         }
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( location == </font><font class="string">&quot;at_cell_centers&quot;</font><font class="text"> )
+      {
+         </font><font class="kw3">PEL_ASSERT</font><font class="text">( value.index_bound(1) == loc2glob_CELLS.size() ) ;
+         </font><font class="kw2">size_t</font><font class="text"> n = value.index_bound(1) ;
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;n ; i++ )
+         {
+            </font><font class="kw2">size_t</font><font class="text"> idx = loc2glob_CELLS( i ) ;
+            </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; j&lt;nbcomp ; j++ )
+            {
+               </font><font class="kw1">if</font><font class="text">( value(j,i) != undefined_value() )
+               {
+                  </font><font class="kw1">if</font><font class="text">( val( j, idx ) != undefined_value() &amp;&amp;
+                      !</font><font class="kw3">PEL</font><font class="text">::double_equality( val( j, idx ), value(j,i),
+                                             DBL_EPSI, DBL_MINI ) )
+                  {
+                     PEL_CrossProcessWriter_ERROR::n1( fname, j,
+                                                       val( j, idx ),
+                                                       value(j,i) ) ;
+                  }
+                  val( j, loc2glob_CELLS( i ) ) = value(j,i) ;
+               }
+            }
+         }
+      }
+      </font><font class="kw1">else
+</font><font class="text">      {
+         </font><font class="kw3">PEL_ASSERT</font><font class="text">( value.index_bound( 1 ) == loc2glob_FACES.size() ) ;
+         </font><font class="kw2">size_t</font><font class="text"> n = value.index_bound(1) ;
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;n ; i++ )
+         {
+            </font><font class="kw2">size_t</font><font class="text"> idx = loc2glob_FACES( i ) ;
+            </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; j&lt;nbcomp ; j++ )
+            {
+               </font><font class="kw1">if</font><font class="text">( value(j,i) != undefined_value() )
+               {
+                  </font><font class="kw1">if</font><font class="text">( val( j, idx ) != undefined_value() &amp;&amp;
+                      !</font><font class="kw3">PEL</font><font class="text">::double_equality( val( j, idx ), value(j,i),
+                                             DBL_EPSI, DBL_MINI ) )
+                  {
+                     PEL_CrossProcessWriter_ERROR::n1( fname, j,
+                                                       val( j, idx ),
+                                                       value(j,i) ) ;
+                  }
+                  val( j, loc2glob_FACES( i ) ) = value(j, i) ;
+               }
+            }
+         }
+      }
+      
+      </font><font class="kw1">if</font><font class="text">( size&gt;1 )
+      {
+         COM-&gt;send( (rank+1) % size, val ) ;
+         </font><font class="kw1">if</font><font class="text">( rank==0 )
+         {
+            COM-&gt;receive( last, val ) ;
+         }
+      }
+
+      </font><font class="kw1">if</font><font class="text">( rank==0 )
+      {
+         </font><font class="kw3">PEL_Module</font><font class="text">* fm = </font><font class="kw3">PEL_DataOnMeshingWriter</font><font class="text">::create_field_module( 
+                                               result,
+                                               fname,
+                                               sexp-&gt;string_data( </font><font class="string">&quot;meshing&quot;</font><font class="text"> ),
+                                               location,
+                                               val ) ;
+         result-&gt;add_module( fm ) ;
+      }
+      
+      sexp-&gt;destroy() ;
+      nbf++ ;
+   }
+   
+   </font><font class="kw1">return</font><font class="text"> result ;
+   
+}
+
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="kw1">void</font><font class="text"> 
+PEL_CrossProcessWriter_ERROR:: n1( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; fname,
+                                   </font><font class="kw2">size_t</font><font class="text"> ic,
+                                   </font><font class="kw1">double</font><font class="text"> val1, </font><font class="kw1">double</font><font class="text"> val2 )
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> m ;
+   m &lt;&lt; </font><font class="string">&quot;*** PEL_CrossProcessWriter : saving of \&quot;&quot;
+     &lt;&lt; fname &lt;&lt; &quot;</font><font class="text">\</font><font class="string">&quot;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   m &lt;&lt; </font><font class="string">&quot;      the value of the &quot;</font><font class="text"> &lt;&lt; ic &lt;&lt; </font><font class="string">&quot;-th component&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   m &lt;&lt; </font><font class="string">&quot;      is different when computed from two processes.&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   m &lt;&lt; </font><font class="string">&quot;         first  value : &quot;</font><font class="text"> &lt;&lt; val1 &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   m &lt;&lt; </font><font class="string">&quot;         second value : &quot;</font><font class="text"> &lt;&lt; val2 &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   m &lt;&lt; </font><font class="string">&quot;   If it is not an error, do adjust de value of&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   m &lt;&lt; </font><font class="string">&quot;   the keywords \&quot;</font><font class="text">dbl_minimum\</font><font class="string">&quot; and \&quot;</font><font class="text">dbl_epsilon\</font><font class="string">&quot;.&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( m.str() ) ;
+}
+
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="kw1">void</font><font class="text"> 
+PEL_CrossProcessWriter_ERROR:: n3( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; name,
+                                   </font><font class="kw1">double</font><font class="text"> val1, </font><font class="kw1">double</font><font class="text"> val2 )
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> m ;
+   m &lt;&lt; </font><font class="string">&quot;*** PEL_CrossProcessWriter : saving of \&quot;&quot;
+     &lt;&lt; name &lt;&lt; &quot;</font><font class="text">\</font><font class="string">&quot;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   m &lt;&lt; </font><font class="string">&quot;      the value is different when computed from two processes.&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   m &lt;&lt; </font><font class="string">&quot;         first  value : &quot;</font><font class="text"> &lt;&lt; val1 &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   m &lt;&lt; </font><font class="string">&quot;         second value : &quot;</font><font class="text"> &lt;&lt; val2 &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   m &lt;&lt; </font><font class="string">&quot;   If it is not an error, do adjust de value of&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   m &lt;&lt; </font><font class="string">&quot;   the keywords \&quot;</font><font class="text">dbl_minimum\</font><font class="string">&quot; and \&quot;</font><font class="text">dbl_epsilon\</font><font class="string">&quot;.&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( m.str() ) ;
+}
+
+</font>
+</pre>
+</body>
+</html>

@@ -1,0 +1,330 @@
+<html>
+<head>
+<title>AP_CheckDiscretizationCFV.cc</title>
+<link rel=stylesheet type="text/css" href="stylesheet.css">
+</head>
+<body>
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;AP_CheckDiscretizationCFV.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">stringVector</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">GE_Mpolyhedron</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">GE_Point</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">GE_Vector</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_DiscreteField</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_DomainAndFields</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_LocalFEbound</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_LocalFEcell</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_CursorFEside</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_SetOfDiscreteFields</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;iomanip&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;iostream&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;sstream&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw2">string</font><font class="text">&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE_Parameter</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE_SetOfParameters</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE_TimeIterator</font><font class="text">.hh&gt;
+
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">cout</font><font class="text"> ;
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> ;
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+
+AP_CheckDiscretizationCFV </font><font class="kw1">const</font><font class="text">* 
+AP_CheckDiscretizationCFV::PROTOTYPE = </font><font class="kw1">new</font><font class="text"> AP_CheckDiscretizationCFV() ;
+
+</font><font class="kw1">struct</font><font class="text"> AP_CheckDiscretizationCFV_ERROR
+{
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> n0( </font><font class="kw3">GE_Mpolyhedron</font><font class="text"> </font><font class="kw1">const</font><font class="text">* poly ) ;
+} ;
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">AP_CheckDiscretizationCFV:: AP_CheckDiscretizationCFV( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">FE_OneStepIteration</font><font class="text">( </font><font class="string">&quot;AP_CheckDiscretizationCFV&quot;</font><font class="text"> )
+{
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">AP_CheckDiscretizationCFV*
+AP_CheckDiscretizationCFV:: create_replica( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+  			         	  </font><font class="kw3">PDE_DomainAndFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dom,
+				 	  </font><font class="kw3">FE_SetOfParameters</font><font class="text"> </font><font class="kw1">const</font><font class="text">* prms,
+				          </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* exp ) </font><font class="kw1">const
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;AP_CheckDiscretizationCFV:: create_replica&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_PRE( a_owner, dom, prms, exp ) ) ;
+
+   AP_CheckDiscretizationCFV* result = 
+                      </font><font class="kw1">new</font><font class="text"> AP_CheckDiscretizationCFV( a_owner, dom, prms, exp ) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_POST( result, a_owner, dom, prms, exp ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">AP_CheckDiscretizationCFV:: AP_CheckDiscretizationCFV( 
+                                               </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+					       </font><font class="kw3">PDE_DomainAndFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dom,
+					       </font><font class="kw3">FE_SetOfParameters</font><font class="text"> </font><font class="kw1">const</font><font class="text">* prms,
+					       </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">FE_OneStepIteration</font><font class="text">( a_owner, dom, exp )
+   , sFE( dom-&gt;create_CursorFEside( </font><font class="kw1">this</font><font class="text"> ) )
+   , bFE( dom-&gt;create_LocalFEbound( </font><font class="kw1">this</font><font class="text"> ) )
+   , cFE( dom-&gt;create_LocalFEcell( </font><font class="kw1">this</font><font class="text"> ) )
+   , BCs( dom-&gt;set_of_boundary_conditions() )
+   , MAX_NEG_DISTANCE_TO_SIDE( 
+         exp-&gt;double_data( </font><font class="string">&quot;max_allowed_negative_distance_to_face&quot;</font><font class="text"> ) )
+   , MAX_SCALAR_PRODUCT( 
+         exp-&gt;double_data( </font><font class="string">&quot;max_allowed_normal_scalar_VtoFVcenter&quot;</font><font class="text"> ) )
+   , MIN_DISTANCE_CENTERS( 
+         exp-&gt;double_data( </font><font class="string">&quot;min_distance_between_centers&quot;</font><font class="text"> ) )
+{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;AP_CheckDiscretizationCFV:: AP_CheckDiscretizationCFV&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( MAX_NEG_DISTANCE_TO_SIDE &lt; 0.0 ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( MAX_SCALAR_PRODUCT &gt; 0.0 ) ;
+
+   {
+      </font><font class="kw3">stringVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; nns = exp-&gt;stringVector_data( </font><font class="string">&quot;fields&quot;</font><font class="text"> ) ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;nns.size() ; ++i )
+      {
+         </font><font class="kw3">PDE_DiscreteField</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ff = 
+                           dom-&gt;set_of_discrete_fields()-&gt;item( nns( i ) ) ;
+         FIELDS.push_back( ff ) ;
+         cFE-&gt;require_field_calculation( ff, </font><font class="kw3">PDE_LocalFE</font><font class="text">::node ) ;
+      }
+   }
+   {
+      </font><font class="kw3">stringVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; nns = exp-&gt;stringVector_data( </font><font class="string">&quot;fields_with_BCs&quot;</font><font class="text"> ) ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;nns.size() ; ++i )
+      {
+         </font><font class="kw3">PDE_DiscreteField</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ff = 
+                           dom-&gt;set_of_discrete_fields()-&gt;item( nns( i ) ) ;
+         BCFIELDS.push_back( ff ) ;
+      }
+   }
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">AP_CheckDiscretizationCFV:: ~AP_CheckDiscretizationCFV( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">AP_CheckDiscretizationCFV:: do_before_time_stepping( 
+                                                </font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* t_it )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;AP_CheckDiscretizationCFV:: do_before_time_stepping&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( do_before_time_stepping_PRE( t_it ) ) ;
+
+   start_total_timer( </font><font class="string">&quot;AP_CheckDiscretizationCFV:: do_before_time_stepping&quot;</font><font class="text"> ) ;
+   </font><font class="comment">// -------------
+</font><font class="text">
+   </font><font class="kw1">bool</font><font class="text"> ok ;
+
+   </font><font class="kw1">for</font><font class="text">( cFE-&gt;start() ; cFE-&gt;is_valid() ; cFE-&gt;go_next() )
+   {
+      </font><font class="kw3">GE_Mpolyhedron</font><font class="text"> </font><font class="kw1">const</font><font class="text">* poly = cFE-&gt;polyhedron() ;
+
+      </font><font class="kw3">GE_Point</font><font class="text"> </font><font class="kw1">const</font><font class="text">* cc = poly-&gt;finite_volume_center() ;
+      </font><font class="kw1">if</font><font class="text">( cc == 0 ) AP_CheckDiscretizationCFV_ERROR::n0( poly ) ;
+      ok = poly-&gt;contains( cc ) ;
+      </font><font class="kw1">if</font><font class="text">( !ok ) display_not_in( poly ) ;
+
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">vector</font><font class="text">&lt; </font><font class="kw3">PDE_DiscreteField</font><font class="text"> </font><font class="kw1">const</font><font class="text">* &gt;::const_iterator it = 
+                                                              FIELDS.begin() ;
+      </font><font class="kw1">for</font><font class="text">( ; it != FIELDS.end() ; ++it )
+      {
+         check_nb_local_nodes( *it, cFE, 1 ) ;
+      }
+   }
+
+   </font><font class="kw3">PDE_LocalFEcell</font><font class="text"> </font><font class="kw1">const</font><font class="text">* cFE0 = sFE-&gt;adjacent_localFEcell( 0 ) ;
+   </font><font class="kw3">PDE_LocalFEcell</font><font class="text"> </font><font class="kw1">const</font><font class="text">* cFE1 = sFE-&gt;adjacent_localFEcell( 1 ) ;
+   
+   </font><font class="kw3">GE_Vector</font><font class="text">* cc = </font><font class="kw3">GE_Vector</font><font class="text">::create( 0, cFE-&gt;nb_space_dimensions() ) ;
+   </font><font class="kw3">GE_Vector</font><font class="text">* vv = </font><font class="kw3">GE_Vector</font><font class="text">::create( 0, cFE-&gt;nb_space_dimensions() ) ;
+
+   </font><font class="kw1">for</font><font class="text">( sFE-&gt;start() ; sFE-&gt;is_valid() ; sFE-&gt;go_next() )
+   {
+      </font><font class="kw3">GE_Point</font><font class="text"> </font><font class="kw1">const</font><font class="text">* c0 = cFE0-&gt;polyhedron()-&gt;finite_volume_center() ;
+      </font><font class="kw3">GE_Point</font><font class="text"> </font><font class="kw1">const</font><font class="text">* c1 = cFE1-&gt;polyhedron()-&gt;finite_volume_center() ;
+      </font><font class="kw3">PEL_ASSERT</font><font class="text">( c0!=0 &amp;&amp; c1!=0 ) ;
+
+      </font><font class="kw1">double</font><font class="text"> dd0 = sFE-&gt;distance_to_adjacent_finite_volume_center( 0 ) ;
+      ok = ( dd0 &gt; MAX_NEG_DISTANCE_TO_SIDE ) ;
+
+      </font><font class="kw1">double</font><font class="text"> dd1 = sFE-&gt;distance_to_adjacent_finite_volume_center( 1 ) ;
+      ok = ok &amp;&amp; ( dd1 &gt; MAX_NEG_DISTANCE_TO_SIDE ) ;
+
+      </font><font class="kw1">double</font><font class="text"> dd = dd0 + dd1 ;
+      ok = ok &amp;&amp; ( dd &gt; MIN_DISTANCE_CENTERS ) ;
+      
+      </font><font class="kw1">bool</font><font class="text"> ok_n = </font><font class="kw1">true</font><font class="text"> ;
+      </font><font class="kw1">if</font><font class="text">( !sFE-&gt;is_periodic() )
+      {
+         cc-&gt;re_initialize( c0, c1 ) ;
+         </font><font class="kw3">GE_Mpolyhedron</font><font class="text"> </font><font class="kw1">const</font><font class="text">* s_poly = sFE-&gt;polyhedron() ;
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> iv=1 ; iv&lt;s_poly-&gt;nb_vertices() ; ++iv )
+         {
+            vv-&gt;re_initialize( s_poly-&gt;vertex( 0 ), s_poly-&gt;vertex( iv ) ) ;
+            </font><font class="kw1">double</font><font class="text"> xx = cc-&gt;dot_product( vv ) ;
+            ok_n = ok_n &amp;&amp; ( </font><font class="kw3">PEL</font><font class="text">::abs( xx ) &lt; MAX_SCALAR_PRODUCT ) ;
+         }
+      }
+
+      </font><font class="kw1">if</font><font class="text">( !ok || !ok_n ) display_side_pb( sFE, dd0, dd1, dd, ok_n ) ;
+   }
+
+   </font><font class="kw1">for</font><font class="text">( bFE-&gt;start() ; bFE-&gt;is_valid() ; bFE-&gt;go_next() )
+   {
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">vector</font><font class="text">&lt; </font><font class="kw3">PDE_DiscreteField</font><font class="text"> </font><font class="kw1">const</font><font class="text">* &gt;::const_iterator it = 
+                                                            BCFIELDS.begin() ;
+      </font><font class="kw1">for</font><font class="text">( ; it != BCFIELDS.end() ; ++it )
+      {
+         check_boundary_condition( BCs, bFE-&gt;color(), *it ) ;
+      }
+
+      </font><font class="kw1">double</font><font class="text"> dd = bFE-&gt;distance_to_adjacent_finite_volume_center() ;
+      ok = ( dd &gt; MAX_NEG_DISTANCE_TO_SIDE ) ;
+      </font><font class="kw1">if</font><font class="text">( !ok ) display_bound_pb( bFE, dd ) ;
+   }
+
+   cc-&gt;destroy() ;
+   vv-&gt;destroy() ;
+
+   stop_total_timer() ;
+   </font><font class="comment">// -------------
+</font><font class="text">}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">void</font><font class="text"> 
+AP_CheckDiscretizationCFV:: do_one_inner_iteration( </font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* t_it )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;AP_CheckDiscretizationCFV:: do_one_inner_iteration&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( do_one_inner_iteration_PRE( t_it ) ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">AP_CheckDiscretizationCFV:: display_side_pb( </font><font class="kw3">PDE_CursorFEside</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fe,
+                                           </font><font class="kw1">double</font><font class="text"> dd0, 
+                                           </font><font class="kw1">double</font><font class="text"> dd1,
+                                           </font><font class="kw1">double</font><font class="text"> dd,
+                                           </font><font class="kw1">bool</font><font class="text"> ok_n ) </font><font class="kw1">const
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;AP_CheckDiscretizationCFV:: display_side_pb&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> msg ;
+   msg &lt;&lt; </font><font class="string">&quot;--------------------------&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   msg &lt;&lt; </font><font class="string">&quot;the side : &quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   fe-&gt;polyhedron()-&gt;print( msg , 6 ) ;
+   msg &lt;&lt; </font><font class="string">&quot;has improper finite volume surroundings:&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   msg &lt;&lt; </font><font class="string">&quot;   distance to center 0 : &quot;</font><font class="text"> &lt;&lt; dd0 &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   msg &lt;&lt; </font><font class="string">&quot;   distance to center 1 : &quot;</font><font class="text"> &lt;&lt; dd1 &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   msg &lt;&lt; </font><font class="string">&quot;   distance between centers : &quot;</font><font class="text"> &lt;&lt; dd &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw1">if</font><font class="text">( !ok_n )
+      msg &lt;&lt; </font><font class="string">&quot;   the orthogonality property is not satisfied&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   msg &lt;&lt; </font><font class="string">&quot;--------------------------&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;display_info( msg.str() ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">AP_CheckDiscretizationCFV:: display_bound_pb( </font><font class="kw3">PDE_LocalFEbound</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fe,
+                                            </font><font class="kw1">double</font><font class="text"> dd ) </font><font class="kw1">const
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;AP_CheckDiscretizationCFV:: display_bound_pb&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> msg ;
+   msg &lt;&lt; </font><font class="string">&quot;--------------------------&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   msg &lt;&lt; </font><font class="string">&quot;the bound : &quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   fe-&gt;polyhedron()-&gt;print( msg , 6 ) ;
+   msg &lt;&lt; </font><font class="string">&quot;has improper finite volume surroundings:&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   msg &lt;&lt; </font><font class="string">&quot;   distance to center 0 : &quot;</font><font class="text"> &lt;&lt; dd &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;display_info( msg.str() ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">AP_CheckDiscretizationCFV:: display_not_in( </font><font class="kw3">GE_Mpolyhedron</font><font class="text"> </font><font class="kw1">const</font><font class="text">* poly ) </font><font class="kw1">const
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;AP_CheckDiscretizationCFV:: display_not_in&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> msg ;
+   msg &lt;&lt; </font><font class="string">&quot;--------------------------&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   msg &lt;&lt; </font><font class="string">&quot;the cell : &quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   poly-&gt;print( msg , 6 ) ;
+   msg &lt;&lt; </font><font class="string">&quot;does not contain its finite volume center:&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   poly-&gt;finite_volume_center()-&gt;print( msg , 6 ) ;
+   msg &lt;&lt; </font><font class="kw2">endl</font><font class="text"> &lt;&lt; </font><font class="string">&quot;--------------------------&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;display_info( msg.str() ) ;
+}
+
+</font><font class="comment">//internal------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">AP_CheckDiscretizationCFV_ERROR:: n0( </font><font class="kw3">GE_Mpolyhedron</font><font class="text"> </font><font class="kw1">const</font><font class="text">* poly )
+</font><font class="comment">//internal------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> msg ;
+   msg &lt;&lt; </font><font class="kw2">endl</font><font class="text"> &lt;&lt; </font><font class="string">&quot;*** AP_CheckDiscretizationCFV:&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   msg &lt;&lt; </font><font class="string">&quot;    the \&quot;</font><font class="text">finite volume center\</font><font class="string">&quot; has not been defined&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   msg &lt;&lt; </font><font class="string">&quot;    for the following polyhedron:&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   poly-&gt;print( msg, 4 ) ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( msg.str() ) ;
+}
+
+</font>
+</pre>
+</body>
+</html>

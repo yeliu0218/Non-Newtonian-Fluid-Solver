@@ -1,0 +1,263 @@
+MODULE PEL_Application
+   
+   concrete_name = "FE_StepByStepProgression"
+   
+   MODULE FE_TimeIterator
+      time_initial = 0.0
+      time_end = 10400.
+      time_step = 100.
+   END MODULE FE_TimeIterator
+   
+   graphics_output_times = regular_vector( 100., 10, 10400. )
+   
+   MODULE PDE_DomainAndFields
+      verbose_level = 1
+      nb_space_dimensions = 2
+      type = "finite_element"
+
+      MODULE GE_Meshing
+         concrete_name = "GE_RefinedMeshing"
+         mesh_polyhedron = < "GE_Segment" "GE_Triangle" >
+
+         MODULE GE_Meshing
+            concrete_name = "GE_BoxWithBoxes"
+            vertices_coordinate_0 = regular_vector( 0.0, 20, 1.e-2 )
+            vertices_coordinate_1 = regular_vector( 0.0, 2, 1.e-3 )
+            mesh_polyhedron = < "GE_Segment" "GE_Rectangle" >
+         END MODULE GE_Meshing
+
+         MODULE list_of_GE_ReferencePolyhedronRefiner
+            MODULE GE_ReferencePolyhedronRefiner#1
+               concrete_name = "GE_ReferenceSquareWithTriangles"
+               strategy = "X"
+            END MODULE GE_ReferencePolyhedronRefiner#1
+         END MODULE list_of_GE_ReferencePolyhedronRefiner
+         
+      END MODULE GE_Meshing
+
+      MODULE macro_colors
+         Wall1     = < "bottom" "top" >
+         Wall2     = < "left" "bottom_left" "top_left" >
+         Interface = < "right" "top_right" "bottom_right" >
+      END MODULE macro_colors
+
+      MODULE interior_fields
+         
+         MODULE grid_velocity
+            name = "grid_velocity"
+            nb_components = 2
+            element_name = "PDE_2D_P1_3nodes"
+            storage_depth = 1
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = vector( 0.0, 0.0 )
+            END MODULE DOFs_values
+            MODULE DOFs_imposed_value
+               MODULE Wall1
+                  location = "on_bounds"
+                  color = "Wall1"
+                  component = 1
+                  type = "uniformly_defined"
+                  value = < 0.0 >
+               END MODULE Wall1
+               MODULE Wall2
+                  location = "on_bounds"
+                  color = "Wall2"
+                  type = "uniformly_defined"
+                  value = vector( 0.0, 0.0 )
+               END MODULE Wall2
+            END MODULE DOFs_imposed_value
+         END MODULE grid_velocity
+
+         MODULE temperature
+            name = "temperature"
+            nb_components = 1
+            element_name = "PDE_2D_P1_3nodes"
+            storage_depth = 2
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = vector( -component($DV_X,0) * 100. * 25. + 25. )
+            END MODULE DOFs_values
+            MODULE DOFs_imposed_value
+               MODULE hot
+                  location = "on_bounds"
+                  color = "Wall2"
+                  type = "uniformly_defined"
+                  value = < 25.0 >
+               END MODULE hot
+               MODULE cold
+                  location = "on_bounds"
+                  color = "Interface"
+                  type = "uniformly_defined"
+                  value = < 0.0 >
+               END MODULE cold
+            END MODULE DOFs_imposed_value
+         END MODULE temperature
+
+      END MODULE interior_fields
+      
+      MODULE boundary_conditions       
+         
+         MODULE grid_velocity
+            field = "grid_velocity"
+            color = "Interface"
+            type = "FE_NormalVelocityBC"
+            penalization_coefficient = 1.E8
+            param_normal_velocity = "vn"
+         END MODULE grid_velocity
+
+      END MODULE boundary_conditions
+   
+      MODULE PDE_ResultSaver
+         writers = < "PEL_TICwriter" >
+         writing_mode = "text"
+         files_basename = "save"
+         
+         MODULE temperature
+            where_to_save = "at_vertices"
+            entry_name = "TT"
+            field = "temperature"
+         END MODULE temperature
+         
+      END MODULE PDE_ResultSaver
+
+   END MODULE PDE_DomainAndFields
+
+   $IS_CURRENT = 0
+   $IS_INITIAL = 1
+
+   MODULE FE_SetOfParameters
+
+      $DS_conductivity  = 0.564
+      $DS_density       = 1000.
+      $DS_specific_heat = 4186.8
+
+      alpha_1   = vector( $DS_density * $DS_specific_heat )
+      kappa = vector( $DS_conductivity )
+      pi = < 0.0 >
+      zero = < 0.0 >
+
+      MODULE FE_Parameter#interf
+         concrete_name = "AP_Stefan1Velocity"
+         name = "vn"
+         temperature = "temperature"
+         level_of_temperature = $IS_CURRENT
+         conductivity = "kappa"
+         solid_density = $DS_density
+         h_in_minus_h_out = 333400.0
+         flux_from_out = "zero"
+      END MODULE FE_Parameter#interf
+
+      MODULE FE_Parameter#adv
+         concrete_name = "FE_FieldParameter"
+         name = "advective_velocity"
+         field_name = "grid_velocity"
+         field_level = $IS_CURRENT
+         coefficient = - $DS_density * $DS_specific_heat
+      END MODULE FE_Parameter#adv
+                  
+   END MODULE FE_SetOfParameters
+   
+   MODULE FE_OneStepIteration
+
+      concrete_name = "FE_SplitSystem"
+
+      MODULE list_of_FE_OneStepIteration
+         
+         MODULE FE_OneStepIteration#1
+            
+            concrete_name = "FE_GridMotion"
+            
+            grid_velocity = "grid_velocity"
+            level_to_update = $IS_CURRENT
+            
+            boundary_conditions_types = < "FE_NormalVelocityBC" > 
+            
+            quadrature_rule_provider = "GE_QRprovider_5"
+            
+            MODULE LA_Matrix
+               concrete_name = "LA_PelMatrix"
+            END MODULE LA_Matrix
+            
+            MODULE LA_Solver
+               concrete_name = "LA_PreconditionedSolver"
+               MODULE LA_IterativeSolver
+                  concrete_name = "LA_CG_IS"
+                  verbose = false
+                  MODULE LA_ConvergenceTest
+                     concrete_name = "LA_DefaultConvergenceTest"
+                     relative_tolerance = 1.e-07
+                     absolute_tolerance = 1.e-20
+                  END MODULE LA_ConvergenceTest
+                  nb_iterations_max = 2000
+               END MODULE LA_IterativeSolver
+               MODULE LA_Preconditioner
+                  concrete_name = "LA_Jacobi_PC"
+                  smallest_inverted_item = 1.e-20
+               END MODULE LA_Preconditioner
+            END MODULE LA_Solver
+            
+         END MODULE FE_OneStepIteration#1
+         
+         MODULE FE_OneStepIteration#2
+         
+            concrete_name = "AP_AdvectionDiffusion1G"
+            
+            field = "temperature"
+            level_of_field = $IS_CURRENT
+
+            MODULE time_discretization
+               type = "Euler"
+               field_explicit = "temperature"
+               level_of_field_explicit = $IS_INITIAL
+               param_unsteady  = "alpha_1"
+            END MODULE time_discretization
+
+            param_diffusion = "kappa"
+            param_source    = "pi"
+
+            MODULE advection
+               param_advective_velocity = "advective_velocity"
+            END MODULE advection
+            
+            quadrature_rule_provider = "GE_QRprovider_5"
+
+            MODULE LA_Matrix
+               concrete_name = "LA_PelMatrix"
+            END MODULE LA_Matrix
+            
+            MODULE LA_Solver
+               concrete_name = "LA_PreconditionedSolver"
+               MODULE LA_IterativeSolver
+                  concrete_name = "LA_GMRES_IS"
+                  verbose = false
+                  restart = 50
+                  MODULE LA_ConvergenceTest
+                     concrete_name = "LA_DefaultConvergenceTest"
+                     relative_tolerance = 1.e-8
+                     absolute_tolerance = 1.e-20
+                  END MODULE LA_ConvergenceTest
+                  nb_iterations_max = 2000
+               END MODULE LA_IterativeSolver
+               MODULE LA_Preconditioner
+                  concrete_name = "LA_Jacobi_PC"
+                  smallest_inverted_item = 1.0e-20
+               END MODULE LA_Preconditioner
+            END MODULE LA_Solver
+            
+         END MODULE FE_OneStepIteration#2
+         
+         MODULE FE_OneStepIteration#3
+            concrete_name = "FE_DOFsCopy"
+            MODULE xxx
+               field = "temperature"
+               source = $IS_CURRENT
+               target = $IS_INITIAL
+            END MODULE xxx
+         END MODULE FE_OneStepIteration#3
+
+      END MODULE list_of_FE_OneStepIteration
+
+   END MODULE FE_OneStepIteration
+
+END MODULE PEL_Application

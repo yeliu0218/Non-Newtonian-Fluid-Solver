@@ -1,0 +1,79 @@
+<html xmlns:tomboy="http://beatniksoftware.com/tomboy" xmlns:link="http://beatniksoftware.com/tomboy/link" xmlns:size="http://beatniksoftware.com/tomboy/size"><head><META http-equiv="Content-Type" content="text/html; charset=utf-8"><title>Pelicans 3.1 (MI_NavierStokes)</title><style type="text/css">
+        
+	body { font-family:'Serif'; }
+	h1 { font-size: xx-large;
+     	     font-weight: bold;
+     	     border-bottom: 1px solid black; }
+	div.note {
+		   position: relative;
+		   display: block;
+		   padding: 5pt;
+		   margin: 5pt; 
+		   white-space: -moz-pre-wrap; /* Mozilla */
+ 	      	   white-space: -pre-wrap;     /* Opera 4 - 6 */
+ 	      	   white-space: -o-pre-wrap;   /* Opera 7 */
+ 	      	   white-space: pre-wrap;      /* CSS3 */
+ 	      	   word-wrap: break-word;      /* IE 5.5+ */ }
+	</style></head><body><div class="note" id="Pelicans 3.1 (MI_NavierStokes)"><a name="pelicans 3.1 (mi_navierstokes)"></a><h1>Pelicans 3.1 (MI_NavierStokes)</h1>
+do_before_time_stepping
+
+for( TIME_IT-&amp;gt;start() ; !TIME_IT-&amp;gt;is_finished() ; TIME_IT-&amp;gt;go_next_time() )
+{
+	1 do_before_inner_iterations_stage
+
+	2 do_inner_iterations_stage
+}	
+
+1 do_before_inner_iterations_stage
+	
+	setup_Outer()
+		GLOBAL_EQ-&gt;re_initialize() ; 
+		loop_on_cells_Outer
+			GLOBAL_EQ-&gt;assemble_A_F_Outer( ELEMENT_EQ ) ;
+			GLOBAL_EQ-&gt;assemble_F_Flowrate( ELEMENT_EQ ) ; 
+			GLOBAL_EQ-&gt;assemble_B_G( ELEMENT_EQ ) ;
+			GLOBAL_EQ-&gt;assemble_MPl( ELEMENT_EQ ) ;
+		loop_on_bounds_Outer
+	GLOBAL_EQ-&gt;assemble_A_F_explicit( ELEMENT_EQ ) ;
+
+2 do_inner_iterations_stage
+	do
+	    3 do_one_inner_iteration
+	while( !inner_iterations_are_completed)
+
+3 do_one_inner_iteration
+        GLOBAL_EQ-&gt;nullify_for_new_internal_iteration() ;
+   	GLOBAL_EQ-&gt;add_explicit_terms() ;
+   	GLOBAL_EQ-&gt;add_Outer_terms() ;
+
+	setup_Inner
+		GLOBAL_EQ-&gt;nullify_A_F_Inner() ;
+
+		loop_on_cells_Inner
+			GLOBAL_EQ-&gt;assemble_A_Inner( ELEMENT_EQ ) ; 
+		loop_on_bounds_Inner (nothing done)	
+	
+		GLOBAL_EQ-&gt;add_Inner_terms() ;
+		if ( Flowrate ) GLOBAL_EQ-&gt;add_Flowrate_terms( inner_rhs_scale ) ;
+		GLOBAL_EQ-&gt;add_Stress_terms() ; 
+
+	 do // loop for flowrate steps
+	{
+		GLOBAL_EQ-&gt;set_initial_guess_P
+		GLOBAL_EQ-&gt;set_initial_guess_U		
+		GLOBAL_EQ-&gt;estimate_unknowns()
+		
+		// if flowrate
+		update_pressuredrop() ;
+   			GLOBAL_EQ-&gt;nullify_for_new_internal_iteration() ;
+			GLOBAL_EQ-&gt;add_explicit_terms() ;
+			GLOBAL_EQ-&gt;add_Outer_terms();
+			GLOBAL_EQ-&gt;add_Inner_terms();
+			GLOBAL_EQ-&gt;add_Flowrate_terms( *(FlowratedPdL.end()-1) );
+	} while ()
+	NonlinIter++;
+
+
+
+
+</div></body></html>

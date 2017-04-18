@@ -1,0 +1,91 @@
+MODULE PEL_ObjectTest#CH_AveragesSaver_TEST
+   
+   $DS_x = component( $DV_X, 0 )
+   $DS_y = component( $DV_X, 1 )
+   
+   $DS_radius = 0.25
+   $DS_xc  = 0.0
+   $DS_yc  = 0.0
+
+   $DS_e = 0.05
+   
+   $DS_dcirc = $DS_radius - sqrt( sqr( $DS_x-$DS_xc ) + sqr( $DS_y-$DS_yc ) )
+   $DS_bubble = 0.5 + 0.5 * tanh( 2.0*$DS_dcirc/$DS_e )
+   
+   MODULE CH_AveragesSaver#1
+      
+      dbl_epsilon = 5.E-2
+      dbl_minimum = 1.E-6
+      
+      MODULE PDE_DomainAndFields
+         verbose_level = 1
+         nb_space_dimensions = 2
+         type = "finite_element"
+         
+         MODULE GE_Meshing
+            concrete_name = "GE_BoxWithBoxes"
+            vertices_coordinate_0 = regular_vector( -1., 40, 1. )
+            vertices_coordinate_1 = regular_vector( -1., 40, 1. )
+            mesh_polyhedron = < "GE_Segment" "GE_Rectangle" >
+         END MODULE GE_Meshing
+         
+         MODULE interior_fields
+            
+            MODULE cc_1
+               name = "cc_1"
+               nb_components = 1
+               element_name = "PDE_2D_Q1_4nodes"
+               storage_depth = 1
+               MODULE DOFs_values
+                  type = "uniformly_defined"
+                  value = vector( $DS_bubble )
+               END MODULE DOFs_values
+            END MODULE cc_1
+            
+            MODULE vv
+               name = "vv"
+               nb_components = 2
+               element_name = "PDE_2D_Q2_9nodes"
+               storage_depth = 1
+               MODULE DOFs_values
+                  type = "uniformly_defined"
+                  value = vector( $DS_x*$DS_y*$DS_y, $DS_y*$DS_x*$DS_x )
+               END MODULE DOFs_values
+            END MODULE vv
+            
+         END MODULE interior_fields
+         
+      END MODULE PDE_DomainAndFields
+      
+      MODULE FE_SetOfParameters
+      END MODULE FE_SetOfParameters
+      
+      MODULE CH_AveragesSaver
+         concrete_name = "CH_AveragesSaver"
+         output_file = "averages.txt"
+         MODULE center_volume
+            phase_field = "cc_1"
+            level_of_phase_field = 0
+            velocity = "vv"
+            level_of_velocity = 0
+            thresholds = < 0.5 >
+            quadrature_rule_provider = "GE_ProductQRprovider_5"
+         END MODULE center_volume
+         MODULE perimeter
+            phase_field = "cc_1"
+            level_of_phase_field = 0
+            quadrature_rule_provider = "GE_ProductQRprovider_5"
+         END MODULE perimeter
+      END MODULE CH_AveragesSaver
+
+      MODULE exact_averages
+         exact_volume = pi() * $DS_radius * $DS_radius
+         exact_center_coordinates = < 0. 0. >
+         exact_center_velocity = < 0. 0. >
+         exact_perimeter =  2. * pi() * $DS_radius
+      END MODULE exact_averages
+      
+   END MODULE CH_AveragesSaver#1
+
+END MODULE PEL_ObjectTest#CH_AveragesSaver_TEST
+

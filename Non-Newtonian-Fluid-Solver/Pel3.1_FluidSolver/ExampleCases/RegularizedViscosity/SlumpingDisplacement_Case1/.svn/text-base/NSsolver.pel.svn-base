@@ -1,0 +1,73 @@
+// --------------------
+// Navier Stokes
+// --------------------
+MODULE FE_OneStepIteration#Navier_Stokes
+   concrete_name = "MI_NavierStokes"
+   
+   viscosity_term = "div_mu_D_uu"
+
+   MODULE FE_PrintVariables
+      names=<"Reynolds" "Stokes" "Ub1" "Ub2" "U0" "Ustar">
+      values=vector($DS_Re, $DS_St, $DS_Ub1, $DS_Ub2, $DS_U0, $DS_Ustar)
+   END MODULE FE_PrintVariables
+   
+   // Nonlinear Term (optional)
+   if( $BS_Nonlinear = true )
+   MODULE NonlinearTerm
+      type = "viscosity"
+      residual = 1.E-8
+      maxiter = 100
+      storage_level = $IS_NONLIN // Make sure that the velocity has enough storage levels
+   END MODULE NonlinearTerm
+   
+   // Discrete Fields
+   velocity = "velocity"
+   velocity_level_to_update = $IS_CURRENT
+   level_of_explicit_velocity = $IS_CURRENT 
+   
+   pressure = "pressure"
+   pressure_level_to_update = $IS_CURRENT
+   level_of_explicit_pressure = $IS_CURRENT 
+   
+   quadrature_rule_provider = "GE_QRprovider_5" 
+   time_order = 1
+   
+   //Parameters and advection term 
+   param_unsteady = "alpha" // Is the equation unsteady 0?1
+   param_Reynolds = "Reynolds" // Reynolds number
+   param_viscous = "Viscosity" // viscosity term
+   param_source = "ExtForce" // Source parameter
+   param_bc_stress = "bc_stress_value"
+   
+   // Advection term (optional)
+   // - replace this with the advective parameter
+   if ( $BS_Advection = true )
+   MODULE advection // -> replace with advective parameter
+      MODULE advective_field
+         MODULE xx1
+            field = "velocity"
+            level = $IS_CURRENT
+            param_coef = "alpha"
+         END MODULE xx1
+      END MODULE advective_field
+   END MODULE advection
+   
+   MODULE MI_NavierStokesSystem
+      verbose_level = 1
+      MODULE method
+         type = "augmented_Lagrangian"
+         augmentation_parameter = 1000000.0
+         tolerance_on_divergence = 1.e-4
+         tolerance_on_velocity_increment = 5.e-4 
+      END MODULE method
+      
+      MODULE LA_Matrix
+         concrete_name = "LA_PelMatrix"
+      END MODULE LA_Matrix
+
+      MODULE solver_A
+         concrete_name = "EXT_UMFsolver_DS"
+      END MODULE solver_A
+      
+   END MODULE MI_NavierStokesSystem
+END MODULE FE_OneStepIteration#Navier_Stokes

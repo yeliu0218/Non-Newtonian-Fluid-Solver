@@ -1,0 +1,153 @@
+MODULE PEL_ObjectTest#FE_Parameter_TEST
+   
+   MODULE FE_SumOfParameters#1
+
+      $DS_x = component( $DV_X, 0 )
+
+      $DS_COEFF_F = 10.
+      $DS_F0 = 3.
+      $DS_F1 = 5.
+      $DV_F = vector( $DS_F0, $DS_F1 )
+      $DA_FGRAD = array( vector( 0. ), vector( 0. ) )
+    
+      $DS_COEFF_G = -3.
+      $DS_G0 = -10.
+      $DS_G1 = 30.
+      $DV_G = vector( $DS_G0, $DS_G1 )
+      $DA_GGRAD = array( vector( 0. ), vector( 0. ) )
+      
+      $DV_VAL = vector( $DS_COEFF_F*$DS_F0+$DS_COEFF_G*$DS_G0,
+                        $DS_COEFF_F*$DS_F1+$DS_COEFF_G*$DS_G1 )
+      $DA_GRAD = array( vector( 0. ), vector( 0. ) )
+      $IS_NB_COMPS = 2
+
+      MODULE PDE_DomainAndFields
+         type = "finite_element"
+         verbose_level = 0
+         nb_space_dimensions = 1
+         MODULE GE_Meshing
+            concrete_name = "GE_BoxWithBoxes"
+            vertices_coordinate_0 = < 0. 0.5 1. >
+            mesh_polyhedron = < "GE_Mpoint" "GE_Segment" >
+         END MODULE GE_Meshing
+         MODULE interior_fields
+         END MODULE interior_fields
+      END MODULE PDE_DomainAndFields
+      MODULE FE_TimeIterator
+         time_step = 1.
+         time_end = 2.
+         time_initial = 0.
+      END MODULE FE_TimeIterator
+      MODULE FE_SetOfParameters
+         tata = $DV_F
+         MODULE FE_Parameter#toto
+            concrete_name = "FE_SumOfParameters"
+            name = "toto"
+            MODULE list_of_parameters
+               MODULE param#1
+                  type = "already_defined"
+                  name = "tata"
+                  coefficient = $DS_COEFF_F
+               END MODULE param#1
+               MODULE param#2
+                  type = "to_be_defined"
+                  coefficient = $DS_COEFF_G
+                  MODULE FE_Parameter
+                     concrete_name = "FE_UniformParameter"
+                     name = "titi"
+                     value = $DV_G
+                  END MODULE FE_Parameter
+               END MODULE param#2
+            END MODULE list_of_parameters
+         END MODULE FE_Parameter#toto
+      END MODULE FE_SetOfParameters
+      MODULE tests
+         MODULE cell_value
+            type = "cell_value"
+            parameter_name = "toto"
+            parameter_nb_components = $IS_NB_COMPS
+            dbl_epsilon = 1.E-8
+            dbl_minimum = 1.E-8
+            value = $DV_VAL
+            gradient = $DA_GRAD
+         END MODULE cell_value
+         MODULE cell_value_at_centers
+            type = "cell_value_at_centers"
+            parameter_name = "toto"
+            parameter_nb_components = $IS_NB_COMPS
+            dbl_epsilon = 1.E-8
+            dbl_minimum = 1.E-8
+            value = $DV_VAL
+            gradient = $DA_GRAD
+         END MODULE cell_value_at_centers
+         MODULE cell_value_at_IPs
+            type = "cell_value_at_IPs"
+            parameter_name = "toto"
+            parameter_nb_components = $IS_NB_COMPS
+            QRprovider_name = "GE_QRprovider_3"
+            dbl_epsilon = 1.E-8
+            dbl_minimum = 1.E-8
+            value = $DV_VAL
+            gradient = $DA_GRAD
+         END MODULE cell_value_at_IPs
+         MODULE side_value
+            type = "side_value"
+            parameter_name = "toto"
+            parameter_nb_components = $IS_NB_COMPS
+            dbl_epsilon = 1.E-8
+            dbl_minimum = 1.E-8
+            value = $DV_VAL
+            gradient = $DA_GRAD
+         END MODULE side_value
+         MODULE side_value_at_centers
+            type = "side_value_at_centers"
+            parameter_name = "toto"
+            parameter_nb_components = $IS_NB_COMPS
+            dbl_epsilon = 1.E-8
+            dbl_minimum = 1.E-8
+            value = $DV_VAL
+            gradient = $DA_GRAD
+         END MODULE side_value_at_centers
+         MODULE side_value_at_IPs
+            type = "side_value_at_IPs"
+            parameter_name = "toto"
+            parameter_nb_components = $IS_NB_COMPS
+            QRprovider_name = "GE_QRprovider_3"
+            dbl_epsilon = 1.E-8
+            dbl_minimum = 1.E-8
+            value = $DV_VAL
+            gradient = $DA_GRAD
+         END MODULE side_value_at_IPs
+         MODULE bound_value
+            type = "bound_value"
+            parameter_name = "toto"
+            parameter_nb_components = $IS_NB_COMPS
+            dbl_epsilon = 1.E-8
+            dbl_minimum = 1.E-8
+            value = $DV_VAL
+            gradient = $DA_GRAD
+         END MODULE bound_value
+         MODULE bound_value_at_centers
+            type = "bound_value_at_centers"
+            parameter_name = "toto"
+            parameter_nb_components = $IS_NB_COMPS
+            dbl_epsilon = 1.E-8
+            dbl_minimum = 1.E-8
+            value = $DV_VAL
+            gradient = $DA_GRAD
+         END MODULE bound_value_at_centers
+         MODULE bound_value_at_IPs
+            type = "bound_value_at_IPs"
+            parameter_name = "toto"
+            parameter_nb_components = $IS_NB_COMPS
+            QRprovider_name = "GE_QRprovider_3"
+            dbl_epsilon = 1.E-8
+            dbl_minimum = 1.E-8
+            value = $DV_VAL
+            gradient = $DA_GRAD
+         END MODULE bound_value_at_IPs
+      END MODULE tests
+      
+   END MODULE FE_SumOfParameters#1
+   
+END MODULE PEL_ObjectTest#FE_Parameter_TEST

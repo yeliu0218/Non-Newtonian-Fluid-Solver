@@ -1,0 +1,282 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>LA_PelMatrix.hh</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="LA_PelMatrix.hh_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="LApack-tree.html"><span>Tree</span></a>
+    <a href="LA_PelMatrix.html"><span>Class</span></a>
+    <span class=selected>Header</span>
+    <a href="LA_PelMatrix.cc.html"><span>Implementation</span></a>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="LApack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated
+ *  reusable components, whose purpose is to simplify the task of developing
+ *  softwares of numerical mathematics and scientific computing.
+ *
+ *  This software is governed by the CeCILL-C license under French law and
+ *  abiding by the rules of distribution of free software. You can use, modify
+ *  and/or redistribute the software under the terms of the CeCILL-C license
+ *  as circulated by CEA, CNRS and INRIA at the following URL
+ *  &quot;http://www.cecill.info&quot;.
+ *
+ *  As a counterpart to the access to the source code and rights to copy,
+ *  modify and redistribute granted by the license, users are provided only
+ *  with a limited warranty and the software's author, the holder of the
+ *  economic rights, and the successive licensors have only limited liability.
+ *
+ *  In this respect, the user's attention is drawn to the risks associated
+ *  with loading, using, modifying and/or developing or reproducing the
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also
+ *  therefore means that it is reserved for developers and experienced
+ *  professionals having in-depth computer knowledge. Users are therefore
+ *  encouraged to load and test the software's suitability as regards their
+ *  requirements in conditions enabling the security of their systems and/or
+ *  data to be ensured and, more generally, to use and operate it in the same
+ *  conditions as regards security.
+ *
+ *  The fact that you are presently reading this means that you have had
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#ifndef</font><font class="text"> LA_PEL_MATRIX_HH
+</font><font class="kw2">#define</font><font class="text"> LA_PEL_MATRIX_HH
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_SeqMatrix</font><font class="text">.hh&gt;
+
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">LA_MatrixIterator</font><font class="text"> ;
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">LA_PelMatrixIterator</font><font class="text"> ;
+</font><font class="kw1">class</font><font class="text"> LA_DiagonalMatrix ;
+
+</font><font class="comment">/*
+   Sparse matrices with the following storage scheme :
+      - the stored elements of each row are stored in linked lists ;
+      - an array of pointers, of the same size as the number of rows of the
+        matrix, stores the address of the head of each list.
+</font><font class="text">
+</font><font class="comment">   As a sequential matrix, a `LA_PelMatrix::' matrix is always synchronized
+   by default. However, this can be switched by enabling unsynchronization
+   and then testing distributed behavior (but of course on only one processor).
+</font><font class="text">
+</font><font class="comment">Data deck instanciation :
+</font><font class="text">
+</font><font class="comment">   MODULE LA_Matrix
+      concrete_name = &quot;LA_PelMatrix&quot;
+      [ is_desynchronizable = &lt;true|false&gt; ]    default is false
+   END MODULE LA_Matrix
+</font><font class="text">
+</font><font class="comment">PUBLISHED
+*/
+</font><font class="text">
+</font><font class="kw1">class</font><font class="text"> PEL_EXPORT </font><font class="kw3">LA_PelMatrix</font><font class="text"> : </font><font class="kw1">public</font><font class="text"> </font><font class="kw3">LA_SeqMatrix
+</font><font class="text">{
+   </font><font class="kw1">public</font><font class="text">: </font><font class="comment">//-----------------------------------------------------------
+</font><font class="text">
+   </font><font class="comment">//-- Instance delivery and initialization
+</font><font class="text">
+      </font><font class="comment">// Create and return an instance.
+</font><font class="text">      </font><font class="kw1">static</font><font class="text"> </font><font class="kw3">LA_PelMatrix</font><font class="text">* create( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                   </font><font class="kw2">size_t</font><font class="text"> a_nb_rows,
+                                   </font><font class="kw2">size_t</font><font class="text"> a_nb_cols ) ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw3">LA_PelMatrix</font><font class="text">* create_matrix( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner ) </font><font class="kw1">const</font><font class="text"> ;
+
+   </font><font class="comment">//-- Characteristics
+</font><font class="text">
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw2">size_t</font><font class="text"> allocated_memory( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+
+   </font><font class="comment">//-- Distributed processing
+</font><font class="text">
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> is_desynchronizable( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+
+   </font><font class="comment">//-- Access
+</font><font class="text">
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw2">size_t</font><font class="text"> nb_stored_items( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw2">size_t</font><font class="text"> nb_rows( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw2">size_t</font><font class="text"> nb_cols( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">double</font><font class="text"> item( </font><font class="kw2">size_t</font><font class="text"> i, </font><font class="kw2">size_t</font><font class="text"> j ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw3">LA_MatrixIterator</font><font class="text">* create_stored_item_iterator(
+                                               </font><font class="kw3">PEL_Object</font><font class="text">* a_owner ) </font><font class="kw1">const</font><font class="text"> ;
+   </font><font class="comment">//-- Element change
+</font><font class="text">
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> nullify_row( </font><font class="kw2">size_t</font><font class="text"> i ) ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> set_stored_items( </font><font class="kw1">double</font><font class="text"> val ) ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> set_item( </font><font class="kw2">size_t</font><font class="text"> i, </font><font class="kw2">size_t</font><font class="text"> j, </font><font class="kw1">double</font><font class="text"> x ) ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> add_to_item( </font><font class="kw2">size_t</font><font class="text"> i, </font><font class="kw2">size_t</font><font class="text"> j, </font><font class="kw1">double</font><font class="text"> x ) ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> scale( </font><font class="kw1">double</font><font class="text"> alpha ) ;
+
+   </font><font class="comment">//-- BLAS level 2 : matrix-vector operators
+</font><font class="text">
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> multiply_vec_then_add(
+                           </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* x, </font><font class="kw3">LA_Vector</font><font class="text">* y,
+                           </font><font class="kw1">double</font><font class="text"> alpha = 1.0, </font><font class="kw1">double</font><font class="text"> beta = 0.0 ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> tr_multiply_vec_then_add(
+                           </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* x, </font><font class="kw3">LA_Vector</font><font class="text">* y,
+                           </font><font class="kw1">double</font><font class="text"> alpha = 1.0, </font><font class="kw1">double</font><font class="text"> beta = 0.0 ) </font><font class="kw1">const</font><font class="text"> ;
+
+
+   </font><font class="comment">//-- BLAS level 3 : matrix-matrix operators//
+</font><font class="text">
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> </font><font class="kw2">set</font><font class="text">( </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* A, </font><font class="kw1">bool</font><font class="text"> same_pattern ) ;
+
+      </font><font class="comment">// IMPLEMENTATION : provided if `A' and `B' are both `LA_PelMatrix::'
+</font><font class="text">      </font><font class="comment">// objects. Use of `LA_SeqMatrix::' implementation otherwise.
+</font><font class="text">      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> add_Mat_Mat( </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* A,
+                                </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* B,
+                                </font><font class="kw1">double</font><font class="text"> alpha = 1.0 ) ;
+
+      </font><font class="comment">// IMPLEMENTATION : provided if `A' and `B' are `LA_PelMatrix::' objects,
+</font><font class="text">      </font><font class="comment">// use of `LA_SeqMatrix::' implementation otherwise.
+</font><font class="text">      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> add_Mat_tMat( </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* A,
+                                 </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* B,
+                                 </font><font class="kw1">double</font><font class="text"> alpha = 1.0 ) ;
+
+   </font><font class="comment">//-- System factorization
+</font><font class="text">
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> factorize_MILU0( </font><font class="kw1">bool</font><font class="text"> modified, </font><font class="kw1">double</font><font class="text"> piv_min ) ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> solve_LU( </font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* rhs,
+                             </font><font class="kw3">LA_SeqVector</font><font class="text">* sol ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> relax( </font><font class="kw1">double</font><font class="text"> omega,
+                          </font><font class="kw3">LA_SeqMatrix</font><font class="text">::relaxation_mode mode,
+                          </font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* omega_inv_diag,
+                          </font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* rhs,
+                          </font><font class="kw3">LA_SeqVector</font><font class="text">* sol ) </font><font class="kw1">const</font><font class="text"> ;
+
+   </font><font class="comment">//-- Hidden
+</font><font class="text">
+      </font><font class="comment">//?????????????????????????????????????????????????????????????????
+</font><font class="text">      </font><font class="comment">// Ces definitions sont rendues publiques a cause d'un bug du
+</font><font class="text">      </font><font class="comment">// compilateur Sun CC5.0 (probleme de scope).
+</font><font class="text">      </font><font class="comment">//-----------------------------------------------------------------
+</font><font class="text">      </font><font class="kw1">struct</font><font class="text"> RowElm
+      {
+         </font><font class="kw2">size_t</font><font class="text"> iCol ;
+         </font><font class="kw1">double</font><font class="text"> xVal ;
+         RowElm* next ;
+      } ;
+
+   </font><font class="kw1">protected</font><font class="text">: </font><font class="comment">//--------------------------------------------------------
+</font><font class="text">
+   </font><font class="kw1">private</font><font class="text">: </font><font class="comment">//----------------------------------------------------------
+</font><font class="text">
+     ~</font><font class="kw3">LA_PelMatrix</font><font class="text">( </font><font class="kw1">void</font><font class="text"> ) ;
+      </font><font class="kw3">LA_PelMatrix</font><font class="text">( </font><font class="kw3">LA_PelMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; other ) ;
+      </font><font class="kw3">LA_PelMatrix</font><font class="text">&amp; </font><font class="kw1">operator</font><font class="text">=( </font><font class="kw3">LA_PelMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; other ) ;
+
+      </font><font class="kw3">LA_PelMatrix</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                    </font><font class="kw2">size_t</font><font class="text"> a_nb_rows,
+                    </font><font class="kw2">size_t</font><font class="text"> a_nb_cols ) ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> re_initialize_with_global_sizes( </font><font class="kw2">size_t</font><font class="text"> a_nb_rows,
+                                                    </font><font class="kw2">size_t</font><font class="text"> a_nb_cols ) ;
+
+      </font><font class="comment">// Bucket implementation of RowElm allocator
+</font><font class="text">      </font><font class="comment">// A RowElmBucket is a group of RowElm being allocated once time.
+</font><font class="text">      </font><font class="comment">// Then, create_element method distributes RowElm elements when needed.
+</font><font class="text">      </font><font class="comment">// Finally, the RowElm are group deleted by destroy_all_elements
+</font><font class="text">      </font><font class="kw1">struct</font><font class="text"> RowElmBucket
+      {
+         RowElm elem[128] ;
+         RowElmBucket * next ;
+         </font><font class="kw2">size_t</font><font class="text"> used ;
+      } ;
+
+      RowElm* create_element( </font><font class="kw1">void</font><font class="text"> ) ;
+
+      </font><font class="kw1">void</font><font class="text"> destroy_all_elements( </font><font class="kw1">void</font><font class="text"> ) ;
+
+      </font><font class="kw1">void</font><font class="text"> init_allocating( </font><font class="kw1">void</font><font class="text"> ) ;
+
+   </font><font class="comment">//-- Plug in
+</font><font class="text">
+      </font><font class="kw3">LA_PelMatrix</font><font class="text">( </font><font class="kw1">void</font><font class="text"> ) ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw3">LA_PelMatrix</font><font class="text">* create_replica(
+                                        </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                        </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp ) </font><font class="kw1">const</font><font class="text"> ;
+
+   </font><font class="comment">//--BLAS level 3 : matrix-matrix operators
+</font><font class="text">
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> add_Mat_Mat_IMP( </font><font class="kw3">LA_PelMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* A,
+                                    </font><font class="kw3">LA_PelMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* B,
+                                    </font><font class="kw1">double</font><font class="text"> alpha ) ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> add_Mat_tMat_IMP( </font><font class="kw3">LA_PelMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* A,
+                                     </font><font class="kw3">LA_PelMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* B,
+                                     </font><font class="kw1">double</font><font class="text"> alpha ) ;
+
+   </font><font class="comment">//-- Distributed processing
+</font><font class="text">
+      </font><font class="kw1">void</font><font class="text"> make_desynchronizable( </font><font class="kw1">void</font><font class="text"> ) ;
+
+   </font><font class="comment">//-- Friend
+</font><font class="text">
+      </font><font class="kw1">friend</font><font class="text"> </font><font class="kw1">class</font><font class="text"> </font><font class="kw3">LA_PelMatrixIterator</font><font class="text"> ;
+
+   </font><font class="comment">//-- Preconditions, Postconditions, Invariant
+</font><font class="text">
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> invariant( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+
+   </font><font class="comment">//-- Class attributes
+</font><font class="text">
+      </font><font class="kw1">static</font><font class="text"> </font><font class="kw3">LA_PelMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* PROTOTYPE ;
+
+   </font><font class="comment">//-- Attributes
+</font><font class="text">
+      </font><font class="kw1">bool</font><font class="text"> UNSYNCHRO ;
+
+      </font><font class="comment">// Matrix dimensions :
+</font><font class="text">      </font><font class="kw2">size_t</font><font class="text"> NB_ROWS ;
+      </font><font class="kw2">size_t</font><font class="text"> NB_COLS ;
+
+      RowElm** ROW_TABLE ;
+      RowElmBucket* FIRST_BUCKET ;
+      RowElmBucket* CURRENT_BUCKET ;
+
+} ;
+
+</font><font class="kw2">#endif
+</font><font class="text">
+</font>
+</pre>
+</body>
+</html>

@@ -1,0 +1,198 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>PEL_1Dwriter.hh</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="PEL_1Dwriter.hh_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="PELpack-tree.html"><span>Tree</span></a>
+    <a href="PEL_1Dwriter.html"><span>Class</span></a>
+    <span class=selected>Header</span>
+    <a href="PEL_1Dwriter.cc.html"><span>Implementation</span></a>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="PELpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#ifndef</font><font class="text"> PEL_1D_WRITER_HH
+</font><font class="kw2">#define</font><font class="text"> PEL_1D_WRITER_HH
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_DataOnMeshingWriter</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">doubleArray2D</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">stringVector</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;fstream&gt;
+
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">size_t_array2D</font><font class="text"> ;
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">size_t_vector</font><font class="text"> ;
+
+</font><font class="comment">/*
+writers for data on 1D meshings and plotting programs operating with 
+files where data are arranged in columns of numbers
+</font><font class="text">
+</font><font class="comment">For each cycle required to be saved, one or two new file are created with 
+a name that follows the syntax :
+   a basename given by the entry &quot;files_basename&quot; in the PDE_ResultSaver
+              hierarchical data structure.
+   + &quot;_c.1d.&quot; for fields saved &quot;at_cell_centers&quot;, or
+     &quot;_v.1d.&quot; for fields saved &quot;at_vertices&quot;
+   + a five-figure number that is incremented at each new cycle saved.
+</font><font class="text">
+</font><font class="comment">a.e. with the entry PDE_ResultSaver/files_basename = &quot;save&quot;  the name
+of the successive output files will be :
+   save_c.1d.00001, save_v.1d.00001, save_c.1d.00002, save_v.1d.00002 ...
+</font><font class="text">
+</font><font class="comment">The first column of the files save_c.1d.* contains the coordinates of the 
+cell centers, whereas the first column of the files save_v.1d.* contains 
+the coordinates of the vertices. Each other column contains the associated
+values of a component of a field.
+</font><font class="text">
+</font><font class="comment">The first lines of the files save_c.1d.* and save_v.1d.* begin with 
+a # character and are intended to treated as comments by the 
+plotting program. These comment lines give the meaning of the subsequent
+columns.
+</font><font class="text">
+</font><font class="comment">PUBLISHED
+*/
+</font><font class="text">
+</font><font class="kw1">class</font><font class="text"> PEL_EXPORT </font><font class="kw3">PEL_1Dwriter</font><font class="text"> : </font><font class="kw1">public</font><font class="text"> </font><font class="kw3">PEL_DataOnMeshingWriter
+</font><font class="text">{
+   </font><font class="kw1">public</font><font class="text">: </font><font class="comment">//-----------------------------------------------------------
+</font><font class="text">
+   </font><font class="comment">//-- Write
+</font><font class="text">
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> write_cycle( </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp ) ;
+
+   </font><font class="kw1">protected</font><font class="text">: </font><font class="comment">//--------------------------------------------------------
+</font><font class="text">
+   </font><font class="kw1">private</font><font class="text">: </font><font class="comment">//----------------------------------------------------------
+</font><font class="text">
+     ~</font><font class="kw3">PEL_1Dwriter</font><font class="text">( </font><font class="kw1">void</font><font class="text"> ) ;
+      </font><font class="kw3">PEL_1Dwriter</font><font class="text">( </font><font class="kw3">PEL_1Dwriter</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; other ) ;
+      </font><font class="kw3">PEL_1Dwriter</font><font class="text">&amp; </font><font class="kw1">operator</font><font class="text">=( </font><font class="kw3">PEL_1Dwriter</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; other ) ;
+      
+      </font><font class="kw3">PEL_1Dwriter</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+   		     </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp ) ;
+
+   </font><font class="comment">//-- Plug in
+</font><font class="text">
+      </font><font class="kw3">PEL_1Dwriter</font><font class="text">( </font><font class="kw1">void</font><font class="text"> ) ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw3">PEL_1Dwriter</font><font class="text">* create_replica( 
+                                       </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+				       </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp ) </font><font class="kw1">const</font><font class="text"> ;
+
+
+   </font><font class="comment">//-- Writing process main steps
+</font><font class="text">
+      </font><font class="kw1">void</font><font class="text"> determine_conditions( </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp ) ;
+      
+   </font><font class="comment">//-- Output file
+</font><font class="text">      
+      </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> resize_and_add_cell_coords(  
+                                           </font><font class="kw3">doubleArray2D</font><font class="text">&amp; cell_matrix,
+                                           </font><font class="kw3">doubleArray2D</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; vertices,
+                                           </font><font class="kw3">intVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; cell_nb_verts,
+                                           </font><font class="kw3">intArray2D</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; cell2vert,
+                                           </font><font class="kw2">size_t</font><font class="text"> nb_columns ) ;
+
+      </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> resize_and_add_vert_coords( 
+                                           </font><font class="kw3">doubleArray2D</font><font class="text">&amp; vert_matrix,
+                                           </font><font class="kw3">doubleArray2D</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; vertices,
+                                           </font><font class="kw2">size_t</font><font class="text"> nb_columns ) ;
+
+      </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> add_one_field( </font><font class="kw3">doubleArray2D</font><font class="text">&amp; matrix,
+                                 </font><font class="kw2">size_t</font><font class="text">&amp; current_column,
+                                 </font><font class="kw3">doubleArray2D</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; vals ) ;
+
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> output_file_name( </font><font class="kw2">size_t</font><font class="text"> nb, </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> add_string ) ;
+
+   </font><font class="comment">//-- Data writing
+</font><font class="text">      
+      </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> write_matrix( </font><font class="kw3">doubleArray2D</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; matrix, 
+                                </font><font class="kw1">double</font><font class="text"> time,
+                                </font><font class="kw3">stringVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; var_names,
+                                </font><font class="kw2">std</font><font class="text">::ofstream&amp; os ) ;
+
+   </font><font class="comment">//-- Class attributes
+</font><font class="text">
+      </font><font class="kw1">static</font><font class="text"> </font><font class="kw3">PEL_1Dwriter</font><font class="text"> </font><font class="kw1">const</font><font class="text">* PROTOTYPE ;
+
+   </font><font class="comment">//-- Attributes
+</font><font class="text">
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ios_base</font><font class="text">::openmode OPENMODE ;
+      </font><font class="kw1">bool</font><font class="text"> HAS_CELL_VARS ;
+      </font><font class="kw3">stringVector</font><font class="text"> CELL_VARS_NAMES ;
+      </font><font class="kw1">bool</font><font class="text"> HAS_VERT_VARS ;
+      </font><font class="kw3">stringVector</font><font class="text"> VERT_VARS_NAMES ;
+      </font><font class="kw2">size_t</font><font class="text"> DIM ;
+      </font><font class="kw1">double</font><font class="text"> TIME ;
+      </font><font class="kw3">doubleArray2D</font><font class="text"> CELL_MATRIX ;
+      </font><font class="kw3">doubleArray2D</font><font class="text"> VERT_MATRIX ;
+      </font><font class="kw2">std</font><font class="text">::ofstream FILE_FOR_CELL_VARS ;
+      </font><font class="kw2">std</font><font class="text">::ofstream FILE_FOR_VERT_VARS ;
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> FILEBASENAME ;
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> FILEXTENSION ;
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> FORMAT ;
+} ;
+
+</font><font class="kw2">#endif
+</font><font class="text">
+</font>
+</pre>
+</body>
+</html>

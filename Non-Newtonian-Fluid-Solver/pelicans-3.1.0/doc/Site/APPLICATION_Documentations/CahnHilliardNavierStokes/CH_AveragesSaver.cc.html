@@ -1,0 +1,832 @@
+<html>
+<head>
+<title>CH_AveragesSaver.cc</title>
+<link rel=stylesheet type="text/css" href="stylesheet.css">
+</head>
+<body>
+<pre>
+<font class="kw2">#include</font><font class="text"> &lt;CH_AveragesSaver.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Communicator</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">doubleArray2D</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">size_t_vector</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">GE_Mpolyhedron</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">GE_Point</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">GE_QRprovider</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_DiscreteField</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_DomainAndFields</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_LocalFEcell</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_SetOfDiscreteFields</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_ResultSaver</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE_Parameter</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE_SetOfParameters</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE_TimeIterator</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;CH_BulkChemicalPotential.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;fstream&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;ios&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;iostream&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;iomanip&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;sstream&gt;
+
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ios_base</font><font class="text"> ;
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">setprecision</font><font class="text"> ; </font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">setw</font><font class="text"> ;
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> ;
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> ;
+
+</font><font class="kw3">PDE_LocalFE</font><font class="text">::field_id </font><font class="kw1">const</font><font class="text"> row = </font><font class="kw3">PDE_LocalFE</font><font class="text">::row ;
+</font><font class="kw3">PDE_LocalFE</font><font class="text">::field_id </font><font class="kw1">const</font><font class="text"> col = </font><font class="kw3">PDE_LocalFE</font><font class="text">::col ;
+
+</font><font class="kw1">struct</font><font class="text"> CH_AveragesSaver_ERROR
+{
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> n0( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; fname ) ;
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> n1( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; module_name, 
+                   </font><font class="kw2">size_t</font><font class="text"> invalid_dim,
+                   </font><font class="kw3">size_t_vector</font><font class="text"> valid_dims ) ;
+} ;
+
+CH_AveragesSaver </font><font class="kw1">const</font><font class="text">* 
+CH_AveragesSaver::PROTOTYPE = </font><font class="kw1">new</font><font class="text"> CH_AveragesSaver() ;
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">CH_AveragesSaver:: CH_AveragesSaver( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">FE_OneStepIteration</font><font class="text">( </font><font class="string">&quot;CH_AveragesSaver&quot;</font><font class="text"> )
+   , CC_MIN( 0 )
+   , SAVING_TIMES( </font><font class="kw3">doubleVector</font><font class="text">( 0 ) )
+{
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">CH_AveragesSaver*
+CH_AveragesSaver:: create_replica( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                   </font><font class="kw3">PDE_DomainAndFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dom,
+                                   </font><font class="kw3">FE_SetOfParameters</font><font class="text"> </font><font class="kw1">const</font><font class="text">* prms,
+                                   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* exp ) </font><font class="kw1">const
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;CH_AveragesSaver:: create_replica&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_PRE( a_owner, dom, prms, exp ) ) ;
+
+   CH_AveragesSaver* result = </font><font class="kw1">new</font><font class="text"> CH_AveragesSaver( a_owner, dom, prms, exp ) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_POST( result, a_owner, dom, prms, exp ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">CH_AveragesSaver:: CH_AveragesSaver( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                     </font><font class="kw3">PDE_DomainAndFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dom,
+                                     </font><font class="kw3">FE_SetOfParameters</font><font class="text"> </font><font class="kw1">const</font><font class="text">* prms,
+                                     </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* exp )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">FE_OneStepIteration</font><font class="text">( a_owner, dom, exp )
+   , FNAME( exp-&gt;string_data( </font><font class="string">&quot;output_file&quot;</font><font class="text"> ) )
+   , cFE( dom-&gt;create_LocalFEcell( </font><font class="kw1">this</font><font class="text"> ) ) 
+   , SOMETHING_TO_DO( </font><font class="kw1">false</font><font class="text"> )
+   , TOTAL_FREE_ENERGY( </font><font class="kw1">false</font><font class="text"> )
+   , THICKNESS( </font><font class="kw3">PEL</font><font class="text">::bad_double() )
+   , BULK_MU( 0 )
+   , C1( 0 )
+   , L_C1( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+   , C2( 0 )
+   , L_C2( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+   , QRP_TFE( 0 )
+   , KINETIC_ENERGY( </font><font class="kw1">false</font><font class="text"> )
+   , UU( 0 )
+   , L_UU( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+   , DENS( 0 )
+   , QRP_KE( 0 )
+   , CENTER( 0 )
+   , CC( 0 )
+   , L_CC( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+   , VV( 0 )
+   , L_VV( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+   , CC_MIN( 0 )
+   , QRP_CV( 0 )
+   , PERIMETER( </font><font class="kw1">false</font><font class="text"> )
+   , CP( 0 )
+   , L_CP( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+   , QRP_PER( 0 )
+   , NEXT_SAVING_TIME( </font><font class="kw3">PEL</font><font class="text">::bad_double() )
+   , SAVING_TIMES( </font><font class="kw3">doubleVector</font><font class="text">( 0 ) )
+{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;CH_AveragesSaver:: CH_AveragesSaver&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw1">if</font><font class="text">( exp-&gt;has_entry( </font><font class="string">&quot;saving_times&quot;</font><font class="text"> ) )
+   {
+      SAVING_TIMES = exp-&gt;doubleVector_data( </font><font class="string">&quot;saving_times&quot;</font><font class="text"> ) ;  
+   }
+   
+   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* se = 0 ;
+   </font><font class="kw1">if</font><font class="text">( exp-&gt;has_module( </font><font class="string">&quot;total_free_energy&quot;</font><font class="text"> ) )
+   {
+      se = exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;total_free_energy&quot;</font><font class="text"> ) ;
+      TOTAL_FREE_ENERGY = </font><font class="kw1">true</font><font class="text"> ;
+      read_for_total_free_energy( dom, prms, se ) ;  
+      se-&gt;destroy() ; se = 0 ;
+      SOMETHING_TO_DO = </font><font class="kw1">true</font><font class="text"> ;
+   }
+   </font><font class="kw1">if</font><font class="text">( exp-&gt;has_module( </font><font class="string">&quot;kinetic_energy&quot;</font><font class="text"> ) ) 
+   {
+      se = exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;kinetic_energy&quot;</font><font class="text"> ) ;
+      KINETIC_ENERGY = </font><font class="kw1">true</font><font class="text"> ;
+      read_for_kinetic_energy( dom, prms, se ) ;
+      se-&gt;destroy() ; se = 0 ;
+      SOMETHING_TO_DO = </font><font class="kw1">true</font><font class="text"> ;
+   }
+   </font><font class="kw1">if</font><font class="text">( exp-&gt;has_module( </font><font class="string">&quot;center_volume&quot;</font><font class="text"> ) )
+   {
+      se = exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;center_volume&quot;</font><font class="text"> ) ;
+      CENTER = </font><font class="kw1">true</font><font class="text"> ;
+      read_for_center_volume( dom, prms, se ) ;
+      se-&gt;destroy() ; se = 0 ;
+      SOMETHING_TO_DO = </font><font class="kw1">true</font><font class="text"> ;
+   } 
+   </font><font class="kw1">if</font><font class="text">( exp-&gt;has_module( </font><font class="string">&quot;perimeter&quot;</font><font class="text"> ) )
+   {
+      se = exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;perimeter&quot;</font><font class="text"> ) ;
+      </font><font class="kw1">if</font><font class="text">( dom-&gt;nb_space_dimensions() != 2 )
+      {
+         </font><font class="kw3">size_t_vector</font><font class="text"> valid_dims( 1 ) ;
+         valid_dims( 0 ) = 2 ;
+         CH_AveragesSaver_ERROR:: n1( se-&gt;name(),
+                                      dom-&gt;nb_space_dimensions(),
+                                      valid_dims ) ;
+      }
+      PERIMETER = </font><font class="kw1">true</font><font class="text"> ;
+      read_for_perimeter( dom, prms, se ) ;
+      se-&gt;destroy() ; se = 0 ;
+      SOMETHING_TO_DO = </font><font class="kw1">true</font><font class="text"> ;
+   }
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">CH_AveragesSaver:: ~CH_AveragesSaver( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">CH_AveragesSaver:: do_before_time_stepping( </font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* t_it )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;CH_AveragesSaver:: do_before_time_stepping&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( do_before_time_stepping_PRE( t_it ) ) ;
+   
+   </font><font class="kw1">if</font><font class="text">( SOMETHING_TO_DO &amp;&amp; communicator()-&gt;rank() == 0 )
+   {
+      </font><font class="kw2">std</font><font class="text">::ofstream ofs( FNAME.c_str(), </font><font class="kw2">std</font><font class="text">::ios::out | </font><font class="kw2">std</font><font class="text">::ios::trunc ) ;
+      </font><font class="kw1">if</font><font class="text">( !ofs ) CH_AveragesSaver_ERROR::n0( FNAME ) ;
+      ofs &lt;&lt; </font><font class="string">&quot;#&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      ofs &lt;&lt; </font><font class="string">&quot;# CH_AveragesSaver generated file&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      ofs &lt;&lt; </font><font class="string">&quot;# meaning of the columns:&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      ofs &lt;&lt; </font><font class="string">&quot;#    TIME : current time&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      </font><font class="kw1">if</font><font class="text">( TOTAL_FREE_ENERGY )
+         ofs &lt;&lt; </font><font class="string">&quot;#    TFE  : total free energy&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      </font><font class="kw1">if</font><font class="text">( KINETIC_ENERGY )
+         ofs &lt;&lt; </font><font class="string">&quot;#    KE   : kinetic energy&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      </font><font class="kw1">if</font><font class="text">( CENTER )
+      {
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;CC_MIN.size() ; ++i )
+         {
+            ofs &lt;&lt; </font><font class="string">&quot;#    VOL(&quot;</font><font class="text"> &lt;&lt; i &lt;&lt; </font><font class="string">&quot;) : volume &quot;</font><font class="text"> 
+                &lt;&lt; </font><font class="string">&quot;computed from \&quot;&quot; &lt;&lt; CC-&gt;name() &lt;&lt; &quot;</font><font class="text">\</font><font class="string">&quot; &quot;</font><font class="text"> 
+                &lt;&lt; </font><font class="string">&quot;and threshold &quot;</font><font class="text">&lt;&lt; CC_MIN( i ) &lt;&lt; </font><font class="kw2">endl</font><font class="text">;
+         }
+         </font><font class="kw1">if</font><font class="text"> ( </font><font class="kw3">FE</font><font class="text">::geometry() == </font><font class="kw3">FE</font><font class="text">::axisymmetrical )
+         {
+            </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;CC_MIN.size() ; ++i )
+            {
+               ofs &lt;&lt; </font><font class="string">&quot;#    X1(&quot;</font><font class="text"> &lt;&lt; i &lt;&lt; </font><font class="string">&quot;) : 1-coordinate of center &quot;
+</font><font class="text">               &lt;&lt; </font><font class="string">&quot;computed from \&quot;&quot; &lt;&lt; CC-&gt;name() &lt;&lt; &quot;</font><font class="text">\</font><font class="string">&quot; &quot;</font><font class="text"> 
+               &lt;&lt; </font><font class="string">&quot;and threshold &quot;</font><font class="text">&lt;&lt; CC_MIN( i ) &lt;&lt; </font><font class="kw2">endl</font><font class="text">;
+            }         
+            </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;CC_MIN.size() ; ++i )
+            {
+               ofs &lt;&lt; </font><font class="string">&quot;#    V1(&quot;</font><font class="text"> &lt;&lt; i &lt;&lt; </font><font class="string">&quot;) : 1-coordinate of center velocity &quot;
+</font><font class="text">               &lt;&lt; </font><font class="string">&quot;computed from \&quot;&quot; &lt;&lt; VV-&gt;name() &lt;&lt; &quot;</font><font class="text">\</font><font class="string">&quot; &quot;</font><font class="text"> 
+               &lt;&lt; </font><font class="string">&quot;and threshold &quot;</font><font class="text">&lt;&lt; CC_MIN( i ) &lt;&lt; </font><font class="kw2">endl</font><font class="text">;
+            }         
+         }
+         </font><font class="kw1">else
+</font><font class="text">         {
+            </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> d=0 ; d&lt;cFE-&gt;nb_space_dimensions() ; ++d )
+            {
+               </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;CC_MIN.size() ; ++i )
+               {
+                  ofs &lt;&lt; </font><font class="string">&quot;#    X&quot;</font><font class="text"> &lt;&lt; d &lt;&lt; </font><font class="string">&quot;(&quot;</font><font class="text"> &lt;&lt; i &lt;&lt; </font><font class="string">&quot;) : &quot;</font><font class="text"> &lt;&lt; d 
+                      &lt;&lt; </font><font class="string">&quot;-coordinate of center &quot;
+</font><font class="text">                      &lt;&lt; </font><font class="string">&quot;computed from \&quot;&quot; &lt;&lt; CC-&gt;name() &lt;&lt; &quot;</font><font class="text">\</font><font class="string">&quot; &quot;</font><font class="text"> 
+                      &lt;&lt; </font><font class="string">&quot;and threshold &quot;</font><font class="text">&lt;&lt; CC_MIN( i ) &lt;&lt; </font><font class="kw2">endl</font><font class="text">;
+               }
+            }
+            </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> d=0 ; d&lt;cFE-&gt;nb_space_dimensions() ; ++d )
+            {
+               </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;CC_MIN.size() ; ++i )
+               {
+                  ofs &lt;&lt; </font><font class="string">&quot;#    V&quot;</font><font class="text"> &lt;&lt; d &lt;&lt; </font><font class="string">&quot;(&quot;</font><font class="text"> &lt;&lt; i &lt;&lt; </font><font class="string">&quot;) : &quot;</font><font class="text"> &lt;&lt; d 
+                      &lt;&lt; </font><font class="string">&quot;-coordinate of center velocity&quot;
+</font><font class="text">                      &lt;&lt; </font><font class="string">&quot;computed from \&quot;&quot; &lt;&lt; VV-&gt;name() &lt;&lt; &quot;</font><font class="text">\</font><font class="string">&quot; &quot;</font><font class="text"> 
+                      &lt;&lt; </font><font class="string">&quot;and threshold &quot;</font><font class="text">&lt;&lt; CC_MIN( i ) &lt;&lt; </font><font class="kw2">endl</font><font class="text">;
+               }
+            }
+         }
+      }
+      </font><font class="kw1">if</font><font class="text">( PERIMETER )
+      {
+         ofs &lt;&lt; </font><font class="string">&quot;#    PER  : perimeter&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text">  ;
+      }
+      ofs &lt;&lt; </font><font class="string">&quot;#&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      ofs &lt;&lt; </font><font class="string">&quot;#       TIME&quot;</font><font class="text"> ;
+      </font><font class="kw1">if</font><font class="text">( TOTAL_FREE_ENERGY )
+         ofs &lt;&lt; </font><font class="string">&quot;          TFE&quot;</font><font class="text"> ;
+      </font><font class="kw1">if</font><font class="text">( KINETIC_ENERGY )
+         ofs &lt;&lt; </font><font class="string">&quot;           KE&quot;</font><font class="text"> ;
+      </font><font class="kw1">if</font><font class="text">( CENTER )
+      {
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;CC_MIN.size() ; ++i )
+         {
+            ofs &lt;&lt; </font><font class="string">&quot;       VOL(&quot;</font><font class="text"> &lt;&lt; i &lt;&lt; </font><font class="string">&quot;)&quot;</font><font class="text"> ;
+         }
+         </font><font class="kw1">if</font><font class="text"> ( </font><font class="kw3">FE</font><font class="text">::geometry() == </font><font class="kw3">FE</font><font class="text">::axisymmetrical )
+         {
+            </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;CC_MIN.size() ; ++i )
+            {
+               ofs &lt;&lt; </font><font class="string">&quot;        X1(&quot;</font><font class="text"> &lt;&lt; i &lt;&lt; </font><font class="string">&quot;)&quot;</font><font class="text"> ;
+            }         
+            </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;CC_MIN.size() ; ++i )
+            {
+               ofs &lt;&lt; </font><font class="string">&quot;        V1(&quot;</font><font class="text"> &lt;&lt; i &lt;&lt; </font><font class="string">&quot;)&quot;</font><font class="text"> ;
+            }         
+         }
+         </font><font class="kw1">else
+</font><font class="text">         {
+            </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> d=0 ; d&lt;cFE-&gt;nb_space_dimensions() ; ++d )
+            {
+               </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;CC_MIN.size() ; ++i )
+               {
+                  ofs &lt;&lt; </font><font class="string">&quot;        X&quot;</font><font class="text"> &lt;&lt; d &lt;&lt; </font><font class="string">&quot;(&quot;</font><font class="text"> &lt;&lt; i &lt;&lt; </font><font class="string">&quot;)&quot;</font><font class="text"> ;
+               }
+            }
+            </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> d=0 ; d &lt; cFE-&gt;nb_space_dimensions() ; ++d )
+            {
+               </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i &lt; CC_MIN.size() ; ++i )
+               {
+                  ofs &lt;&lt; </font><font class="string">&quot;        V&quot;</font><font class="text"> &lt;&lt; d &lt;&lt; </font><font class="string">&quot;(&quot;</font><font class="text"> &lt;&lt; i &lt;&lt; </font><font class="string">&quot;)&quot;</font><font class="text"> ;
+               }
+            }         
+         }         
+      }
+      </font><font class="kw1">if</font><font class="text">( PERIMETER )
+      {
+         ofs &lt;&lt; </font><font class="string">&quot;          PER&quot;</font><font class="text"> ;
+      }
+      ofs &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      ofs.close() ;
+   }
+   
+   </font><font class="kw1">if</font><font class="text">( !t_it-&gt;table_of_times_is_valid( SAVING_TIMES ) )
+   {
+      t_it-&gt;raise_invalid_table_of_times( </font><font class="string">&quot;CH_AveragesSaver&quot;</font><font class="text">, </font><font class="string">&quot;saving_times&quot;</font><font class="text">, 
+                                          SAVING_TIMES ) ;
+   }
+   </font><font class="kw1">if</font><font class="text">( SAVING_TIMES.has( t_it-&gt;time() ) )
+   {
+      save_all( t_it ) ;
+   }
+   NEXT_SAVING_TIME = t_it-&gt;next_time_in_table( SAVING_TIMES ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">CH_AveragesSaver:: do_one_inner_iteration( </font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* t_it )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;CH_AveragesSaver:: do_one_inner_iteration&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( do_one_inner_iteration_PRE( t_it ) ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">CH_AveragesSaver:: do_after_time_adaptation( </font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* t_it ) 
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;CH_AveragesSaver:: do_after_time_adaptation&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( do_after_time_adaptation_PRE( t_it ) ) ;
+
+   </font><font class="kw1">if</font><font class="text">( SOMETHING_TO_DO &amp;&amp; ( SAVING_TIMES.size() != 0 ) )
+   {
+      </font><font class="kw1">if</font><font class="text">( </font><font class="kw3">FE_TimeIterator</font><font class="text">::greater_or_equal( t_it-&gt;time(),
+                                             NEXT_SAVING_TIME ) )
+      {
+         start_total_timer( </font><font class="string">&quot;CH_AveragesSaver:: do_one_inner_iteration&quot;</font><font class="text"> ) ;
+         
+         save_all( t_it ) ;
+         
+         NEXT_SAVING_TIME = t_it-&gt;next_time_in_table( SAVING_TIMES ) ;
+         stop_total_timer() ;      
+      }
+   }
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">CH_AveragesSaver:: save_other_than_time_and_fields( 
+                                                 </font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* t_it, 
+                                                 </font><font class="kw3">PDE_ResultSaver</font><font class="text">* rs )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;CH_AveragesSaver:: save_other_than_time_and_fields&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( save_other_than_time_and_fields_PRE( t_it, rs ) ) ;
+
+   </font><font class="kw1">if</font><font class="text">( SOMETHING_TO_DO &amp;&amp; ( SAVING_TIMES.size() == 0 ) )
+   {
+      start_total_timer( </font><font class="string">&quot;CH_AveragesSaver:: save_other_than_time_and_fields&quot;</font><font class="text"> ) ;
+      
+      save_all( t_it ) ;
+      
+      stop_total_timer() ;
+   }      
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">CH_AveragesSaver:: read_for_total_free_energy( </font><font class="kw3">PDE_DomainAndFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dom,
+                                               </font><font class="kw3">FE_SetOfParameters</font><font class="text"> </font><font class="kw1">const</font><font class="text">* prms,
+                                               </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp )
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;CH_AveragesSaver:: read_for_total_free_energy&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw3">PDE_SetOfDiscreteFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dfs = dom-&gt;set_of_discrete_fields() ;
+
+   THICKNESS = exp-&gt;double_data( </font><font class="string">&quot;thickness&quot;</font><font class="text"> ) ;
+   QRP_TFE = </font><font class="kw3">GE_QRprovider</font><font class="text">::object( 
+                            exp-&gt;string_data( </font><font class="string">&quot;quadrature_rule_provider&quot;</font><font class="text"> ) ) ;
+   
+   C1 = dfs-&gt;item( exp-&gt;string_data( </font><font class="string">&quot;phase_field_1&quot;</font><font class="text"> ) ) ;
+   L_C1 = exp-&gt;int_data( </font><font class="string">&quot;level_1&quot;</font><font class="text"> ) ;
+   
+   C2 = dfs-&gt;item( exp-&gt;string_data( </font><font class="string">&quot;phase_field_2&quot;</font><font class="text"> ) ) ;
+   L_C2 = exp-&gt;int_data( </font><font class="string">&quot;level_2&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* se = 
+                      exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;CH_BulkChemicalPotential&quot;</font><font class="text"> ) ;
+   BULK_MU = CH_BulkChemicalPotential::create( </font><font class="kw1">this</font><font class="text">, se ) ;
+   se-&gt;destroy() ; se = 0 ;
+
+   cFE-&gt;require_field_calculation( C1, </font><font class="kw3">PDE_LocalFE</font><font class="text">::N )  ;   
+   cFE-&gt;require_field_calculation( C1, </font><font class="kw3">PDE_LocalFE</font><font class="text">::dN ) ; 
+   cFE-&gt;require_field_calculation( C2, </font><font class="kw3">PDE_LocalFE</font><font class="text">::N )  ;   
+   cFE-&gt;require_field_calculation( C2, </font><font class="kw3">PDE_LocalFE</font><font class="text">::dN ) ; 
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">CH_AveragesSaver:: read_for_kinetic_energy( </font><font class="kw3">PDE_DomainAndFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dom,
+                                            </font><font class="kw3">FE_SetOfParameters</font><font class="text"> </font><font class="kw1">const</font><font class="text">* prms,
+                                            </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp )
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;CH_AveragesSaver:: read_for_kinetic_energy&quot;</font><font class="text"> ) ;
+   
+   UU = dom-&gt;set_of_discrete_fields()-&gt;item( exp-&gt;string_data( </font><font class="string">&quot;velocity&quot;</font><font class="text"> ) ) ;
+   L_UU = exp-&gt;int_data( </font><font class="string">&quot;level_of_velocity&quot;</font><font class="text"> ) ;
+   DENS = prms-&gt;item( exp-&gt;string_data( </font><font class="string">&quot;param_density&quot;</font><font class="text"> ) ) ;
+   
+   QRP_KE = </font><font class="kw3">GE_QRprovider</font><font class="text">::object( 
+                            exp-&gt;string_data( </font><font class="string">&quot;quadrature_rule_provider&quot;</font><font class="text"> ) ) ;
+   
+   cFE-&gt;require_field_calculation( UU, </font><font class="kw3">PDE_LocalFE</font><font class="text">::N  ) ;
+   DENS-&gt;transfer_cell_calculation_requirements( cFE, </font><font class="kw3">FE_Parameter</font><font class="text">::Val ) ;
+
+   </font><font class="comment">//?????????? le faire pour les autres ?????
+</font><font class="text">   check_field_nb_components( UU, cFE-&gt;nb_space_dimensions() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">CH_AveragesSaver:: read_for_center_volume( </font><font class="kw3">PDE_DomainAndFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dom,
+                                           </font><font class="kw3">FE_SetOfParameters</font><font class="text"> </font><font class="kw1">const</font><font class="text">* prms,
+                                           </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp )
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;CH_AveragesSaver:: read_for_center_volume&quot;</font><font class="text"> ) ;
+   
+   CC = dom-&gt;set_of_discrete_fields()-&gt;item( 
+                                       exp-&gt;string_data( </font><font class="string">&quot;phase_field&quot;</font><font class="text"> ) ) ;
+   L_CC = exp-&gt;int_data( </font><font class="string">&quot;level_of_phase_field&quot;</font><font class="text"> ) ;
+   VV = dom-&gt;set_of_discrete_fields()-&gt;item(
+                                       exp-&gt;string_data( </font><font class="string">&quot;velocity&quot;</font><font class="text"> ) ) ;
+   L_VV = exp-&gt;int_data( </font><font class="string">&quot;level_of_velocity&quot;</font><font class="text"> ) ;
+   CC_MIN = exp-&gt;doubleVector_data( </font><font class="string">&quot;thresholds&quot;</font><font class="text"> ) ;
+   QRP_CV = </font><font class="kw3">GE_QRprovider</font><font class="text">::object( 
+                            exp-&gt;string_data( </font><font class="string">&quot;quadrature_rule_provider&quot;</font><font class="text"> ) ) ;
+   
+   cFE-&gt;require_field_calculation( CC, </font><font class="kw3">PDE_LocalFE</font><font class="text">::N  ) ;
+   cFE-&gt;require_field_calculation( VV, </font><font class="kw3">PDE_LocalFE</font><font class="text">::N  ) ;
+
+   </font><font class="comment">//?????????? le faire pour les autres ?????
+</font><font class="text">   check_field_nb_components( CC, 1 ) ;
+   check_field_nb_components( VV, dom-&gt;nb_space_dimensions() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">CH_AveragesSaver:: read_for_perimeter( </font><font class="kw3">PDE_DomainAndFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dom,
+                                       </font><font class="kw3">FE_SetOfParameters</font><font class="text"> </font><font class="kw1">const</font><font class="text">* prms,
+                                       </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp )
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;CH_AveragesSaver:: read_for_perimeter&quot;</font><font class="text"> ) ;
+   
+   CP = dom-&gt;set_of_discrete_fields()-&gt;item( 
+                                       exp-&gt;string_data( </font><font class="string">&quot;phase_field&quot;</font><font class="text"> ) ) ;
+   L_CP = exp-&gt;int_data( </font><font class="string">&quot;level_of_phase_field&quot;</font><font class="text"> ) ;
+   
+   QRP_PER = </font><font class="kw3">GE_QRprovider</font><font class="text">::object( 
+                            exp-&gt;string_data( </font><font class="string">&quot;quadrature_rule_provider&quot;</font><font class="text"> ) ) ;
+   
+   cFE-&gt;require_field_calculation( CP, </font><font class="kw3">PDE_LocalFE</font><font class="text">::dN  ) ;
+
+   </font><font class="comment">//?????????? le faire pour les autres ?????
+</font><font class="text">   check_field_nb_components( CP, 1 ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">CH_AveragesSaver:: save_all( </font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* t_it )
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;CH_AveragesSaver:: save_all&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw2">size_t</font><font class="text"> rank = communicator()-&gt;rank() ;
+   </font><font class="kw2">std</font><font class="text">::ofstream ofs ;
+   
+   </font><font class="kw1">if</font><font class="text">( rank == 0 )
+   {      
+      ofs.open( FNAME.c_str(), </font><font class="kw2">std</font><font class="text">::ios::out | </font><font class="kw2">std</font><font class="text">::ios::app ) ;
+      ofs.setf( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ios_base</font><font class="text">::</font><font class="kw2">uppercase</font><font class="text"> | </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ios_base</font><font class="text">::</font><font class="kw2">scientific</font><font class="text"> ) ;
+      ofs &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">setprecision</font><font class="text">( 5 ) ;
+      ofs &lt;&lt; </font><font class="kw2">setw</font><font class="text">( 12 ) &lt;&lt; t_it-&gt;time() &lt;&lt; </font><font class="string">&quot; &quot;</font><font class="text"> ;
+   }
+   </font><font class="kw1">if</font><font class="text">( TOTAL_FREE_ENERGY )
+   {
+      </font><font class="kw1">double</font><font class="text"> tfe = total_free_energy() ;
+      </font><font class="kw1">if</font><font class="text">( rank == 0 )
+      {
+         ofs &lt;&lt; </font><font class="kw2">setw</font><font class="text">( 12 ) &lt;&lt; tfe &lt;&lt; </font><font class="string">&quot; &quot;</font><font class="text"> ;
+      }
+   }
+   </font><font class="kw1">if</font><font class="text">( KINETIC_ENERGY )
+   {
+      </font><font class="kw1">double</font><font class="text"> ke =  kinetic_energy( t_it ) ;
+      </font><font class="kw1">if</font><font class="text">( rank == 0 )
+      {
+         ofs &lt;&lt; </font><font class="kw2">setw</font><font class="text">( 12 ) &lt;&lt; ke &lt;&lt; </font><font class="string">&quot; &quot;</font><font class="text"> ;
+      }
+   }
+   </font><font class="kw1">if</font><font class="text">( CENTER )
+   {
+      </font><font class="kw3">doubleVector</font><font class="text"> volume( 0 ) ;
+      </font><font class="kw3">doubleArray2D</font><font class="text"> center( 0, 0 ) ;
+      </font><font class="kw3">doubleArray2D</font><font class="text"> velocity( 0, 0 ) ;
+      </font><font class="kw3">size_t_vector</font><font class="text"> nb_cells( 0 ) ;
+      center_volume( volume, center, velocity, nb_cells ) ;
+      </font><font class="kw1">if</font><font class="text">( rank == 0 ) 
+      {
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;CC_MIN.size() ; ++i )
+         {
+            ofs &lt;&lt; </font><font class="kw2">setw</font><font class="text">( 12 ) &lt;&lt; volume( i ) &lt;&lt; </font><font class="string">&quot; &quot;</font><font class="text"> ;
+         }
+         </font><font class="kw1">if</font><font class="text"> ( </font><font class="kw3">FE</font><font class="text">::geometry() == </font><font class="kw3">FE</font><font class="text">::axisymmetrical )
+         {
+            </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;CC_MIN.size() ; ++i )
+            {
+               ofs &lt;&lt; </font><font class="kw2">setw</font><font class="text">( 12 ) &lt;&lt; center( i, 1 ) &lt;&lt; </font><font class="string">&quot; &quot;</font><font class="text"> ;
+            }         
+            </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;CC_MIN.size() ; ++i )
+            {
+               ofs &lt;&lt; </font><font class="kw2">setw</font><font class="text">( 12 ) &lt;&lt; velocity( i, 1 ) &lt;&lt; </font><font class="string">&quot; &quot;</font><font class="text"> ;
+            }         
+         }
+         </font><font class="kw1">else
+</font><font class="text">         {
+            </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> d=0 ; d&lt;cFE-&gt;nb_space_dimensions() ; ++d )
+            {
+               </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;CC_MIN.size() ; ++i )
+               {
+                  ofs &lt;&lt; </font><font class="kw2">setw</font><font class="text">( 12 ) &lt;&lt; center( i, d ) &lt;&lt; </font><font class="string">&quot; &quot;</font><font class="text"> ;
+               }
+            }
+            </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> d=0 ; d&lt;cFE-&gt;nb_space_dimensions() ; ++d )
+            {
+               </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;CC_MIN.size() ; ++i )
+               {
+                  ofs &lt;&lt; </font><font class="kw2">setw</font><font class="text">( 12 ) &lt;&lt; velocity( i, d ) &lt;&lt; </font><font class="string">&quot; &quot;</font><font class="text"> ;
+               }
+            }
+         }
+      }
+   }
+   </font><font class="kw1">if</font><font class="text">( PERIMETER )
+   {
+      </font><font class="kw1">double</font><font class="text"> per = perimeter() ;
+      </font><font class="kw1">if</font><font class="text">( rank == 0 )
+      {
+         ofs &lt;&lt; </font><font class="kw2">setw</font><font class="text">( 12 ) &lt;&lt; per &lt;&lt; </font><font class="string">&quot; &quot;</font><font class="text"> ;
+      }
+   }
+   </font><font class="kw1">if</font><font class="text">( rank == 0 )
+   {
+      ofs &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      ofs.close() ;
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw1">bool</font><font class="text"> 
+CH_AveragesSaver:: total_free_energy_is_handled( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+  </font><font class="kw1">return</font><font class="text">( TOTAL_FREE_ENERGY ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw1">double
+</font><font class="text">CH_AveragesSaver:: total_free_energy( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( total_free_energy_is_handled() ) ;   
+   
+   </font><font class="kw2">size_t</font><font class="text"> nb_dims = cFE-&gt;nb_space_dimensions() ; 
+   
+   </font><font class="kw1">double</font><font class="text"> s1 = BULK_MU-&gt;Sigma1() ;
+   </font><font class="kw1">double</font><font class="text"> s2 = BULK_MU-&gt;Sigma2() ;
+   </font><font class="kw1">double</font><font class="text"> s3 = BULK_MU-&gt;Sigma3() ;
+
+   </font><font class="kw1">double</font><font class="text"> result = 0.0 ;
+   </font><font class="kw1">for</font><font class="text">( cFE-&gt;start() ; cFE-&gt;is_valid() ; cFE-&gt;go_next() )
+   {
+      cFE-&gt;start_IP_iterator( QRP_TFE ) ;
+      </font><font class="kw1">for</font><font class="text">( ; cFE-&gt;valid_IP() ; cFE-&gt;go_next_IP() )
+      {
+         </font><font class="kw1">double</font><font class="text"> weight = cFE-&gt;weight_of_IP() ;
+         </font><font class="kw1">if</font><font class="text">( </font><font class="kw3">FE</font><font class="text">::geometry() == </font><font class="kw3">FE</font><font class="text">::axisymmetrical )
+         {
+            weight *= 2.0*</font><font class="kw3">PEL</font><font class="text">::pi()*cFE-&gt;coordinates_of_IP()-&gt;coordinate( 0 ) ;
+         }
+
+         </font><font class="kw1">double</font><font class="text"> cc1 = 0.0 ;
+         </font><font class="kw1">double</font><font class="text"> cc2 = 0.0 ;
+         </font><font class="kw1">double</font><font class="text"> cc3 = 0.0 ;
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> d=0; d&lt;nb_dims ; ++d )
+         {
+            </font><font class="kw1">double</font><font class="text"> grad_c = cFE-&gt;gradient_at_IP( C1, L_C1, d ) ;
+            </font><font class="kw1">double</font><font class="text"> grad_d = cFE-&gt;gradient_at_IP( C2, L_C2, d ) ;
+
+            cc1 += grad_c * grad_c ;
+            cc2 += grad_d * grad_d ;
+            cc3 += ( grad_c+grad_d ) * ( grad_c+grad_d ) ;
+         }
+
+         </font><font class="kw1">double</font><font class="text"> c = cFE-&gt;value_at_IP( C1, L_C2 )  ;
+         </font><font class="kw1">double</font><font class="text"> d = cFE-&gt;value_at_IP( C2, L_C2 ) ;
+
+         </font><font class="kw1">double</font><font class="text"> free_e = 12.*BULK_MU-&gt;F(c,d,1.-c-d)/THICKNESS;
+
+         result += weight * ( 3.*THICKNESS*( s1*cc1 + s2*cc2 + s3*cc3 )/8. 
+                              + free_e ) ; 
+      }
+   } 
+
+   result = communicator()-&gt;sum( result ) ;
+   
+   </font><font class="kw1">if</font><font class="text">( verbose_level() &gt;= 2 )
+   {
+      </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; indent() &lt;&lt; </font><font class="string">&quot;   CH_energy = &quot;</font><font class="text"> &lt;&lt; result &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   }
+
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw1">bool</font><font class="text"> 
+CH_AveragesSaver:: kinetic_energy_is_handled( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+  </font><font class="kw1">return</font><font class="text">( KINETIC_ENERGY ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw1">double
+</font><font class="text">CH_AveragesSaver:: kinetic_energy( </font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* t_it ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;CH_AveragesSaver:: kinetic_energy&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( kinetic_energy_is_handled() ) ;   
+
+   
+   </font><font class="kw2">size_t</font><font class="text"> nb_dims = cFE-&gt;nb_space_dimensions() ; 
+   
+   </font><font class="kw1">double</font><font class="text"> result = 0.0 ;
+   </font><font class="kw1">for</font><font class="text">( cFE-&gt;start() ; cFE-&gt;is_valid() ; cFE-&gt;go_next() )
+   {
+      cFE-&gt;start_IP_iterator( QRP_KE ) ;
+      </font><font class="kw1">for</font><font class="text">( ; cFE-&gt;valid_IP() ; cFE-&gt;go_next_IP() )
+      {
+         </font><font class="kw1">double</font><font class="text"> weight = cFE-&gt;weight_of_IP() ;
+         </font><font class="kw1">if</font><font class="text">( </font><font class="kw3">FE</font><font class="text">::geometry() == </font><font class="kw3">FE</font><font class="text">::axisymmetrical )
+         {
+            weight *= 2.0*</font><font class="kw3">PEL</font><font class="text">::pi()*cFE-&gt;coordinates_of_IP()-&gt;coordinate( 0 ) ;
+         }
+         </font><font class="kw1">double</font><font class="text"> dens = DENS-&gt;cell_value_at_IP( t_it, cFE ) ;
+         </font><font class="kw1">double</font><font class="text"> vv = 0.0 ;
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> d=0; d&lt;nb_dims ; ++d )
+         {
+            </font><font class="kw1">double</font><font class="text"> xx = cFE-&gt;value_at_IP( UU, L_UU, d ) ;
+            vv += xx * xx ;
+         }
+         result += weight * vv * dens ;       
+      }
+   } 
+   result *= 0.5 ;
+   
+   result = communicator()-&gt;sum( result ) ;
+
+   </font><font class="kw1">if</font><font class="text">( verbose_level() &gt;= 2 )
+   {
+      </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; indent() &lt;&lt; </font><font class="string">&quot;   Kinetic energy = &quot;</font><font class="text"> &lt;&lt; result &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   }
+   
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw1">bool</font><font class="text"> 
+CH_AveragesSaver:: center_volume_is_handled( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+  </font><font class="kw1">return</font><font class="text">( CENTER ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">CH_AveragesSaver:: center_volume( </font><font class="kw3">doubleVector</font><font class="text">&amp; volume,
+                                  </font><font class="kw3">doubleArray2D</font><font class="text">&amp; center,
+                                  </font><font class="kw3">doubleArray2D</font><font class="text">&amp; velocity,
+                                  </font><font class="kw3">size_t_vector</font><font class="text">&amp; nb_cells ) </font><font class="kw1">const
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;CH_AveragesSaver:: center_volume&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( center_volume_is_handled() ) ;   
+
+   </font><font class="kw2">size_t</font><font class="text"> nb_dims = cFE-&gt;nb_space_dimensions() ;
+   
+   center.re_initialize( CC_MIN.size(), nb_dims ) ;
+   velocity.re_initialize( CC_MIN.size(), nb_dims ) ;
+   volume.re_initialize( CC_MIN.size() ) ;
+   nb_cells.re_initialize( CC_MIN.size() ) ;
+   </font><font class="kw1">for</font><font class="text">( cFE-&gt;start() ; cFE-&gt;is_valid() ; cFE-&gt;go_next() )
+   {
+      </font><font class="kw1">double</font><font class="text"> cell_volume = 0.0 ;
+      </font><font class="kw3">doubleVector</font><font class="text"> cell_vv( nb_dims ) ;
+      </font><font class="kw1">double</font><font class="text"> cell_cc = 0.0 ;
+      cFE-&gt;start_IP_iterator( QRP_CV ) ;
+      </font><font class="kw1">for</font><font class="text">( ; cFE-&gt;valid_IP() ; cFE-&gt;go_next_IP() )
+      {
+         </font><font class="kw1">double</font><font class="text"> cc = cFE-&gt;value_at_IP( CC, L_CC ) ;
+         
+         </font><font class="kw1">double</font><font class="text"> weight = cFE-&gt;weight_of_IP() ;
+         </font><font class="kw1">if</font><font class="text">( </font><font class="kw3">FE</font><font class="text">::geometry() == </font><font class="kw3">FE</font><font class="text">::axisymmetrical )
+         {
+            weight *= 2.0*</font><font class="kw3">PEL</font><font class="text">::pi()*cFE-&gt;coordinates_of_IP()-&gt;coordinate(0) ;
+         }
+         cell_volume += weight ;
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> d=0 ; d&lt;nb_dims ; ++d )
+         {
+            cell_vv( d ) += weight * cFE-&gt;value_at_IP( VV, L_VV, d ) ;
+         }
+         
+         cell_cc += weight * cc ;
+      }
+
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;CC_MIN.size() ; ++i )
+      {
+         </font><font class="kw1">if</font><font class="text">( cell_cc &gt;= CC_MIN( i ) * cell_volume )
+         {
+            ++nb_cells( i ) ;
+            volume( i ) += cell_volume ;
+            </font><font class="kw3">GE_Point</font><font class="text"> </font><font class="kw1">const</font><font class="text">* pt = cFE-&gt;polyhedron()-&gt;center() ;
+            </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> d=0; d&lt;nb_dims ; ++d )
+            {
+               center( i, d ) += cell_volume * pt-&gt;coordinate( d ) ;
+               velocity( i, d ) += cell_vv( d ) ; 
+            }    
+         }
+      }
+   }
+   
+   </font><font class="kw3">PEL_Communicator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* com = communicator() ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;CC_MIN.size() ; ++i )
+   {
+      volume( i ) = com-&gt;sum( volume( i ) ) ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> d=0; d&lt;nb_dims ; ++d )
+      {
+         center( i, d ) = com-&gt;sum( center( i, d ) ) / volume( i )  ;
+         velocity( i, d ) = com-&gt;sum( velocity( i, d ) ) / volume( i )  ;
+      }      
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw1">bool</font><font class="text"> 
+CH_AveragesSaver:: perimeter_is_handled( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+  </font><font class="kw1">return</font><font class="text">( PERIMETER ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">double
+</font><font class="text">CH_AveragesSaver:: perimeter( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;CH_AveragesSaver:: perimeter&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( perimeter_is_handled() ) ;   
+   
+   </font><font class="kw1">double</font><font class="text"> result = 0 ;
+   </font><font class="kw1">for</font><font class="text">( cFE-&gt;start() ; cFE-&gt;is_valid() ; cFE-&gt;go_next() )
+   {
+      </font><font class="kw1">double</font><font class="text"> cell_per = 0.0 ;
+      cFE-&gt;start_IP_iterator( QRP_PER ) ;
+      </font><font class="kw1">for</font><font class="text">( ; cFE-&gt;valid_IP() ; cFE-&gt;go_next_IP() )
+      {
+         </font><font class="kw1">double</font><font class="text"> weight = cFE-&gt;weight_of_IP() ;
+         </font><font class="kw1">if</font><font class="text">( </font><font class="kw3">FE</font><font class="text">::geometry() == </font><font class="kw3">FE</font><font class="text">::axisymmetrical )
+         {
+            weight *= 2.0*</font><font class="kw3">PEL</font><font class="text">::pi()*cFE-&gt;coordinates_of_IP()-&gt;coordinate(0) ;
+         }
+         </font><font class="kw1">double</font><font class="text"> grad_sqr = 0 ;
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> d = 0 ; d &lt; cFE-&gt;nb_space_dimensions() ; ++d )
+         {
+            grad_sqr +=  </font><font class="kw3">PEL</font><font class="text">::sqr( cFE-&gt;gradient_at_IP( CP, L_CP, d ) ) ;
+         }
+         cell_per += weight * </font><font class="kw3">PEL</font><font class="text">::sqrt( grad_sqr ) ;
+      }
+      result += cell_per ;
+   }
+   
+   result = communicator()-&gt;sum( result )  ;
+   
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="kw1">void</font><font class="text"> 
+CH_AveragesSaver_ERROR:: n0( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; fname  )
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> msg ;
+   msg &lt;&lt; </font><font class="kw2">endl</font><font class="text"> &lt;&lt; </font><font class="string">&quot;*** CH_AveragesSaver_ERROR:&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   msg &lt;&lt; </font><font class="string">&quot;    unable to open file \&quot;&quot; &lt;&lt; fname &lt;&lt; &quot;</font><font class="text">\</font><font class="string">&quot;&quot;</font><font class="text"> ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( msg.str() ) ;
+}
+
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="kw1">void</font><font class="text"> 
+CH_AveragesSaver_ERROR:: n1( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; module_name, 
+                             </font><font class="kw2">size_t</font><font class="text"> invalid_dim,
+                             </font><font class="kw3">size_t_vector</font><font class="text"> valid_dims )
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> msg ;
+   msg &lt;&lt; </font><font class="kw2">endl</font><font class="text"> &lt;&lt; </font><font class="string">&quot;*** CH_AveragesSaver_ERROR:&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   msg &lt;&lt; </font><font class="string">&quot;    Module &quot;</font><font class="text"> &lt;&lt; module_name &lt;&lt; </font><font class="string">&quot; is not allowed in &quot;
+</font><font class="text">       &lt;&lt; invalid_dim &lt;&lt;</font><font class="string">&quot;D.&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   msg &lt;&lt; </font><font class="string">&quot;    allowed number of dimension : &quot;</font><font class="text"> ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i = 0 ; i &lt; valid_dims.size() ; ++ i )
+   {
+      msg &lt;&lt; valid_dims( i ) &lt;&lt; </font><font class="string">&quot;D &quot;</font><font class="text"> ;
+   }
+   msg &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( msg.str() ) ;
+}
+
+
+
+</font>
+</pre>
+</body>
+</html>

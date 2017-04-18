@@ -1,0 +1,225 @@
+MODULE PEL_ObjectTest#FE_IterationWithJacobian_TEST
+   
+   MODULE FE_IterationWithJacobian#3
+      
+      $DS_r = 0.005
+      $DS_sigma_12 = 0.02
+      $DS_sigma_13 = 0.07
+      $DS_sigma_23 = 0.03
+      
+      $DS_Sig1 = $DS_sigma_12 + $DS_sigma_13 - $DS_sigma_23
+      $DS_Sig2 = $DS_sigma_12 + $DS_sigma_23 - $DS_sigma_13
+      $DS_Sig3 = $DS_sigma_13 + $DS_sigma_23 - $DS_sigma_12
+      
+      $DS_e = 0.001
+      $DS_mo = 5.e-5
+      $DS_val1 = sqrt( sqr( component($DV_X,0)) +
+                      sqr( component($DV_X,1) - 2.5*$DS_r ) ) - $DS_r
+      
+      MODULE FE_TimeIterator
+         time_initial = 0.0
+         time_end = 1.0
+         time_step = 1.0
+      END MODULE FE_TimeIterator
+      
+      MODULE PDE_DomainAndFields
+         verbose_level = 1
+         nb_space_dimensions = 2
+         type = "finite_element"
+         
+         MODULE GE_Meshing
+            
+            concrete_name = "GE_RefinedMeshing"
+            
+            mesh_polyhedron = < "GE_Segment" "GE_Triangle" >
+            
+            MODULE GE_Meshing
+               concrete_name = "GE_BoxWithBoxes"
+               vertices_coordinate_0 = regular_vector( 0.0, 1, 2.5*$DS_r )
+               vertices_coordinate_1 = regular_vector( 0.0, 2, 18.*$DS_r )
+               mesh_polyhedron = < "GE_Segment" "GE_Rectangle" >
+            END MODULE GE_Meshing
+            
+            MODULE list_of_GE_ReferencePolyhedronRefiner
+               MODULE GE_ReferencePolyhedronRefiner#1
+                  concrete_name = "GE_ReferenceSquareWithTriangles"
+                  strategy = "X"
+               END MODULE GE_ReferencePolyhedronRefiner#1
+            END MODULE list_of_GE_ReferencePolyhedronRefiner
+            
+         END MODULE GE_Meshing
+         
+         
+         MODULE interior_fields
+            
+            MODULE order_parameter
+               name = "cc_1"
+               nb_components = 1
+               element_name = "PDE_2D_P1_3nodes"
+               storage_depth = 1
+               MODULE DOFs_values
+                  type = "uniformly_defined"
+                  value = vector(0.005)
+               END MODULE DOFs_values
+            END MODULE order_parameter
+            
+            MODULE order_parameter_explicit
+               name = "cc_1_explicit"
+               nb_components = 1
+               element_name = "PDE_2D_P1_3nodes"
+               storage_depth = 1
+               MODULE DOFs_values
+                  type = "uniformly_defined"
+                  value = vector(0.005)
+               END MODULE DOFs_values
+            END MODULE order_parameter_explicit
+            
+            MODULE generalized_potential
+               name = "mm_1"
+               nb_components = 1
+               element_name = "PDE_2D_P1_3nodes"
+               storage_depth = 1
+               MODULE DOFs_values
+                  type = "uniformly_defined"
+                  value = < 1.0 >
+               END MODULE DOFs_values
+            END MODULE generalized_potential
+            
+            MODULE order_parameter_2
+               name = "cc_2"
+               nb_components = 1
+               element_name = "PDE_2D_P1_3nodes"
+               storage_depth = 1
+               MODULE DOFs_values
+                  type = "uniformly_defined"
+                  value = vector(10. )
+               END MODULE DOFs_values
+            END MODULE order_parameter_2
+            
+            MODULE order_parameter_2_explicit
+               name = "cc_2_explicit"
+               nb_components = 1
+               element_name = "PDE_2D_P1_3nodes"
+               storage_depth = 1
+               MODULE DOFs_values
+                  type = "uniformly_defined"
+                  value = vector(10. )
+               END MODULE DOFs_values
+            END MODULE order_parameter_2_explicit
+            
+            MODULE generalized_potential_2
+               name = "mm_2"
+               nb_components = 1
+               element_name = "PDE_2D_P1_3nodes"
+               storage_depth = 1
+               MODULE DOFs_values
+                  type = "uniformly_defined"
+                  value = < 0.005 >
+               END MODULE DOFs_values
+            END MODULE generalized_potential_2         
+                        
+            MODULE velocity
+               name = "velocity"
+               nb_components = 2
+               element_name = "PDE_2D_P1bubble_4nodes"
+               storage_depth = 2
+               MODULE DOFs_values
+                  type = "uniformly_defined"
+                  value = vector( 0.2*component( $DV_X, 0 ),
+                                 -0.2*pow( component( $DV_X, 1 ), 3.0 ) ) 
+               END MODULE DOFs_values
+            END MODULE velocity       
+            
+
+         END MODULE interior_fields
+      END MODULE PDE_DomainAndFields
+      
+      MODULE FE_SetOfParameters
+      END MODULE FE_SetOfParameters
+      
+      
+      MODULE FE_OneStepIteration
+         
+         concrete_name = "FE_SplitSystem"
+         
+         MODULE list_of_FE_OneStepIteration            
+            
+            MODULE FE_OneStepIteration#CH1
+               concrete_name = "CH_CahnHilliard"
+               
+               name = "Cahn_Hilliard"
+               
+               phase_field_1 = "cc_1"
+               phase_field_1_explicit = "cc_1_explicit"
+               generalized_potential_1 = "mm_1"
+               phase_field_2 = "cc_2"
+               phase_field_2_explicit = "cc_2_explicit"
+               generalized_potential_2 = "mm_2"
+               level_to_update = 0
+               level_of_explicit = 0
+               
+               MODULE advection
+                  field = "velocity"
+                  level = 0
+               END MODULE advection
+
+               explicit_mobility = true
+               mobility_deg = 5.e-5
+               mobility_cst = 0.0
+
+               thickness = $DS_e
+               
+               MODULE CH_BulkChemicalPotential
+                  coef_Sigma_1 = $DS_Sig1
+                  coef_Sigma_2 = $DS_Sig2
+                  coef_Sigma_3 = $DS_Sig3
+                  
+                  MODULE CH_BulkEnergy#F0
+                     concrete_name = "CH_F0ConvexConcave1"
+                  END MODULE CH_BulkEnergy#F0
+               END MODULE CH_BulkChemicalPotential
+               
+               quadrature_rule_provider = "GE_QRprovider_7"
+               newton_tolerance = 1.e-10
+               verbose_level = 0
+               nb_iterations_max = 200
+               
+               MODULE LA_Matrix
+                  concrete_name = "LA_PelMatrix"
+               END MODULE LA_Matrix
+               
+               MODULE LA_Solver
+                  concrete_name = "LA_PreconditionedSolver"
+                  MODULE LA_IterativeSolver
+                     concrete_name = "LA_GMRES_IS"
+                     nb_iterations_max = 200000
+                     restart = 50
+                     MODULE LA_ConvergenceTest
+                        concrete_name = "LA_DefaultConvergenceTest"
+                        relative_tolerance = 1.e-8
+                        absolute_tolerance = 1.e-15
+                     END MODULE LA_ConvergenceTest
+                     verbose = false
+                  END MODULE LA_IterativeSolver
+                  MODULE LA_Preconditioner
+                     concrete_name = "LA_ILU0_PC"
+                     diagonal_compensation = false
+                     smallest_nonzero_pivot = 1.E-12
+                  END MODULE LA_Preconditioner
+               END MODULE LA_Solver
+         
+            END MODULE FE_OneStepIteration#CH1
+         END MODULE list_of_FE_OneStepIteration
+      END MODULE FE_OneStepIteration
+
+      MODULE jacobian_test         
+         hh = 1.e-4
+         dbl_epsilon = 1.e-4
+         dbl_minimum = 1.e-30
+         one_step_iteration_with_jacobian = "Cahn_Hilliard"
+      END MODULE jacobian_test
+   END MODULE FE_IterationWithJacobian#3
+   
+END MODULE PEL_ObjectTest#FE_IterationWithJacobian_TEST
+
+

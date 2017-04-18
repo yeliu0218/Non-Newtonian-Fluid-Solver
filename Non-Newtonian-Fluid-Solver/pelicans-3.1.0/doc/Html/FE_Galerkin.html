@@ -1,0 +1,1995 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>FE_Galerkin</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="FE_Galerkin_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="FEpack-tree.html"><span>Tree</span></a>
+    <span class=selected>Class</span>
+    <a href="FE_Galerkin.hh.html"><span>Header</span></a>
+    <a href="FE_Galerkin.cc.html"><span>Implementation</span></a>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="FEpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<br />
+<div class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></div>
+<br />
+
+
+<!-- ====== START OF CLASS DATA ======== -->
+<div id=classtitle>
+  <span class=classpath>FrameFE / </span><br />
+  <span class=classname>Class  FE_Galerkin</span>
+</div>
+
+<br />
+
+<div id=hierarchy>
+<ul class=rootclass><li><a href="PEL_Object.html#" target="classFrame">PEL_Object</a></li>
+  <ul class=parentclass><li><a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></li>
+  <ul class=self><li>FE_Galerkin</li>
+</ul></ul>
+</div>
+<hr />
+<pre>
+Objects conceptually decomposing the steps performed in 
+   <a href="FE_StepByStepProgression.html#run" target="classFrame">FE_StepByStepProgression::run</a> 
+into substeps devoted to the solution of a system of partial differential 
+equations discretized with a Galerkin finite element method. 
+Servers of type <a href="PDE_LocalFE.html#" target="classFrame">PDE_LocalFE</a> provide the main tool involved in the 
+associated computations.
+
+The system of balance equations is written :
+
+   material derivative of the unknowns = creation of the unknowns
+
+Roughly :
+
+   approximation of the material derivative = ( u - u_0 ) / dt
+
+where dt is the current time step in <a href="FE_StepByStepProgression.html#run" target="classFrame">FE_StepByStepProgression::run</a>.
+u and u_0 are computed at each integration point given by
+a <a href="PDE_LocalFEcell.html#" target="classFrame">PDE_LocalFEcell</a> object. There are two possiblities :
+
+1. u and u_0 simply represent two successive levels of storage of an 
+   unknown field : the above approximation is a finite difference 
+   Euler approximation of the time derivative of u.
+
+2. u_0 represents the value of the unknown at the characteristic foot with
+   respect to a given advection field : the above approximation represents
+   the material derivative of u with respect to that advection field.
+   Such a feature is provided by <a href="FE_GalerkinCharacteristic.html#" target="classFrame">FE_GalerkinCharacteristic</a> objects.
+
+Instances of <a href="FE_Galerkin.html#" target="classFrame">FE_Galerkin</a> are mainly meant to be used in conjonction
+with a <a href="FE_GalerkinCharacteristic.html#" target="classFrame">FE_GalerkinCharacteristic</a> object.
+
+FRAMEWORK INSTANTIATION
+
+   CASE 1 : derivation of a concrete subclass
+
+   1. Derive a concrete subclass, say MyGal.
+   2. Choose a name for MyAppli, say "my_gal".
+   3. Implement a private destructor.
+   4. Declare all constructors private.
+   5. Define the prototype to be registered :
+      5.1 Implement a default constructor that initializes the
+          <a href="FE_Galerkin.html#" target="classFrame">FE_Galerkin</a> subobject by calling
+               <a href="FE_Galerkin.html#FE_Galerkin" target="classFrame">FE_Galerkin( std::string const& )</a>
+          with "my_gal" as argument.
+          Example of pseudo-code :
+          | MyGal:: MyGal( void ) : FE_Galerkin( "my_gal" ) {}
+      5.2 Define and initialize a static instance by calling the default
+          constructor.
+             declaration (in the header file, eg MyGal.hh) :
+             | static MyGal const* PROTOTYPE ;
+             definition (in the implementation file, eg MyGal.cc) :
+             | MyGal const* MyGal::PROTOTYPE = new MyGal() ;'
+   6. Implement a private constructor that initializes the 
+      <a href="FE_Galerkin.html#" target="classFrame">FE_Galerkin</a> subobject by calling
+            <a href="FE_Galerkin.html#FE_Galerkin" target="classFrame">FE_Galerkin( PEL_Object*, PDE_DomainAndFields const* )</a>.
+      Example of pseudo-code :
+      | MyGal:: MyGal( PEL_Object* a_owner,
+      |                PDE_DomainAndFields const* dom,
+      |                FE_SetOfParameters const* prms,
+      |                PEL_ModuleExplorer const* exp )
+      |    : FE_Galerkin( a_owner, dom, exp ), ...
+      | { ... }
+      Use
+         <a href="FE_Galerkin.html#add_one_convected_field" target="classFrame">add_one_convected_field</a>
+      to register fields that occur through material derivatives.
+   7. Implement the <a href="FE_Galerkin.html#create_replica" target="classFrame">create_replica</a> method that allocates an object
+      of type <span class="uid1">MyGal</span> initialized using the private constructor described
+      above, and subsequently return a pointer to that object.
+      Example of pseudo-code :
+      | MyGal* MyGal::create_replica( PEL_Object* a_owner,
+      |                               PDE_DomainAndFields const* dom,
+      |                               FE_SetOfParameters const* prms,
+      |                               PEL_ModuleExplorer const* exp ) const
+      | {
+      |    PEL_LABEL( "MyGal::create_replica" ) ;
+      |    PEL_CHECK( create_replica_PRE( a_owner, dom, prms, exp ) ) ;
+      |    MyGal* result = new MyGal( a_owner, dom, prms, exp ) ;
+      |    PEL_CHECK( create_replica_POST( result, a_owner, dom, prms, exp ) ;
+      |    return result ;
+      | }
+   8. Implement the pure virtual methods, and possibly overrid the non
+      pure virtual methods.
+
+
+   CASE 2 : derivation of an abstract subclass
+
+   1. Derive an abstract subclass, say MyGal.
+   2. Implement a protected virtual destructor.
+   3. Implement a protected constructor that initializes the
+      <a href="FE_Galerkin.html#" target="classFrame">FE_Galerkin</a> subobject by calling
+               <a href="FE_Galerkin.html#FE_Galerkin" target="classFrame">FE_Galerkin( std::string const& )</a>
+      Example of pseudo-code :
+      | MyGal:: MyGal( std::string const& name ) 
+      |    : FE_Galerkin( name ) {}
+      This constructor is devoted to be used by the concrete subclasses 
+      of MyGal for the registration of their prototype.
+   4. Implement a protected constructor that initializes the 
+      <a href="PEL_Application.html#" target="classFrame">PEL_Application</a> subobject by calling
+            <a href="FE_Galerkin.html#FE_Galerkin" target="classFrame">FE_Galerkin( PEL_Object*, PDE_DomainAndFields const* )</a>.
+      Example of pseudo-code :
+      | MyGal:: MyGal( PEL_Object* a_owner,
+      |                PDE_DomainAndFields const* dom )
+      |    : FE_Galerkin( a_owner, dom ), ...
+      | { ... }
+      This constructor is devoted to be used to initialize the MyGal
+      base class subobject when creating objects of concrete subclasses
+      of MyGal (such creations are performed in the <span class="uid1"></span>
+      method whose implementation is deferred into those concrete subclasses).
+
+PUBLISHED
+</pre>
+<hr />
+<a name="method_summary"></a>
+
+<!-- ========== NEW CATEGORY ========== -->
+<table class=category cellpadding=2 cellspacing=0 rules=rows>
+  <tr class=heading><th class=name>Instance delivery and initialization</th><th class=protection>public</th></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#make" target="classFrame">static FE_Galerkin* make( PEL_Object* a_owner, PDE_DomainAndFields const* dom, FE_SetOfParameters const* prms, PEL_ModuleExplorer* exp )</a></td></tr>
+</table>
+
+<!-- ========== NEW CATEGORY ========== -->
+<table class=category cellpadding=2 cellspacing=0 rules=rows>
+  <tr class=heading><th class=name>Persistence</th><th class=protection>public</th></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#register_storable_objects" target="classFrame">void register_storable_objects( PEL_ListIdentity* list )</a></td></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#add_storable_objects" target="classFrame">virtual void add_storable_objects( PEL_ListIdentity* list )</a></td></tr>
+</table>
+
+<!-- ========== NEW CATEGORY ========== -->
+<table class=category cellpadding=2 cellspacing=0 rules=rows>
+  <tr class=heading><th class=name>Substeps of the step by step progression</th><th class=protection>public</th></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#do_before_time_stepping" target="classFrame">virtual void do_before_time_stepping( FE_TimeIterator const* t_it )</a></td></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#do_before_inner_iterations_stage" target="classFrame">virtual void do_before_inner_iterations_stage( FE_TimeIterator const* t_it )</a></td></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#do_inner_iterations_stage" target="classFrame">virtual void do_inner_iterations_stage( FE_TimeIterator const* t_it )</a></td></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#inner_iterations_stage_failed" target="classFrame">bool inner_iterations_stage_failed( void ) const</a></td></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#do_one_inner_iteration" target="classFrame">virtual void do_one_inner_iteration( FE_TimeIterator const* t_it ) = 0</a></td></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#inner_iterations_are_completed" target="classFrame">virtual bool inner_iterations_are_completed( FE_TimeIterator const* t_it ) const</a></td></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#do_after_inner_iterations_stage" target="classFrame">virtual void do_after_inner_iterations_stage( FE_TimeIterator const* t_it )</a></td></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#do_after_time_adaptation" target="classFrame">virtual void do_after_time_adaptation( FE_TimeIterator const* t_it )</a></td></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#do_after_time_stepping" target="classFrame">virtual void do_after_time_stepping( void )</a></td></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#transfer_calculation_requirements_for_material_derivative" target="classFrame">virtual void transfer_calculation_requirements_for_material_derivative( PDE_LocalFEcell* fe ) = 0</a></td></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#reset_discrete_problem" target="classFrame">virtual void reset_discrete_problem( FE_TimeIterator const* t_it ) = 0</a></td></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#build_cell_contribution_to_material_derivative" target="classFrame">virtual void build_cell_contribution_to_material_derivative( FE_TimeIterator const* t_it, PDE_LocalFEcell* fe ) = 0</a></td></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#terminate_discrete_problem" target="classFrame">virtual void terminate_discrete_problem( FE_TimeIterator const* t_it ) = 0</a></td></tr>
+</table>
+
+<!-- ========== NEW CATEGORY ========== -->
+<table class=category cellpadding=2 cellspacing=0 rules=rows>
+  <tr class=heading><th class=name>Elapsed times</th><th class=protection>public</th></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#print_additional_times" target="classFrame">virtual void print_additional_times( std::ostream& os, size_t indent_width ) const</a></td></tr>
+</table>
+
+<!-- ========== NEW CATEGORY ========== -->
+<table class=category cellpadding=2 cellspacing=0 rules=rows>
+  <tr class=heading><th class=name>Time iterator modification</th><th class=protection>public</th></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#adapt_time_iterator" target="classFrame">virtual void adapt_time_iterator( FE_TimeIteratorAdapter* t_adapter )</a></td></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#notify_inner_iterations_stage_failure" target="classFrame">virtual void notify_inner_iterations_stage_failure( void )</a></td></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#reset_after_inner_iterations_stage_failure" target="classFrame">virtual void reset_after_inner_iterations_stage_failure( void )</a></td></tr>
+</table>
+
+<!-- ========== NEW CATEGORY ========== -->
+<table class=category cellpadding=2 cellspacing=0 rules=rows>
+  <tr class=heading><th class=name>Savings for post-processing</th><th class=protection>public</th></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#do_additional_savings" target="classFrame">virtual void do_additional_savings( FE_TimeIterator const* t_it, PDE_ResultSaver* rs )</a></td></tr>
+</table>
+
+<!-- ========== NEW CATEGORY ========== -->
+<table class=category cellpadding=2 cellspacing=0 rules=rows>
+  <tr class=heading><th class=name>Features required by `FE_GalerkinCharacteristic::'</th><th class=protection>public</th></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#convected_fields" target="classFrame">PEL_Sequence const* convected_fields( void ) const</a></td></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#masked_level" target="classFrame">size_t masked_level( void ) const</a></td></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#QRprovider_for_material_derivative" target="classFrame">virtual GE_QRprovider const* QRprovider_for_material_derivative( void ) const = 0</a></td></tr>
+</table>
+
+<!-- ========== NEW CATEGORY ========== -->
+<table class=category cellpadding=2 cellspacing=0 rules=rows>
+  <tr class=heading><th class=name>Input - Output</th><th class=protection>public</th></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#print" target="classFrame">virtual void print( std::ostream& os, size_t indent_width ) const</a></td></tr>
+</table>
+
+<!-- ========== NEW CATEGORY ========== -->
+<table class=category cellpadding=2 cellspacing=0 rules=rows>
+  <tr class=heading><th class=name>Miscellaneous</th><th class=protection>protected</th></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#~FE_Galerkin" target="classFrame">virtual  ~FE_Galerkin( void )</a></td></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#FE_Galerkin" target="classFrame"> FE_Galerkin( PEL_Object* a_owner, PDE_DomainAndFields const* dom, PEL_ModuleExplorer const* exp )</a></td></tr>
+</table>
+
+<!-- ========== NEW CATEGORY ========== -->
+<table class=category cellpadding=2 cellspacing=0 rules=rows>
+  <tr class=heading><th class=name>Internals</th><th class=protection>protected</th></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#add_one_convected_field" target="classFrame">void add_one_convected_field( PDE_DiscreteField* ff, size_t a_masked_level )</a></td></tr>
+</table>
+
+<!-- ========== NEW CATEGORY ========== -->
+<table class=category cellpadding=2 cellspacing=0 rules=rows>
+  <tr class=heading><th class=name>Errors</th><th class=protection>protected</th></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#check_field_storage_depth" target="classFrame">void check_field_storage_depth( PDE_DiscreteField const* ff, size_t requested_max_level ) const</a></td></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#check_nb_local_nodes" target="classFrame">void check_nb_local_nodes( PDE_DiscreteField const* ff, PDE_LocalFE const* fe, size_t required_nb_nodes ) const</a></td></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#check_boundary_condition" target="classFrame">void check_boundary_condition( PDE_SetOfBCs const* bcs, GE_Color const* color, PDE_DiscreteField const* field, size_t ic = PDE_SetOfBCs::all_components ) const</a></td></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#raise_bad_BC_type" target="classFrame">void raise_bad_BC_type( std::string const& type, std::string const& allowed_types, PDE_DiscreteField const* field, size_t ic = PDE_SetOfBCs::all_components ) const</a></td></tr>
+</table>
+
+<!-- ========== NEW CATEGORY ========== -->
+<table class=category cellpadding=2 cellspacing=0 rules=rows>
+  <tr class=heading><th class=name>Savings for post-processing</th><th class=protection>protected</th></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#save_other_than_time_and_fields" target="classFrame">virtual void save_other_than_time_and_fields( FE_TimeIterator const* t_it, PDE_ResultSaver* rs )</a></td></tr>
+</table>
+
+<!-- ========== NEW CATEGORY ========== -->
+<table class=category cellpadding=2 cellspacing=0 rules=rows>
+  <tr class=heading><th class=name>Timer and screen output</th><th class=protection>protected</th></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#verbose_level" target="classFrame">size_t verbose_level( void ) const</a></td></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#start_assembling_timer" target="classFrame">void start_assembling_timer( bool silent = false ) const</a></td></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#stop_assembling_timer" target="classFrame">void stop_assembling_timer( bool silent = false ) const</a></td></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#start_solving_timer" target="classFrame">void start_solving_timer( bool silent = false ) const</a></td></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#stop_solving_timer" target="classFrame">void stop_solving_timer( bool silent = false ) const</a></td></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#start_total_timer" target="classFrame">void start_total_timer( std::string const& mesg, bool silent = false ) const</a></td></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#stop_total_timer" target="classFrame">void stop_total_timer( bool silent = false ) const</a></td></tr>
+</table>
+
+<!-- ========== NEW CATEGORY ========== -->
+<table class=category cellpadding=2 cellspacing=0 rules=rows>
+  <tr class=heading><th class=name>Plug in</th><th class=protection>protected</th></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#create_replica" target="classFrame">virtual FE_OneStepIteration* create_replica( PEL_Object* a_owner, PDE_SetOfDomains const* sdoms, FE_SetOfParameters const* prms, PEL_ModuleExplorer* exp ) const</a></td></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#is_a_prototype" target="classFrame">bool is_a_prototype( void ) const</a></td></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#configure_multilevel_preconditioner" target="classFrame">void configure_multilevel_preconditioner( PEL_ModuleExplorer const* exp, std::string const& keyword, PDE_DomainAndFields const* dom, PDE_SystemNumbering const* nmb ) const</a></td></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#FE_Galerkin_" target="classFrame"> FE_Galerkin( std::string const& name )</a></td></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#create_replica" target="classFrame">virtual FE_Galerkin* create_replica( PEL_Object* a_owner, PDE_DomainAndFields const* dom, FE_SetOfParameters const* prms, PEL_ModuleExplorer* exp ) const = 0</a></td></tr>
+</table>
+
+<!-- ========== NEW CATEGORY ========== -->
+<table class=category cellpadding=2 cellspacing=0 rules=rows>
+  <tr class=heading><th class=name>Preconditions, Postconditions, Invariant</th><th class=protection>protected</th></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#do_before_time_stepping_PRE" target="classFrame">bool do_before_time_stepping_PRE( FE_TimeIterator const* t_it ) const</a></td></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#do_before_inner_iterations_stage_PRE" target="classFrame">bool do_before_inner_iterations_stage_PRE( FE_TimeIterator const* t_it ) const</a></td></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#do_before_inner_iterations_stage_POST" target="classFrame">bool do_before_inner_iterations_stage_POST( FE_TimeIterator const* t_it ) const</a></td></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#do_inner_iterations_stage_PRE" target="classFrame">bool do_inner_iterations_stage_PRE( FE_TimeIterator const* t_it ) const</a></td></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#do_one_inner_iteration_PRE" target="classFrame">bool do_one_inner_iteration_PRE( FE_TimeIterator const* t_it ) const</a></td></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#inner_iterations_are_completed_PRE" target="classFrame">bool inner_iterations_are_completed_PRE( FE_TimeIterator const* t_it ) const</a></td></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#do_after_inner_iterations_stage_PRE" target="classFrame">bool do_after_inner_iterations_stage_PRE( FE_TimeIterator const* t_it ) const</a></td></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#do_after_time_adaptation_PRE" target="classFrame">bool do_after_time_adaptation_PRE( FE_TimeIterator const* t_it ) const</a></td></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#notify_inner_iterations_stage_failure_PRE" target="classFrame">bool notify_inner_iterations_stage_failure_PRE( void ) const</a></td></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#notify_inner_iterations_stage_failure_POST" target="classFrame">bool notify_inner_iterations_stage_failure_POST( void ) const</a></td></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#reset_after_inner_iterations_stage_failure_PRE" target="classFrame">bool reset_after_inner_iterations_stage_failure_PRE( void ) const</a></td></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#reset_after_inner_iterations_stage_failure_POST" target="classFrame">bool reset_after_inner_iterations_stage_failure_POST( void ) const</a></td></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#adapt_time_iterator_PRE" target="classFrame">bool adapt_time_iterator_PRE( FE_TimeIteratorAdapter const* t_adapter ) const</a></td></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#do_additional_savings_PRE" target="classFrame">bool do_additional_savings_PRE( FE_TimeIterator const* t_it, PDE_ResultSaver* rs ) const</a></td></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#save_other_than_time_and_fields_PRE" target="classFrame">bool save_other_than_time_and_fields_PRE( FE_TimeIterator const* t_it, PDE_ResultSaver* rs ) const</a></td></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#add_storable_objects_PRE" target="classFrame">bool add_storable_objects_PRE( PEL_ListIdentity* list ) const</a></td></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#create_replica_PRE" target="classFrame">bool create_replica_PRE( PEL_Object* a_owner, PDE_DomainAndFields const* dom, FE_SetOfParameters const* prms, PEL_ModuleExplorer const* exp ) const</a></td></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#create_replica_POST" target="classFrame">bool create_replica_POST( FE_OneStepIteration const* result, PEL_Object* a_owner, PDE_DomainAndFields const* dom, FE_SetOfParameters const* prms, PEL_ModuleExplorer const* exp ) const</a></td></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#create_replica_PRE_" target="classFrame">bool create_replica_PRE( PEL_Object* a_owner, PDE_SetOfDomains const* sdoms, FE_SetOfParameters const* prms, PEL_ModuleExplorer const* exp ) const</a></td></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#create_replica_POST_" target="classFrame">bool create_replica_POST( FE_OneStepIteration const* result, PEL_Object* a_owner, PDE_SetOfDomains const* sdoms, FE_SetOfParameters const* prms, PEL_ModuleExplorer const* exp ) const</a></td></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#QRprovider_for_material_derivative_POST" target="classFrame">bool QRprovider_for_material_derivative_POST( GE_QRprovider const* result ) const</a></td></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#transfer_calculation_requirements_for_material_derivative_PRE" target="classFrame">bool transfer_calculation_requirements_for_material_derivative_PRE( PDE_LocalFEcell const* fe ) const</a></td></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#reset_discrete_problem_PRE" target="classFrame">bool reset_discrete_problem_PRE( FE_TimeIterator const* t_it ) const</a></td></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#build_cell_contribution_to_material_derivative_PRE" target="classFrame">bool build_cell_contribution_to_material_derivative_PRE( FE_TimeIterator const* t_it, PDE_LocalFEcell* fe ) const</a></td></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#terminate_discrete_problem_PRE" target="classFrame">bool terminate_discrete_problem_PRE( FE_TimeIterator const* t_it ) const</a></td></tr>
+  <tr><td colspan="2"><a href="FE_Galerkin.html#invariant" target="classFrame">virtual bool invariant( void ) const</a></td></tr>
+</table>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="make"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>static <a href="FE_Galerkin.html#" target="classFrame">FE_Galerkin</a>* make(</code></td><td><code><a href="PEL_Object.html#PEL_Object" target="classFrame">PEL_Object*</a> <span class="uid1">a_owner</span>,</tr>
+  <tr><td /><td><code><a href="PDE_DomainAndFields.html#" target="classFrame">PDE_DomainAndFields</a> const* <span class="uid1">dom</span>,</tr>
+  <tr><td /><td><code><a href="FE_SetOfParameters.html#" target="classFrame">FE_SetOfParameters</a> const* <span class="uid1">prms</span>,</tr>
+  <tr><td /><td><code><a href="PEL_ModuleExplorer.html#" target="classFrame">PEL_ModuleExplorer</a>* <span class="uid1">exp</span> ) </code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">dom</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">exp</span></span> != 0</code></li>
+  </ul>
+<br />
+  <span class=postcondition>Postcondition</span>
+  <ul>
+    <li><code>result != 0</code></li>
+    <li><code>result-><a href="PEL_Object.html#owner" target="classFrame">owner</a>() == <span class="uid1"><span class="uid1">a_owner</span></span></code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="register_storable_objects"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>void register_storable_objects(</code></td><td><code><a href="PEL_ListIdentity.html#" target="classFrame">PEL_ListIdentity</a>* <span class="uid1">list</span> ) </code></td></tr>
+</table>
+<pre>Extend <span class="uid1">list</span> so that it contains all objects required by the
+storage and retrieval mechanisms concerning the <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a>
+base class subobject, then call <a href="FE_OneStepIteration.html#add_storable_objects" target="classFrame">add_storable_objects</a>.</pre>
+<br />
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="add_storable_objects"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual void add_storable_objects(</code></td><td><code><a href="PEL_ListIdentity.html#" target="classFrame">PEL_ListIdentity</a>* <span class="uid1">list</span> ) </code></td></tr>
+</table>
+<pre>Extend <span class="uid1">list</span> so that it contains all objects required by the
+storage and retrieval mechanisms that are not part of the
+<a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a> base class subobject.
+IMPLEMENTATION : do nothing, i.e. leave <span class="uid1">list</span> unchanged.</pre>
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">list</span></span> != 0</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="do_before_time_stepping"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual void do_before_time_stepping(</code></td><td><code><a href="FE_TimeIterator.html#" target="classFrame">FE_TimeIterator</a> const* <span class="uid1">t_it</span> ) </code></td></tr>
+</table>
+<pre>Before starting time marching in <a href="FE_StepByStepProgression.html#run" target="classFrame">FE_StepByStepProgression::run</a>,
+perform initial computations.
+IMPLEMENTATION : do nothing.</pre>
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">t_it</span></span> != 0</code></li>
+    <li><code>!<span class="uid1"><span class="uid1">t_it</span></span>->is_started()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="do_before_inner_iterations_stage"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual void do_before_inner_iterations_stage(</code></td><td><code><a href="FE_TimeIterator.html#" target="classFrame">FE_TimeIterator</a> const* <span class="uid1">t_it</span> ) </code></td></tr>
+</table>
+<pre>Within a step of the time marching procedure in
+<a href="FE_StepByStepProgression.html#run" target="classFrame">FE_StepByStepProgression::run</a>, perform an initial stage
+just before start of the inner iterations.
+IMPLEMENTATION : do nothing.</pre>
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">t_it</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">t_it</span></span>->is_started()</code></li>
+    <li><code>!<span class="uid1"><span class="uid1">t_it</span></span>->is_finished()</code></li>
+    <li><code>!<a href="FE_OneStepIteration.html#inner_iterations_stage_failed" target="classFrame">inner_iterations_stage_failed</a>()</code></li>
+  </ul>
+<br />
+  <span class=postcondition>Postcondition</span>
+  <ul>
+    <li><code>!<a href="FE_OneStepIteration.html#inner_iterations_stage_failed" target="classFrame">inner_iterations_stage_failed</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="do_inner_iterations_stage"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual void do_inner_iterations_stage(</code></td><td><code><a href="FE_TimeIterator.html#" target="classFrame">FE_TimeIterator</a> const* <span class="uid1">t_it</span> ) </code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">t_it</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">t_it</span></span>->is_started()</code></li>
+    <li><code>!<span class="uid1"><span class="uid1">t_it</span></span>->is_finished()</code></li>
+    <li><code>!<a href="FE_OneStepIteration.html#inner_iterations_stage_failed" target="classFrame">inner_iterations_stage_failed</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="inner_iterations_stage_failed"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>bool inner_iterations_stage_failed(</code></td><td><code>void ) const</code></td></tr>
+</table>
+<br />
+<br />
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="do_one_inner_iteration"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual void do_one_inner_iteration(</code></td><td><code><a href="FE_TimeIterator.html#" target="classFrame">FE_TimeIterator</a> const* <span class="uid1">t_it</span> )= 0</code></td></tr>
+</table>
+<pre>Within a step of the time marching procedure in
+<a href="FE_StepByStepProgression.html#run" target="classFrame">FE_StepByStepProgression::run</a>, perform an inner iteration stage.</pre>
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">t_it</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">t_it</span></span>->is_started()</code></li>
+    <li><code>!<span class="uid1"><span class="uid1">t_it</span></span>->is_finished()</code></li>
+    <li><code>!<a href="FE_OneStepIteration.html#inner_iterations_stage_failed" target="classFrame">inner_iterations_stage_failed</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="inner_iterations_are_completed"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual bool inner_iterations_are_completed(</code></td><td><code><a href="FE_TimeIterator.html#" target="classFrame">FE_TimeIterator</a> const* <span class="uid1">t_it</span> ) const</code></td></tr>
+</table>
+<pre>Are inner iterations performed in <a href="FE_OneStepIteration.html#do_one_inner_iteration" target="classFrame">do_one_inner_iteration</a>
+completed ?
+IMPLEMENTATION : true</pre>
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">t_it</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">t_it</span></span>->is_started()</code></li>
+    <li><code>!<span class="uid1"><span class="uid1">t_it</span></span>->is_finished()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="do_after_inner_iterations_stage"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual void do_after_inner_iterations_stage(</code></td><td><code><a href="FE_TimeIterator.html#" target="classFrame">FE_TimeIterator</a> const* <span class="uid1">t_it</span> ) </code></td></tr>
+</table>
+<pre>Within a step of the time marching procedure in
+<a href="FE_StepByStepProgression.html#run" target="classFrame">FE_StepByStepProgression::run</a>, perform a final stage just
+after completion of the inner iterations.
+IMPLEMENTATION : do nothing.</pre>
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">t_it</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">t_it</span></span>->is_started()</code></li>
+    <li><code>!<span class="uid1"><span class="uid1">t_it</span></span>->is_finished()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="do_after_time_adaptation"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual void do_after_time_adaptation(</code></td><td><code><a href="FE_TimeIterator.html#" target="classFrame">FE_TimeIterator</a> const* <span class="uid1">t_it</span> ) </code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">t_it</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">t_it</span></span>->is_started()</code></li>
+    <li><code>!<span class="uid1"><span class="uid1">t_it</span></span>->just_went_back()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="do_after_time_stepping"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual void do_after_time_stepping(</code></td><td><code>void ) </code></td></tr>
+</table>
+<pre>After completion of the time marching procedure in
+<a href="FE_StepByStepProgression.html#run" target="classFrame">FE_StepByStepProgression::run</a>, perform final computations.
+IMPLEMENTATION : do nothing.</pre>
+<br />
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="transfer_calculation_requirements_for_material_derivative"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual void transfer_calculation_requirements_for_material_derivative(</code></td><td><code><a href="PDE_LocalFEcell.html#" target="classFrame">PDE_LocalFEcell</a>* <span class="uid1">fe</span> )= 0</code></td></tr>
+</table>
+<pre>Notify to <span class="uid1">fe</span> of the calculation requirements that will be requested
+when calling <a href="FE_Galerkin.html#build_cell_contribution_to_material_derivative" target="classFrame">build_cell_contribution_to_material_derivative</a>.</pre>
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">fe</span></span> != 0</code></li>
+    <li><code>!<span class="uid1"><span class="uid1">fe</span></span>->is_valid()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="reset_discrete_problem"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual void reset_discrete_problem(</code></td><td><code><a href="FE_TimeIterator.html#" target="classFrame">FE_TimeIterator</a> const* <span class="uid1">t_it</span> )= 0</code></td></tr>
+</table>
+<pre>
+      Perform the first step of the inner iteration conceptually
+      decomposed as :
+         1. reset_discrete_problem( t_it )
+
+         2. for( fe->start() ; fe->is_valid() ; fe->go_next() )
+              build_cell_contribution_to_material_derivative( t_it, fe )
+
+         3. terminate_discrete_problem( t_it ).
+</pre>
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">t_it</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">t_it</span></span>->is_started()</code></li>
+    <li><code>!<span class="uid1"><span class="uid1">t_it</span></span>->is_finished()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="build_cell_contribution_to_material_derivative"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual void build_cell_contribution_to_material_derivative(</code></td><td><code><a href="FE_TimeIterator.html#" target="classFrame">FE_TimeIterator</a> const* <span class="uid1">t_it</span>,</tr>
+  <tr><td /><td><code> <a href="PDE_LocalFEcell.html#" target="classFrame">PDE_LocalFEcell</a>* <span class="uid1">fe</span> )= 0</code></td></tr>
+</table>
+<pre>Compute and assemble the contribution of the material derivatives
+terms that may involve values at integration points that where
+previouly masked, as defined by <a href="PDE_LocalFE.html#mask_value_at_IP" target="classFrame">PDE_LocalFE::mask_value_at_IP</a>
+(this function must be called on behalf of <span class="uid1">fe</span>
+prior to <a href="FE_Galerkin.html#build_cell_contribution_to_material_derivative" target="classFrame">build_cell_contribution_to_material_derivative</a>).</pre>
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">t_it</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">t_it</span></span>->is_started()</code></li>
+    <li><code>!<span class="uid1"><span class="uid1">t_it</span></span>->is_finished()</code></li>
+    <li><code><span class="uid1"><span class="uid1">fe</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">fe</span></span>->is_valid()</code></li>
+    <li><code>!<span class="uid1"><span class="uid1">fe</span></span>->valid_IP()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="terminate_discrete_problem"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual void terminate_discrete_problem(</code></td><td><code><a href="FE_TimeIterator.html#" target="classFrame">FE_TimeIterator</a> const* <span class="uid1">t_it</span> )= 0</code></td></tr>
+</table>
+<pre>
+      Perform the first step of the inner iteration conceptually
+      decomposed as :
+         1. reset_discrete_problem( t_it )
+
+         2. for( fe->start() ; fe->is_valid() ; fe->go_next() )
+              build_cell_contribution_to_material_derivative( t_it, fe )
+
+         3. terminate_discrete_problem( t_it ).
+</pre>
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">t_it</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">t_it</span></span>->is_started()</code></li>
+    <li><code>!<span class="uid1"><span class="uid1">t_it</span></span>->is_finished()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="print_additional_times"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual void print_additional_times(</code></td><td><code>std::ostream& <span class="uid1">os</span>,</tr>
+  <tr><td /><td><code> size_t <span class="uid1">indent_width</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="adapt_time_iterator"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual void adapt_time_iterator(</code></td><td><code><a href="FE_TimeIteratorAdapter.html#" target="classFrame">FE_TimeIteratorAdapter</a>* <span class="uid1">t_adapter</span> ) </code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">t_adapter</span></span> != 0</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="notify_inner_iterations_stage_failure"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual void notify_inner_iterations_stage_failure(</code></td><td><code>void ) </code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code>!<a href="FE_OneStepIteration.html#inner_iterations_stage_failed" target="classFrame">inner_iterations_stage_failed</a>()</code></li>
+  </ul>
+<br />
+  <span class=postcondition>Postcondition</span>
+  <ul>
+    <li><code><a href="FE_OneStepIteration.html#inner_iterations_stage_failed" target="classFrame">inner_iterations_stage_failed</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="reset_after_inner_iterations_stage_failure"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual void reset_after_inner_iterations_stage_failure(</code></td><td><code>void ) </code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><a href="FE_OneStepIteration.html#inner_iterations_stage_failed" target="classFrame">inner_iterations_stage_failed</a>()</code></li>
+  </ul>
+<br />
+  <span class=postcondition>Postcondition</span>
+  <ul>
+    <li><code>!<a href="FE_OneStepIteration.html#inner_iterations_stage_failed" target="classFrame">inner_iterations_stage_failed</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="do_additional_savings"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual void do_additional_savings(</code></td><td><code><a href="FE_TimeIterator.html#" target="classFrame">FE_TimeIterator</a> const* <span class="uid1">t_it</span>,</tr>
+  <tr><td /><td><code><a href="PDE_ResultSaver.html#" target="classFrame">PDE_ResultSaver</a>* <span class="uid1">rs</span> ) </code></td></tr>
+</table>
+<pre>Use <span class="uid1">rs</span> to save data other than time and fields at the current time
+step (attainable through <span class="uid1">t_it</span>) in the time marching procedure
+of <a href="FE_StepByStepProgression.html#run" target="classFrame">FE_StepByStepProgression::run</a>.
+IMPLEMENTATION : do nothing.</pre>
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">t_it</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">rs</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">rs</span></span>->has_an_opened_cycle()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="convected_fields"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code><a href="PEL_Sequence.html#" target="classFrame">PEL_Sequence</a> const* convected_fields(</code></td><td><code>void ) const</code></td></tr>
+</table>
+<pre>sequence of fields for which the material derivative discretization
+is performed with a Galerkin Characteristic method</pre>
+<br />
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="masked_level"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>size_t masked_level(</code></td><td><code>void ) const</code></td></tr>
+</table>
+<pre>1. storage level for which the values at IPs of the items of
+<a href="FE_Galerkin.html#convected_fields" target="classFrame">convected_fields</a> are masked with the value at the
+corresponding characteristic foot (computed with the same
+storage level)
+2. storage level of the advection field used by
+<a href="FE_GalerkinCharacteristic.html#" target="classFrame">FE_GalerkinCharacteristic</a> to locate the characteristic foot</pre>
+<br />
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="QRprovider_for_material_derivative"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual <a href="GE_QRprovider.html#" target="classFrame">GE_QRprovider</a> const* QRprovider_for_material_derivative(</code></td><td><code>void ) const = 0</code></td></tr>
+</table>
+<pre>provider of quadrature rules used to perform the numerical
+integration associated to material derivative terms</pre>
+<br />
+<div class=conditions>
+  <span class=postcondition>Postcondition</span>
+  <ul>
+    <li><code>result != 0</code></li>
+    <li><code>result-><a href="PEL_Object.html#is_under_ownership_of" target="classFrame">is_under_ownership_of</a>( <a href="PEL_Root.html#object" target="classFrame">PEL_Root::object</a>() )</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="print"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual void print(</code></td><td><code>std::ostream& <span class="uid1">os</span>,</tr>
+  <tr><td /><td><code>size_t <span class="uid1">indent_width</span> ) const</code></td></tr>
+</table>
+<pre>Write text to <span class="uid1">os</span> with <span class="uid1">indent_width</span> indentation.
+
+</pre>
+<br />
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="~FE_Galerkin"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual~FE_Galerkin(</code></td><td><code>void ) </code></td></tr>
+</table>
+<br />
+<br />
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="FE_Galerkin"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code> FE_Galerkin(</code></td><td><code><a href="PEL_Object.html#PEL_Object" target="classFrame">PEL_Object*</a> <span class="uid1">a_owner</span>,</tr>
+  <tr><td /><td><code><a href="PDE_DomainAndFields.html#" target="classFrame">PDE_DomainAndFields</a> const* <span class="uid1">dom</span>,</tr>
+  <tr><td /><td><code><a href="PEL_ModuleExplorer.html#" target="classFrame">PEL_ModuleExplorer</a> const* <span class="uid1">exp</span> ) </code></td></tr>
+</table>
+<br />
+<br />
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="add_one_convected_field"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>void add_one_convected_field(</code></td><td><code><a href="PDE_DiscreteField.html#" target="classFrame">PDE_DiscreteField</a>* <span class="uid1">ff</span>,</tr>
+  <tr><td /><td><code>size_t <span class="uid1">a_masked_level</span> ) </code></td></tr>
+</table>
+<pre>Notify that the material derivative involving <span class="uid1">ff</span> might be
+discretized with a Characteristic Galerkin method. Successive calls
+should always be done with the same <span class="uid1">a_masked_level</span>.</pre>
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code>!<a href="FE_Galerkin.html#is_a_prototype" target="classFrame">is_a_prototype</a>()</code></li>
+    <li><code><span class="uid1"><span class="uid1">ff</span></span> != 0</code></li>
+    <li><code><a href="FE_Galerkin.html#masked_level" target="classFrame">masked_level</a>() == <a href="PEL.html#bad_index" target="classFrame">PEL::bad_index</a>() || <a href="FE_Galerkin.html#masked_level" target="classFrame">masked_level</a>() == <span class="uid1"><span class="uid1">a_masked_level</span></span></code></li>
+  </ul>
+<br />
+  <span class=postcondition>Postcondition</span>
+  <ul>
+    <li><code><a href="FE_Galerkin.html#masked_level" target="classFrame">masked_level</a>() == <span class="uid1"><span class="uid1">a_masked_level</span></span></code></li>
+    <li><code><a href="FE_Galerkin.html#convected_fields" target="classFrame">convected_fields</a>()->has( <span class="uid1"><span class="uid1">ff</span></span> )</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="check_field_storage_depth"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>void check_field_storage_depth(</code></td><td><code><a href="PDE_DiscreteField.html#" target="classFrame">PDE_DiscreteField</a> const* <span class="uid1">ff</span>,</tr>
+  <tr><td /><td><code>size_t <span class="uid1">requested_max_level</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">ff</span></span> != 0</code></li>
+  </ul>
+<br />
+  <span class=postcondition>Postcondition</span>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">ff</span></span>->storage_depth() > <span class="uid1"><span class="uid1">requested_max_level</span></span></code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="check_nb_local_nodes"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>void check_nb_local_nodes(</code></td><td><code><a href="PDE_DiscreteField.html#" target="classFrame">PDE_DiscreteField</a> const* <span class="uid1">ff</span>,</tr>
+  <tr><td /><td><code> <a href="PDE_LocalFE.html#" target="classFrame">PDE_LocalFE</a> const* <span class="uid1">fe</span>,</tr>
+  <tr><td /><td><code> size_t <span class="uid1">required_nb_nodes</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">ff</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">fe</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">fe</span></span>->is_valid()</code></li>
+    <li><code><span class="uid1"><span class="uid1">fe</span></span>->field_is_handled( <span class="uid1"><span class="uid1">ff</span></span> )</code></li>
+  </ul>
+<br />
+  <span class=postcondition>Postcondition</span>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">fe</span></span>->nb_local_nodes( <span class="uid1"><span class="uid1">ff</span></span> ) == <span class="uid1"><span class="uid1">required_nb_nodes</span></span></code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="check_boundary_condition"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>void check_boundary_condition(</code></td><td><code><a href="PDE_SetOfBCs.html#" target="classFrame">PDE_SetOfBCs</a> const* <span class="uid1">bcs</span>,</tr>
+  <tr><td /><td><code> <a href="GE_Color.html#" target="classFrame">GE_Color</a> const* <span class="uid1">color</span>,</tr>
+  <tr><td /><td><code> <a href="PDE_DiscreteField.html#" target="classFrame">PDE_DiscreteField</a> const* <span class="uid1">field</span>,</tr>
+  <tr><td /><td><code> size_t <span class="uid1">ic = PDE_SetOfBCs::all_components</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">bcs</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">color</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">field</span></span> != 0</code></li>
+  </ul>
+<br />
+  <span class=postcondition>Postcondition</span>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">bcs</span></span>->has_BC( <span class="uid1"><span class="uid1">color</span></span>, <span class="uid1"><span class="uid1">field</span></span>, <span class="uid1"><span class="uid1">ic</span></span> )</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="raise_bad_BC_type"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>void raise_bad_BC_type(</code></td><td><code>std::string const& <span class="uid1">type</span>,</tr>
+  <tr><td /><td><code>std::string const& <span class="uid1">allowed_types</span>,</tr>
+  <tr><td /><td><code><a href="PDE_DiscreteField.html#" target="classFrame">PDE_DiscreteField</a> const* <span class="uid1">field</span>,</tr>
+  <tr><td /><td><code>size_t <span class="uid1">ic = PDE_SetOfBCs::all_components</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="save_other_than_time_and_fields"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual void save_other_than_time_and_fields(</code></td><td><code><a href="FE_TimeIterator.html#" target="classFrame">FE_TimeIterator</a> const* <span class="uid1">t_it</span>,</tr>
+  <tr><td /><td><code><a href="PDE_ResultSaver.html#" target="classFrame">PDE_ResultSaver</a>* <span class="uid1">rs</span> ) </code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">t_it</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">rs</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">rs</span></span>->has_an_opened_cycle()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="verbose_level"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>size_t verbose_level(</code></td><td><code>void ) const</code></td></tr>
+</table>
+<br />
+<br />
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="start_assembling_timer"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>void start_assembling_timer(</code></td><td><code>bool <span class="uid1">silent = false</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="stop_assembling_timer"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>void stop_assembling_timer(</code></td><td><code>bool <span class="uid1">silent = false</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="start_solving_timer"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>void start_solving_timer(</code></td><td><code>bool <span class="uid1">silent = false</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="stop_solving_timer"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>void stop_solving_timer(</code></td><td><code>bool <span class="uid1">silent = false</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="start_total_timer"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>void start_total_timer(</code></td><td><code>std::string const& <span class="uid1">mesg</span>,</tr>
+  <tr><td /><td><code>bool <span class="uid1">silent = false</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="stop_total_timer"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>void stop_total_timer(</code></td><td><code>bool <span class="uid1">silent = false</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="create_replica"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a>* create_replica(</code></td><td><code><a href="PEL_Object.html#PEL_Object" target="classFrame">PEL_Object*</a> <span class="uid1">a_owner</span>,</tr>
+  <tr><td /><td><code> <a href="PDE_SetOfDomains.html#" target="classFrame">PDE_SetOfDomains</a> const* <span class="uid1">sdoms</span>,</tr>
+  <tr><td /><td><code> <a href="FE_SetOfParameters.html#" target="classFrame">FE_SetOfParameters</a> const* <span class="uid1">prms</span>,</tr>
+  <tr><td /><td><code> <a href="PEL_ModuleExplorer.html#" target="classFrame">PEL_ModuleExplorer</a>* <span class="uid1">exp</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><a href="FE_OneStepIteration.html#is_a_prototype" target="classFrame">is_a_prototype</a>()</code></li>
+    <li><code><span class="uid1"><span class="uid1">exp</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">sdoms</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">prms</span></span> != 0</code></li>
+  </ul>
+<br />
+  <span class=postcondition>Postcondition</span>
+  <ul>
+    <li><code>result != 0</code></li>
+    <li><code>result-><a href="PEL_Object.html#owner" target="classFrame">owner</a>() == <span class="uid1"><span class="uid1">a_owner</span></span></code></li>
+    <li><code>!result-><a href="FE_OneStepIteration.html#is_a_prototype" target="classFrame">is_a_prototype</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="is_a_prototype"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>bool is_a_prototype(</code></td><td><code>void ) const</code></td></tr>
+</table>
+<br />
+<br />
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="configure_multilevel_preconditioner"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>void configure_multilevel_preconditioner(</code></td><td><code><a href="PEL_ModuleExplorer.html#" target="classFrame">PEL_ModuleExplorer</a> const* <span class="uid1">exp</span>,</tr>
+  <tr><td /><td><code>std::string const& <span class="uid1">keyword</span>,</tr>
+  <tr><td /><td><code><a href="PDE_DomainAndFields.html#" target="classFrame">PDE_DomainAndFields</a> const* <span class="uid1">dom</span>,</tr>
+  <tr><td /><td><code><a href="PDE_SystemNumbering.html#" target="classFrame">PDE_SystemNumbering</a> const* <span class="uid1">nmb</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">exp</span></span> != 0</code></li>
+    <li><code>!keyword.empty()</code></li>
+    <li><code><span class="uid1"><span class="uid1">dom</span></span> != 0</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="FE_Galerkin_"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code> FE_Galerkin(</code></td><td><code>std::string const& <span class="uid1">name</span> ) </code></td></tr>
+</table>
+<pre>for prototype registration only</pre>
+<br />
+<div class=conditions>
+  <span class=postcondition>Postcondition</span>
+  <ul>
+    <li><code><a href="FE_Galerkin.html#is_a_prototype" target="classFrame">is_a_prototype</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="create_replica"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual <a href="FE_Galerkin.html#" target="classFrame">FE_Galerkin</a>* create_replica(</code></td><td><code><a href="PEL_Object.html#PEL_Object" target="classFrame">PEL_Object*</a> <span class="uid1">a_owner</span>,</tr>
+  <tr><td /><td><code> <a href="PDE_DomainAndFields.html#" target="classFrame">PDE_DomainAndFields</a> const* <span class="uid1">dom</span>,</tr>
+  <tr><td /><td><code> <a href="FE_SetOfParameters.html#" target="classFrame">FE_SetOfParameters</a> const* <span class="uid1">prms</span>,</tr>
+  <tr><td /><td><code> <a href="PEL_ModuleExplorer.html#" target="classFrame">PEL_ModuleExplorer</a>* <span class="uid1">exp</span> ) const = 0</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><a href="FE_Galerkin.html#is_a_prototype" target="classFrame">is_a_prototype</a>()</code></li>
+    <li><code><span class="uid1"><span class="uid1">exp</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">dom</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">prms</span></span> != 0</code></li>
+  </ul>
+<br />
+  <span class=postcondition>Postcondition</span>
+  <ul>
+    <li><code>result != 0</code></li>
+    <li><code>result-><a href="PEL_Object.html#owner" target="classFrame">owner</a>() == <span class="uid1"><span class="uid1">a_owner</span></span></code></li>
+    <li><code>!result-><a href="FE_Galerkin.html#is_a_prototype" target="classFrame">is_a_prototype</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=overrides> Overridden from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="do_before_time_stepping_PRE"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>bool do_before_time_stepping_PRE(</code></td><td><code><a href="FE_TimeIterator.html#" target="classFrame">FE_TimeIterator</a> const* <span class="uid1">t_it</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the precondition of method <a href="FE_OneStepIteration.html#do_before_time_stepping" target="classFrame">do_before_time_stepping</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">t_it</span></span> != 0</code></li>
+    <li><code>!<span class="uid1"><span class="uid1">t_it</span></span>->is_started()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="do_before_inner_iterations_stage_PRE"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>bool do_before_inner_iterations_stage_PRE(</code></td><td><code><a href="FE_TimeIterator.html#" target="classFrame">FE_TimeIterator</a> const* <span class="uid1">t_it</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the precondition of method <a href="FE_OneStepIteration.html#do_before_inner_iterations_stage" target="classFrame">do_before_inner_iterations_stage</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">t_it</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">t_it</span></span>->is_started()</code></li>
+    <li><code>!<span class="uid1"><span class="uid1">t_it</span></span>->is_finished()</code></li>
+    <li><code>!<a href="FE_OneStepIteration.html#inner_iterations_stage_failed" target="classFrame">inner_iterations_stage_failed</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="do_before_inner_iterations_stage_POST"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>bool do_before_inner_iterations_stage_POST(</code></td><td><code><a href="FE_TimeIterator.html#" target="classFrame">FE_TimeIterator</a> const* <span class="uid1">t_it</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the postcondition of method <a href="FE_OneStepIteration.html#do_before_inner_iterations_stage" target="classFrame">do_before_inner_iterations_stage</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code>!<a href="FE_OneStepIteration.html#inner_iterations_stage_failed" target="classFrame">inner_iterations_stage_failed</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="do_inner_iterations_stage_PRE"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>bool do_inner_iterations_stage_PRE(</code></td><td><code><a href="FE_TimeIterator.html#" target="classFrame">FE_TimeIterator</a> const* <span class="uid1">t_it</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the precondition of method <a href="FE_OneStepIteration.html#do_inner_iterations_stage" target="classFrame">do_inner_iterations_stage</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">t_it</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">t_it</span></span>->is_started()</code></li>
+    <li><code>!<span class="uid1"><span class="uid1">t_it</span></span>->is_finished()</code></li>
+    <li><code>!<a href="FE_OneStepIteration.html#inner_iterations_stage_failed" target="classFrame">inner_iterations_stage_failed</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="do_one_inner_iteration_PRE"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>bool do_one_inner_iteration_PRE(</code></td><td><code><a href="FE_TimeIterator.html#" target="classFrame">FE_TimeIterator</a> const* <span class="uid1">t_it</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the precondition of method <a href="FE_OneStepIteration.html#do_one_inner_iteration" target="classFrame">do_one_inner_iteration</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">t_it</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">t_it</span></span>->is_started()</code></li>
+    <li><code>!<span class="uid1"><span class="uid1">t_it</span></span>->is_finished()</code></li>
+    <li><code>!<a href="FE_OneStepIteration.html#inner_iterations_stage_failed" target="classFrame">inner_iterations_stage_failed</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="inner_iterations_are_completed_PRE"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>bool inner_iterations_are_completed_PRE(</code></td><td><code><a href="FE_TimeIterator.html#" target="classFrame">FE_TimeIterator</a> const* <span class="uid1">t_it</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the precondition of method <a href="FE_OneStepIteration.html#inner_iterations_are_completed" target="classFrame">inner_iterations_are_completed</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">t_it</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">t_it</span></span>->is_started()</code></li>
+    <li><code>!<span class="uid1"><span class="uid1">t_it</span></span>->is_finished()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="do_after_inner_iterations_stage_PRE"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>bool do_after_inner_iterations_stage_PRE(</code></td><td><code><a href="FE_TimeIterator.html#" target="classFrame">FE_TimeIterator</a> const* <span class="uid1">t_it</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the precondition of method <a href="FE_OneStepIteration.html#do_after_inner_iterations_stage" target="classFrame">do_after_inner_iterations_stage</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">t_it</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">t_it</span></span>->is_started()</code></li>
+    <li><code>!<span class="uid1"><span class="uid1">t_it</span></span>->is_finished()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="do_after_time_adaptation_PRE"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>bool do_after_time_adaptation_PRE(</code></td><td><code><a href="FE_TimeIterator.html#" target="classFrame">FE_TimeIterator</a> const* <span class="uid1">t_it</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the precondition of method <a href="FE_OneStepIteration.html#do_after_time_adaptation" target="classFrame">do_after_time_adaptation</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">t_it</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">t_it</span></span>->is_started()</code></li>
+    <li><code>!<span class="uid1"><span class="uid1">t_it</span></span>->just_went_back()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="notify_inner_iterations_stage_failure_PRE"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>bool notify_inner_iterations_stage_failure_PRE(</code></td><td><code>void ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the precondition of method <a href="FE_OneStepIteration.html#notify_inner_iterations_stage_failure" target="classFrame">notify_inner_iterations_stage_failure</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code>!<a href="FE_OneStepIteration.html#inner_iterations_stage_failed" target="classFrame">inner_iterations_stage_failed</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="notify_inner_iterations_stage_failure_POST"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>bool notify_inner_iterations_stage_failure_POST(</code></td><td><code>void ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the postcondition of method <a href="FE_OneStepIteration.html#notify_inner_iterations_stage_failure" target="classFrame">notify_inner_iterations_stage_failure</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code><a href="FE_OneStepIteration.html#inner_iterations_stage_failed" target="classFrame">inner_iterations_stage_failed</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="reset_after_inner_iterations_stage_failure_PRE"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>bool reset_after_inner_iterations_stage_failure_PRE(</code></td><td><code>void ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the precondition of method <a href="FE_OneStepIteration.html#reset_after_inner_iterations_stage_failure" target="classFrame">reset_after_inner_iterations_stage_failure</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code><a href="FE_OneStepIteration.html#inner_iterations_stage_failed" target="classFrame">inner_iterations_stage_failed</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="reset_after_inner_iterations_stage_failure_POST"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>bool reset_after_inner_iterations_stage_failure_POST(</code></td><td><code>void ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the postcondition of method <a href="FE_OneStepIteration.html#reset_after_inner_iterations_stage_failure" target="classFrame">reset_after_inner_iterations_stage_failure</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code>!<a href="FE_OneStepIteration.html#inner_iterations_stage_failed" target="classFrame">inner_iterations_stage_failed</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="adapt_time_iterator_PRE"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>bool adapt_time_iterator_PRE(</code></td><td><code><a href="FE_TimeIteratorAdapter.html#" target="classFrame">FE_TimeIteratorAdapter</a> const* <span class="uid1">t_adapter</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the precondition of method <a href="FE_OneStepIteration.html#adapt_time_iterator" target="classFrame">adapt_time_iterator</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">t_adapter</span></span> != 0</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="do_additional_savings_PRE"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>bool do_additional_savings_PRE(</code></td><td><code><a href="FE_TimeIterator.html#" target="classFrame">FE_TimeIterator</a> const* <span class="uid1">t_it</span>,</tr>
+  <tr><td /><td><code><a href="PDE_ResultSaver.html#" target="classFrame">PDE_ResultSaver</a>* <span class="uid1">rs</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the precondition of method <a href="FE_OneStepIteration.html#do_additional_savings" target="classFrame">do_additional_savings</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">t_it</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">rs</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">rs</span></span>->has_an_opened_cycle()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="save_other_than_time_and_fields_PRE"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>bool save_other_than_time_and_fields_PRE(</code></td><td><code><a href="FE_TimeIterator.html#" target="classFrame">FE_TimeIterator</a> const* <span class="uid1">t_it</span>,</tr>
+  <tr><td /><td><code><a href="PDE_ResultSaver.html#" target="classFrame">PDE_ResultSaver</a>* <span class="uid1">rs</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the precondition of method <a href="FE_OneStepIteration.html#save_other_than_time_and_fields" target="classFrame">save_other_than_time_and_fields</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">t_it</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">rs</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">rs</span></span>->has_an_opened_cycle()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="add_storable_objects_PRE"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>bool add_storable_objects_PRE(</code></td><td><code><a href="PEL_ListIdentity.html#" target="classFrame">PEL_ListIdentity</a>* <span class="uid1">list</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the precondition of method <a href="FE_OneStepIteration.html#add_storable_objects" target="classFrame">add_storable_objects</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">list</span></span> != 0</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="create_replica_PRE"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>bool create_replica_PRE(</code></td><td><code><a href="PEL_Object.html#PEL_Object" target="classFrame">PEL_Object*</a> <span class="uid1">a_owner</span>,</tr>
+  <tr><td /><td><code> <a href="PDE_DomainAndFields.html#" target="classFrame">PDE_DomainAndFields</a> const* <span class="uid1">dom</span>,</tr>
+  <tr><td /><td><code> <a href="FE_SetOfParameters.html#" target="classFrame">FE_SetOfParameters</a> const* <span class="uid1">prms</span>,</tr>
+  <tr><td /><td><code> <a href="PEL_ModuleExplorer.html#" target="classFrame">PEL_ModuleExplorer</a> const* <span class="uid1">exp</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><a href="FE_OneStepIteration.html#is_a_prototype" target="classFrame">is_a_prototype</a>()</code></li>
+    <li><code><span class="uid1"><span class="uid1">exp</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">dom</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">prms</span></span> != 0</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="create_replica_POST"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>bool create_replica_POST(</code></td><td><code><a href="FE_OneStepIteration.html#FE_OneStepIteration" target="classFrame">FE_OneStepIteration const*</a> <span class="uid1">result</span>,</tr>
+  <tr><td /><td><code><a href="PEL_Object.html#PEL_Object" target="classFrame">PEL_Object*</a> <span class="uid1">a_owner</span>,</tr>
+  <tr><td /><td><code><a href="PDE_DomainAndFields.html#" target="classFrame">PDE_DomainAndFields</a> const* <span class="uid1">dom</span>,</tr>
+  <tr><td /><td><code><a href="FE_SetOfParameters.html#" target="classFrame">FE_SetOfParameters</a> const* <span class="uid1">prms</span>,</tr>
+  <tr><td /><td><code><a href="PEL_ModuleExplorer.html#" target="classFrame">PEL_ModuleExplorer</a> const* <span class="uid1">exp</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+  <span class=postcondition>Postcondition</span>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">result</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">result</span></span>-><a href="PEL_Object.html#owner" target="classFrame">owner</a>() == <span class="uid1"><span class="uid1">a_owner</span></span></code></li>
+    <li><code>!<span class="uid1"><span class="uid1">result</span></span>-><a href="FE_OneStepIteration.html#is_a_prototype" target="classFrame">is_a_prototype</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="create_replica_PRE_"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>bool create_replica_PRE(</code></td><td><code><a href="PEL_Object.html#PEL_Object" target="classFrame">PEL_Object*</a> <span class="uid1">a_owner</span>,</tr>
+  <tr><td /><td><code> <a href="PDE_SetOfDomains.html#" target="classFrame">PDE_SetOfDomains</a> const* <span class="uid1">sdoms</span>,</tr>
+  <tr><td /><td><code> <a href="FE_SetOfParameters.html#" target="classFrame">FE_SetOfParameters</a> const* <span class="uid1">prms</span>,</tr>
+  <tr><td /><td><code> <a href="PEL_ModuleExplorer.html#" target="classFrame">PEL_ModuleExplorer</a> const* <span class="uid1">exp</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the precondition of method <a href="FE_OneStepIteration.html#create_replica" target="classFrame">create_replica</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code><a href="FE_OneStepIteration.html#is_a_prototype" target="classFrame">is_a_prototype</a>()</code></li>
+    <li><code><span class="uid1"><span class="uid1">exp</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">sdoms</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">prms</span></span> != 0</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="create_replica_POST_"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>bool create_replica_POST(</code></td><td><code><a href="FE_OneStepIteration.html#FE_OneStepIteration" target="classFrame">FE_OneStepIteration const*</a> <span class="uid1">result</span>,</tr>
+  <tr><td /><td><code><a href="PEL_Object.html#PEL_Object" target="classFrame">PEL_Object*</a> <span class="uid1">a_owner</span>,</tr>
+  <tr><td /><td><code><a href="PDE_SetOfDomains.html#" target="classFrame">PDE_SetOfDomains</a> const* <span class="uid1">sdoms</span>,</tr>
+  <tr><td /><td><code><a href="FE_SetOfParameters.html#" target="classFrame">FE_SetOfParameters</a> const* <span class="uid1">prms</span>,</tr>
+  <tr><td /><td><code><a href="PEL_ModuleExplorer.html#" target="classFrame">PEL_ModuleExplorer</a> const* <span class="uid1">exp</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the postcondition of method <a href="FE_OneStepIteration.html#create_replica" target="classFrame">create_replica</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">result</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">result</span></span>-><a href="PEL_Object.html#owner" target="classFrame">owner</a>() == <span class="uid1"><span class="uid1">a_owner</span></span></code></li>
+    <li><code>!<span class="uid1"><span class="uid1">result</span></span>-><a href="FE_OneStepIteration.html#is_a_prototype" target="classFrame">is_a_prototype</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="FE_OneStepIteration.html#" target="classFrame">FE_OneStepIteration</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="QRprovider_for_material_derivative_POST"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>bool QRprovider_for_material_derivative_POST(</code></td><td><code><a href="GE_QRprovider.html#" target="classFrame">GE_QRprovider</a> const* <span class="uid1">result</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the postcondition of method <a href="FE_Galerkin.html#QRprovider_for_material_derivative" target="classFrame">QRprovider_for_material_derivative</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">result</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">result</span></span>-><a href="PEL_Object.html#is_under_ownership_of" target="classFrame">is_under_ownership_of</a>( <a href="PEL_Root.html#object" target="classFrame">PEL_Root::object</a>() )</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="transfer_calculation_requirements_for_material_derivative_PRE"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>bool transfer_calculation_requirements_for_material_derivative_PRE(</code></td><td><code><a href="PDE_LocalFEcell.html#" target="classFrame">PDE_LocalFEcell</a> const* <span class="uid1">fe</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the precondition of method <a href="FE_Galerkin.html#transfer_calculation_requirements_for_material_derivative" target="classFrame">transfer_calculation_requirements_for_material_derivative</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">fe</span></span> != 0</code></li>
+    <li><code>!<span class="uid1"><span class="uid1">fe</span></span>->is_valid()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="reset_discrete_problem_PRE"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>bool reset_discrete_problem_PRE(</code></td><td><code><a href="FE_TimeIterator.html#" target="classFrame">FE_TimeIterator</a> const* <span class="uid1">t_it</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the precondition of method <a href="FE_Galerkin.html#reset_discrete_problem" target="classFrame">reset_discrete_problem</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">t_it</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">t_it</span></span>->is_started()</code></li>
+    <li><code>!<span class="uid1"><span class="uid1">t_it</span></span>->is_finished()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="build_cell_contribution_to_material_derivative_PRE"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>bool build_cell_contribution_to_material_derivative_PRE(</code></td><td><code><a href="FE_TimeIterator.html#" target="classFrame">FE_TimeIterator</a> const* <span class="uid1">t_it</span>,</tr>
+  <tr><td /><td><code> <a href="PDE_LocalFEcell.html#" target="classFrame">PDE_LocalFEcell</a>* <span class="uid1">fe</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the precondition of method <a href="FE_Galerkin.html#build_cell_contribution_to_material_derivative" target="classFrame">build_cell_contribution_to_material_derivative</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">t_it</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">t_it</span></span>->is_started()</code></li>
+    <li><code>!<span class="uid1"><span class="uid1">t_it</span></span>->is_finished()</code></li>
+    <li><code><span class="uid1"><span class="uid1">fe</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">fe</span></span>->is_valid()</code></li>
+    <li><code>!<span class="uid1"><span class="uid1">fe</span></span>->valid_IP()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="terminate_discrete_problem_PRE"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>bool terminate_discrete_problem_PRE(</code></td><td><code><a href="FE_TimeIterator.html#" target="classFrame">FE_TimeIterator</a> const* <span class="uid1">t_it</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the precondition of method <a href="FE_Galerkin.html#terminate_discrete_problem" target="classFrame">terminate_discrete_problem</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">t_it</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">t_it</span></span>->is_started()</code></li>
+    <li><code>!<span class="uid1"><span class="uid1">t_it</span></span>->is_finished()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="invariant"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual bool invariant(</code></td><td><code>void ) const</code></td></tr>
+</table>
+<br />
+<br />
+<table class=footer>
+<tr>
+  <td class=overrides> Overridden from <a href="PEL_Object.html#" target="classFrame">PEL_Object</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+</body>
+</html>

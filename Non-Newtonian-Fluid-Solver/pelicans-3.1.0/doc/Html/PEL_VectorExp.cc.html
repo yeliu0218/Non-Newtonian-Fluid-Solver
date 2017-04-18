@@ -1,0 +1,1157 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>PEL_VectorExp.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="PEL_VectorExp.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="PELpack-tree.html"><span>Tree</span></a>
+    <a href="PEL_VectorExp.html"><span>Class</span></a>
+    <a href="PEL_VectorExp.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="PELpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_VectorExp</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_assertions</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Bool</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ContextPair</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ContextSimple</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Double</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Int</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Iterator</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_List</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Sequence</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_String</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Variable</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;iostream&gt;
+
+</font><font class="kw3">PEL_VectorExp</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">PEL_VectorExp</font><font class="text">::PROTOTYPE_NVECTOR = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_VectorExp</font><font class="text">(
+                                      </font><font class="kw3">PEL_VectorExp</font><font class="text">::nvector, </font><font class="string">&quot;nvector&quot;</font><font class="text">) ;
+
+</font><font class="kw3">PEL_VectorExp</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">PEL_VectorExp</font><font class="text">::PROTOTYPE_CONDITIONAL_VECTOR = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_VectorExp</font><font class="text">(
+                         </font><font class="kw3">PEL_VectorExp</font><font class="text">::cond_vect, </font><font class="string">&quot;conditional_vector&quot;</font><font class="text">) ;
+</font><font class="kw3">PEL_VectorExp</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">PEL_VectorExp</font><font class="text">::PROTOTYPE_VECTOR = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_VectorExp</font><font class="text">(
+                                          </font><font class="kw3">PEL_VectorExp</font><font class="text">::vect, </font><font class="string">&quot;vector&quot;</font><font class="text">) ;
+</font><font class="kw3">PEL_VectorExp</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">PEL_VectorExp</font><font class="text">::PROTOTYPE_SIZE = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_VectorExp</font><font class="text">(
+                                            </font><font class="kw3">PEL_VectorExp</font><font class="text">::size, </font><font class="string">&quot;size&quot;</font><font class="text">) ;
+</font><font class="kw3">PEL_VectorExp</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">PEL_VectorExp</font><font class="text">::PROTOTYPE_COMPO = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_VectorExp</font><font class="text">(
+                                  </font><font class="kw3">PEL_VectorExp</font><font class="text">::component, </font><font class="string">&quot;component&quot;</font><font class="text">) ;
+
+</font><font class="kw3">PEL_VectorExp</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">PEL_VectorExp</font><font class="text">::PROTOTYPE_INCREASING = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_VectorExp</font><font class="text">(
+                                </font><font class="kw3">PEL_VectorExp</font><font class="text">::increasing, </font><font class="string">&quot;increasing&quot;</font><font class="text">) ;
+
+</font><font class="kw3">PEL_VectorExp</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">PEL_VectorExp</font><font class="text">::PROTOTYPE_GREATER = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_VectorExp</font><font class="text">(
+                                      </font><font class="kw3">PEL_VectorExp</font><font class="text">::greater, </font><font class="string">&quot;greater&quot;</font><font class="text">) ;
+
+</font><font class="kw3">PEL_VectorExp</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">PEL_VectorExp</font><font class="text">::PROTOTYPE_APPLY = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_VectorExp</font><font class="text">(
+                                          </font><font class="kw3">PEL_VectorExp</font><font class="text">::apply, </font><font class="string">&quot;apply&quot;</font><font class="text">) ;
+
+</font><font class="kw3">PEL_VectorExp</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">PEL_VectorExp</font><font class="text">::PROTOTYPE_REVERSE = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_VectorExp</font><font class="text">(
+                                          </font><font class="kw3">PEL_VectorExp</font><font class="text">::reverse, </font><font class="string">&quot;reverse&quot;</font><font class="text">) ;
+
+</font><font class="kw3">PEL_VectorExp</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">PEL_VectorExp</font><font class="text">::PROTOTYPE_SUM = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_VectorExp</font><font class="text">(
+                                          </font><font class="kw3">PEL_VectorExp</font><font class="text">::sum, </font><font class="string">&quot;sum&quot;</font><font class="text">) ;
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_VectorExp</font><font class="text">:: </font><font class="kw3">PEL_VectorExp</font><font class="text">( VectorExp exp_id, </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_name ) 
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_Expression</font><font class="text">( a_name )
+   , OP( exp_id )
+   , MY_IT( 0 )
+   , RESULT_D( 0 )
+   , RESULT_I( 0 )
+   , RESULT_B( 0 )
+   , RESULT_S( 0 )
+{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_VectorExp:: PEL_VectorExp&quot;</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_VectorExp</font><font class="text">:: </font><font class="kw3">PEL_VectorExp</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                               VectorExp exp_id,
+                               </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_name,
+                               </font><font class="kw3">PEL_Sequence</font><font class="text"> </font><font class="kw1">const</font><font class="text">* argument_list ) 
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_Expression</font><font class="text">( a_owner, a_name, argument_list )
+   , OP( exp_id )
+   , MY_IT( argument_list-&gt;create_iterator( </font><font class="kw1">this</font><font class="text"> ) )
+   , RESULT_D( 0 )
+   , RESULT_I( 0 )
+   , RESULT_B( 0 )
+   , RESULT_S( 0 )
+{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_VectorExp:: PEL_VectorExp&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_VectorExp</font><font class="text">:: ~</font><font class="kw3">PEL_VectorExp</font><font class="text">( </font><font class="kw1">void</font><font class="text"> ) 
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_VectorExp:: ~PEL_VectorExp&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw1">if</font><font class="text">( is_a_prototype() )
+   {
+      </font><font class="kw1">if</font><font class="text">( OP == vect )
+      {
+         PROTOTYPE_VECTOR = 0 ;
+      }
+      </font><font class="kw1">if</font><font class="text">( OP == size )
+      {
+         PROTOTYPE_SIZE = 0 ;
+      }
+      </font><font class="kw1">if</font><font class="text">( OP == component )
+      {
+         PROTOTYPE_COMPO = 0 ;
+      }
+      </font><font class="kw1">if</font><font class="text">( OP == increasing )
+      {
+         PROTOTYPE_INCREASING = 0 ;
+      }
+      </font><font class="kw1">if</font><font class="text">( OP == reverse )
+      {
+         PROTOTYPE_REVERSE = 0 ;
+      }
+      </font><font class="kw1">if</font><font class="text">( OP == sum )
+      {
+         PROTOTYPE_SUM = 0 ;
+      }
+       </font><font class="kw1">if</font><font class="text">( OP == greater )
+      {
+         PROTOTYPE_GREATER = 0 ;
+      }
+      </font><font class="kw1">if</font><font class="text">( OP == apply )
+      {
+         PROTOTYPE_APPLY = 0 ;
+      }
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_VectorExp</font><font class="text">*
+</font><font class="kw3">PEL_VectorExp</font><font class="text">:: create_replica( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                </font><font class="kw3">PEL_Sequence</font><font class="text"> </font><font class="kw1">const</font><font class="text">* argument_list ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_VectorExp:: create_replica&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_PRE( a_owner, argument_list ) ) ;
+
+   </font><font class="kw3">PEL_VectorExp</font><font class="text">* result =
+                   </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_VectorExp</font><font class="text">( a_owner, OP, name(), argument_list ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( create_replica_POST( result, a_owner, argument_list ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; 
+</font><font class="kw3">PEL_VectorExp</font><font class="text">:: usage( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> result = </font><font class="string">&quot;undefined&quot;</font><font class="text"> ;
+   </font><font class="kw1">switch</font><font class="text">( OP )
+   {
+      </font><font class="kw1">case</font><font class="text"> nvector :
+         result = </font><font class="string">&quot;nvector(IS,&lt;scalar type&gt;)&quot;</font><font class="text"> ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> vect :
+         result = </font><font class="string">&quot;vector(&lt;list of values with the same type&gt;)&quot;</font><font class="text"> ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> cond_vect :
+         result = </font><font class="string">&quot;conditional_vector(&lt;list of pairs: BS,value with all values of the same type&gt;)&quot;</font><font class="text"> ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> size :
+         result = </font><font class="string">&quot;size(DV|IV|BV|SV)&quot;</font><font class="text"> ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> component :
+         result = </font><font class="string">&quot;component(DV|IV|BV|SV,IS)&quot;</font><font class="text"> ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> increasing :
+         result = </font><font class="string">&quot;increasing(DV|IV)&quot;</font><font class="text"> ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> reverse :
+         result = </font><font class="string">&quot;reverse(DV|IV|SV|BV)&quot;</font><font class="text"> ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> sum :
+         result = </font><font class="string">&quot;sum(DV|IV)&quot;</font><font class="text"> ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> greater :
+         result = </font><font class="string">&quot;greater(DV|IV,DS|IS)&quot;</font><font class="text"> ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> apply :
+         result = </font><font class="string">&quot;apply(source DV|IV|BV|SV,applied function DS|IS|BS|SS,variable name SS,[component name SS])&quot;</font><font class="text"> ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">default</font><font class="text"> :
+         </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_internal( </font><font class="string">&quot;not implemented&quot;</font><font class="text"> ) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+   }
+   </font><font class="kw1">return</font><font class="text"> result ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">PEL_VectorExp</font><font class="text">:: valid_arguments( </font><font class="kw3">PEL_Sequence</font><font class="text"> </font><font class="kw1">const</font><font class="text">* some_arguments ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_VectorExp:: valid_arguments&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( valid_arguments_PRE( some_arguments ) ) ;
+
+   </font><font class="kw1">bool</font><font class="text"> result = </font><font class="kw1">true</font><font class="text"> ;
+   </font><font class="kw1">switch</font><font class="text">( OP )
+   {
+      </font><font class="kw1">case</font><font class="text"> vect :
+         result = some_arguments-&gt;count()&gt;0 ;
+         </font><font class="kw1">if</font><font class="text">( result )
+         {
+            Type k = Undefined ;
+            </font><font class="kw3">PEL_Iterator</font><font class="text">* iter = some_arguments-&gt;create_iterator( 0 ) ;
+            </font><font class="kw1">for</font><font class="text">( iter-&gt;start() ; result &amp;&amp; iter-&gt;is_valid() ; iter-&gt;go_next() )
+            {
+               </font><font class="kw3">PEL_Data</font><font class="text"> </font><font class="kw1">const</font><font class="text">* data =
+                  </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">PEL_Data</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;( iter-&gt;item() ) ;
+               </font><font class="kw1">if</font><font class="text">( k == Undefined )
+               {
+                  k = data-&gt;data_type() ;
+               }
+               </font><font class="kw1">else
+</font><font class="text">               {
+                  result &amp;= ( k==data-&gt;data_type() ) ;
+               }
+            }
+            iter-&gt;destroy() ; iter = 0 ;
+         }
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> cond_vect :
+         result = some_arguments-&gt;count()&gt;0
+            &amp;&amp; some_arguments-&gt;count() % 2 == 0;
+         </font><font class="kw1">if</font><font class="text">( result )
+         {
+            Type k = Undefined ;
+            </font><font class="kw3">PEL_Iterator</font><font class="text">* iter = some_arguments-&gt;create_iterator( 0 ) ;
+            </font><font class="kw1">for</font><font class="text">( iter-&gt;start() ; result &amp;&amp; iter-&gt;is_valid() ; iter-&gt;go_next() )
+            {
+               </font><font class="kw3">PEL_Data</font><font class="text"> </font><font class="kw1">const</font><font class="text">* a_bool =
+                  </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">PEL_Data</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;( iter-&gt;item() ) ;
+               iter-&gt;go_next() ;
+               </font><font class="kw3">PEL_Data</font><font class="text"> </font><font class="kw1">const</font><font class="text">* data =
+                  </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">PEL_Data</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;( iter-&gt;item() ) ;
+               </font><font class="kw1">if</font><font class="text">(  k == Undefined )
+               {
+                  k = data-&gt;data_type() ;
+               }
+               </font><font class="kw1">else
+</font><font class="text">               {
+                  result &amp;= ( a_bool-&gt;data_type()==</font><font class="kw3">PEL_Data</font><font class="text">::Bool &amp;&amp;
+                              ( k==data-&gt;data_type() ) ) ;
+               }
+            }
+            iter-&gt;destroy() ; iter = 0 ;
+         }
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> size :
+         result = some_arguments-&gt;count() == 1 ;
+         </font><font class="kw1">if</font><font class="text">( result )
+         {
+            </font><font class="kw3">PEL_Data</font><font class="text">::Type k0 = extract_arg( some_arguments, 0 )-&gt;data_type() ;
+            result = ( k0==DoubleVector || k0==IntVector ||
+                       k0==BoolVector || k0==StringVector ) ;
+         }
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> component :
+         result = some_arguments-&gt;count() == 2 ;
+         </font><font class="kw1">if</font><font class="text">( result )
+         {
+            </font><font class="kw3">PEL_Data</font><font class="text">::Type k0 = extract_arg( some_arguments, 0 )-&gt;data_type() ;
+            </font><font class="kw3">PEL_Data</font><font class="text">::Type k1 =  extract_arg( some_arguments, 1 )-&gt;data_type() ;
+            result = ( k0==DoubleVector || k0==IntVector ||
+                       k0==BoolVector || k0==StringVector ) &amp;&amp; ( k1==Int ) ;
+         }
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> increasing :
+         result = some_arguments-&gt;count() == 1 ;
+         </font><font class="kw1">if</font><font class="text">( result )
+         {
+            </font><font class="kw3">PEL_Data</font><font class="text">::Type k0 = extract_arg( some_arguments, 0 )-&gt;data_type() ;
+            result = ( k0==DoubleVector || k0==IntVector ) ;
+         }
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> reverse :
+         result = some_arguments-&gt;count() == 1 ;
+         </font><font class="kw1">if</font><font class="text">( result )
+         {
+            </font><font class="kw3">PEL_Data</font><font class="text">::Type k0 = extract_arg( some_arguments, 0 )-&gt;data_type() ;
+            result = ( k0==DoubleVector || k0==IntVector ||
+                       k0==BoolVector || k0==StringVector ) ;
+         }
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> sum :
+         result = some_arguments-&gt;count() == 1 ;
+         </font><font class="kw1">if</font><font class="text">( result )
+         {
+            </font><font class="kw3">PEL_Data</font><font class="text">::Type k0 = extract_arg( some_arguments, 0 )-&gt;data_type() ;
+            result = ( k0==DoubleVector || k0==IntVector ) ;
+         }
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> greater :
+         result = some_arguments-&gt;count() == 2 ;
+         </font><font class="kw1">if</font><font class="text">( result )
+         {
+            </font><font class="kw3">PEL_Data</font><font class="text">::Type k0 = extract_arg( some_arguments, 0 )-&gt;data_type() ;
+            </font><font class="kw3">PEL_Data</font><font class="text">::Type k1 = extract_arg( some_arguments, 1 )-&gt;data_type() ;
+            result = ( k0==DoubleVector &amp;&amp; k1==Double ) ||
+                     ( k0==IntVector    &amp;&amp; k1==Int ) ;
+         }
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> nvector :
+         result = some_arguments-&gt;count() == 2 ;
+         </font><font class="kw1">if</font><font class="text">( result )
+         {
+            </font><font class="kw3">PEL_Data</font><font class="text">::Type k0 = extract_arg( some_arguments, 0 )-&gt;data_type() ;
+            </font><font class="kw3">PEL_Data</font><font class="text">::Type k1 = extract_arg( some_arguments, 1 )-&gt;data_type() ;
+            result = k0==Int &amp;&amp;
+               ( k1==Int || k1==Double || k1==String || k1==Bool  ) ;
+         }
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> apply :
+         result = ( some_arguments-&gt;count() == 3 ||
+                    some_arguments-&gt;count() == 4 ) ;
+         </font><font class="kw1">if</font><font class="text">( result )
+         {
+            </font><font class="kw3">PEL_Data</font><font class="text">::Type k0 = extract_arg( some_arguments, 0 )-&gt;data_type() ;
+            </font><font class="kw3">PEL_Data</font><font class="text">::Type k1 = extract_arg( some_arguments, 1 )-&gt;data_type() ;
+            </font><font class="kw3">PEL_Data</font><font class="text">::Type k2 = extract_arg( some_arguments, 2 )-&gt;data_type() ;
+            result = ( k0 == DoubleVector &amp;&amp; k1==Double ) ||
+                     ( k0 == IntVector &amp;&amp; k1==Int ) ||
+                     ( k0 == BoolVector &amp;&amp; k1==Bool ) ||
+                     ( k0 == StringVector &amp;&amp; k1==String ) ;
+            result &amp;= ( k2 == String ) ;
+            </font><font class="kw1">if</font><font class="text">( result )
+            {
+               </font><font class="kw3">PEL_Data</font><font class="text">::Type k =
+                  </font><font class="kw3">PEL_Variable</font><font class="text">::data_type(
+                     extract_arg( some_arguments, 2 )-&gt;to_string() ) ;
+               result = ( k==k1 ) ;
+            }
+            </font><font class="kw1">if</font><font class="text">( result &amp;&amp; some_arguments-&gt;count() == 4 )
+            {
+               </font><font class="kw3">PEL_Data</font><font class="text">::Type k3 = extract_arg( some_arguments, 3 )-&gt;data_type() ;
+               result = ( k3 == String ) ;
+               </font><font class="kw1">if</font><font class="text">( result )
+               {
+                  </font><font class="kw3">PEL_Data</font><font class="text">::Type k =
+                     </font><font class="kw3">PEL_Variable</font><font class="text">::data_type(
+                        extract_arg( some_arguments, 3 )-&gt;to_string() ) ;
+                  result = ( k==Int ) ;
+               }
+            }     
+         }
+         </font><font class="kw1">break</font><font class="text"> ;        
+      </font><font class="kw1">default</font><font class="text"> :
+         </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_internal( </font><font class="string">&quot;not implemented&quot;</font><font class="text"> ) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+   }
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_Data</font><font class="text">::Type
+</font><font class="kw3">PEL_VectorExp</font><font class="text">:: data_type( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_VectorExp:: data_type&quot;</font><font class="text"> ) ;
+
+   Type result = Undefined ;
+   
+   </font><font class="kw1">switch</font><font class="text">( OP )
+   {
+      </font><font class="kw1">case</font><font class="text"> cond_vect :
+      </font><font class="kw1">case</font><font class="text"> vect :
+      </font><font class="kw1">case</font><font class="text"> nvector :
+         {
+            </font><font class="kw2">size_t</font><font class="text"> idx = ( OP==vect ? 0 : 1 ) ;
+            
+            Type tmp = arg(idx)-&gt;data_type() ;
+            </font><font class="kw1">if</font><font class="text">( tmp==Double )
+            {
+               result = DoubleVector ;
+            }
+            </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( tmp==Int )
+            {
+               result = IntVector ;
+            }
+            </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( tmp==Bool )
+            {
+               result = BoolVector ;
+            }
+            </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( tmp==String )
+            {
+               result = StringVector ;
+            }
+         }
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> size :
+         result = Int ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> component :
+         {
+            Type tmp = arg(0)-&gt;data_type() ;
+            </font><font class="kw1">if</font><font class="text">( tmp==DoubleVector )
+            {
+               result = Double ;
+            }
+            </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( tmp==IntVector )
+            {
+               result = Int ;
+            }
+            </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( tmp==BoolVector )
+            {
+               result = Bool ;
+            }
+            </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( tmp==StringVector )
+            {
+               result = String ;
+            }
+         }
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> increasing :
+      </font><font class="kw1">case</font><font class="text"> greater :
+         result = Bool ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> sum :
+         {
+            Type tmp = arg(0)-&gt;data_type() ;
+            </font><font class="kw1">if</font><font class="text">( tmp==DoubleVector )
+            {
+               result = Double ;
+            }
+            </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( tmp==IntVector )
+            {
+               result = Int ;
+            }
+         }
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> reverse :
+         result = arg(0)-&gt;data_type() ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> apply :
+         result = arg(0)-&gt;data_type() ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">default</font><font class="text"> :
+         </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_internal( </font><font class="string">&quot;not implemented&quot;</font><font class="text"> ) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+   }
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_VectorExp</font><font class="text">:: declare( </font><font class="kw3">PEL_List</font><font class="text">* lst ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_VectorExp:: declare&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( declare_PRE( lst ) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw3">PEL_Expression</font><font class="text">::declare( lst ) ;
+   </font><font class="kw1">if</font><font class="text">( OP == apply )
+   {
+      </font><font class="kw3">PEL_Variable</font><font class="text"> </font><font class="kw1">const</font><font class="text">* v = </font><font class="kw3">PEL_Variable</font><font class="text">::object( arg(2)-&gt;to_string() ) ;
+      </font><font class="kw1">if</font><font class="text">( lst-&gt;has( v ) ) lst-&gt;remove( v ) ;
+      </font><font class="kw1">if</font><font class="text">( nb_arguments()==4 )
+      {
+         </font><font class="kw3">PEL_Variable</font><font class="text"> </font><font class="kw1">const</font><font class="text">* vic =
+                              </font><font class="kw3">PEL_Variable</font><font class="text">::object( arg(3)-&gt;to_string() ) ;
+         </font><font class="kw1">if</font><font class="text">( lst-&gt;has( vic ) ) lst-&gt;remove( vic ) ;
+      }
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">PEL_VectorExp</font><font class="text">:: context_has_required_variables( 
+                                           </font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ct ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_VectorExp:: context_has_required_variables&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( context_has_required_variables_PRE( ct ) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw1">bool</font><font class="text"> result = </font><font class="kw1">false</font><font class="text"> ;
+   </font><font class="kw1">if</font><font class="text">( OP == apply )
+   {
+      </font><font class="kw3">PEL_Variable</font><font class="text"> </font><font class="kw1">const</font><font class="text">* v = </font><font class="kw3">PEL_Variable</font><font class="text">::object( arg(2)-&gt;to_string() ) ;
+      </font><font class="kw3">PEL_Variable</font><font class="text"> </font><font class="kw1">const</font><font class="text">* vic =
+         ( nb_arguments()==4 ?
+                        </font><font class="kw3">PEL_Variable</font><font class="text">::object( arg(3)-&gt;to_string() ) : 0 ) ;
+      </font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ctx = create_apply_context( 0, ct, v, vic ) ;
+      result = </font><font class="kw3">PEL_Expression</font><font class="text">::context_has_required_variables( ctx ) ;
+      ctx-&gt;destroy() ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      result = </font><font class="kw3">PEL_Expression</font><font class="text">::context_has_required_variables( ct ) ;
+   }
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">PEL_VectorExp</font><font class="text">:: value_can_be_evaluated( </font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ct ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_VectorExp:: value_can_be_evaluated&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">bool</font><font class="text"> result = </font><font class="kw1">false</font><font class="text"> ;
+   </font><font class="kw1">if</font><font class="text">( OP == apply )
+   {
+      </font><font class="kw3">PEL_Variable</font><font class="text"> </font><font class="kw1">const</font><font class="text">* v = </font><font class="kw3">PEL_Variable</font><font class="text">::object( arg(2)-&gt;to_string() ) ;
+      </font><font class="kw3">PEL_Variable</font><font class="text"> </font><font class="kw1">const</font><font class="text">* vic =
+         ( nb_arguments()==4 ?
+                        </font><font class="kw3">PEL_Variable</font><font class="text">::object( arg(3)-&gt;to_string() ) : 0 ) ;
+      </font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ctx = create_apply_context( 0, ct, v, vic ) ;
+      result = </font><font class="kw3">PEL_Expression</font><font class="text">::value_can_be_evaluated( ctx ) ;
+      ctx-&gt;destroy() ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      result = </font><font class="kw3">PEL_Expression</font><font class="text">::value_can_be_evaluated( ct ) ;
+   }
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">stringVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp;
+</font><font class="kw3">PEL_VectorExp</font><font class="text">:: undefined_variables( </font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ct ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_VectorExp:: undefined_variables&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw3">stringVector</font><font class="text"> result(0) ;
+   </font><font class="kw1">if</font><font class="text">( OP == apply )
+   {
+      </font><font class="kw3">PEL_Variable</font><font class="text"> </font><font class="kw1">const</font><font class="text">* v = </font><font class="kw3">PEL_Variable</font><font class="text">::object( arg(2)-&gt;to_string() ) ;
+      </font><font class="kw3">PEL_Variable</font><font class="text"> </font><font class="kw1">const</font><font class="text">* vic =
+         ( nb_arguments()==4 ?
+                        </font><font class="kw3">PEL_Variable</font><font class="text">::object( arg(3)-&gt;to_string() ) : 0 ) ;
+      </font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ctx = create_apply_context( 0, ct, v, vic ) ;
+      result = </font><font class="kw3">PEL_Expression</font><font class="text">::undefined_variables( ctx ) ;
+      ctx-&gt;destroy() ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      result = </font><font class="kw3">PEL_Expression</font><font class="text">::undefined_variables( ct ) ;
+   }
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">PEL_VectorExp</font><font class="text">:: to_bool( </font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ct ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_VectorExp:: to_bool&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( to_bool_PRE(ct) ) ;
+   </font><font class="kw1">bool</font><font class="text"> result = </font><font class="kw1">false</font><font class="text"> ;
+   </font><font class="kw1">if</font><font class="text">( OP==component )
+   {
+      result = arg(0)-&gt;to_bool_vector(ct)( arg(1)-&gt;to_int(ct) ) ;
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( OP == increasing )
+   {
+      </font><font class="kw3">PEL_Data</font><font class="text"> </font><font class="kw1">const</font><font class="text">* VECTOR = arg(0) ;
+      result = </font><font class="kw1">true</font><font class="text"> ;
+      </font><font class="kw3">PEL_Data</font><font class="text">::Type dt = VECTOR-&gt;data_type() ;
+      
+      </font><font class="kw1">if</font><font class="text">( dt==IntVector )
+      {
+         </font><font class="kw3">intVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; vec =  VECTOR-&gt;to_int_vector(ct) ;
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; result &amp;&amp; i&lt;vec.size()-1 ; i++ )
+            result = result &amp;&amp; vec(i) &lt;= vec(i+1) ;
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( dt==DoubleVector )
+      {
+         </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; vec =  VECTOR-&gt;to_double_vector(ct) ;
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; result &amp;&amp; i&lt;vec.size()-1 ; i++ )
+            result = result &amp;&amp; vec(i) &lt;= vec(i+1) ;
+      }
+      </font><font class="kw1">else
+</font><font class="text">         </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_internal( </font><font class="string">&quot;not implemented&quot;</font><font class="text"> ) ;
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( OP == greater )
+   {
+      </font><font class="kw3">PEL_Data</font><font class="text"> </font><font class="kw1">const</font><font class="text">* VECTOR = arg(0) ;
+      </font><font class="kw3">PEL_Data</font><font class="text"> </font><font class="kw1">const</font><font class="text">* VAL = arg(1) ;
+      result = </font><font class="kw1">true</font><font class="text"> ;
+      </font><font class="kw3">PEL_Data</font><font class="text">::Type dt = VECTOR-&gt;data_type() ;
+      
+      </font><font class="kw1">if</font><font class="text">( dt==IntVector )
+      {
+         </font><font class="kw3">intVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; vec =  VECTOR-&gt;to_int_vector(ct) ;
+         </font><font class="kw1">int</font><font class="text"> val = VAL-&gt;to_int(ct) ;
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; result &amp;&amp; i&lt;vec.size() ; i++ )
+            result = result &amp;&amp; vec(i) &gt;= val ;
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( dt==DoubleVector )
+      {
+         </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; vec =  VECTOR-&gt;to_double_vector(ct) ;
+         </font><font class="kw1">double</font><font class="text"> val  = VAL-&gt;to_double(ct) ;
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; result &amp;&amp; i&lt;vec.size() ; i++ )
+            result = result &amp;&amp; vec(i) &gt;= val ;
+      }
+      </font><font class="kw1">else</font><font class="text"> 
+         </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_internal( </font><font class="string">&quot;not implemented&quot;</font><font class="text"> ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">      </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_internal( </font><font class="string">&quot;not implemented&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">double
+</font><font class="kw3">PEL_VectorExp</font><font class="text">:: to_double( </font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ct ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_VectorExp:: to_double&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( to_double_PRE(ct) ) ;
+   </font><font class="kw1">double</font><font class="text"> result = </font><font class="kw3">PEL</font><font class="text">::bad_double() ;
+   </font><font class="kw1">if</font><font class="text">( OP == component )
+   {
+      result = arg(0)-&gt;to_double_vector(ct)( arg(1)-&gt;to_int(ct) ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      </font><font class="kw3">PEL_CHECK</font><font class="text">( OP==sum ) ;
+      </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; v = arg(0)-&gt;to_double_vector(ct) ;
+      result = 0.0 ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;v.size() ; i++ )
+         result += v(i) ;
+   }
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">int
+</font><font class="kw3">PEL_VectorExp</font><font class="text">:: to_int( </font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ct ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_VectorExp:: to_int&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( to_int_PRE(ct) ) ;
+   
+   </font><font class="kw1">int</font><font class="text"> result = -1 ;
+   
+   </font><font class="kw1">switch</font><font class="text">( OP )
+   {
+      </font><font class="kw1">case</font><font class="text"> size :
+         {
+            </font><font class="kw3">PEL_Data</font><font class="text"> </font><font class="kw1">const</font><font class="text">* VECTOR = arg(0) ;
+            </font><font class="kw1">switch</font><font class="text">( VECTOR-&gt;data_type() )
+            {
+               </font><font class="kw1">case</font><font class="text"> IntVector :
+                  result =  VECTOR-&gt;to_int_vector(ct).size() ;
+                  </font><font class="kw1">break</font><font class="text"> ;
+               </font><font class="kw1">case</font><font class="text"> DoubleVector :
+                  result =  VECTOR-&gt;to_double_vector(ct).size() ;
+                  </font><font class="kw1">break</font><font class="text"> ;
+               </font><font class="kw1">case</font><font class="text"> BoolVector :
+                  result =  VECTOR-&gt;to_bool_vector(ct).size() ;
+                  </font><font class="kw1">break</font><font class="text"> ;
+               </font><font class="kw1">case</font><font class="text"> StringVector :
+                  result =  VECTOR-&gt;to_string_vector(ct).size() ;
+                  </font><font class="kw1">break</font><font class="text"> ;
+               </font><font class="kw1">default</font><font class="text"> :
+                  </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_internal( </font><font class="string">&quot;not implemented&quot;</font><font class="text"> ) ;
+            }
+         }
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> component :
+         result = arg(0)-&gt;to_int_vector(ct)( arg(1)-&gt;to_int(ct) ) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> sum :
+         {
+            </font><font class="kw3">intVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; iv = arg(0)-&gt;to_int_vector(ct) ;
+            result = iv.sum() ;
+         }
+         </font><font class="kw1">break</font><font class="text"> ;   
+      </font><font class="kw1">default</font><font class="text"> :
+         </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_internal( </font><font class="string">&quot;not implemented&quot;</font><font class="text"> ) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+   }   
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp;
+</font><font class="kw3">PEL_VectorExp</font><font class="text">:: to_string( </font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ct ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_VectorExp:: to_string&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( to_string_PRE(ct) ) ;
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; result =
+                    arg(0)-&gt;to_string_vector(ct)( arg(1)-&gt;to_int(ct) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp;
+</font><font class="kw3">PEL_VectorExp</font><font class="text">:: to_double_vector( </font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ct ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_VectorExp:: to_double_vector&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( to_double_vector_PRE( ct ) ) ;
+   </font><font class="kw1">if</font><font class="text">( OP==vect )
+   {
+      RESULT_D.re_initialize( nb_arguments() ) ;
+      </font><font class="kw2">size_t</font><font class="text"> idx = 0 ;
+      </font><font class="kw1">for</font><font class="text">( MY_IT-&gt;start(); MY_IT-&gt;is_valid(); MY_IT-&gt;go_next() )
+      {
+         RESULT_D(idx++) =
+            </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">PEL_Data</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;( MY_IT-&gt;item() )-&gt;to_double(ct) ;
+      }
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( OP==nvector )
+   {
+      RESULT_D.re_initialize( arg(0)-&gt;to_int(ct) ) ;
+      RESULT_D.</font><font class="kw2">set</font><font class="text">( arg(1)-&gt;to_double(ct) ) ;
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( OP==cond_vect )
+   {
+      RESULT_D.re_initialize( 0 ) ;
+      </font><font class="kw1">for</font><font class="text">( MY_IT-&gt;start(); MY_IT-&gt;is_valid(); MY_IT-&gt;go_next() )
+      {
+         </font><font class="kw1">bool</font><font class="text"> test = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">PEL_Data</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;( MY_IT-&gt;item() )-&gt;to_bool(ct) ;
+         MY_IT-&gt;go_next() ;
+         </font><font class="kw1">if</font><font class="text">( test )
+         {   
+            RESULT_D.append(
+               </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">PEL_Data</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;( MY_IT-&gt;item() )-&gt;to_double(ct) ) ;
+         }
+               
+      }
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( OP==apply )
+   {
+      RESULT_D = arg(0)-&gt;to_double_vector( ct ) ;
+      </font><font class="kw3">PEL_Variable</font><font class="text"> </font><font class="kw1">const</font><font class="text">* v = </font><font class="kw3">PEL_Variable</font><font class="text">::object( arg(2)-&gt;to_string() ) ;
+      </font><font class="kw3">PEL_Variable</font><font class="text"> </font><font class="kw1">const</font><font class="text">* vic =
+         ( nb_arguments()==4 ?
+                        </font><font class="kw3">PEL_Variable</font><font class="text">::object( arg(3)-&gt;to_string() ) : 0 ) ;
+      </font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ctx = create_apply_context( 0, ct, v, vic ) ;
+      </font><font class="kw3">PEL_Double</font><font class="text">* d = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">PEL_Double</font><font class="text">*&gt;( ctx-&gt;value( v ) ) ;
+      </font><font class="kw3">PEL_Int</font><font class="text">* ic = 
+         ( vic!=0 ? </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">PEL_Int</font><font class="text">*&gt;( ctx-&gt;value( vic ) ) : 0 ) ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;RESULT_D.size() ; ++i )
+      {
+         d-&gt;</font><font class="kw2">set</font><font class="text">( RESULT_D(i) ) ;
+         </font><font class="kw1">if</font><font class="text">( ic != 0 ) ic-&gt;</font><font class="kw2">set</font><font class="text">( i ) ;
+         RESULT_D(i) = arg(1)-&gt;to_double( ctx ) ;
+      }
+      ctx-&gt;destroy() ;
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( OP==reverse )
+   {
+      </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; v = arg(0)-&gt;to_double_vector( ct ) ;
+      </font><font class="kw2">size_t</font><font class="text"> n = v.size() ;
+      
+      RESULT_D.resize(n) ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;n ; i++ )
+         RESULT_D(i) = v(n-i-1) ;
+   }
+   
+   </font><font class="kw1">return</font><font class="text">( RESULT_D ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">intVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp;
+</font><font class="kw3">PEL_VectorExp</font><font class="text">:: to_int_vector( </font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ct ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_VectorExp:: to_int_vector&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( to_int_vector_PRE( ct ) ) ;
+   
+   </font><font class="kw1">if</font><font class="text">( OP==vect )
+   {
+      RESULT_I.re_initialize( nb_arguments() ) ;
+      </font><font class="kw2">size_t</font><font class="text"> idx = 0 ;
+      </font><font class="kw1">for</font><font class="text">( MY_IT-&gt;start(); MY_IT-&gt;is_valid(); MY_IT-&gt;go_next() )
+      {
+         RESULT_I(idx++) =
+            </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">PEL_Data</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;( MY_IT-&gt;item() )-&gt;to_int(ct) ;
+      }
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( OP==nvector )
+   {
+      RESULT_I.re_initialize( arg(0)-&gt;to_int(ct) ) ;
+      RESULT_I.</font><font class="kw2">set</font><font class="text">( arg(1)-&gt;to_int(ct) ) ;
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( OP==cond_vect )
+   {
+      RESULT_I.re_initialize( 0 ) ;
+      </font><font class="kw1">for</font><font class="text">( MY_IT-&gt;start(); MY_IT-&gt;is_valid(); MY_IT-&gt;go_next() )
+      {
+         </font><font class="kw1">bool</font><font class="text"> test = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">PEL_Data</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;( MY_IT-&gt;item() )-&gt;to_bool(ct) ;
+         MY_IT-&gt;go_next() ;
+         </font><font class="kw1">if</font><font class="text">( test )
+         {   
+            RESULT_I.append(
+               </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">PEL_Data</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;( MY_IT-&gt;item() )-&gt;to_int(ct) ) ;
+         }
+               
+      }
+      
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( OP==apply )
+   {
+      RESULT_I = arg(0)-&gt;to_int_vector( ct ) ;
+      </font><font class="kw3">PEL_Variable</font><font class="text"> </font><font class="kw1">const</font><font class="text">* v = </font><font class="kw3">PEL_Variable</font><font class="text">::object( arg(2)-&gt;to_string() ) ;
+      </font><font class="kw3">PEL_Variable</font><font class="text"> </font><font class="kw1">const</font><font class="text">* vic =
+         ( nb_arguments()==4 ?
+                        </font><font class="kw3">PEL_Variable</font><font class="text">::object( arg(3)-&gt;to_string() ) : 0 ) ;
+      </font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ctx = create_apply_context( 0, ct, v, vic ) ;
+      </font><font class="kw3">PEL_Int</font><font class="text">* d = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">PEL_Int</font><font class="text">*&gt;( ctx-&gt;value( v ) ) ;
+      </font><font class="kw3">PEL_Int</font><font class="text">* ic = 
+         ( vic!=0 ? </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">PEL_Int</font><font class="text">*&gt;( ctx-&gt;value( vic ) ) : 0 ) ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;RESULT_I.size() ; ++i )
+      {
+         d-&gt;</font><font class="kw2">set</font><font class="text">( RESULT_I(i) ) ;
+         </font><font class="kw1">if</font><font class="text">( ic != 0 ) ic-&gt;</font><font class="kw2">set</font><font class="text">( i ) ;
+         RESULT_I(i) = arg(1)-&gt;to_int( ctx ) ;
+      }
+      ctx-&gt;destroy() ;
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( OP==reverse )
+   {
+      </font><font class="kw3">intVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; v = arg(0)-&gt;to_int_vector( ct ) ;
+      </font><font class="kw2">size_t</font><font class="text"> n = v.size() ;
+      
+      RESULT_I.resize(n) ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;n ; i++ )
+         RESULT_I(i) = v(n-i-1) ;
+   }
+   
+   </font><font class="kw1">return</font><font class="text">( RESULT_I ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">boolVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp;
+</font><font class="kw3">PEL_VectorExp</font><font class="text">:: to_bool_vector( </font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ct ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_VectorExp:: to_bool_vector&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( to_bool_vector_PRE( ct ) ) ;
+
+   </font><font class="kw1">if</font><font class="text">( OP==vect )
+   {
+      RESULT_B.re_initialize( nb_arguments() ) ;
+      </font><font class="kw2">size_t</font><font class="text"> idx = 0 ;
+      </font><font class="kw1">for</font><font class="text">( MY_IT-&gt;start(); MY_IT-&gt;is_valid(); MY_IT-&gt;go_next() )
+      {
+         RESULT_B(idx++) =
+            </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">PEL_Data</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;( MY_IT-&gt;item() )-&gt;to_bool(ct) ;
+      }
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( OP==nvector )
+   {
+      RESULT_B.re_initialize( arg(0)-&gt;to_int(ct) ) ;
+      RESULT_B.</font><font class="kw2">set</font><font class="text">( arg(1)-&gt;to_bool(ct) ) ;
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( OP==cond_vect )
+   {
+      RESULT_B.re_initialize( 0 ) ;
+      </font><font class="kw1">for</font><font class="text">( MY_IT-&gt;start(); MY_IT-&gt;is_valid(); MY_IT-&gt;go_next() )
+      {
+         </font><font class="kw1">bool</font><font class="text"> test = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">PEL_Data</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;( MY_IT-&gt;item() )-&gt;to_bool(ct) ;
+         MY_IT-&gt;go_next() ;
+         </font><font class="kw1">if</font><font class="text">( test )
+         {   
+            RESULT_B.append(
+               </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">PEL_Data</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;( MY_IT-&gt;item() )-&gt;to_bool(ct) ) ;
+         }
+               
+      }
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( OP==apply )
+   {
+      RESULT_B = arg(0)-&gt;to_bool_vector( ct ) ;
+      </font><font class="kw3">PEL_Variable</font><font class="text"> </font><font class="kw1">const</font><font class="text">* v = </font><font class="kw3">PEL_Variable</font><font class="text">::object( arg(2)-&gt;to_string() ) ;
+      </font><font class="kw3">PEL_Variable</font><font class="text"> </font><font class="kw1">const</font><font class="text">* vic =
+         ( nb_arguments()==4 ?
+                        </font><font class="kw3">PEL_Variable</font><font class="text">::object( arg(3)-&gt;to_string() ) : 0 ) ;
+      </font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ctx = create_apply_context( 0, ct, v, vic ) ;
+      </font><font class="kw3">PEL_Bool</font><font class="text">* d = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">PEL_Bool</font><font class="text">*&gt;( ctx-&gt;value( v ) ) ;
+      </font><font class="kw3">PEL_Int</font><font class="text">* ic = 
+         ( vic!=0 ? </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">PEL_Int</font><font class="text">*&gt;( ctx-&gt;value( vic ) ) : 0 ) ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;RESULT_B.size() ; ++i )
+      {
+         d-&gt;</font><font class="kw2">set</font><font class="text">( RESULT_B(i) ) ;
+         </font><font class="kw1">if</font><font class="text">( ic != 0 ) ic-&gt;</font><font class="kw2">set</font><font class="text">( i ) ;
+         RESULT_B(i) = arg(1)-&gt;to_bool( ctx ) ;
+      }
+      ctx-&gt;destroy() ;
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( OP==reverse )
+   {
+      </font><font class="kw3">boolVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; v = arg(0)-&gt;to_bool_vector( ct ) ;
+      </font><font class="kw2">size_t</font><font class="text"> n = v.size() ;
+      
+      RESULT_B.resize(n) ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;n ; i++ )
+         RESULT_B(i) = v(n-i-1) ;
+   }
+   
+   </font><font class="kw1">return</font><font class="text">( RESULT_B ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">stringVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp;
+</font><font class="kw3">PEL_VectorExp</font><font class="text">:: to_string_vector( </font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ct ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_VectorExp:: to_string_vector&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( to_string_vector_PRE( ct ) ) ;
+
+   </font><font class="kw1">if</font><font class="text">( OP==vect )
+   {
+      RESULT_S.re_initialize( nb_arguments() ) ;
+      </font><font class="kw2">size_t</font><font class="text"> idx = 0 ;
+      </font><font class="kw1">for</font><font class="text">( MY_IT-&gt;start(); MY_IT-&gt;is_valid(); MY_IT-&gt;go_next() )
+      {
+         RESULT_S(idx++) =
+            </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">PEL_Data</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;( MY_IT-&gt;item() )-&gt;to_string(ct) ;
+      }
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( OP==nvector )
+   {
+      RESULT_S.re_initialize( arg(0)-&gt;to_int(ct) ) ;
+      RESULT_S.</font><font class="kw2">set</font><font class="text">( arg(1)-&gt;to_string(ct) ) ;
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( OP==cond_vect )
+   {
+      RESULT_S.re_initialize( 0 ) ;
+      </font><font class="kw1">for</font><font class="text">( MY_IT-&gt;start(); MY_IT-&gt;is_valid(); MY_IT-&gt;go_next() )
+      {
+         </font><font class="kw1">bool</font><font class="text"> test = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">PEL_Data</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;( MY_IT-&gt;item() )-&gt;to_bool(ct) ;
+         MY_IT-&gt;go_next() ;
+         </font><font class="kw1">if</font><font class="text">( test )
+         {   
+            RESULT_S.append(
+               </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">PEL_Data</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;( MY_IT-&gt;item() )-&gt;to_string(ct) ) ;
+         }
+               
+      }
+      
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( OP==apply )
+   {
+      RESULT_S = arg(0)-&gt;to_string_vector( ct ) ;
+      </font><font class="kw3">PEL_Variable</font><font class="text"> </font><font class="kw1">const</font><font class="text">* v = </font><font class="kw3">PEL_Variable</font><font class="text">::object( arg(2)-&gt;to_string() ) ;
+      </font><font class="kw3">PEL_Variable</font><font class="text"> </font><font class="kw1">const</font><font class="text">* vic =
+         ( nb_arguments()==4 ?
+                        </font><font class="kw3">PEL_Variable</font><font class="text">::object( arg(3)-&gt;to_string() ) : 0 ) ;
+      </font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ctx = create_apply_context( 0, ct, v, vic ) ;
+      </font><font class="kw3">PEL_String</font><font class="text">* d = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">PEL_String</font><font class="text">*&gt;( ctx-&gt;value( v ) ) ;
+      </font><font class="kw3">PEL_Int</font><font class="text">* ic = 
+         ( vic!=0 ? </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">PEL_Int</font><font class="text">*&gt;( ctx-&gt;value( vic ) ) : 0 ) ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;RESULT_S.size() ; ++i )
+      {
+         d-&gt;</font><font class="kw2">set</font><font class="text">( RESULT_S(i) ) ;
+         </font><font class="kw1">if</font><font class="text">( ic != 0 ) ic-&gt;</font><font class="kw2">set</font><font class="text">( i ) ;
+         RESULT_S(i) = arg(1)-&gt;to_string( ctx ) ;
+      }
+      ctx-&gt;destroy() ;
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( OP==reverse )
+   {
+      </font><font class="kw3">stringVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; v = arg(0)-&gt;to_string_vector( ct ) ;
+      </font><font class="kw2">size_t</font><font class="text"> n = v.size() ;
+      
+      RESULT_S.resize(n) ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;n ; i++ )
+         RESULT_S(i) = v(n-i-1) ;
+   }
+   
+   </font><font class="kw1">return</font><font class="text">( RESULT_S ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_Data</font><font class="text">*
+</font><font class="kw3">PEL_VectorExp</font><font class="text">:: create_derivative( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                   </font><font class="kw3">PEL_Variable</font><font class="text"> </font><font class="kw1">const</font><font class="text">* var,
+                                   </font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ct ) </font><font class="kw1">const</font><font class="text"> 
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_VectorExp:: create_derivative&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( create_derivative_PRE( a_owner, var, ct ) ) ;
+
+   </font><font class="kw3">PEL_Data</font><font class="text">* result = 0 ;
+   </font><font class="kw1">switch</font><font class="text">( OP )
+   {
+      </font><font class="kw1">case</font><font class="text"> vect :
+         {
+            </font><font class="kw3">PEL_List</font><font class="text">* lst = </font><font class="kw3">PEL_List</font><font class="text">::create( 0 ) ;
+            </font><font class="kw1">for</font><font class="text">( MY_IT-&gt;start(); MY_IT-&gt;is_valid(); MY_IT-&gt;go_next() )
+            {
+               </font><font class="kw3">PEL_Data</font><font class="text"> </font><font class="kw1">const</font><font class="text">* val = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">PEL_Data</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;( MY_IT-&gt;item() ) ;
+               lst-&gt;append( val-&gt;create_derivative(lst,var,ct) ) ;
+            }
+
+            result = </font><font class="kw3">PEL_Expression</font><font class="text">::create( a_owner, </font><font class="string">&quot;vector&quot;</font><font class="text">, lst ) ;
+            lst-&gt;set_owner( result ) ;
+         }
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> size :
+         result = </font><font class="kw3">PEL_Double</font><font class="text">::create( a_owner, 0.0 ) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> component :
+         {
+            </font><font class="kw3">PEL_List</font><font class="text">* lst = </font><font class="kw3">PEL_List</font><font class="text">::create( 0 ) ;
+            lst-&gt;append( arg(0)-&gt;create_derivative( lst, var, ct ) ) ;
+            lst-&gt;append( arg(1)-&gt;create_clone( lst ) ) ;
+            result = </font><font class="kw3">PEL_Expression</font><font class="text">::create( a_owner, </font><font class="string">&quot;component&quot;</font><font class="text">, lst ) ;
+            lst-&gt;set_owner( result ) ;
+         }
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">default</font><font class="text"> :
+         </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_internal( </font><font class="string">&quot;not implemented&quot;</font><font class="text"> ) ;
+   }     
+   
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( create_derivative_POST( a_owner, var, result ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">PEL_VectorExp</font><font class="text">:: create_apply_context( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                      </font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ctx,
+                                      </font><font class="kw3">PEL_Variable</font><font class="text"> </font><font class="kw1">const</font><font class="text">* v,
+                                      </font><font class="kw3">PEL_Variable</font><font class="text"> </font><font class="kw1">const</font><font class="text">* vic ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_VectorExp:: create_apply_context&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( OP == apply ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( v != 0 ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( v-&gt;data_type() == Double ||
+              v-&gt;data_type() == Int ||
+              v-&gt;data_type() == Bool ||
+              v-&gt;data_type() == String ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( </font><font class="kw3">IMPLIES</font><font class="text">( vic != 0, vic-&gt;data_type() == Int ) ) ;
+
+   </font><font class="kw3">PEL_ContextSimple</font><font class="text">* a_ctx = </font><font class="kw3">PEL_ContextSimple</font><font class="text">::create( 0 ) ;
+   </font><font class="kw1">if</font><font class="text">( v-&gt;data_type() == Double )
+   {
+      </font><font class="kw3">PEL_Double</font><font class="text">* d = </font><font class="kw3">PEL_Double</font><font class="text">::create( a_ctx, 0. ) ;
+      a_ctx-&gt;extend( v, d ) ;
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( v-&gt;data_type() == Int )
+   {
+      </font><font class="kw3">PEL_Int</font><font class="text">* d = </font><font class="kw3">PEL_Int</font><font class="text">::create( a_ctx, 0 ) ;
+      a_ctx-&gt;extend( v, d ) ;
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( v-&gt;data_type() == Bool )
+   {
+      </font><font class="kw3">PEL_Bool</font><font class="text">* d = </font><font class="kw3">PEL_Bool</font><font class="text">::create( a_ctx, </font><font class="kw1">false</font><font class="text"> ) ;
+      a_ctx-&gt;extend( v, d ) ;
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( v-&gt;data_type() == String )
+   {
+      </font><font class="kw3">PEL_String</font><font class="text">* d = </font><font class="kw3">PEL_String</font><font class="text">::create( a_ctx, </font><font class="string">&quot;&quot;</font><font class="text"> ) ;
+      a_ctx-&gt;extend( v, d ) ;
+   }
+   </font><font class="kw1">if</font><font class="text">( vic != 0 )
+   {
+      </font><font class="kw3">PEL_Int</font><font class="text">* d = </font><font class="kw3">PEL_Int</font><font class="text">::create( a_ctx, 0 ) ;
+      a_ctx-&gt;extend( vic, d ) ;
+   }
+   
+   </font><font class="kw3">PEL_Context</font><font class="text">* result = 0 ;
+   </font><font class="kw1">if</font><font class="text">( ctx != 0 )
+   {
+      result = </font><font class="kw3">PEL_ContextPair</font><font class="text">::create( a_owner, ctx, a_ctx ) ;
+      a_ctx-&gt;set_owner( result ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      a_ctx-&gt;set_owner( a_owner ) ;
+      result = a_ctx ;
+   }
+   
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;owner() == a_owner ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;has_variable( v ) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( </font><font class="kw3">IMPLIES</font><font class="text">( vic!=0, result-&gt;has_variable( vic ) ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font>
+</pre>
+</body>
+</html>

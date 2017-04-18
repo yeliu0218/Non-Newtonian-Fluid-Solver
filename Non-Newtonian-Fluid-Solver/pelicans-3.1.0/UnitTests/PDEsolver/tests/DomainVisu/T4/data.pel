@@ -1,0 +1,125 @@
+
+MODULE PEL_Application
+   
+   concrete_name = "PDE_DomainVisu"
+   
+   $DS_x = component( $DV_X, 0 )
+   $DS_y = component( $DV_X, 1 )
+   $DS_z = component( $DV_X, 2 )
+   
+   check_meshing_connexity = true
+
+   MODULE PDE_DomainAndFields
+      
+      type = "finite_element"
+      verbose_level = 1
+      nb_space_dimensions = 3
+      
+      MODULE GE_Meshing
+         concrete_name = "GE_SplitMeshing"
+         security_bandwidth = 1
+         MODULE splitting_strategy
+            concrete_name = "GE_CoordinateSplitting"
+            coordinate_splitting_formula = 
+               unit_sort( $DS_x, 0., 1., nb_ranks() )
+         END MODULE splitting_strategy
+         MODULE GE_Meshing   
+            concrete_name = "GE_BoxWithBoxes"
+            vertices_coordinate_0 = regular_vector( 0.0, 3, 1.0 )
+            vertices_coordinate_1 = regular_vector( 0.0, 1, 1.0 )
+            vertices_coordinate_2 = regular_vector( 0.0, 1, 1.0 )
+            mesh_polyhedron = < "GE_Rectangle" "GE_Cuboid" >
+         END MODULE GE_Meshing    
+      END MODULE GE_Meshing
+      
+      MODULE macro_colors
+         tempBC = < "left" "bottom" >
+      END MODULE macro_colors
+      
+      MODULE interior_fields
+         
+         MODULE temperature
+            name = "temperature"
+            nb_components = 1
+            element_name = "PDE_3D_Q1_8nodes"
+            storage_depth = 1
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = vector( ($DS_x-8.0)*($DS_y+5.0) )
+            END MODULE DOFs_values
+         END MODULE temperature
+         
+         MODULE velocity
+            name = "velocity"
+            nb_components = 3
+            element_name = "PDE_3D_Q1isoNonConfA_6nodes"
+            storage_depth = 1
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = vector( $DS_y, 1.0-$DS_x, -$DS_z )
+            END MODULE DOFs_values
+         END MODULE velocity
+
+         MODULE ww
+            name = "ww"
+            nb_components = 3
+            element_name = "PDE_3D_Q1isoNonConfB_6nodes"
+            storage_depth = 1
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = vector( -$DS_y, -1.0+$DS_x, $DS_z )
+            END MODULE DOFs_values
+         END MODULE ww
+
+         MODULE concentration
+            name = "concentration"
+            nb_components = 1
+            element_name = "PDE_3D_Q0_1node"
+            storage_depth = 1
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = vector( (-$DS_x+8.0)*(-$DS_y-5.0) )
+            END MODULE DOFs_values
+         END MODULE concentration
+         
+      END MODULE interior_fields
+      
+      MODULE PDE_ResultSaver
+         writing_mode = "text"
+         files_basename = "save"
+         MODULE temperature
+            where_to_save = "at_vertices"
+            entry_name = "T"
+            field = "temperature"
+         END MODULE temperature
+         MODULE velocity
+            where_to_save = "at_cell_centers"
+            entry_name = "U"
+            field = "velocity"
+         END MODULE velocity
+         MODULE ww
+            where_to_save = "at_cell_centers"
+            entry_name = "W"
+            field = "ww"
+         END MODULE ww
+         MODULE concentration
+            where_to_save = "at_cell_centers"
+            entry_name = "C"
+            field = "concentration"
+         END MODULE concentration
+      END MODULE PDE_ResultSaver
+
+       if( nb_ranks()=1 )
+      MODULE PDE_ResultSaver
+         writers = < "PEL_PelWriter" "PEL_GMVwriter" >
+      END MODULE PDE_ResultSaver
+
+      if( nb_ranks()>1 )
+      MODULE PDE_ResultSaver
+         writers = < "PEL_CrossProcessWriter" >
+         sub_writers = < "PEL_PelWriter" "PEL_GMVwriter" >
+      END MODULE PDE_ResultSaver 
+      
+   END MODULE PDE_DomainAndFields
+   
+END MODULE PEL_Application

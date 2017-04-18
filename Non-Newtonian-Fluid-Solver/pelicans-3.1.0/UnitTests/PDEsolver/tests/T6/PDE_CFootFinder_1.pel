@@ -1,0 +1,76 @@
+MODULE PEL_ObjectTest#PDE_CFootFinder_TEST
+   
+   MODULE PDE_CFootFinder_1
+      
+      MODULE PDE_DomainAndFields
+         verbose_level = 1
+         nb_space_dimensions = 2
+         type = "finite_element"
+         
+         MODULE GE_Meshing
+            concrete_name = "GE_BoxWithBoxes"            
+            vertices_coordinate_0 = regular_vector( 0.0, 3, 1.0 )
+            vertices_coordinate_1 = regular_vector( 0.0, 2, 1.0 )
+            mesh_polyhedron = < "GE_Segment" "GE_Rectangle" >
+         END MODULE GE_Meshing
+         
+         MODULE interior_fields
+            
+            MODULE velocity
+               name = "velocity"
+               nb_components = 2
+               element_name = "PDE_2D_Q1_4nodes"
+               storage_depth = 1
+               MODULE DOFs_values
+                  type = "uniformly_defined"
+                  value = vector( component( $DV_X, 1 ),
+                                  1.0 - component( $DV_X, 0 ) )
+               END MODULE DOFs_values
+            END MODULE velocity
+            
+         END MODULE interior_fields
+         
+      END MODULE PDE_DomainAndFields
+      
+      MODULE PDE_CFootFinder
+         concrete_name = "PDE_ForwardEulerFinder"
+         nb_iter_max_when_searching_in_cell = 10
+         nb_iter_max_when_searching_in_bound = 10
+         distance_max_characteristic_foot = 3.0
+      END MODULE PDE_CFootFinder
+
+      MODULE searches
+
+         MODULE search_1
+            time_step = 0.5
+            head_point = < 0.5 0.6 >
+            foot_point = < 0.36 0.28 >
+            foot_is_interior = true
+         END MODULE search_1
+         
+         MODULE search_2
+            time_step = 0.5
+            head_point = < 0.6 0.95 >
+            foot_point = < 0.3 0.6 >
+            foot_is_interior = true
+         END MODULE search_2
+         
+         MODULE search_3
+            time_step = 0.5
+            head_point = < 0.08 0.81 >
+            foot_point = < 0.000000000E+00 6.948706608E-01 >
+            foot_is_interior = false
+         END MODULE search_3
+         
+         MODULE search_4
+            time_step = 0.75
+            head_point = < 0.68 0.99 >
+            foot_point = < 0.32 0.48 >
+            foot_is_interior = true
+         END MODULE search_4
+         
+      END MODULE searches
+      
+   END MODULE PDE_CFootFinder_1
+   
+END MODULE PEL_ObjectTest#PDE_CFootFinder_TEST

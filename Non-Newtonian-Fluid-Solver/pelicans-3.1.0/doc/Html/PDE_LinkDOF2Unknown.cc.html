@@ -1,0 +1,544 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>PDE_LinkDOF2Unknown.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="PDE_LinkDOF2Unknown.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="PDEpack-tree.html"><span>Tree</span></a>
+    <a href="PDE_LinkDOF2Unknown.html"><span>Class</span></a>
+    <a href="PDE_LinkDOF2Unknown.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <a href="PDE_LinkDOF2Unknown.icc.html"><span>Inlined</span></a>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="PDEpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_SeqVector</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_DiscreteField</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_CrossProcessUnknownNumbering</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;iostream&gt;
+
+</font><font class="kw2">#ifdef</font><font class="text"> OUTLINE
+   </font><font class="kw2">#define</font><font class="text"> </font><font class="kw1">inline
+</font><font class="text">   </font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text">.icc&gt;
+   #undef </font><font class="kw1">inline
+</font><font class="kw2">#endif
+</font><font class="text">
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> ;
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text">*
+</font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text">:: create( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                              </font><font class="kw3">PDE_DiscreteField</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ff,
+                              </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; ordering,
+                              </font><font class="kw1">bool</font><font class="text"> imposed_out )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_LinkDOF2Unknown:: create&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( ff != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( ordering == </font><font class="string">&quot;sequence_of_the_components&quot;</font><font class="text"> || 
+                  ordering == </font><font class="string">&quot;sequence_of_the_nodes&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text">* result = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text">( a_owner, 
+                                                          ff, 
+                                                          ordering,
+                                                          imposed_out ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;owner() == a_owner ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;field() == ff ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;nb_field_nodes() == ff-&gt;nb_nodes() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;components_table().size() == ff-&gt;nb_components() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( </font><font class="kw3">FORALL</font><font class="text">( ( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;ff-&gt;nb_components() ; i++ ),
+                           result-&gt;components_table()(i)==i ) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;DOFs_with_imposed_value_are_dropped() == 
+                                                               imposed_out ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;DOFs_ordering_in_unknown() == ordering ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text">:: </font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                           </font><font class="kw3">PDE_DiscreteField</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ff,
+                                           </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; ordering, 
+                                           </font><font class="kw1">bool</font><font class="text"> imposed_out )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">  : </font><font class="kw3">PEL_Object</font><font class="text">( a_owner )
+  , FIELD( ff )
+  , NB_COMPS( ff-&gt;nb_components() )
+  , COMPS( ff-&gt;nb_components() )
+  , INDEX_in_COMPS( 0 )
+  , DROP_IMPOSED( imposed_out )
+  , NB_DOFs( 0 )
+  , DOF_2_UNKNOWN( 0 )
+  , DOF_IN_UNKNOWNS( 0 )
+  , DIS_LINK( 0 )
+{
+   set_ordering_option( ordering  ) ;
+
+   </font><font class="kw1">for</font><font class="text"> ( </font><font class="kw2">size_t</font><font class="text"> iDOFc=0 ; iDOFc&lt;NB_COMPS ; iDOFc++ )
+   {
+      COMPS(iDOFc) = iDOFc ;
+   }
+   INDEX_in_COMPS = COMPS ;
+   reset() ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text">*
+</font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text">:: create( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                              </font><font class="kw3">PDE_DiscreteField</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ff,
+                              </font><font class="kw2">size_t</font><font class="text"> ic,
+                              </font><font class="kw1">bool</font><font class="text"> imposed_out )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_LinkDOF2Unknown:: create&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( ff != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( ic &lt; ff-&gt;nb_components() ) ;
+
+   </font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text">* result =
+       </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text">( a_owner, ff, ic, imposed_out ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;owner() == a_owner ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;field() == ff ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;nb_field_nodes() == ff-&gt;nb_nodes() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;components_table().size() == 1 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;components_table()(0) == ic ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;DOFs_with_imposed_value_are_dropped() == 
+                                                               imposed_out ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text">*
+</font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text">:: create( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                              </font><font class="kw3">PDE_DiscreteField</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ff,
+                              </font><font class="kw1">bool</font><font class="text"> imposed_out )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_LinkDOF2Unknown:: create&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( ff != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( ff-&gt;nb_components() == 1 ) ;
+
+   </font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text">* result =
+         </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text">( a_owner, ff, 0, imposed_out ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;owner() == a_owner ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;field() == ff ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;nb_field_nodes() == ff-&gt;nb_nodes() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;components_table().size() == 1 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;components_table()(0) == 0 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;DOFs_with_imposed_value_are_dropped() == 
+                                                               imposed_out ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text">:: </font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                           </font><font class="kw3">PDE_DiscreteField</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ff,
+                                           </font><font class="kw2">size_t</font><font class="text"> ic,
+                                           </font><font class="kw1">bool</font><font class="text"> imposed_out )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">  : </font><font class="kw3">PEL_Object</font><font class="text">( a_owner )
+  , FIELD( ff )
+  , NB_COMPS( 1 )
+  , COMPS( 1 )
+  , INDEX_in_COMPS( ic+1 )
+  , DROP_IMPOSED( imposed_out )
+  , ORDERING( sequenceOfTheNodes )
+  , NB_DOFs( 0 )
+  , DOF_2_UNKNOWN( 0 )
+  , DOF_IN_UNKNOWNS( 0 )
+  , DIS_LINK( 0 )
+{
+   COMPS( 0 ) = ic ;
+   INDEX_in_COMPS( ic ) = 0 ;
+   reset() ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text">:: ~</font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text">*
+</font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text">:: create_clone( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_LinkDOF2Unknown:: create_clone&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text">* result = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text">( a_owner, </font><font class="kw1">this</font><font class="text"> ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( create_clone_POST( result, a_owner ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text">:: </font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                           </font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text"> </font><font class="kw1">const</font><font class="text">* other )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_Object</font><font class="text">( a_owner )
+   , FIELD( other-&gt;FIELD )
+   , NB_NODES( other-&gt;NB_NODES )
+   , NB_COMPS( other-&gt;NB_COMPS )
+   , COMPS( other-&gt;COMPS )
+   , INDEX_in_COMPS( other-&gt;INDEX_in_COMPS )
+   , DROP_IMPOSED( other-&gt;DROP_IMPOSED )
+   , ORDERING( other-&gt;ORDERING )
+   , NB_DOFs( other-&gt;NB_DOFs )
+   , DOF_2_UNKNOWN( other-&gt;DOF_2_UNKNOWN )
+   , DOF_IN_UNKNOWNS( other-&gt;DOF_IN_UNKNOWNS )
+{
+   </font><font class="kw1">if</font><font class="text">( FIELD-&gt;is_distributed() )
+   {
+      DIS_LINK = </font><font class="kw3">PDE_CrossProcessUnknownNumbering</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, </font><font class="kw1">this</font><font class="text"> ) ;
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void</font><font class="text"> 
+</font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text">:: reset( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_LinkDOF2Unknown:: reset&quot;</font><font class="text"> ) ;
+
+   NB_NODES = FIELD-&gt;nb_nodes() ;
+   NB_DOFs = NB_NODES*NB_COMPS  ;
+
+   </font><font class="comment">//??? on pourrait utiliser NOT_DOF_IN_UNKNOWNS, ce qui &#xE9;viterait
+</font><font class="text">   </font><font class="comment">//??? l'affectation &#xE0; true
+</font><font class="text">   DOF_IN_UNKNOWNS.re_initialize( NB_DOFs ) ;
+   DOF_IN_UNKNOWNS.</font><font class="kw2">set</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+
+   DOF_2_UNKNOWN.re_initialize( NB_DOFs ) ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> n=0 ; n&lt;NB_NODES ; n++ )
+   {
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> iC=0 ; iC&lt;NB_COMPS ; iC++ )
+      {
+         </font><font class="kw1">if</font><font class="text">( !FIELD-&gt;node_is_active( n ) ||
+             ( DROP_IMPOSED &amp;&amp; FIELD-&gt;DOF_has_imposed_value(n,COMPS(iC)) ) ||
+             ( FIELD-&gt;DOF_is_constrained( n, COMPS(iC) ) ) )
+         {
+            DOF_IN_UNKNOWNS( local_index_of_DOF( n, iC ) ) = </font><font class="kw1">false</font><font class="text"> ;
+         }
+      }
+   }
+   NB_DOFs = 0 ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> idx=0 ; idx&lt;DOF_2_UNKNOWN.size() ; idx++ )
+   {
+      </font><font class="kw1">if</font><font class="text">( DOF_IN_UNKNOWNS( idx ) )
+      {
+         DOF_2_UNKNOWN(idx) = NB_DOFs++ ;
+      }
+   }
+   </font><font class="kw1">if</font><font class="text">( FIELD-&gt;is_distributed() )
+   {
+      </font><font class="kw1">if</font><font class="text">( DIS_LINK==0 )
+         DIS_LINK = </font><font class="kw3">PDE_CrossProcessUnknownNumbering</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, </font><font class="kw1">this</font><font class="text"> ) ;
+      </font><font class="kw1">else
+</font><font class="text">         DIS_LINK-&gt;reset() ;
+   }
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( nb_field_nodes() == field()-&gt;nb_nodes() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void</font><font class="text"> 
+</font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text">:: reset( </font><font class="kw3">boolVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; observed_nodes )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_LinkDOF2Unknown:: reset&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( observed_nodes.size() == field()-&gt;nb_nodes() ) ;
+
+   NB_NODES = FIELD-&gt;nb_nodes() ;
+   NB_DOFs = NB_NODES*NB_COMPS  ;
+
+   </font><font class="comment">//??? on pourrait utiliser NOT_DOF_IN_UNKNOWNS, ce qui &#xE9;viterait
+</font><font class="text">   </font><font class="comment">//??? l'affectation &#xE0; true
+</font><font class="text">   DOF_IN_UNKNOWNS.re_initialize( NB_DOFs ) ;
+   DOF_IN_UNKNOWNS.</font><font class="kw2">set</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+
+   DOF_2_UNKNOWN.re_initialize( NB_DOFs ) ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> n=0 ; n&lt;NB_NODES ; n++ )
+   {
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> iC=0 ; iC&lt;NB_COMPS ; iC++ )
+      {
+         </font><font class="comment">//??? seule difference par rapport &#xE0; la fonction reset()
+</font><font class="text">         </font><font class="kw1">if</font><font class="text">( !observed_nodes( n ) ||
+             ( DROP_IMPOSED &amp;&amp; FIELD-&gt;DOF_has_imposed_value(n,COMPS(iC)) ) ||
+             ( FIELD-&gt;DOF_is_constrained( n, COMPS(iC) ) ) )
+         {
+            DOF_IN_UNKNOWNS( local_index_of_DOF( n, iC ) ) = </font><font class="kw1">false</font><font class="text"> ;
+         }
+      }
+   }
+   NB_DOFs = 0 ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> idx=0 ; idx&lt;DOF_2_UNKNOWN.size() ; idx++ )
+   {
+      </font><font class="kw1">if</font><font class="text">( DOF_IN_UNKNOWNS( idx ) )
+      {
+         DOF_2_UNKNOWN(idx) = NB_DOFs++ ;
+      }
+   }
+   </font><font class="kw1">if</font><font class="text">( FIELD-&gt;is_distributed() )
+   {
+      </font><font class="kw1">if</font><font class="text">( DIS_LINK==0 )
+         DIS_LINK = </font><font class="kw3">PDE_CrossProcessUnknownNumbering</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, </font><font class="kw1">this</font><font class="text"> ) ;
+      </font><font class="kw1">else
+</font><font class="text">         DIS_LINK-&gt;reset() ;
+   }
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( nb_field_nodes() == field()-&gt;nb_nodes() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PDE_DiscreteField</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text">:: field( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_LinkDOF2Unknown:: field&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw1">return</font><font class="text">( FIELD ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp;
+</font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text">:: components_table( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_LinkDOF2Unknown:: components_table&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; result = COMPS ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result.size() == 1 || 
+                   result.size() == field()-&gt;nb_components() ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw2">size_t
+</font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text">:: nb_field_nodes( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_LinkDOF2Unknown:: nb_field_nodes&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">return</font><font class="text">( NB_NODES ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text">:: DOFs_with_imposed_value_are_dropped( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_LinkDOF2Unknown:: DOFs_with_imposed_value_are_dropped&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">return</font><font class="text">( DROP_IMPOSED ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string
+</font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text">:: DOFs_ordering_in_unknown( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_LinkDOF2Unknown:: DOFs_ordering_in_unknown&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> result ;
+   </font><font class="kw1">if</font><font class="text">( ORDERING == sequenceOfTheComponents )
+   {
+      result = </font><font class="string">&quot;sequence_of_the_components&quot;</font><font class="text"> ;
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( ORDERING == sequenceOfTheNodes )
+   {
+      result = </font><font class="string">&quot;sequence_of_the_nodes&quot;</font><font class="text"> ;
+   }
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result == </font><font class="string">&quot;sequence_of_the_components&quot;</font><font class="text"> || 
+                   result == </font><font class="string">&quot;sequence_of_the_nodes&quot;</font><font class="text"> )  ;
+
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------
+</font><font class="kw3">PDE_CrossProcessUnknownNumbering</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text">:: cross_process_numbering( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> 
+</font><font class="comment">//-----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_LinkDOF2Unknown:: cross_process_numbering&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( field()-&gt;is_distributed() ) ;
+
+   </font><font class="kw3">PDE_CrossProcessUnknownNumbering</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result = DIS_LINK ;
+   
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;link() == </font><font class="kw1">this</font><font class="text"> ) ;   
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw2">size_t
+</font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text">:: unknown_vector_size( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_LinkDOF2Unknown:: unknown_vector_size&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> result = NB_DOFs ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result &lt;= components_table().size()*nb_field_nodes() ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text">:: DOF_is_unknown( </font><font class="kw2">size_t</font><font class="text"> n, </font><font class="kw2">size_t</font><font class="text"> ic ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_LinkDOF2Unknown:: DOF_is_unknown&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( n &lt; nb_field_nodes() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( ic &lt; field()-&gt;nb_components() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( components_table().has( ic ) ) ;
+
+   </font><font class="kw1">return</font><font class="text">( DOF_IN_UNKNOWNS( local_index_of_DOF( n, INDEX_in_COMPS( ic ) ) ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw2">size_t
+</font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text">:: unknown_linked_to_DOF( </font><font class="kw2">size_t</font><font class="text"> n, </font><font class="kw2">size_t</font><font class="text"> ic ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_LinkDOF2Unknown:: unknown_linked_to_DOF&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( n &lt; nb_field_nodes() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( ic &lt; field()-&gt;nb_components() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( components_table().has( ic ) ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( DOF_is_unknown( n, ic ) ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> result = 
+          DOF_2_UNKNOWN( local_index_of_DOF( n, INDEX_in_COMPS( ic ) ) ) ;
+   
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result &lt; unknown_vector_size() ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text">:: print( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostream</font><font class="text">&amp; os, </font><font class="kw2">size_t</font><font class="text"> indent_width ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_LinkDOF2Unknown:: print&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw1">if</font><font class="text">( DIS_LINK!=0 )
+   {
+      DIS_LINK-&gt;print( os, indent_width ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> s( indent_width, </font><font class="string">' '</font><font class="text"> ) ;
+      os &lt;&lt; s &lt;&lt; </font><font class="string">&quot;Number of unknowns for &quot;</font><font class="text"> &lt;&lt; FIELD-&gt;name()
+         &lt;&lt; </font><font class="string">&quot; is &quot;</font><font class="text"> &lt;&lt;  NB_DOFs &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   }   
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text">:: set_ordering_option( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; option ) 
+</font><font class="comment">//-----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">if</font><font class="text">( option == </font><font class="string">&quot;sequence_of_the_components&quot;</font><font class="text"> )
+   {
+      ORDERING = sequenceOfTheComponents ;
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( option == </font><font class="string">&quot;sequence_of_the_nodes&quot;</font><font class="text"> )
+   {
+      ORDERING = sequenceOfTheNodes ;
+   }  
+   </font><font class="kw1">else
+</font><font class="text">   {
+      </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( option + </font><font class="string">&quot;: bad value &quot;</font><font class="text"> ) ;
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text">:: invariant( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( FIELD != 0 ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( NB_COMPS==1 || NB_COMPS==FIELD-&gt;nb_components() ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+
+
+</font>
+</pre>
+</body>
+</html>

@@ -1,0 +1,1216 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>PEL_MathFunctionExp.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="PEL_MathFunctionExp.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="PELpack-tree.html"><span>Tree</span></a>
+    <a href="PEL_MathFunctionExp.html"><span>Class</span></a>
+    <a href="PEL_MathFunctionExp.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="PELpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_MathFunctionExp</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_assertions</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Double</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Int</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_List</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Sequence</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;iostream&gt;
+
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text">::PROTOTYPE_Sqr = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_MathFunctionExp</font><font class="text">( </font><font class="string">&quot;sqr&quot;</font><font class="text">, Sqr ) ;
+
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text">::PROTOTYPE_Sqrt = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_MathFunctionExp</font><font class="text">( </font><font class="string">&quot;sqrt&quot;</font><font class="text">, Sqrt ) ;
+
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text">::PROTOTYPE_Pow = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_MathFunctionExp</font><font class="text">( </font><font class="string">&quot;pow&quot;</font><font class="text">, Pow ) ;
+
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text">::PROTOTYPE_Exp = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_MathFunctionExp</font><font class="text">( </font><font class="string">&quot;exp&quot;</font><font class="text">, Exp ) ;
+
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text">::PROTOTYPE_Log = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_MathFunctionExp</font><font class="text">( </font><font class="string">&quot;log&quot;</font><font class="text">, Log ) ;
+
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text">::PROTOTYPE_Log10 = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_MathFunctionExp</font><font class="text">( </font><font class="string">&quot;log10&quot;</font><font class="text">, Log10 ) ;
+
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text">::PROTOTYPE_Sin = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_MathFunctionExp</font><font class="text">( </font><font class="string">&quot;sin&quot;</font><font class="text">, Sin ) ;
+
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text">::PROTOTYPE_Cos = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_MathFunctionExp</font><font class="text">( </font><font class="string">&quot;cos&quot;</font><font class="text">, Cos ) ;
+
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text">::PROTOTYPE_Tan = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_MathFunctionExp</font><font class="text">( </font><font class="string">&quot;tan&quot;</font><font class="text">, Tan ) ;
+
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text">::PROTOTYPE_ASin = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_MathFunctionExp</font><font class="text">( </font><font class="string">&quot;asin&quot;</font><font class="text">, ASin ) ;
+
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text">::PROTOTYPE_ACos = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_MathFunctionExp</font><font class="text">( </font><font class="string">&quot;acos&quot;</font><font class="text">, ACos ) ;
+
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text">::PROTOTYPE_ATan = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_MathFunctionExp</font><font class="text">( </font><font class="string">&quot;atan&quot;</font><font class="text">, ATan ) ;
+
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text">::PROTOTYPE_ATan2 = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_MathFunctionExp</font><font class="text">( </font><font class="string">&quot;atan2&quot;</font><font class="text">, ATan2 ) ;
+
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text">::PROTOTYPE_Sinh = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_MathFunctionExp</font><font class="text">( </font><font class="string">&quot;sinh&quot;</font><font class="text">, Sinh ) ;
+
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text">::PROTOTYPE_Cosh = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_MathFunctionExp</font><font class="text">( </font><font class="string">&quot;cosh&quot;</font><font class="text">, Cosh ) ;
+
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text">::PROTOTYPE_Tanh = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_MathFunctionExp</font><font class="text">( </font><font class="string">&quot;tanh&quot;</font><font class="text">, Tanh ) ;
+
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text">::PROTOTYPE_ASinh = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_MathFunctionExp</font><font class="text">( </font><font class="string">&quot;asinh&quot;</font><font class="text">, ASinh ) ;
+
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text">::PROTOTYPE_ACosh = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_MathFunctionExp</font><font class="text">( </font><font class="string">&quot;acosh&quot;</font><font class="text">, ACosh ) ;
+
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text">::PROTOTYPE_ATanh = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_MathFunctionExp</font><font class="text">( </font><font class="string">&quot;atanh&quot;</font><font class="text">, ATanh ) ;
+
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text">::PROTOTYPE_J0 = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_MathFunctionExp</font><font class="text">( </font><font class="string">&quot;j0&quot;</font><font class="text">, J0 ) ;
+
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text">::PROTOTYPE_J1 = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_MathFunctionExp</font><font class="text">( </font><font class="string">&quot;j1&quot;</font><font class="text">, J1 ) ;
+
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text">::PROTOTYPE_Jn = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_MathFunctionExp</font><font class="text">( </font><font class="string">&quot;jn&quot;</font><font class="text">, Jn ) ;
+
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text">::PROTOTYPE_Y0 = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_MathFunctionExp</font><font class="text">( </font><font class="string">&quot;y0&quot;</font><font class="text">, Y0 ) ;
+
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text">::PROTOTYPE_Y1 = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_MathFunctionExp</font><font class="text">( </font><font class="string">&quot;y1&quot;</font><font class="text">, Y1 ) ;
+
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text">::PROTOTYPE_Yn = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_MathFunctionExp</font><font class="text">( </font><font class="string">&quot;yn&quot;</font><font class="text">, Yn ) ;
+
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text">::PROTOTYPE_Gamma = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_MathFunctionExp</font><font class="text">( </font><font class="string">&quot;gamma&quot;</font><font class="text">, Gamma ) ;
+
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text">::PROTOTYPE_LGamma = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_MathFunctionExp</font><font class="text">( </font><font class="string">&quot;lgamma&quot;</font><font class="text">, LGamma ) ;
+
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text">::PROTOTYPE_Erf = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_MathFunctionExp</font><font class="text">( </font><font class="string">&quot;erf&quot;</font><font class="text">, Erf ) ;
+
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text">::PROTOTYPE_Erfc = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_MathFunctionExp</font><font class="text">( </font><font class="string">&quot;erfc&quot;</font><font class="text">, Erfc ) ;
+
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text">::PROTOTYPE_IGamma =
+                        </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_MathFunctionExp</font><font class="text">( </font><font class="string">&quot;incomplete_gamma&quot;</font><font class="text">, IGamma ) ;
+
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text">::PROTOTYPE_En = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_MathFunctionExp</font><font class="text">( </font><font class="string">&quot;En&quot;</font><font class="text">, En ) ;
+
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text">::PROTOTYPE_Ei = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_MathFunctionExp</font><font class="text">( </font><font class="string">&quot;Ei&quot;</font><font class="text">, Ei ) ;
+
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text">::PROTOTYPE_ABS = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_MathFunctionExp</font><font class="text">( </font><font class="string">&quot;abs&quot;</font><font class="text">, Abs ) ;
+
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text">::PROTOTYPE_Floor = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_MathFunctionExp</font><font class="text">( </font><font class="string">&quot;floor&quot;</font><font class="text">, Floor ) ;
+
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text">::PROTOTYPE_Ceil = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_MathFunctionExp</font><font class="text">( </font><font class="string">&quot;ceil&quot;</font><font class="text">, Ceil ) ;
+
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text">::PROTOTYPE_DblEq = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_MathFunctionExp</font><font class="text">( </font><font class="string">&quot;double_equality&quot;</font><font class="text">, DblEq ) ;
+
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text">::PROTOTYPE_RandDbl = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_MathFunctionExp</font><font class="text">( </font><font class="string">&quot;random_double&quot;</font><font class="text">, RandDbl ) ;
+
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text">::PROTOTYPE_RandInt = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_MathFunctionExp</font><font class="text">( </font><font class="string">&quot;rand&quot;</font><font class="text">, RandInt ) ;
+
+</font><font class="kw1">struct</font><font class="text"> PEL_MathFunctionExp_ERROR
+{
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> n0( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; f_name, </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; op_name ) ;
+} ;
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text">:: </font><font class="kw3">PEL_MathFunctionExp</font><font class="text">( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_name,
+                                           MathOp a_op ) 
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_Expression</font><font class="text">( a_name )
+   , OP( a_op )
+   , ARG1( 0 )
+   , ARG2( 0 )
+   , ARG3( 0 )
+   , ARG4( 0 )
+   , ARG5( 0 )
+{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_MathFunctionExp:: PEL_MathFunctionExp&quot;</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text">*
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text">:: create_replica(
+                             </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                             </font><font class="kw3">PEL_Sequence</font><font class="text"> </font><font class="kw1">const</font><font class="text">* argument_list ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_MathFunctionExp:: create_replica&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_PRE( a_owner, argument_list ) ) ;
+
+   </font><font class="kw3">PEL_MathFunctionExp</font><font class="text">* result = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_MathFunctionExp</font><font class="text">( a_owner, 
+                                                          name(), 
+                                                          argument_list, 
+                                                          OP ) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_POST( result, a_owner, argument_list ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text">:: </font><font class="kw3">PEL_MathFunctionExp</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                           </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_name,
+                                           </font><font class="kw3">PEL_Sequence</font><font class="text"> </font><font class="kw1">const</font><font class="text">* argument_list,
+                                           MathOp a_op ) 
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_Expression</font><font class="text">( a_owner, a_name, argument_list )
+   , OP( a_op )
+   , ARG1( nb_arguments()&gt;0 ? arg(0) : 0 )
+   , ARG2( nb_arguments()&gt;1 ? arg(1) : 0 )
+   , ARG3( nb_arguments()&gt;2 ? arg(2) : 0 )
+   , ARG4( nb_arguments()&gt;3 ? arg(3) : 0 )
+   , ARG5( nb_arguments()&gt;4 ? arg(4) : 0 )
+{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_MathFunctionExp:: PEL_MathFunctionExp&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text">:: ~</font><font class="kw3">PEL_MathFunctionExp</font><font class="text">( </font><font class="kw1">void</font><font class="text"> ) 
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_MathFunctionExp:: ~PEL_MathFunctionExp&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_Data</font><font class="text">::Type
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text">:: data_type( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_MathFunctionExp:: data_type&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw3">PEL_Data</font><font class="text">::Type result = </font><font class="kw3">PEL_Data</font><font class="text">::Undefined ;
+
+   </font><font class="kw1">switch</font><font class="text">( OP )
+   {
+      </font><font class="kw1">case</font><font class="text"> Sqr :
+      </font><font class="kw1">case</font><font class="text"> Sqrt :
+      </font><font class="kw1">case</font><font class="text"> Pow :
+      </font><font class="kw1">case</font><font class="text"> Exp :
+      </font><font class="kw1">case</font><font class="text"> Log :
+      </font><font class="kw1">case</font><font class="text"> Log10 :
+      </font><font class="kw1">case</font><font class="text"> Sin :
+      </font><font class="kw1">case</font><font class="text"> Cos :
+      </font><font class="kw1">case</font><font class="text"> Tan :
+      </font><font class="kw1">case</font><font class="text"> ASin :
+      </font><font class="kw1">case</font><font class="text"> ACos :
+      </font><font class="kw1">case</font><font class="text"> ATan :
+      </font><font class="kw1">case</font><font class="text"> ATan2 :
+      </font><font class="kw1">case</font><font class="text"> Sinh :
+      </font><font class="kw1">case</font><font class="text"> Cosh :
+      </font><font class="kw1">case</font><font class="text"> Tanh :
+      </font><font class="kw1">case</font><font class="text"> ASinh :
+      </font><font class="kw1">case</font><font class="text"> ACosh :
+      </font><font class="kw1">case</font><font class="text"> ATanh :
+      </font><font class="kw1">case</font><font class="text"> J0 :
+      </font><font class="kw1">case</font><font class="text"> J1 :
+      </font><font class="kw1">case</font><font class="text"> Jn :
+      </font><font class="kw1">case</font><font class="text"> Y0 :
+      </font><font class="kw1">case</font><font class="text"> Y1 :
+      </font><font class="kw1">case</font><font class="text"> Yn :
+      </font><font class="kw1">case</font><font class="text"> Gamma :
+      </font><font class="kw1">case</font><font class="text"> LGamma :
+      </font><font class="kw1">case</font><font class="text"> IGamma :
+      </font><font class="kw1">case</font><font class="text"> Erf :
+      </font><font class="kw1">case</font><font class="text"> Erfc :
+      </font><font class="kw1">case</font><font class="text"> En :
+      </font><font class="kw1">case</font><font class="text"> Ei :
+      </font><font class="kw1">case</font><font class="text"> Floor :
+      </font><font class="kw1">case</font><font class="text"> Ceil :
+      </font><font class="kw1">case</font><font class="text"> RandDbl :
+         result = </font><font class="kw3">PEL_Data</font><font class="text">::Double ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> Abs :
+         result = ARG1-&gt;data_type() ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> DblEq :
+         result = </font><font class="kw3">PEL_Data</font><font class="text">::Bool ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> RandInt :
+         result = </font><font class="kw3">PEL_Data</font><font class="text">::Int ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">default</font><font class="text"> :
+         PEL_MathFunctionExp_ERROR::n0( </font><font class="string">&quot;data_type&quot;</font><font class="text">, name() ) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+   } 
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; 
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text">:: usage( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> result = </font><font class="string">&quot;undefined&quot;</font><font class="text"> ;
+
+   </font><font class="kw1">switch</font><font class="text">( OP )
+   {
+      </font><font class="kw1">case</font><font class="text"> Sqr :
+      </font><font class="kw1">case</font><font class="text"> Sqrt :
+      </font><font class="kw1">case</font><font class="text"> Exp :
+      </font><font class="kw1">case</font><font class="text"> Log :
+      </font><font class="kw1">case</font><font class="text"> Log10 :
+      </font><font class="kw1">case</font><font class="text"> Sin :
+      </font><font class="kw1">case</font><font class="text"> Cos :
+      </font><font class="kw1">case</font><font class="text"> Tan :
+      </font><font class="kw1">case</font><font class="text"> ASin :
+      </font><font class="kw1">case</font><font class="text"> ACos :
+      </font><font class="kw1">case</font><font class="text"> ATan :
+      </font><font class="kw1">case</font><font class="text"> Sinh :
+      </font><font class="kw1">case</font><font class="text"> Cosh :
+      </font><font class="kw1">case</font><font class="text"> Tanh :
+      </font><font class="kw1">case</font><font class="text"> ASinh :
+      </font><font class="kw1">case</font><font class="text"> ACosh :
+      </font><font class="kw1">case</font><font class="text"> ATanh :
+      </font><font class="kw1">case</font><font class="text"> J0 :
+      </font><font class="kw1">case</font><font class="text"> J1 :
+      </font><font class="kw1">case</font><font class="text"> Y0 :
+      </font><font class="kw1">case</font><font class="text"> Y1 :
+      </font><font class="kw1">case</font><font class="text"> Gamma :
+      </font><font class="kw1">case</font><font class="text"> LGamma :
+      </font><font class="kw1">case</font><font class="text"> Erf :
+      </font><font class="kw1">case</font><font class="text"> Erfc :
+      </font><font class="kw1">case</font><font class="text"> Floor :
+      </font><font class="kw1">case</font><font class="text"> Ceil :
+         result = name() + </font><font class="string">&quot;(DS)&quot;</font><font class="text"> ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> Jn :
+      </font><font class="kw1">case</font><font class="text"> Yn :
+         result = name() + </font><font class="string">&quot;(IS,DS)&quot;</font><font class="text"> ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> Pow :
+      </font><font class="kw1">case</font><font class="text"> ATan2 :
+         result =  name() + </font><font class="string">&quot;(DS,DS)&quot;</font><font class="text"> ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> IGamma :
+         result =  name() + </font><font class="string">&quot;(DS,DS[,DS,DS,IS])&quot;</font><font class="text"> ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> En :
+         result =  name() + </font><font class="string">&quot;(IS,DS[,DS,DS,IS])&quot;</font><font class="text"> ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> Ei :
+         result =  name() + </font><font class="string">&quot;(DS[,DS,DS,IS])&quot;</font><font class="text"> ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> Abs :
+         result =  name() + </font><font class="string">&quot;(DS|IS)&quot;</font><font class="text"> ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> DblEq :
+         result = name() + </font><font class="string">&quot;(DS,DS,DS,DS)&quot;</font><font class="text"> ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> RandDbl :
+      </font><font class="kw1">case</font><font class="text"> RandInt :
+         result = name() + </font><font class="string">&quot;()&quot;</font><font class="text"> ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">default</font><font class="text"> :
+         PEL_MathFunctionExp_ERROR::n0( </font><font class="string">&quot;usage&quot;</font><font class="text">, name() ) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+   }    
+   
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text">:: valid_arguments( </font><font class="kw3">PEL_Sequence</font><font class="text"> </font><font class="kw1">const</font><font class="text">* some_arguments ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_MathFunctionExp:: valid_arguments&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( valid_arguments_PRE( some_arguments ) ) ;
+   
+   </font><font class="kw1">bool</font><font class="text"> result = </font><font class="kw1">false</font><font class="text"> ;
+   
+   </font><font class="kw1">switch</font><font class="text">( OP )
+   {
+      </font><font class="kw1">case</font><font class="text"> Sqr :
+      </font><font class="kw1">case</font><font class="text"> Sqrt :
+      </font><font class="kw1">case</font><font class="text"> Exp :
+      </font><font class="kw1">case</font><font class="text"> Log :
+      </font><font class="kw1">case</font><font class="text"> Log10 :
+      </font><font class="kw1">case</font><font class="text"> Sin :
+      </font><font class="kw1">case</font><font class="text"> Cos :
+      </font><font class="kw1">case</font><font class="text"> Tan :
+      </font><font class="kw1">case</font><font class="text"> ASin :
+      </font><font class="kw1">case</font><font class="text"> ACos :
+      </font><font class="kw1">case</font><font class="text"> ATan :
+      </font><font class="kw1">case</font><font class="text"> Sinh :
+      </font><font class="kw1">case</font><font class="text"> Cosh :
+      </font><font class="kw1">case</font><font class="text"> Tanh :
+      </font><font class="kw1">case</font><font class="text"> ASinh :
+      </font><font class="kw1">case</font><font class="text"> ACosh :
+      </font><font class="kw1">case</font><font class="text"> ATanh :
+      </font><font class="kw1">case</font><font class="text"> J0 :
+      </font><font class="kw1">case</font><font class="text"> J1 :
+      </font><font class="kw1">case</font><font class="text"> Y0 :
+      </font><font class="kw1">case</font><font class="text"> Y1 :
+      </font><font class="kw1">case</font><font class="text"> Gamma :
+      </font><font class="kw1">case</font><font class="text"> LGamma :
+      </font><font class="kw1">case</font><font class="text"> Erf :
+      </font><font class="kw1">case</font><font class="text"> Erfc :
+      </font><font class="kw1">case</font><font class="text"> Floor :
+      </font><font class="kw1">case</font><font class="text"> Ceil :
+         result = ( some_arguments-&gt;count()==1 ) ;
+         </font><font class="kw1">if</font><font class="text">( result )
+         {
+            Type t0 = extract_arg( some_arguments, 0 )-&gt;data_type() ;
+            result = t0==Double ;
+         }
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> Abs :
+         result = ( some_arguments-&gt;count()==1 ) ;
+         </font><font class="kw1">if</font><font class="text">( result )
+         {
+            Type t0 = extract_arg( some_arguments, 0 )-&gt;data_type() ;
+            result = t0==Double || t0==Int ;
+         }
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> Jn :
+      </font><font class="kw1">case</font><font class="text"> Yn :
+         result = ( some_arguments-&gt;count()==2 ) ;
+         </font><font class="kw1">if</font><font class="text">( result )
+         {
+            Type t0 = extract_arg( some_arguments, 0 )-&gt;data_type() ;
+            Type t1 = extract_arg( some_arguments, 1 )-&gt;data_type() ;
+            result = ( t0==Int &amp;&amp; t1==Double ) ;
+         }
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> Pow :
+      </font><font class="kw1">case</font><font class="text"> ATan2 :  
+         result = ( some_arguments-&gt;count()==2 ) ;
+         </font><font class="kw1">if</font><font class="text">( result )
+         {
+            Type t0 = extract_arg( some_arguments, 0 )-&gt;data_type() ;
+            Type t1 = extract_arg( some_arguments, 1 )-&gt;data_type() ;
+            result = ( t0==Double &amp;&amp; t1==Double ) ;
+         }
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> IGamma :
+         result = ( some_arguments-&gt;count()==2 ||
+                    some_arguments-&gt;count()==5 ) ;
+         </font><font class="kw1">if</font><font class="text">( result )
+         {
+            Type t0 = extract_arg( some_arguments, 0 )-&gt;data_type() ;
+            Type t1 = extract_arg( some_arguments, 1 )-&gt;data_type() ;
+            result = ( t0==Double &amp;&amp; t1==Double ) ;
+            </font><font class="kw1">if</font><font class="text">( result &amp;&amp; some_arguments-&gt;count()==5 )
+            {
+               Type t2 = extract_arg( some_arguments, 2 )-&gt;data_type() ;
+               Type t3 = extract_arg( some_arguments, 3 )-&gt;data_type() ;
+               Type k4 = extract_arg( some_arguments, 4 )-&gt;data_type() ;
+               result = ( t2==Double &amp;&amp; t3==Double &amp;&amp; k4==Int ) ;
+            }
+         }
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> En :
+         result = ( some_arguments-&gt;count()==2 ||
+                    some_arguments-&gt;count()==5 ) ;
+         </font><font class="kw1">if</font><font class="text">( result )
+         {
+            Type t0 = extract_arg( some_arguments, 0 )-&gt;data_type() ;
+            Type t1 = extract_arg( some_arguments, 1 )-&gt;data_type() ;
+            result = ( t0==Int &amp;&amp; t1==Double ) ;
+            </font><font class="kw1">if</font><font class="text">( result &amp;&amp; some_arguments-&gt;count()==5 )
+            {
+               Type t2 = extract_arg( some_arguments, 2 )-&gt;data_type() ;
+               Type t3 = extract_arg( some_arguments, 3 )-&gt;data_type() ;
+               Type k4 = extract_arg( some_arguments, 4 )-&gt;data_type() ;
+               result = ( t2==Double &amp;&amp; t3==Double &amp;&amp; k4==Int ) ;
+            }
+         }
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> Ei :
+         result = ( some_arguments-&gt;count()==1 ||
+                    some_arguments-&gt;count()==4 ) ;
+         </font><font class="kw1">if</font><font class="text">( result )
+         {
+            Type t0 = extract_arg( some_arguments, 0 )-&gt;data_type() ;
+            result = ( t0==Double ) ;
+            </font><font class="kw1">if</font><font class="text">( result &amp;&amp; some_arguments-&gt;count()==4 )
+            {
+               Type t1 = extract_arg( some_arguments, 1 )-&gt;data_type() ;
+               Type t2 = extract_arg( some_arguments, 2 )-&gt;data_type() ;
+               Type t3 = extract_arg( some_arguments, 3 )-&gt;data_type() ;
+               result = ( t1==Double &amp;&amp; t2==Double &amp;&amp; t3==Int ) ;
+            }
+         }
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> DblEq :
+         result = ( some_arguments-&gt;count()==4 ) ;
+         </font><font class="kw1">if</font><font class="text">( result )
+         {
+            Type t0 = extract_arg( some_arguments, 0 )-&gt;data_type() ;
+            Type t1 = extract_arg( some_arguments, 1 )-&gt;data_type() ;
+            Type t2 = extract_arg( some_arguments, 2 )-&gt;data_type() ;
+            Type t3 = extract_arg( some_arguments, 3 )-&gt;data_type() ;
+            result = ( t0==Double &amp;&amp; t1==Double &amp;&amp; t2==Double &amp;&amp; t3==Double ) ;
+         }
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> RandDbl :
+      </font><font class="kw1">case</font><font class="text"> RandInt :
+         result = ( some_arguments-&gt;count()==0 ) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">default</font><font class="text"> :
+         PEL_MathFunctionExp_ERROR::n0( </font><font class="string">&quot;matches_args&quot;</font><font class="text">, name() ) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+   }
+   
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text">:: to_bool( </font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ct ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_MathFunctionExp:: to_bool&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( to_bool_PRE(ct) ) ;
+   
+   </font><font class="kw1">bool</font><font class="text"> result = </font><font class="kw1">false</font><font class="text"> ;
+
+   </font><font class="kw1">switch</font><font class="text">( OP )
+   {
+      </font><font class="kw1">case</font><font class="text"> DblEq :
+         result = </font><font class="kw3">PEL</font><font class="text">::double_equality( ARG1-&gt;to_double( ct ),
+                                        ARG2-&gt;to_double( ct ),
+                                        ARG3-&gt;to_double( ct ),
+                                        ARG4-&gt;to_double( ct ) ) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">default</font><font class="text"> :
+         PEL_MathFunctionExp_ERROR::n0( </font><font class="string">&quot;to_bool&quot;</font><font class="text">, name() ) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+   }
+   </font><font class="kw1">return</font><font class="text"> result ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">double
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text">:: to_double( </font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ct ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_MathFunctionExp:: to_double&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( to_double_PRE(ct) ) ;
+   
+   </font><font class="kw1">double</font><font class="text"> result = </font><font class="kw3">PEL</font><font class="text">::max_double() ;
+
+   </font><font class="kw1">switch</font><font class="text">( OP )
+   {
+      </font><font class="kw1">case</font><font class="text"> Sqr :
+         result = </font><font class="kw3">PEL</font><font class="text">::sqr( ARG1-&gt;to_double(ct) ) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> Sqrt :
+         result = </font><font class="kw3">PEL</font><font class="text">::sqrt( ARG1-&gt;to_double(ct) ) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> Pow :
+         result = </font><font class="kw3">PEL</font><font class="text">::pow( ARG1-&gt;to_double(ct), ARG2-&gt;to_double(ct) ) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> Exp :
+         result = </font><font class="kw3">PEL</font><font class="text">::exp( ARG1-&gt;to_double(ct) ) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> Log :
+         result = </font><font class="kw3">PEL</font><font class="text">::log( ARG1-&gt;to_double(ct) ) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> Log10 :
+         result = </font><font class="kw3">PEL</font><font class="text">::log10( ARG1-&gt;to_double(ct) ) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> Sin :
+         result = </font><font class="kw3">PEL</font><font class="text">::sin( ARG1-&gt;to_double(ct) ) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> Cos :
+         result = </font><font class="kw3">PEL</font><font class="text">::cos( ARG1-&gt;to_double(ct) ) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> Tan :
+         result = </font><font class="kw3">PEL</font><font class="text">::tan( ARG1-&gt;to_double(ct) ) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> ASin :
+         result = </font><font class="kw3">PEL</font><font class="text">::asin( ARG1-&gt;to_double(ct) ) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> ACos :
+         result = </font><font class="kw3">PEL</font><font class="text">::acos( ARG1-&gt;to_double(ct) ) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> ATan :
+         result = </font><font class="kw3">PEL</font><font class="text">::atan( ARG1-&gt;to_double(ct) ) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> ATan2 :
+         result = </font><font class="kw3">PEL</font><font class="text">::atan2( ARG1-&gt;to_double(ct), ARG2-&gt;to_double(ct) ) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> Sinh :
+         result = </font><font class="kw3">PEL</font><font class="text">::sinh( ARG1-&gt;to_double(ct) ) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> Cosh :
+         result = </font><font class="kw3">PEL</font><font class="text">::cosh( ARG1-&gt;to_double(ct) ) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> Tanh :
+         result = </font><font class="kw3">PEL</font><font class="text">::tanh( ARG1-&gt;to_double(ct) ) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> ASinh :
+         result = </font><font class="kw3">PEL</font><font class="text">::asinh( ARG1-&gt;to_double(ct) ) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> ACosh :
+         result = </font><font class="kw3">PEL</font><font class="text">::acosh( ARG1-&gt;to_double(ct) ) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> ATanh :
+         result = </font><font class="kw3">PEL</font><font class="text">::atanh( ARG1-&gt;to_double(ct) ) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> J0 :
+         result = </font><font class="kw3">PEL</font><font class="text">::j0( ARG1-&gt;to_double(ct) ) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> J1 :
+         result = </font><font class="kw3">PEL</font><font class="text">::j1( ARG1-&gt;to_double(ct) ) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> Jn :
+         result = </font><font class="kw3">PEL</font><font class="text">::jn( ARG1-&gt;to_int(ct), ARG2-&gt;to_double(ct) ) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> Y0 :
+         result = </font><font class="kw3">PEL</font><font class="text">::y0( ARG1-&gt;to_double(ct) ) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> Y1 :
+         result = </font><font class="kw3">PEL</font><font class="text">::y1( ARG1-&gt;to_double(ct) ) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> Yn :
+         result = </font><font class="kw3">PEL</font><font class="text">::yn( ARG1-&gt;to_int(ct), ARG2-&gt;to_double(ct) ) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> Gamma :
+         result = </font><font class="kw3">PEL</font><font class="text">::gamma( ARG1-&gt;to_double(ct) ) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> LGamma :
+         result = </font><font class="kw3">PEL</font><font class="text">::lgamma( ARG1-&gt;to_double(ct) ) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> Erf :
+         result = </font><font class="kw3">PEL</font><font class="text">::erf( ARG1-&gt;to_double(ct) ) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> Erfc :
+         result = </font><font class="kw3">PEL</font><font class="text">::erfc( ARG1-&gt;to_double(ct) ) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> IGamma :
+         {
+            </font><font class="kw1">double</font><font class="text"> </font><font class="kw1">const</font><font class="text"> a = ARG1-&gt;to_double(ct) ;
+            </font><font class="kw1">if</font><font class="text">( a &lt;= 0 )
+            {
+               raise_error( </font><font class="string">&quot;first argument should be stricktly positive&quot;</font><font class="text"> ) ;
+            }
+            </font><font class="kw1">double</font><font class="text"> </font><font class="kw1">const</font><font class="text"> x = ARG2-&gt;to_double(ct) ;
+            </font><font class="kw1">if</font><font class="text">( x &lt;= 0 )
+            {
+               raise_error( </font><font class="string">&quot;second argument should be stricktly positive&quot;</font><font class="text"> ) ;
+            }
+            </font><font class="kw1">if</font><font class="text">( ARG3 == 0 )
+            {
+               result = </font><font class="kw3">PEL</font><font class="text">::incomplete_gamma( a, x ) ;
+            }
+            </font><font class="kw1">else
+</font><font class="text">            {
+               </font><font class="kw1">double</font><font class="text"> </font><font class="kw1">const</font><font class="text"> eps = ARG3-&gt;to_double(ct) ;
+               </font><font class="kw1">if</font><font class="text">( eps &lt;= 0 )
+               {
+                  raise_error( </font><font class="string">&quot;third argument should be stricktly positive&quot;</font><font class="text"> ) ;
+               }
+               </font><font class="kw1">double</font><font class="text"> </font><font class="kw1">const</font><font class="text"> err = ARG4-&gt;to_double(ct) ;
+               </font><font class="kw1">if</font><font class="text">( err &lt;= 0 )
+               {
+                  raise_error( </font><font class="string">&quot;fourth argument should be stricktly positive&quot;</font><font class="text"> ) ;
+               }
+               </font><font class="kw1">int</font><font class="text"> </font><font class="kw1">const</font><font class="text"> iter_max = ARG5-&gt;to_int(ct) ;
+               </font><font class="kw1">if</font><font class="text">( iter_max &lt;= 0 )
+               {
+                  raise_error( </font><font class="string">&quot;fifth argument should be stricktly positive&quot;</font><font class="text"> ) ;
+               }
+               result = </font><font class="kw3">PEL</font><font class="text">::incomplete_gamma( a, x,
+                                               eps, err, (</font><font class="kw2">size_t</font><font class="text">) iter_max ) ;
+            }
+         }
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> En :
+         {
+            </font><font class="kw1">int</font><font class="text"> </font><font class="kw1">const</font><font class="text"> n = ARG1-&gt;to_int(ct) ;
+            </font><font class="kw1">if</font><font class="text">( n &lt; 0 )
+            {
+               raise_error( </font><font class="string">&quot;first argument should be positive&quot;</font><font class="text"> ) ;
+            }
+            </font><font class="kw1">double</font><font class="text"> </font><font class="kw1">const</font><font class="text"> x = ARG2-&gt;to_double(ct) ;
+            </font><font class="kw1">if</font><font class="text">( x &lt; 0 )
+            {
+               raise_error( </font><font class="string">&quot;second argument should be positive&quot;</font><font class="text"> ) ;
+            }
+            </font><font class="kw1">if</font><font class="text">( ARG3 == 0 )
+            {
+               </font><font class="kw1">if</font><font class="text">( x&lt;1.E-30 &amp;&amp; n&lt;2 )
+               {
+                  raise_error( </font><font class="string">&quot;first argument less than 2 and null second argument&quot;</font><font class="text"> ) ;
+               }
+               result = </font><font class="kw3">PEL</font><font class="text">::En( (</font><font class="kw2">size_t</font><font class="text">) n, x ) ;
+            }
+            </font><font class="kw1">else
+</font><font class="text">            {
+               </font><font class="kw1">double</font><font class="text"> </font><font class="kw1">const</font><font class="text"> eps = ARG3-&gt;to_double(ct) ;
+               </font><font class="kw1">if</font><font class="text">( eps &lt;= 0 )
+               {
+                  raise_error( </font><font class="string">&quot;third argument should be stricktly positive&quot;</font><font class="text"> ) ;
+               }
+               </font><font class="kw1">double</font><font class="text"> </font><font class="kw1">const</font><font class="text"> err = ARG4-&gt;to_double(ct) ;
+               </font><font class="kw1">if</font><font class="text">( err &lt;= 0 )
+               {
+                  raise_error( </font><font class="string">&quot;fourth argument should be stricktly positive&quot;</font><font class="text"> ) ;
+               }
+               </font><font class="kw1">int</font><font class="text"> </font><font class="kw1">const</font><font class="text"> iter_max = ARG5-&gt;to_int(ct) ;
+               </font><font class="kw1">if</font><font class="text">( iter_max &lt;= 0 )
+               {
+                  raise_error( </font><font class="string">&quot;fifth argument should be stricktly positive&quot;</font><font class="text"> ) ;
+               }
+               </font><font class="kw1">if</font><font class="text">( x&lt;eps &amp;&amp; n&lt;2 )
+               {
+                  raise_error( </font><font class="string">&quot;first argument less than 2 and null second argument&quot;</font><font class="text"> ) ;
+               }
+               result = </font><font class="kw3">PEL</font><font class="text">::En( (</font><font class="kw2">size_t</font><font class="text">) n, x, eps, err, (</font><font class="kw2">size_t</font><font class="text">) iter_max ) ;
+            }
+         }
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> Ei :
+         {
+            </font><font class="kw1">double</font><font class="text"> </font><font class="kw1">const</font><font class="text"> x = ARG1-&gt;to_double(ct) ;
+            </font><font class="kw1">if</font><font class="text">( x &lt; 0 )
+            {
+               raise_error( </font><font class="string">&quot;first argument should be positive&quot;</font><font class="text"> ) ;
+            }
+            </font><font class="kw1">if</font><font class="text">( ARG2 == 0 )
+            {
+               result = </font><font class="kw3">PEL</font><font class="text">::Ei( x ) ;
+            }
+            </font><font class="kw1">else
+</font><font class="text">            {
+               </font><font class="kw1">double</font><font class="text"> </font><font class="kw1">const</font><font class="text"> eps = ARG2-&gt;to_double(ct) ;
+               </font><font class="kw1">if</font><font class="text">( eps &lt; 0 )
+               {
+                  raise_error( </font><font class="string">&quot;second argument should be positive&quot;</font><font class="text"> ) ;
+               }
+               </font><font class="kw1">double</font><font class="text"> </font><font class="kw1">const</font><font class="text"> err = ARG3-&gt;to_double(ct) ;
+               </font><font class="kw1">if</font><font class="text">( err &lt;= 0 )
+               {
+                  raise_error( </font><font class="string">&quot;third argument should be stricktly positive&quot;</font><font class="text"> ) ;
+               }
+               </font><font class="kw1">int</font><font class="text"> </font><font class="kw1">const</font><font class="text"> iter_max = ARG4-&gt;to_int(ct) ;
+               </font><font class="kw1">if</font><font class="text">( iter_max &lt;= 0 )
+               {
+                  raise_error( </font><font class="string">&quot;fourth argument should be stricktly positive&quot;</font><font class="text"> ) ;
+               }
+               result = </font><font class="kw3">PEL</font><font class="text">::Ei( x, eps, err, (</font><font class="kw2">size_t</font><font class="text">) iter_max ) ;
+            }
+         }
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> Abs :
+         result = </font><font class="kw3">PEL</font><font class="text">::abs( ARG1-&gt;to_double(ct) ) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> Floor :
+         result = </font><font class="kw3">PEL</font><font class="text">::floor( ARG1-&gt;to_double(ct) ) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> Ceil :
+         result = </font><font class="kw3">PEL</font><font class="text">::ceil( ARG1-&gt;to_double(ct) ) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text">  RandDbl :
+         result = </font><font class="kw3">PEL</font><font class="text">::random_double() ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">default</font><font class="text"> :
+         PEL_MathFunctionExp_ERROR::n0( </font><font class="string">&quot;to_double&quot;</font><font class="text">, name() ) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+   }
+   </font><font class="kw1">return</font><font class="text"> result ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">int
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text">:: to_int( </font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ct ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_MathFunctionExp:: to_int&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( to_int_PRE(ct) ) ;
+   
+   </font><font class="kw1">int</font><font class="text"> result = </font><font class="kw3">PEL</font><font class="text">::max_int() ;
+
+   </font><font class="kw1">switch</font><font class="text">( OP )
+   {
+      </font><font class="kw1">case</font><font class="text"> Abs :
+         result = </font><font class="kw3">PEL</font><font class="text">::abs( ARG1-&gt;to_int(ct) ) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> RandInt :
+         result = </font><font class="kw3">PEL</font><font class="text">::rand() ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">default</font><font class="text"> :
+         PEL_MathFunctionExp_ERROR::n0( </font><font class="string">&quot;to_int&quot;</font><font class="text">, name() ) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+   }
+   </font><font class="kw1">return</font><font class="text"> result ;
+}
+
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_Data</font><font class="text">*
+</font><font class="kw3">PEL_MathFunctionExp</font><font class="text">:: create_derivative( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                         </font><font class="kw3">PEL_Variable</font><font class="text"> </font><font class="kw1">const</font><font class="text">* var,
+                                         </font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ct ) </font><font class="kw1">const</font><font class="text"> 
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_MathFunctionExp:: create_derivative&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( create_derivative_PRE( a_owner, var, ct ) ) ;
+   
+   </font><font class="kw3">PEL_Data</font><font class="text">* result = 0 ;
+   </font><font class="kw1">if</font><font class="text">( OP==Pow )
+   {
+      </font><font class="kw3">PEL_List</font><font class="text"> * lst = </font><font class="kw3">PEL_List</font><font class="text">::create( 0 ) ;
+      lst-&gt;append( ARG1-&gt;create_clone( lst ) ) ;
+      </font><font class="kw3">PEL_Data</font><font class="text">* log = </font><font class="kw3">PEL_Expression</font><font class="text">::create( 0, </font><font class="string">&quot;log&quot;</font><font class="text">, lst ) ;
+      lst-&gt;set_owner( log ) ;
+      
+      lst = </font><font class="kw3">PEL_List</font><font class="text">::create( 0 ) ;
+      lst-&gt;append( ARG2-&gt;create_derivative( lst, var, ct ) ) ;
+      lst-&gt;append( log ) ; log-&gt;set_owner( lst ) ;
+      </font><font class="kw3">PEL_Data</font><font class="text">* yprime_log = </font><font class="kw3">PEL_Expression</font><font class="text">::create( 0, </font><font class="string">&quot;*&quot;</font><font class="text">, lst ) ;
+      lst-&gt;set_owner( yprime_log ) ;
+      
+      lst = </font><font class="kw3">PEL_List</font><font class="text">::create( 0 ) ;
+      lst-&gt;append( yprime_log ) ; yprime_log-&gt;set_owner( lst ) ;
+      lst-&gt;append( create_clone( lst ) ) ;
+      </font><font class="kw3">PEL_Data</font><font class="text">* yprime_log_x_pow_y = </font><font class="kw3">PEL_Expression</font><font class="text">::create( 0, </font><font class="string">&quot;*&quot;</font><font class="text">, lst ) ;
+      lst-&gt;set_owner( yprime_log_x_pow_y ) ;
+
+      lst = </font><font class="kw3">PEL_List</font><font class="text">::create( 0 ) ;
+      lst-&gt;append( ARG2-&gt;create_clone( lst ) ) ; 
+      lst-&gt;append( ARG1-&gt;create_derivative( lst, var, ct ) ) ;
+      </font><font class="kw3">PEL_Data</font><font class="text">* y_xprime = </font><font class="kw3">PEL_Expression</font><font class="text">::create( 0, </font><font class="string">&quot;*&quot;</font><font class="text">, lst ) ;
+      lst-&gt;set_owner( y_xprime ) ;
+      
+      lst = </font><font class="kw3">PEL_List</font><font class="text">::create( 0 ) ;
+      lst-&gt;append( ARG2-&gt;create_clone( lst ) ) ; 
+      lst-&gt;append( </font><font class="kw3">PEL_Double</font><font class="text">::create( lst, 1.0 ) ) ; 
+      </font><font class="kw3">PEL_Data</font><font class="text">* ym1 = </font><font class="kw3">PEL_Expression</font><font class="text">::create( 0, </font><font class="string">&quot;-&quot;</font><font class="text">, lst ) ;
+      lst-&gt;set_owner( ym1 ) ;
+
+      lst = </font><font class="kw3">PEL_List</font><font class="text">::create( 0 ) ;
+      lst-&gt;append( ARG1-&gt;create_clone( lst ) ) ; 
+      lst-&gt;append( ym1 ) ;  ym1-&gt;set_owner( lst ) ;
+      </font><font class="kw3">PEL_Data</font><font class="text">* x_pow_ym1 = </font><font class="kw3">PEL_Expression</font><font class="text">::create( 0, </font><font class="string">&quot;pow&quot;</font><font class="text">, lst ) ;
+      lst-&gt;set_owner( x_pow_ym1 ) ;
+      
+      lst = </font><font class="kw3">PEL_List</font><font class="text">::create( 0 ) ;
+      lst-&gt;append( y_xprime ) ; y_xprime-&gt;set_owner( lst ) ;
+      lst-&gt;append( x_pow_ym1 ) ; x_pow_ym1-&gt;set_owner( lst ) ;
+      </font><font class="kw3">PEL_Data</font><font class="text">* y_xprime_x_pow_ym1 = </font><font class="kw3">PEL_Expression</font><font class="text">::create( 0, </font><font class="string">&quot;*&quot;</font><font class="text">, lst ) ;
+      lst-&gt;set_owner( y_xprime_x_pow_ym1 ) ;
+      
+      lst = </font><font class="kw3">PEL_List</font><font class="text">::create( 0 ) ;
+      lst-&gt;append( yprime_log_x_pow_y ) ;yprime_log_x_pow_y-&gt;set_owner( lst ) ;
+      lst-&gt;append( y_xprime_x_pow_ym1 ) ;y_xprime_x_pow_ym1-&gt;set_owner( lst ) ;
+      result = </font><font class="kw3">PEL_Expression</font><font class="text">::create( a_owner, </font><font class="string">&quot;+&quot;</font><font class="text">, lst ) ;
+      lst-&gt;set_owner( result ) ;
+      
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      </font><font class="kw3">PEL_Data</font><font class="text">* composed_derivative = 0 ;
+      </font><font class="kw3">PEL_Data</font><font class="text"> </font><font class="kw1">const</font><font class="text">* der_variable = ARG1 ;
+      </font><font class="kw3">PEL_List</font><font class="text"> * lst = </font><font class="kw3">PEL_List</font><font class="text">::create( 0 ) ;
+      </font><font class="kw1">switch</font><font class="text">( OP )
+      {
+         </font><font class="kw1">case</font><font class="text"> Sqr :
+            lst-&gt;append( </font><font class="kw3">PEL_Double</font><font class="text">::create( lst, 2.0 ) ) ;
+            lst-&gt;append( ARG1-&gt;create_clone( lst ) ) ;
+            composed_derivative = </font><font class="kw3">PEL_Expression</font><font class="text">::create( 0, </font><font class="string">&quot;*&quot;</font><font class="text">, lst ) ;
+            lst-&gt;set_owner( composed_derivative ) ;
+         
+            </font><font class="kw1">break</font><font class="text"> ;
+         </font><font class="kw1">case</font><font class="text"> Sqrt :
+            lst-&gt;append( ARG1-&gt;create_clone( lst ) ) ;
+            lst-&gt;append( </font><font class="kw3">PEL_Double</font><font class="text">::create( lst, -0.5 ) ) ;
+            composed_derivative = </font><font class="kw3">PEL_Expression</font><font class="text">::create( 0, </font><font class="string">&quot;pow&quot;</font><font class="text">, lst ) ;
+            lst-&gt;set_owner( composed_derivative ) ;
+            lst = </font><font class="kw3">PEL_List</font><font class="text">::create( 0 ) ;
+            lst-&gt;append( </font><font class="kw3">PEL_Double</font><font class="text">::create( lst, 0.5 ) ) ;
+            lst-&gt;append( composed_derivative ) ; composed_derivative-&gt;set_owner( lst ) ;
+            composed_derivative = </font><font class="kw3">PEL_Expression</font><font class="text">::create( 0, </font><font class="string">&quot;*&quot;</font><font class="text">, lst ) ;
+            lst-&gt;set_owner( composed_derivative ) ;
+         
+            </font><font class="kw1">break</font><font class="text"> ;
+         </font><font class="kw1">case</font><font class="text"> Exp :
+            composed_derivative = create_clone( 0 ) ;
+            lst-&gt;destroy() ;
+            </font><font class="kw1">break</font><font class="text"> ;
+         </font><font class="kw1">case</font><font class="text"> Log :
+            lst-&gt;append( </font><font class="kw3">PEL_Double</font><font class="text">::create( lst, 1.0 ) ) ;
+            lst-&gt;append( ARG1-&gt;create_clone( lst ) ) ;
+            composed_derivative = </font><font class="kw3">PEL_Expression</font><font class="text">::create( 0, </font><font class="string">&quot;/&quot;</font><font class="text">, lst ) ;
+            lst-&gt;set_owner( composed_derivative ) ;
+            </font><font class="kw1">break</font><font class="text"> ;
+         </font><font class="kw1">case</font><font class="text"> Sin :
+            lst-&gt;append( ARG1-&gt;create_clone( lst ) ) ;
+            composed_derivative = </font><font class="kw3">PEL_Expression</font><font class="text">::create( 0, </font><font class="string">&quot;cos&quot;</font><font class="text">, lst ) ;
+            lst-&gt;set_owner( composed_derivative ) ;
+            </font><font class="kw1">break</font><font class="text"> ;
+         </font><font class="kw1">case</font><font class="text"> Cos :
+            lst-&gt;append( ARG1-&gt;create_clone( lst ) ) ;
+            composed_derivative = </font><font class="kw3">PEL_Expression</font><font class="text">::create( 0, </font><font class="string">&quot;sin&quot;</font><font class="text">, lst ) ;
+            lst-&gt;set_owner( composed_derivative ) ;
+            lst = </font><font class="kw3">PEL_List</font><font class="text">::create( 0 ) ;
+            lst-&gt;append( composed_derivative ) ;composed_derivative-&gt;set_owner(lst) ;
+            composed_derivative = </font><font class="kw3">PEL_Expression</font><font class="text">::create( 0, </font><font class="string">&quot;unary_minus&quot;</font><font class="text">, lst ) ;
+            lst-&gt;set_owner( composed_derivative ) ;         
+            </font><font class="kw1">break</font><font class="text"> ;
+         </font><font class="kw1">case</font><font class="text"> Tan :
+            lst-&gt;append( ARG1-&gt;create_clone( lst ) ) ;
+            composed_derivative = </font><font class="kw3">PEL_Expression</font><font class="text">::create( 0, </font><font class="string">&quot;cos&quot;</font><font class="text">, lst ) ;
+            lst-&gt;set_owner( composed_derivative ) ;
+            
+            lst = </font><font class="kw3">PEL_List</font><font class="text">::create( 0 ) ;
+            lst-&gt;append( composed_derivative ) ;composed_derivative-&gt;set_owner(lst) ;
+            lst-&gt;append( </font><font class="kw3">PEL_Double</font><font class="text">::create( lst, -2.0 ) ) ;
+            composed_derivative = </font><font class="kw3">PEL_Expression</font><font class="text">::create( 0, </font><font class="string">&quot;pow&quot;</font><font class="text">, lst ) ;
+            lst-&gt;set_owner( composed_derivative ) ;         
+            </font><font class="kw1">break</font><font class="text"> ;
+         </font><font class="kw1">case</font><font class="text"> ASin :
+         </font><font class="kw1">case</font><font class="text"> ACos :
+            lst-&gt;append( ARG1-&gt;create_clone( lst ) ) ;
+            composed_derivative = </font><font class="kw3">PEL_Expression</font><font class="text">::create( 0, </font><font class="string">&quot;sqr&quot;</font><font class="text">, lst ) ;
+            lst-&gt;set_owner( composed_derivative ) ;
+            
+            lst = </font><font class="kw3">PEL_List</font><font class="text">::create( 0 ) ;
+            lst-&gt;append( </font><font class="kw3">PEL_Double</font><font class="text">::create( lst, 1.0 ) ) ;
+            lst-&gt;append( composed_derivative ) ;composed_derivative-&gt;set_owner(lst) ;
+            composed_derivative = </font><font class="kw3">PEL_Expression</font><font class="text">::create( 0, </font><font class="string">&quot;-&quot;</font><font class="text">, lst ) ;
+            lst-&gt;set_owner( composed_derivative ) ;
+            
+            lst = </font><font class="kw3">PEL_List</font><font class="text">::create( 0 ) ;
+            lst-&gt;append( composed_derivative ) ;composed_derivative-&gt;set_owner(lst) ;
+            lst-&gt;append( </font><font class="kw3">PEL_Double</font><font class="text">::create( lst, -0.5 ) ) ;
+            composed_derivative = </font><font class="kw3">PEL_Expression</font><font class="text">::create( 0, </font><font class="string">&quot;pow&quot;</font><font class="text">, lst ) ;
+            lst-&gt;set_owner( composed_derivative ) ;
+            </font><font class="kw1">if</font><font class="text">( OP==ASin ) </font><font class="kw1">break</font><font class="text"> ;
+            
+            lst = </font><font class="kw3">PEL_List</font><font class="text">::create( 0 ) ;
+            lst-&gt;append( composed_derivative ) ;composed_derivative-&gt;set_owner(lst) ;
+            composed_derivative = </font><font class="kw3">PEL_Expression</font><font class="text">::create( 0, </font><font class="string">&quot;unary_minus&quot;</font><font class="text">, lst ) ;
+            lst-&gt;set_owner( composed_derivative ) ;         
+            </font><font class="kw1">break</font><font class="text"> ;
+         </font><font class="kw1">case</font><font class="text"> ATan :
+            lst-&gt;append( ARG1-&gt;create_clone( lst ) ) ;
+            composed_derivative = </font><font class="kw3">PEL_Expression</font><font class="text">::create( 0, </font><font class="string">&quot;sqr&quot;</font><font class="text">, lst ) ;
+            lst-&gt;set_owner( composed_derivative ) ;
+            
+            lst = </font><font class="kw3">PEL_List</font><font class="text">::create( 0 ) ;
+            lst-&gt;append( </font><font class="kw3">PEL_Double</font><font class="text">::create( lst, 1.0 ) ) ;
+            lst-&gt;append( composed_derivative ) ;composed_derivative-&gt;set_owner(lst) ;
+            composed_derivative = </font><font class="kw3">PEL_Expression</font><font class="text">::create( 0, </font><font class="string">&quot;+&quot;</font><font class="text">, lst ) ;
+            lst-&gt;set_owner( composed_derivative ) ;
+            
+            lst = </font><font class="kw3">PEL_List</font><font class="text">::create( 0 ) ;
+            lst-&gt;append( </font><font class="kw3">PEL_Double</font><font class="text">::create( lst, 1.0 ) ) ;
+            lst-&gt;append( composed_derivative ) ;composed_derivative-&gt;set_owner(lst) ;
+            composed_derivative = </font><font class="kw3">PEL_Expression</font><font class="text">::create( 0, </font><font class="string">&quot;/&quot;</font><font class="text">, lst ) ;
+            lst-&gt;set_owner( composed_derivative ) ;
+            </font><font class="kw1">break</font><font class="text"> ;
+         </font><font class="kw1">case</font><font class="text"> Sinh :
+            lst-&gt;append( ARG1-&gt;create_clone( lst ) ) ;
+            composed_derivative = </font><font class="kw3">PEL_Expression</font><font class="text">::create( 0, </font><font class="string">&quot;cosh&quot;</font><font class="text">, lst ) ;
+            lst-&gt;set_owner( composed_derivative ) ;
+            </font><font class="kw1">break</font><font class="text"> ;
+         </font><font class="kw1">case</font><font class="text"> Cosh :
+            lst-&gt;append( ARG1-&gt;create_clone( lst ) ) ;
+            composed_derivative = </font><font class="kw3">PEL_Expression</font><font class="text">::create( 0, </font><font class="string">&quot;sinh&quot;</font><font class="text">, lst ) ;
+            lst-&gt;set_owner( composed_derivative ) ;
+            </font><font class="kw1">break</font><font class="text"> ;
+         </font><font class="kw1">case</font><font class="text"> Tanh :
+            lst-&gt;append( ARG1-&gt;create_clone( lst ) ) ;
+            composed_derivative = </font><font class="kw3">PEL_Expression</font><font class="text">::create( 0, </font><font class="string">&quot;cosh&quot;</font><font class="text">, lst ) ;
+            lst-&gt;set_owner( composed_derivative ) ;
+            
+            lst = </font><font class="kw3">PEL_List</font><font class="text">::create( 0 ) ;
+            lst-&gt;append( composed_derivative ) ;composed_derivative-&gt;set_owner(lst) ;
+            lst-&gt;append( </font><font class="kw3">PEL_Double</font><font class="text">::create( lst, -2.0 ) ) ;
+            composed_derivative = </font><font class="kw3">PEL_Expression</font><font class="text">::create( 0, </font><font class="string">&quot;pow&quot;</font><font class="text">, lst ) ;
+            lst-&gt;set_owner( composed_derivative ) ;         
+            </font><font class="kw1">break</font><font class="text"> ;
+         </font><font class="kw1">case</font><font class="text"> Erf :
+         </font><font class="kw1">case</font><font class="text"> Erfc :
+            lst-&gt;append( ARG1-&gt;create_clone( lst ) ) ;
+            composed_derivative = </font><font class="kw3">PEL_Expression</font><font class="text">::create( 0, </font><font class="string">&quot;sqr&quot;</font><font class="text">, lst ) ;
+            lst-&gt;set_owner( composed_derivative ) ;
+            
+            lst = </font><font class="kw3">PEL_List</font><font class="text">::create( 0 ) ;
+            lst-&gt;append( composed_derivative ) ;composed_derivative-&gt;set_owner(lst) ;
+            composed_derivative = </font><font class="kw3">PEL_Expression</font><font class="text">::create( 0, </font><font class="string">&quot;unary_minus&quot;</font><font class="text">, lst ) ;
+            lst-&gt;set_owner( composed_derivative ) ;
+
+            lst = </font><font class="kw3">PEL_List</font><font class="text">::create( 0 ) ;
+            lst-&gt;append( composed_derivative ) ;composed_derivative-&gt;set_owner(lst) ;
+            composed_derivative = </font><font class="kw3">PEL_Expression</font><font class="text">::create( 0, </font><font class="string">&quot;exp&quot;</font><font class="text">, lst ) ;
+            lst-&gt;set_owner( composed_derivative ) ;
+            
+            lst = </font><font class="kw3">PEL_List</font><font class="text">::create( 0 ) ;
+            lst-&gt;append(
+               </font><font class="kw3">PEL_Double</font><font class="text">::create( lst,
+                                   ( OP==Erf ? 1.0 : -1.0 )*2.0/</font><font class="kw3">PEL</font><font class="text">::sqrt( </font><font class="kw3">PEL</font><font class="text">::pi() ) ) ) ;
+            lst-&gt;append( composed_derivative ) ;composed_derivative-&gt;set_owner(lst) ;
+            composed_derivative = </font><font class="kw3">PEL_Expression</font><font class="text">::create( 0, </font><font class="string">&quot;*&quot;</font><font class="text">, lst ) ;
+            lst-&gt;set_owner( composed_derivative ) ;
+            </font><font class="kw1">break</font><font class="text"> ;
+         </font><font class="kw1">case</font><font class="text"> ASinh :
+            lst-&gt;append( ARG1-&gt;create_clone( lst ) ) ;
+            composed_derivative = </font><font class="kw3">PEL_Expression</font><font class="text">::create( 0, </font><font class="string">&quot;sqr&quot;</font><font class="text">, lst ) ;
+            lst-&gt;set_owner( composed_derivative ) ;
+            
+            lst = </font><font class="kw3">PEL_List</font><font class="text">::create( 0 ) ;
+            lst-&gt;append( </font><font class="kw3">PEL_Double</font><font class="text">::create( lst, 1.0 ) ) ;
+            lst-&gt;append( composed_derivative ) ;composed_derivative-&gt;set_owner(lst) ;
+            composed_derivative = </font><font class="kw3">PEL_Expression</font><font class="text">::create( 0, </font><font class="string">&quot;+&quot;</font><font class="text">, lst ) ;
+            lst-&gt;set_owner( composed_derivative ) ;
+            
+            lst = </font><font class="kw3">PEL_List</font><font class="text">::create( 0 ) ;
+            lst-&gt;append( composed_derivative ) ;composed_derivative-&gt;set_owner(lst) ;
+            lst-&gt;append( </font><font class="kw3">PEL_Double</font><font class="text">::create( lst, -0.5 ) ) ;
+            composed_derivative = </font><font class="kw3">PEL_Expression</font><font class="text">::create( 0, </font><font class="string">&quot;pow&quot;</font><font class="text">, lst ) ;
+            lst-&gt;set_owner( composed_derivative ) ;
+            </font><font class="kw1">break</font><font class="text"> ;
+         </font><font class="kw1">case</font><font class="text"> ACosh :
+            lst-&gt;append( ARG1-&gt;create_clone( lst ) ) ;
+            composed_derivative = </font><font class="kw3">PEL_Expression</font><font class="text">::create( 0, </font><font class="string">&quot;sqr&quot;</font><font class="text">, lst ) ;
+            lst-&gt;set_owner( composed_derivative ) ;
+            
+            lst = </font><font class="kw3">PEL_List</font><font class="text">::create( 0 ) ;
+            lst-&gt;append( composed_derivative ) ;composed_derivative-&gt;set_owner(lst) ;
+            lst-&gt;append( </font><font class="kw3">PEL_Double</font><font class="text">::create( lst, 1.0 ) ) ;
+            composed_derivative = </font><font class="kw3">PEL_Expression</font><font class="text">::create( 0, </font><font class="string">&quot;-&quot;</font><font class="text">, lst ) ;
+            lst-&gt;set_owner( composed_derivative ) ;
+            
+            lst = </font><font class="kw3">PEL_List</font><font class="text">::create( 0 ) ;
+            lst-&gt;append( composed_derivative ) ;composed_derivative-&gt;set_owner(lst) ;
+            lst-&gt;append( </font><font class="kw3">PEL_Double</font><font class="text">::create( lst, -0.5 ) ) ;
+            composed_derivative = </font><font class="kw3">PEL_Expression</font><font class="text">::create( 0, </font><font class="string">&quot;pow&quot;</font><font class="text">, lst ) ;
+            lst-&gt;set_owner( composed_derivative ) ;
+            </font><font class="kw1">break</font><font class="text"> ;
+         </font><font class="kw1">case</font><font class="text"> ATanh :
+            lst-&gt;append( ARG1-&gt;create_clone( lst ) ) ;
+            composed_derivative = </font><font class="kw3">PEL_Expression</font><font class="text">::create( 0, </font><font class="string">&quot;sqr&quot;</font><font class="text">, lst ) ;
+            lst-&gt;set_owner( composed_derivative ) ;
+            
+            lst = </font><font class="kw3">PEL_List</font><font class="text">::create( 0 ) ;
+            lst-&gt;append( </font><font class="kw3">PEL_Double</font><font class="text">::create( lst, 1.0 ) ) ;
+            lst-&gt;append( composed_derivative ) ;composed_derivative-&gt;set_owner(lst) ;
+            composed_derivative = </font><font class="kw3">PEL_Expression</font><font class="text">::create( 0, </font><font class="string">&quot;-&quot;</font><font class="text">, lst ) ;
+            lst-&gt;set_owner( composed_derivative ) ;
+            
+            lst = </font><font class="kw3">PEL_List</font><font class="text">::create( 0 ) ;
+            lst-&gt;append( </font><font class="kw3">PEL_Double</font><font class="text">::create( lst, 1.0 ) ) ;
+            lst-&gt;append( composed_derivative ) ;composed_derivative-&gt;set_owner(lst) ;
+            composed_derivative = </font><font class="kw3">PEL_Expression</font><font class="text">::create( 0, </font><font class="string">&quot;/&quot;</font><font class="text">, lst ) ;
+            lst-&gt;set_owner( composed_derivative ) ;
+            </font><font class="kw1">break</font><font class="text"> ;
+         </font><font class="kw1">case</font><font class="text"> Ei :
+            </font><font class="comment">// e(x)/x
+</font><font class="text">            lst-&gt;append( ARG1-&gt;create_clone( lst ) ) ;
+            composed_derivative = </font><font class="kw3">PEL_Expression</font><font class="text">::create( 0, </font><font class="string">&quot;exp&quot;</font><font class="text">, lst ) ;
+            lst-&gt;set_owner( composed_derivative ) ;
+
+            lst = </font><font class="kw3">PEL_List</font><font class="text">::create( 0 ) ;
+            lst-&gt;append( composed_derivative ) ;
+            composed_derivative-&gt;set_owner( lst ) ;
+            lst-&gt;append( ARG1-&gt;create_clone( lst ) ) ;
+            composed_derivative = </font><font class="kw3">PEL_Expression</font><font class="text">::create( 0, </font><font class="string">&quot;/&quot;</font><font class="text">, lst ) ;
+            lst-&gt;set_owner( composed_derivative ) ;
+            </font><font class="kw1">break</font><font class="text"> ;
+         </font><font class="kw1">case</font><font class="text"> En :
+            </font><font class="comment">// n==0 ? -(x+1)*e(-x)/x^2 : -E(n-1,x)
+</font><font class="text">            {
+               der_variable = ARG2 ;
+               </font><font class="kw1">int</font><font class="text"> </font><font class="kw1">const</font><font class="text"> n = ARG1-&gt;to_int( ct ) ;
+               </font><font class="kw1">if</font><font class="text">( n == 0 )
+               {
+                  lst-&gt;append( ARG2-&gt;create_clone( lst ) ) ;
+                  composed_derivative =
+                     </font><font class="kw3">PEL_Expression</font><font class="text">::create( 0, </font><font class="string">&quot;unary_minus&quot;</font><font class="text">, lst ) ;
+                  lst-&gt;set_owner( composed_derivative ) ;
+
+                  lst = </font><font class="kw3">PEL_List</font><font class="text">::create( 0 ) ;
+                  lst-&gt;append( composed_derivative ) ;
+                  composed_derivative-&gt;set_owner( lst ) ;
+                  composed_derivative =
+                     </font><font class="kw3">PEL_Expression</font><font class="text">::create( 0, </font><font class="string">&quot;exp&quot;</font><font class="text">, lst ) ;
+                  lst-&gt;set_owner( composed_derivative ) ;
+
+                  lst = </font><font class="kw3">PEL_List</font><font class="text">::create( 0 ) ;
+                  lst-&gt;append( </font><font class="kw3">PEL_Double</font><font class="text">::create( lst, -1. ) ) ;
+                  lst-&gt;append( ARG2-&gt;create_clone( lst ) ) ;
+                  </font><font class="kw3">PEL_Expression</font><font class="text">* exp = 
+                     </font><font class="kw3">PEL_Expression</font><font class="text">::create( 0, </font><font class="string">&quot;-&quot;</font><font class="text">, lst ) ;
+                  lst-&gt;set_owner( exp ) ;
+
+                  lst = </font><font class="kw3">PEL_List</font><font class="text">::create( 0 ) ;
+                  lst-&gt;append( exp ) ;
+                  exp-&gt;set_owner( lst ) ;
+                  lst-&gt;append( composed_derivative ) ;
+                  composed_derivative-&gt;set_owner( lst ) ;
+                  composed_derivative =
+                     </font><font class="kw3">PEL_Expression</font><font class="text">::create( 0, </font><font class="string">&quot;*&quot;</font><font class="text">, lst ) ;
+                  lst-&gt;set_owner( composed_derivative ) ;
+
+                  lst = </font><font class="kw3">PEL_List</font><font class="text">::create( 0 ) ;
+                  lst-&gt;append( composed_derivative ) ;
+                  composed_derivative-&gt;set_owner( lst ) ;
+                  lst-&gt;append( ARG2-&gt;create_clone( lst ) ) ;
+                  composed_derivative =
+                     </font><font class="kw3">PEL_Expression</font><font class="text">::create( 0, </font><font class="string">&quot;/&quot;</font><font class="text">, lst ) ;
+                  lst-&gt;set_owner( composed_derivative ) ;
+                  
+                  lst = </font><font class="kw3">PEL_List</font><font class="text">::create( 0 ) ;
+                  lst-&gt;append( composed_derivative ) ;
+                  composed_derivative-&gt;set_owner( lst ) ;
+                  lst-&gt;append( ARG2-&gt;create_clone( lst ) ) ;
+                  composed_derivative =
+                     </font><font class="kw3">PEL_Expression</font><font class="text">::create( 0, </font><font class="string">&quot;/&quot;</font><font class="text">, lst ) ;
+                  lst-&gt;set_owner( composed_derivative ) ;
+               }
+               </font><font class="kw1">else
+</font><font class="text">               {
+                  lst-&gt;append( </font><font class="kw3">PEL_Int</font><font class="text">::create( lst, n-1 ) ) ;
+                  lst-&gt;append( ARG2-&gt;create_clone( lst ) ) ;
+                  </font><font class="kw1">if</font><font class="text">( ARG3 != 0 )
+                  {
+                     lst-&gt;append( ARG3-&gt;create_clone( lst ) ) ;
+                     lst-&gt;append( ARG4-&gt;create_clone( lst ) ) ;
+                     lst-&gt;append( ARG5-&gt;create_clone( lst ) ) ;
+                  }
+                  composed_derivative = </font><font class="kw3">PEL_Expression</font><font class="text">::create( 0, </font><font class="string">&quot;En&quot;</font><font class="text">, lst ) ;
+                  lst-&gt;set_owner( composed_derivative ) ;
+
+                  lst = </font><font class="kw3">PEL_List</font><font class="text">::create( 0 ) ;
+                  lst-&gt;append( composed_derivative ) ;
+                  composed_derivative-&gt;set_owner( lst ) ;
+                  composed_derivative =
+                     </font><font class="kw3">PEL_Expression</font><font class="text">::create( 0, </font><font class="string">&quot;unary_minus&quot;</font><font class="text">, lst ) ;
+                  lst-&gt;set_owner( composed_derivative ) ;
+               }
+            }
+            </font><font class="kw1">break</font><font class="text"> ;
+         </font><font class="kw1">case</font><font class="text"> J0 :
+         </font><font class="kw1">case</font><font class="text"> J1 :
+         </font><font class="kw1">case</font><font class="text"> Jn :
+         </font><font class="kw1">case</font><font class="text"> Y0 :
+         </font><font class="kw1">case</font><font class="text"> Y1 :
+         </font><font class="kw1">case</font><font class="text"> Yn :
+         </font><font class="kw1">case</font><font class="text"> Gamma :
+         </font><font class="kw1">case</font><font class="text"> LGamma :
+         </font><font class="kw1">case</font><font class="text"> ATan2 :
+         </font><font class="kw1">case</font><font class="text"> Log10 :
+         </font><font class="kw1">case</font><font class="text"> IGamma :
+         </font><font class="kw1">default</font><font class="text"> :
+            PEL_MathFunctionExp_ERROR::n0( </font><font class="string">&quot;create_derivative&quot;</font><font class="text">, name() ) ;
+            </font><font class="kw1">break</font><font class="text"> ;
+      }
+      </font><font class="kw3">PEL_Data</font><font class="text">* der = der_variable-&gt;create_derivative( 0, var, ct ) ;
+      lst = </font><font class="kw3">PEL_List</font><font class="text">::create( 0 ) ;
+      lst-&gt;append( der ) ; der-&gt;set_owner( lst ) ;
+      lst-&gt;append( composed_derivative ) ; composed_derivative-&gt;set_owner( lst ) ;
+      result = </font><font class="kw3">PEL_Expression</font><font class="text">::create( a_owner, </font><font class="string">&quot;*&quot;</font><font class="text">, lst ) ;
+      lst-&gt;set_owner( result ) ;
+   }   
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( create_derivative_POST( a_owner, var, result ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="kw1">void</font><font class="text"> 
+PEL_MathFunctionExp_ERROR:: n0( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; f_name,
+                                </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; op_name )
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> mesg ;
+   mesg += </font><font class="string">&quot;*** PEL_MathFunctionExp::&quot;</font><font class="text"> + f_name +</font><font class="string">&quot;\n&quot;</font><font class="text"> ;
+   mesg += </font><font class="string">&quot;    operation &quot;</font><font class="text"> + op_name + </font><font class="string">&quot; not implemented.&quot;</font><font class="text"> ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_internal( mesg ) ;
+}
+
+</font>
+</pre>
+</body>
+</html>

@@ -1,0 +1,160 @@
+MODULE problem_description
+   
+   _type = "S"
+   _name = "problem_description"
+   _access = "mandatory"
+   
+   // Navier-Stokes:
+   $SS_NS_LOW_MACH = "#(/problem_description/Navier_Stokes,'disable')='low_mach'"
+   $SS_VP = "#(/problem_description/Navier_Stokes,'disable')!='disable'"
+
+   // Turbulence:
+   $SS_KEPS = "#(/problem_description/turbulence,'disable')='k_epsilon'"
+   $SS_TURB = $SS_KEPS
+
+   // Energy:
+   $SS_NO_TEMP = "#(/problem_description/energy,'disable')='disable'"
+   $SS_TEMP = "#(/problem_description/energy,'disable')!='disable'"
+   $SS_ENTH = ""+$SS_TEMP+" && #(/problem_description/combustion,'disable')!='EBU'"
+
+   // Radiative intensity:
+   $SS_RADP1        = "#(/problem_description/radiation,'disable')='P1'"
+   $SS_RADMarkstein = "#(/problem_description/radiation,'disable')='Markstein'"
+
+   // Combustion:
+   $SS_COMBU = "#(/problem_description/combustion,'disable')!='disable'"
+   $SS_EBU   = "#(/problem_description/combustion,'disable')='EBU'"
+   
+   
+   MODULE Navier_Stokes
+      _type = "String"
+      _name = "Navier_Stokes"
+      _access = "mandatory"
+      _in = < "disable" "low_mach" >
+      _default = "disable"
+   END MODULE Navier_Stokes
+
+   MODULE energy
+      _type = "String"
+      _name = "energy"
+      _access = "mandatory"
+      _in = < "disable" "enable" >
+      _default = "disable"
+   END MODULE energy
+   
+   MODULE turbulence
+      _type = "C"
+      _if = $SS_VP
+      MODULE turbulence
+         _type = "String"
+         _name = "turbulence"
+         _access = "mandatory"
+         _in = < "disable" "k_epsilon" >
+         _default = "disable"
+      END MODULE turbulence
+   END MODULE turbulence
+
+   MODULE combustion_laminar
+      _type = "C"
+      _if = $SS_VP+" && "+$SS_TEMP+" && !( "+ $SS_TURB + ")"
+      MODULE combustion
+         _type = "String"
+         _name = "combustion"
+         _access = "mandatory"
+         _in = < "disable" "Burke_Schumann" >
+         _default = "disable"
+      END MODULE combustion
+   END MODULE combustion_laminar
+   
+   MODULE combustion_turbulent
+      _type = "C"
+      _if = $SS_VP+" && "+$SS_TEMP+" && "+ $SS_TURB 
+      MODULE combustion
+         _type = "String"
+         _name = "combustion"
+         _access = "mandatory"
+         _in = < "disable" "EBU" >
+         _default = "disable"
+      END MODULE combustion
+   END MODULE combustion_turbulent
+
+   MODULE EBU_coeff
+      _type = "C"
+      _if = $SS_EBU
+      MODULE EBU_coefficient
+         _type = "Double"
+         _name = "EBU_coefficient"
+         _access = "mandatory"
+         _default = 4.
+ //        _test = "EBU_coefficient>0."
+      END MODULE EBU_coefficient
+   END MODULE EBU_coeff
+   
+   MODULE radiation
+      _type = "C"
+      _if = $SS_TEMP
+      MODULE radiation
+         _type = "String"
+         _name = "radiation"
+         _access = "mandatory"
+         _in = < "disable" "Markstein" "P1" >
+         _default = "disable"
+      END MODULE radiation
+   END MODULE radiation
+   
+   MODULE soot
+      _type = "C"
+      _if = $SS_COMBU
+      MODULE soot
+         _type = "String"
+         _name = "soot"
+         _access = "mandatory"
+         _in = < "disable" "fixed_soot_fraction" >
+         _default = "disable"
+      END MODULE soot
+   END MODULE soot
+
+   MODULE warning
+      MODULE type_combu
+         _type = "C"
+         _if = $SS_COMBU
+         MODULE type
+            _type = "String"
+            _name = "type"
+            _access = "mandatory"
+            _in = < "combu" >
+         END MODULE type
+      END MODULE type_combu
+      MODULE type_no_combu
+         _type = "C"
+         _if = "! ( "+$SS_COMBU+" )"
+         MODULE type
+            _type = "String"
+            _name = "type"
+            _access = "mandatory"
+            _in = < "no_combu" >
+         END MODULE type
+      END MODULE type_no_combu
+      MODULE comment_combu
+         _type = "C"
+         _if = "#(type)='combu'"
+         MODULE comment
+            _type = "String"
+            _name = "type"
+            _access = "mandatory"
+            _in = < "combu" >
+         END MODULE comment
+      END MODULE comment_combu
+      MODULE comment_no_combu
+         _type = "C"
+         _if = "#(type)='no_combu'"
+         MODULE comment
+            _type = "String"
+            _name = "type"
+            _access = "mandatory"
+            _in = < "no combu" >
+         END MODULE comment
+      END MODULE comment_no_combu
+   END MODULE warning
+END MODULE problem_description
+    

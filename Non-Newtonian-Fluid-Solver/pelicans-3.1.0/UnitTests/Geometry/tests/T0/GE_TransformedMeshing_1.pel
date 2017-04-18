@@ -1,0 +1,84 @@
+MODULE GE_TransformedMeshing_1
+   nb_space_dimensions = 2
+   
+   MODULE GE_Meshing
+      concrete_name = "GE_TransformedMeshing"
+      $DS_x = component( $DV_X, 0 )
+      $DS_y = component( $DV_X, 1 )
+      transformation = vector( -2.*$DS_x, 3.*$DS_y )
+      MODULE GE_Meshing
+         concrete_name = "GE_BoxWithBoxes"
+         mesh_polyhedron = < "GE_Segment" "GE_Quadrilateral" >
+         vertices_coordinate_0 = regular_vector( 0.0, 2, 1.0 )
+         vertices_coordinate_1 = regular_vector( 0.0, 1, 1.0 )
+         MODULE GE_Colorist
+            MODULE faces
+               east_cell = ( $DS_x > 0.98 )
+               west_cell = ( $DS_x < 0.02 ) 
+            END MODULE faces
+         END MODULE GE_Colorist
+      END MODULE GE_Meshing
+   END MODULE GE_Meshing
+   
+   MODULE GE_Meshing#VERIFY
+      concrete_name = "GE_ExplicitMeshing"
+      MODULE vertices
+         number = 6
+         coordinates = <
+         -0.0000000000E+00        0.0000000000E+00
+         -0.0000000000E+00        3.0000000000E+00
+         -1.0000000000E+00        0.0000000000E+00
+         -1.0000000000E+00        3.0000000000E+00
+         -2.0000000000E+00        0.0000000000E+00
+         -2.0000000000E+00        3.0000000000E+00
+         >
+         MODULE colors
+            bottom_left = < 0 >
+            top_left = < 1 >
+            bottom = < 2 >
+            top = < 3 >
+            bottom_right = < 4 >
+            top_right = < 5 >
+         END MODULE colors
+      END MODULE vertices
+      MODULE faces
+         number = 7
+         MODULE polyhedra_and_connectivities
+            GE_Segment  = <
+            0 1
+            2 3
+            4 5
+            0 2
+            1 3
+            2 4
+            3 5
+            >
+         END MODULE polyhedra_and_connectivities
+         MODULE colors
+            west_cell = < 0 >
+            east_cell = < 2 >
+            bottom = < 3 5 >
+            top = < 4 6 >
+         END MODULE colors
+         MODULE special_colors
+            null = < 1 >
+         END MODULE special_colors
+      END MODULE faces
+      MODULE cells
+         number = 2
+         MODULE polyhedra_and_connectivities
+            GE_Quadrilateral  = <
+            0 2 3 1
+            3 1 4 0
+            2 4 5 3
+            5 2 6 1
+            >
+         END MODULE polyhedra_and_connectivities
+         MODULE colors
+            bottom_left = < 0 >
+            bottom_right = < 1 >
+         END MODULE colors
+      END MODULE cells
+   END MODULE GE_Meshing#VERIFY
+END MODULE GE_TransformedMeshing_1
+   

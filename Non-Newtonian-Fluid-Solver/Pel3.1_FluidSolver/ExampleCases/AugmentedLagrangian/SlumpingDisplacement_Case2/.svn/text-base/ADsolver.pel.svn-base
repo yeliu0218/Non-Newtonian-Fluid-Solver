@@ -1,0 +1,39 @@
+// ---------------------------------
+// Advection Diffusion (PhaseField)
+// ---------------------------------
+MODULE FE_OneStepIteration#phase
+   concrete_name = "MY_AdvectionDiffusion"
+   
+   AD_unknown_field="CC"
+   AD_coeff_diffusion="diffusivityPhase"
+   AD_coeff_unsteady ="density"
+   AD_param_source="sourcePhase"
+
+// CFL condition: local control of the time step
+   time_initial = 0.0 // has to be zero
+   time_end = $DS_DT  // has to be the global time step $DS_DT
+   time_step = 0.00833333 // can be anything will be 
+                          // overwritten by the time step which fulfills the CFL condition
+   MODULE CourantNumber
+      active_level = 0
+      discrete_fields = < "velocity" >
+      Courant = $DS_CourantNumber
+   END MODULE CourantNumber
+   
+   // we need velocity = velocity
+   
+   MODULE convective_scheme
+      concrete_name = "MY_MUSCL_Scheme"
+      AD_param_advective_velocity="velocity"
+      AD_coeff_unsteady ="density"
+   END MODULE convective_scheme
+   
+   MODULE LA_Matrix
+      concrete_name = "LA_PelMatrix"
+   END MODULE LA_Matrix
+   
+   MODULE LA_Solver
+      concrete_name = "EXT_UMFsolver_DS"
+   END MODULE LA_Solver
+
+END MODULE FE_OneStepIteration#phase

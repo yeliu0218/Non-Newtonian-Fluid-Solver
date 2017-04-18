@@ -1,0 +1,325 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>PEL_ObjectRegister.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="PEL_ObjectRegister.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="PELpack-tree.html"><span>Tree</span></a>
+    <a href="PEL_ObjectRegister.html"><span>Class</span></a>
+    <a href="PEL_ObjectRegister.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="PELpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ObjectRegister</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_assertions</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Map</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_MapIterator</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_String</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">stringVector</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;sstream&gt;
+
+</font><font class="kw1">struct</font><font class="text"> PEL_ObjectRegister_ERROR
+{
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> n0( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; register_name,
+                   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; item_name ) ;
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> n1( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; register_name,
+                   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; item_name,
+                   </font><font class="kw3">PEL_Map</font><font class="text"> </font><font class="kw1">const</font><font class="text">* items ) ;
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> n3( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; register_name,
+                   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; item_name ) ;
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> n4( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; register_name ) ;
+} ;
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_ObjectRegister</font><font class="text">*
+</font><font class="kw3">PEL_ObjectRegister</font><font class="text">:: create( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                             </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_register_name )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_ObjectRegister:: create&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( !a_register_name.empty() ) ;
+
+   </font><font class="kw3">PEL_ObjectRegister</font><font class="text">* result =
+                    </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_ObjectRegister</font><font class="text">( a_owner, a_register_name ) ;
+   
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;owner() == a_owner ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;register_name() == a_register_name ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_ObjectRegister</font><font class="text">:: </font><font class="kw3">PEL_ObjectRegister</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                         </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_register_name )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_Object</font><font class="text">( a_owner )
+   , REGISTER( </font><font class="kw3">PEL_Map</font><font class="text">::create( </font><font class="kw1">this</font><font class="text"> ) )
+   , NAME( a_register_name )
+{
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_ObjectRegister</font><font class="text">:: ~</font><font class="kw3">PEL_ObjectRegister</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp;
+</font><font class="kw3">PEL_ObjectRegister</font><font class="text">:: register_name( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">return</font><font class="text">( NAME ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">PEL_ObjectRegister</font><font class="text">:: has( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_name ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_ObjectRegister:: has&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( !a_name.empty() ) ;
+
+   </font><font class="kw3">PEL_String</font><font class="text"> </font><font class="kw1">const</font><font class="text">* nn = </font><font class="kw3">PEL_String</font><font class="text">::create( 0, a_name ) ;
+   </font><font class="kw1">bool</font><font class="text"> result = REGISTER-&gt;has_key( nn ) ;
+   nn-&gt;destroy() ; nn = 0 ;
+
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_Object</font><font class="text">*
+</font><font class="kw3">PEL_ObjectRegister</font><font class="text">:: item( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_name ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_ObjectRegister:: item&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( !a_name.empty() ) ;
+
+   </font><font class="kw3">PEL_String</font><font class="text"> </font><font class="kw1">const</font><font class="text">* nn = </font><font class="kw3">PEL_String</font><font class="text">::create( 0, a_name ) ;
+   </font><font class="kw3">PEL_Object</font><font class="text">* result = REGISTER-&gt;item_at( nn ) ;
+   nn-&gt;destroy() ; nn = 0 ;
+   </font><font class="kw1">if</font><font class="text">( result == 0 )
+   {
+      PEL_ObjectRegister_ERROR::n1( register_name(), a_name, REGISTER ) ;
+   }
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result != 0 ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_Iterator</font><font class="text">*
+</font><font class="kw3">PEL_ObjectRegister</font><font class="text">:: create_iterator( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_ObjectRegister:: create_iterator&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw3">PEL_Iterator</font><font class="text">* result = REGISTER-&gt;create_iterator( a_owner ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;owner() == a_owner ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_ObjectRegister</font><font class="text">:: register_item( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_name,
+                                    </font><font class="kw3">PEL_Object</font><font class="text">* an_item )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_ObjectRegister:: register_item&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( !a_name.empty() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( an_item != 0 ) ;
+
+   </font><font class="kw3">PEL_String</font><font class="text">* nn = </font><font class="kw3">PEL_String</font><font class="text">::create( an_item, a_name ) ;
+   </font><font class="kw1">if</font><font class="text">( REGISTER-&gt;has_key( nn ) )
+   {
+      PEL_ObjectRegister_ERROR::n0( register_name(), a_name ) ;
+   }
+   REGISTER-&gt;set_item_at( nn, an_item ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( has( a_name ) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( item( a_name ) == an_item ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_ObjectRegister</font><font class="text">:: unregister_item( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_name )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_ObjectRegister:: unregister_item&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( !a_name.empty() ) ;
+
+   </font><font class="kw1">if</font><font class="text">( !has( a_name ) )
+   {
+      PEL_ObjectRegister_ERROR::n3( register_name(), a_name ) ;
+   }
+   
+   </font><font class="kw3">PEL_String</font><font class="text"> </font><font class="kw1">const</font><font class="text">* nn = </font><font class="kw3">PEL_String</font><font class="text">::create( 0, a_name ) ;
+   REGISTER-&gt;remove_at( nn ) ;
+   nn-&gt;destroy() ; nn = 0 ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( !has( a_name ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_ObjectRegister</font><font class="text">:: unregister_item( </font><font class="kw3">PEL_Object</font><font class="text">* an_item )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_ObjectRegister:: unregister_item&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( an_item != 0 ) ;
+
+   </font><font class="kw3">PEL_Object</font><font class="text"> </font><font class="kw1">const</font><font class="text">* nn = 0 ;
+   </font><font class="kw3">PEL_MapIterator</font><font class="text">* it = REGISTER-&gt;create_iterator( 0 ) ;
+   </font><font class="kw1">for</font><font class="text">( it-&gt;start() ; nn == 0 &amp;&amp; it-&gt;is_valid() ; it-&gt;go_next() )
+   {
+      </font><font class="kw1">if</font><font class="text">( it-&gt;item() == an_item ) nn = it-&gt;key() ;
+   }
+   it-&gt;destroy() ; it = 0 ;
+   
+   </font><font class="kw1">if</font><font class="text">( nn == 0 )
+   {
+      PEL_ObjectRegister_ERROR::n4( register_name() ) ;
+   }
+   REGISTER-&gt;remove_at( nn ) ;
+}
+
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="kw1">void</font><font class="text"> 
+PEL_ObjectRegister_ERROR:: n0( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; register_name,
+                               </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; item_name )
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> msg ;
+   msg &lt;&lt; </font><font class="string">&quot;Attempt to register : &quot;</font><font class="text">   &lt;&lt; register_name &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   msg &lt;&lt; </font><font class="string">&quot;           of  name : \&quot;&quot; &lt;&lt; item_name &lt;&lt; &quot;</font><font class="text">\</font><font class="string">&quot;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   msg &lt;&lt; </font><font class="string">&quot;which has already been registered&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( msg.str() ) ;
+}
+
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="kw1">void</font><font class="text"> 
+PEL_ObjectRegister_ERROR:: n1( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; register_name,
+                               </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; item_name ,
+                               </font><font class="kw3">PEL_Map</font><font class="text"> </font><font class="kw1">const</font><font class="text">* items )
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> msg ;
+   msg &lt;&lt; </font><font class="string">&quot;Request for non registered : &quot;</font><font class="text">   &lt;&lt; register_name &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   msg &lt;&lt; </font><font class="string">&quot;                  of  name : \&quot;&quot; &lt;&lt; item_name &lt;&lt; &quot;</font><font class="text">\</font><font class="string">&quot;&quot;
+</font><font class="text">       &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw1">if</font><font class="text">( items-&gt;count() == 0 )
+   {
+      msg &lt;&lt; </font><font class="string">&quot;No &quot;</font><font class="text"> + register_name + </font><font class="string">&quot; registered&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {  
+      msg &lt;&lt; items-&gt;count() &lt;&lt; </font><font class="string">&quot; registered &quot;</font><font class="text"> + register_name + </font><font class="string">&quot;(s) of name : &quot;</font><font class="text"> 
+          &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+      </font><font class="kw3">stringVector</font><font class="text"> ref_table( items-&gt;count() ) ;
+      </font><font class="kw3">PEL_MapIterator</font><font class="text">* it = items-&gt;create_iterator( 0 ) ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; it-&gt;is_valid() ; it-&gt;go_next(), ++i )
+      {
+         </font><font class="kw3">PEL_String</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ss = </font><font class="kw1">dynamic_cast</font><font class="text">&lt;</font><font class="kw3">PEL_String</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;( it-&gt;key() ) ;
+         ref_table(i) = ss-&gt;to_string() ;
+      }
+      it-&gt;destroy() ; it = 0 ;
+      ref_table.sort() ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;ref_table.size() ; ++i )
+      {
+         msg &lt;&lt; </font><font class="string">&quot;   - \&quot;&quot; &lt;&lt; ref_table(i) &lt;&lt; &quot;</font><font class="text">\</font><font class="string">&quot;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+      }
+   }
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( msg.str() ) ;
+}
+
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="kw1">void</font><font class="text"> 
+PEL_ObjectRegister_ERROR:: n3( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; register_name,
+                               </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; item_name )
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> msg ;
+   msg &lt;&lt; </font><font class="string">&quot;Attempt to unregister : &quot;</font><font class="text">   &lt;&lt; register_name &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   msg &lt;&lt; </font><font class="string">&quot;             of  name : \&quot;&quot; &lt;&lt; item_name &lt;&lt; &quot;</font><font class="text">\</font><font class="string">&quot;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   msg &lt;&lt; </font><font class="string">&quot;which is not registered&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( msg.str() ) ;
+}
+
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="kw1">void</font><font class="text"> 
+PEL_ObjectRegister_ERROR:: n4( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; register_name )
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> msg ;
+   msg &lt;&lt; </font><font class="string">&quot;Attempt to unregister : &quot;</font><font class="text">   &lt;&lt; register_name &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   msg &lt;&lt; </font><font class="string">&quot;a no registered object&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( msg.str() ) ;
+}
+
+</font>
+</pre>
+</body>
+</html>

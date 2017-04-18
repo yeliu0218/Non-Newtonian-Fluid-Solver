@@ -1,0 +1,409 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>RS_VariableDensityFlow1EXP.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="RS_VariableDensityFlow1EXP.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="RSpack-tree.html"><span>Tree</span></a>
+    <a href="RS_VariableDensityFlow1EXP.html"><span>Class</span></a>
+    <a href="RS_VariableDensityFlow1EXP.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="RSpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">RS_VariableDensityFlow1EXP</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_assertions</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Root</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Sequence</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">doubleVector</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;iostream&gt;
+
+</font><font class="kw3">RS_VariableDensityFlow1EXP</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">RS_VariableDensityFlow1EXP</font><font class="text">:: PROTOTYPE_U = 
+   </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">RS_VariableDensityFlow1EXP</font><font class="text">( </font><font class="string">&quot;VariableDensityFlow1_velocity&quot;</font><font class="text">, U ) ;
+
+</font><font class="kw3">RS_VariableDensityFlow1EXP</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">RS_VariableDensityFlow1EXP</font><font class="text">:: PROTOTYPE_UD = 
+   </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">RS_VariableDensityFlow1EXP</font><font class="text">( </font><font class="string">&quot;VariableDensityFlow1_grad_velocity&quot;</font><font class="text">, UD ) ;
+
+</font><font class="kw3">RS_VariableDensityFlow1EXP</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">RS_VariableDensityFlow1EXP</font><font class="text">:: PROTOTYPE_P = 
+   </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">RS_VariableDensityFlow1EXP</font><font class="text">( </font><font class="string">&quot;VariableDensityFlow1_pressure&quot;</font><font class="text">, P ) ;
+
+</font><font class="kw3">RS_VariableDensityFlow1EXP</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">RS_VariableDensityFlow1EXP</font><font class="text">:: PROTOTYPE_RHO = 
+   </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">RS_VariableDensityFlow1EXP</font><font class="text">( </font><font class="string">&quot;VariableDensityFlow1_rho&quot;</font><font class="text">, RHO ) ;
+
+</font><font class="kw3">RS_VariableDensityFlow1EXP</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">RS_VariableDensityFlow1EXP</font><font class="text">:: PROTOTYPE_RHODT = 
+   </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">RS_VariableDensityFlow1EXP</font><font class="text">( </font><font class="string">&quot;VariableDensityFlow1_rhodt&quot;</font><font class="text">, RHODT ) ;
+
+</font><font class="kw3">RS_VariableDensityFlow1EXP</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">RS_VariableDensityFlow1EXP</font><font class="text">:: PROTOTYPE_RHOD = 
+   </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">RS_VariableDensityFlow1EXP</font><font class="text">( </font><font class="string">&quot;VariableDensityFlow1_grad_rho&quot;</font><font class="text">, RHOD ) ;
+
+</font><font class="kw3">RS_VariableDensityFlow1EXP</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">RS_VariableDensityFlow1EXP</font><font class="text">:: PROTOTYPE_RHOU = 
+   </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">RS_VariableDensityFlow1EXP</font><font class="text">( </font><font class="string">&quot;VariableDensityFlow1_rho_velocity&quot;</font><font class="text">, 
+                                   RHOU ) ;
+
+</font><font class="kw3">RS_VariableDensityFlow1EXP</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">RS_VariableDensityFlow1EXP</font><font class="text">:: PROTOTYPE_RHOUD = 
+   </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">RS_VariableDensityFlow1EXP</font><font class="text">( </font><font class="string">&quot;VariableDensityFlow1_grad_rho_velocity&quot;</font><font class="text">, 
+                                   RHOUD ) ;
+
+</font><font class="kw3">RS_VariableDensityFlow1EXP</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">RS_VariableDensityFlow1EXP</font><font class="text">:: PROTOTYPE_F = 
+   </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">RS_VariableDensityFlow1EXP</font><font class="text">( </font><font class="string">&quot;VariableDensityFlow1_rhsf&quot;</font><font class="text">, F ) ;
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">RS_VariableDensityFlow1EXP</font><font class="text">:: </font><font class="kw3">RS_VariableDensityFlow1EXP</font><font class="text">( 
+                                                   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_name,
+                			           Func an_exp ) 
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_Expression</font><font class="text">( a_name )
+   , EXPR( an_exp )
+   , DV_result_1( 1 ) 
+   , DV_result_2( 2 ) 
+   , doubleArray2D_result( 2, 2 )
+{
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">RS_VariableDensityFlow1EXP</font><font class="text">*
+</font><font class="kw3">RS_VariableDensityFlow1EXP</font><font class="text">:: create_replica( 
+                                </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+				</font><font class="kw3">PEL_Sequence</font><font class="text"> </font><font class="kw1">const</font><font class="text">* argument_list ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;RS_VariableDensityFlow1EXP:: create_replica&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_PRE( a_owner, argument_list ) ) ;
+   
+   </font><font class="kw3">RS_VariableDensityFlow1EXP</font><font class="text">* result = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">RS_VariableDensityFlow1EXP</font><font class="text">( 
+                                                      a_owner, 
+						      name(), 
+						      argument_list, 
+						      EXPR ) ;
+   
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_POST( result, a_owner, argument_list ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">RS_VariableDensityFlow1EXP</font><font class="text">:: </font><font class="kw3">RS_VariableDensityFlow1EXP</font><font class="text">(
+                                   </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+   			           </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_name,
+			           </font><font class="kw3">PEL_Sequence</font><font class="text"> </font><font class="kw1">const</font><font class="text">* argument_list,
+			           Func an_exp ) 
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_Expression</font><font class="text">( a_owner, a_name, argument_list )
+   , EXPR( an_exp )
+   , DV_result_1( 1 ) 
+   , DV_result_2( 2 ) 
+   , doubleArray2D_result( 2, 2 )
+{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;RS_VariableDensityFlow1EXP:: RS_VariableDensityFlow1EXP&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">RS_VariableDensityFlow1EXP</font><font class="text">:: ~</font><font class="kw3">RS_VariableDensityFlow1EXP</font><font class="text">( </font><font class="kw1">void</font><font class="text"> ) 
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;RS_VariableDensityFlow1EXP:: ~RS_VariableDensityFlow1EXP&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_Data</font><font class="text">::Type
+</font><font class="kw3">RS_VariableDensityFlow1EXP</font><font class="text">:: data_type( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;RS_VariableDensityFlow1EXP:: data_type&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw3">PEL_Data</font><font class="text">::Type result = Undefined ;
+   </font><font class="kw1">switch</font><font class="text">( EXPR )
+   {
+      </font><font class="kw1">case</font><font class="text"> U : result = DoubleVector ; 
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> F : result = DoubleVector ; 
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> P : result = DoubleVector ;
+	 </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> RHO : result = DoubleVector ;
+	 </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> RHOD : result = DoubleArray2D ;
+	 </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> RHODT : result = DoubleVector ;
+	 </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> RHOU : result = DoubleVector ;
+	 </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> UD : result = DoubleArray2D ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> RHOUD : result = DoubleArray2D ;
+         </font><font class="kw1">break</font><font class="text"> ;
+   }
+   </font><font class="kw1">return</font><font class="text"> result ;      
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp;
+</font><font class="kw3">RS_VariableDensityFlow1EXP</font><font class="text">:: to_double_vector( </font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ct ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;RS_VariableDensityFlow1EXP:: to_double_vector&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( to_double_vector_PRE( ct ) ) ; 
+
+   </font><font class="kw3">doubleVector</font><font class="text">&amp; result = ( ( EXPR == P || EXPR == RHO || EXPR == RHODT ) ? 
+                               DV_result_1 
+                            : DV_result_2 ) ;
+
+   </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; res = arg(0)-&gt;to_double_vector(ct) ;
+   </font><font class="kw1">double</font><font class="text"> t     = arg(1)-&gt;to_double(ct) ;
+   </font><font class="kw1">double</font><font class="text"> alpha = arg(2)-&gt;to_double(ct) ;
+   </font><font class="kw1">double</font><font class="text"> beta  = arg(3)-&gt;to_double(ct) ;
+
+   </font><font class="kw1">if</font><font class="text">( EXPR == U )
+   {
+      </font><font class="kw1">double</font><font class="text"> y = res( 1 ) ; 
+      result( 0 ) = alpha*y*(1.-y)*(2.+ </font><font class="kw3">PEL</font><font class="text">::cos(beta*t)) ;
+      result( 1 ) = 0.0 ;
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( EXPR == P )
+   { 
+      </font><font class="kw1">double</font><font class="text"> x = res( 0 ) ; 
+      </font><font class="kw1">double</font><font class="text"> mu = arg(4)-&gt;to_double(ct) ;
+      </font><font class="kw1">double</font><font class="text"> xmax = arg(8)-&gt;to_double(ct) ;
+      result( 0 ) = -2.*mu*alpha*(2.+ </font><font class="kw3">PEL</font><font class="text">::cos(beta*t))*( x-0.5*xmax ) ;
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( EXPR == RHO )
+   { 
+      </font><font class="kw1">double</font><font class="text"> x = res( 0 ) ;
+      </font><font class="kw1">double</font><font class="text"> y = res( 1 ) ;
+      </font><font class="kw1">double</font><font class="text"> x0 = arg(5)-&gt;to_double(ct) ;
+      </font><font class="kw1">double</font><font class="text"> x1 = arg(6)-&gt;to_double(ct) ;
+      </font><font class="kw1">double</font><font class="text"> h = x1 - x0 ;
+      </font><font class="kw1">double</font><font class="text"> cc = arg(7)-&gt;to_double(ct) ;
+      </font><font class="kw1">double</font><font class="text"> xint = x-alpha*y*(1.-y)*(2.*t+ </font><font class="kw3">PEL</font><font class="text">::sin(beta*t)/beta);
+      result( 0 ) = cc *
+                   ((xint-x0)*(xint-x0)*(-2.*xint+3.*x1-x0)/</font><font class="kw3">PEL</font><font class="text">::pow(h,3)+1.) ;
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( EXPR == RHODT )
+   {
+      </font><font class="kw1">double</font><font class="text"> x = res( 0 ) ;
+      </font><font class="kw1">double</font><font class="text"> y = res( 1 ) ;
+      </font><font class="kw1">double</font><font class="text"> x0 = arg(5)-&gt;to_double(ct) ;
+      </font><font class="kw1">double</font><font class="text"> x1 = arg(6)-&gt;to_double(ct) ;
+      </font><font class="kw1">double</font><font class="text"> h = x1 - x0 ;
+      </font><font class="kw1">double</font><font class="text"> cc = arg(7)-&gt;to_double(ct) ;
+      </font><font class="kw1">double</font><font class="text"> xint = x-alpha*y*(1.-y)*(2.*t+ </font><font class="kw3">PEL</font><font class="text">::sin(beta*t)/beta);
+      </font><font class="kw1">double</font><font class="text"> ux = alpha*y*(1.-y)*(2.+ </font><font class="kw3">PEL</font><font class="text">::cos(beta*t)) ;
+      result( 0 ) = 6.*cc* ux * (xint-x0)*(x1-xint)/</font><font class="kw3">PEL</font><font class="text">::pow( h, 3 ) ;
+     }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( EXPR == RHOU )
+   {
+      </font><font class="kw1">double</font><font class="text"> x = res( 0 ) ;
+      </font><font class="kw1">double</font><font class="text"> y = res( 1 ) ;
+      </font><font class="kw1">double</font><font class="text"> x0 = arg(5)-&gt;to_double(ct) ;
+      </font><font class="kw1">double</font><font class="text"> x1 = arg(6)-&gt;to_double(ct) ;
+      </font><font class="kw1">double</font><font class="text"> h = x1 - x0 ;
+      </font><font class="kw1">double</font><font class="text"> cc = arg(7)-&gt;to_double(ct) ;
+      </font><font class="kw1">double</font><font class="text"> xint = x-alpha*y*(1.-y)*(2.*t+ </font><font class="kw3">PEL</font><font class="text">::sin(beta*t)/beta);
+      </font><font class="kw1">double</font><font class="text"> ux = alpha*y*(1.-y)*(2.+ </font><font class="kw3">PEL</font><font class="text">::cos(beta*t)) ;
+      result( 0 )= ux * cc *
+                  ((xint-x0)*(xint-x0)*(-2.*xint+3.*x1-x0)/</font><font class="kw3">PEL</font><font class="text">::pow(h,3)+1.);
+      result( 1 )= 0. ;
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( EXPR == F )
+   { 
+      </font><font class="kw1">double</font><font class="text"> x = res( 0 ) ;
+      </font><font class="kw1">double</font><font class="text"> y = res( 1 ) ;
+      </font><font class="kw1">double</font><font class="text"> x0 = arg(5)-&gt;to_double(ct) ;
+      </font><font class="kw1">double</font><font class="text"> x1 = arg(6)-&gt;to_double(ct) ;
+      </font><font class="kw1">double</font><font class="text"> h = x1 - x0 ;
+      </font><font class="kw1">double</font><font class="text"> cc = arg(7)-&gt;to_double(ct) ;
+      </font><font class="kw1">double</font><font class="text"> xint = x-alpha*y*(1.-y)*(2.*t+ </font><font class="kw3">PEL</font><font class="text">::sin(beta*t)/beta);
+      result( 0 ) = cc * alpha*y*(1.-y)*(-beta*</font><font class="kw3">PEL</font><font class="text">::sin(beta*t))
+	       *( (xint-x0)*(xint-x0)*(-2.*xint+3.*x1-x0)/</font><font class="kw3">PEL</font><font class="text">::pow(h,3)+1.) ;
+      result( 1 ) = 0. ;
+   }
+   </font><font class="kw1">return</font><font class="text"> result ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">doubleArray2D</font><font class="text">  </font><font class="kw1">const</font><font class="text">&amp;
+</font><font class="kw3">RS_VariableDensityFlow1EXP</font><font class="text">:: to_double_array2D( </font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ct ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;RS_VariableDensityFlow1EXP:: to_double_array2D&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( to_double_array2D_PRE( ct ) ) ;
+
+   </font><font class="kw3">doubleArray2D</font><font class="text">&amp; result = doubleArray2D_result ;
+   </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; res = arg(0)-&gt;to_double_vector(ct) ;
+   </font><font class="kw1">double</font><font class="text"> y = res( 1 ) ; 
+   </font><font class="kw1">double</font><font class="text"> t = arg(1)-&gt;to_double(ct) ;
+   </font><font class="kw1">double</font><font class="text"> alpha = arg(2)-&gt;to_double(ct) ;
+   </font><font class="kw1">double</font><font class="text"> beta  = arg(3)-&gt;to_double(ct) ;
+   
+   </font><font class="kw1">if</font><font class="text">( EXPR == UD )
+   {
+      result( 0, 0 ) = 0 ;
+      result( 0, 1 ) = alpha*(1.-2.*y )*(2+</font><font class="kw3">PEL</font><font class="text">::cos(beta*t))  ;
+      result( 1, 0 ) = 0.0 ;
+      result( 1, 1 ) = 0.0 ;
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( EXPR == RHOUD )
+   {  
+      </font><font class="kw1">double</font><font class="text"> x = res( 0 ) ;
+      </font><font class="kw1">double</font><font class="text"> x0 = arg(5)-&gt;to_double(ct) ;
+      </font><font class="kw1">double</font><font class="text"> x1 = arg(6)-&gt;to_double(ct) ;
+      </font><font class="kw1">double</font><font class="text"> h = x1 - x0 ;
+      </font><font class="kw1">double</font><font class="text"> cc = arg(7)-&gt;to_double(ct) ;
+      </font><font class="kw1">double</font><font class="text"> xint = x-alpha*y*(1.-y)*(2.*t+ </font><font class="kw3">PEL</font><font class="text">::sin(beta*t)/beta);
+      </font><font class="kw1">double</font><font class="text"> ux = alpha*y*(1.-y)*(2.+ </font><font class="kw3">PEL</font><font class="text">::cos(beta*t)) ;     
+      result( 0, 0 ) =  ux*6.*cc*(xint-x0)*(x1-xint)/</font><font class="kw3">PEL</font><font class="text">::pow( h, 3 ) ;
+      result( 0, 1 ) =  ux*6.*cc*alpha*(2.*y-1.)*(2.*t+</font><font class="kw3">PEL</font><font class="text">::sin(beta*t)/beta)
+                         *(xint-x0)*(x1-xint)/</font><font class="kw3">PEL</font><font class="text">::pow( h, 3 )
+                       + cc*((xint-x0)*(xint-x0)
+                         *(-2.*xint+3.*x1-x0)/</font><font class="kw3">PEL</font><font class="text">::pow(h,3)+1.)
+                         *alpha*(1.-2.*y)*(2.+ </font><font class="kw3">PEL</font><font class="text">::cos(beta*t)) ;
+      result( 1, 0 ) = 0.0 ;
+      result( 1, 1 ) = 0.0 ;
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( EXPR == RHOD )
+   {
+      </font><font class="kw1">double</font><font class="text"> x = res( 0 ) ;
+      </font><font class="kw1">double</font><font class="text"> x0 = arg(5)-&gt;to_double(ct) ;
+      </font><font class="kw1">double</font><font class="text"> x1 = arg(6)-&gt;to_double(ct) ;
+      </font><font class="kw1">double</font><font class="text"> h = x1 - x0 ;
+      </font><font class="kw1">double</font><font class="text"> cc = arg(7)-&gt;to_double(ct) ;
+      </font><font class="kw1">double</font><font class="text"> xint = x-alpha*y*(1.-y)*(2.*t+ </font><font class="kw3">PEL</font><font class="text">::sin(beta*t)/beta);
+      result( 0, 0 ) = 6.* cc *(xint-x0)*(x1-xint)/</font><font class="kw3">PEL</font><font class="text">::pow( h, 3 ) ; 
+      result( 0, 1 ) = 6.* cc * alpha*(2.*y-1.)*(2.*t+</font><font class="kw3">PEL</font><font class="text">::sin(beta*t)/beta)*
+	            (xint-x0)*(x1-xint)/</font><font class="kw3">PEL</font><font class="text">::pow( h, 3 )  ;
+   }
+
+   </font><font class="kw1">return</font><font class="text"> result ;
+}
+
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; 
+</font><font class="kw3">RS_VariableDensityFlow1EXP</font><font class="text">:: usage( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;RS_VariableDensityFlow1EXP:: usage&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> result ;
+   </font><font class="kw1">switch</font><font class="text">( EXPR )
+   {
+      </font><font class="kw1">case</font><font class="text"> U : result = </font><font class="string">&quot;VariableDensityFlow1_velocity($DV_X,$DS_T,$DS_ALPHA,$DS_BETA,$DS_MU,$DS_X0,$DS_X1,$DS_C,$DS_L)&quot;</font><font class="text">; 
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> F : result =  </font><font class="string">&quot;VariableDensityFlow1_rhsf($DV_X,$DS_T,$DS_ALPHA,$DS_BETA,$DS_MU,$DS_X0,$DS_X1,$DS_C,$DS_L)&quot;</font><font class="text">;
+	 </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> P : result = </font><font class="string">&quot;VariableDensityFlow1_pressure($DV_X,$DS_T,$DS_ALPHA,$DS_BETA,$DS_MU,$DS_X0,$DS_X1,$DS_C,$DS_L)&quot;</font><font class="text">; 
+	 </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> RHO : result = </font><font class="string">&quot;VariableDensityFlow1_rho($DV_X,$DS_T,$DS_ALPHA,$DS_BETA,$DS_MU,$DS_X0,$DS_X1,$DS_C,$DS_L) &quot;</font><font class="text">;
+	 </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> RHOD : result = </font><font class="string">&quot;VariableDensityFlow1_grad_rho($DV_X,$DS_T,$DS_ALPHA,$DS_BETA,$DS_MU,$DS_X0,$DS_X1,$DS_C,$DS_L)&quot;</font><font class="text">; 
+	 </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> RHODT : result = </font><font class="string">&quot;VariableDensityFlow1_rhsg($DV_X,$DS_T,$DS_ALPHA,$DS_BETA,$DS_MU,$DS_X0,$DS_X1,$DS_C,$DS_L)&quot;</font><font class="text">;
+	 </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> RHOU : result = </font><font class="string">&quot;VariableDensityFlow1_rho_velocity($DV_X,$DS_T,$DS_ALPHA,$DS_BETA,$DS_MU,$DS_X0,$DS_X1,$DS_C,$DS_L)&quot;</font><font class="text">; 
+	 </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> UD : result = </font><font class="string">&quot;VariableDensityFlow1_grad_velocity($DV_X,$DS_T,$DS_ALPHA,$DS_BETA,$DS_MU,$DS_X0,$DS_X1,$DS_C,$DS_L)&quot;</font><font class="text">  ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> RHOUD : result = </font><font class="string">&quot;VariableDensityFlow1_grad_rho_velocity($DV_X,$DS_T,$DS_ALPHA,$DS_BETA,$DS_MU,$DS_X0,$DS_X1,$DS_C,$DS_L)&quot;</font><font class="text">  ; 
+         </font><font class="kw1">break</font><font class="text"> ;
+   }   
+   </font><font class="kw1">return</font><font class="text"> result ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">RS_VariableDensityFlow1EXP</font><font class="text">:: valid_arguments( 
+                                   </font><font class="kw3">PEL_Sequence</font><font class="text"> </font><font class="kw1">const</font><font class="text">* some_arguments ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;RS_VariableDensityFlow1EXP:: valid_arguments&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( valid_arguments_PRE( some_arguments ) ) ;
+
+   </font><font class="kw1">bool</font><font class="text"> result =  
+ ( some_arguments-&gt;count() == 9 ) &amp;&amp;
+ ( extract_arg( some_arguments, 0 )-&gt;data_type() == </font><font class="kw3">PEL_Data</font><font class="text">::DoubleVector ) &amp;&amp;
+ ( extract_arg( some_arguments, 1 )-&gt;data_type() == </font><font class="kw3">PEL_Data</font><font class="text">::Double ) &amp;&amp;
+ ( extract_arg( some_arguments, 2 )-&gt;data_type() == </font><font class="kw3">PEL_Data</font><font class="text">::Double ) &amp;&amp;
+ ( extract_arg( some_arguments, 3 )-&gt;data_type() == </font><font class="kw3">PEL_Data</font><font class="text">::Double ) &amp;&amp;
+ ( extract_arg( some_arguments, 4 )-&gt;data_type() == </font><font class="kw3">PEL_Data</font><font class="text">::Double ) &amp;&amp;
+ ( extract_arg( some_arguments, 5 )-&gt;data_type() == </font><font class="kw3">PEL_Data</font><font class="text">::Double ) &amp;&amp;
+ ( extract_arg( some_arguments, 6 )-&gt;data_type() == </font><font class="kw3">PEL_Data</font><font class="text">::Double ) &amp;&amp;
+ ( extract_arg( some_arguments, 7 )-&gt;data_type() == </font><font class="kw3">PEL_Data</font><font class="text">::Double ) &amp;&amp;
+ ( extract_arg( some_arguments, 8 )-&gt;data_type() == </font><font class="kw3">PEL_Data</font><font class="text">::Double ) ;
+   </font><font class="kw1">return</font><font class="text"> result ;
+}
+
+</font>
+</pre>
+</body>
+</html>
