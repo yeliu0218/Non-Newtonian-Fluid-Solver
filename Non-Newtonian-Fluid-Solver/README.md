@@ -37,11 +37,11 @@ version of each package if possible.
 After all packages are installed, copy the two folders pelican-3.1.0 and Pel3.1_FluidSolver into one main directory. 
 In my computer, it is
 
-`~/pelicans/pelicans-3.1.0`
+`$ ~/pelicans/pelicans-3.1.0`
 
 and
 
-`~/pelicans/Pel3.1_FluidSolver`
+`$ ~/pelicans/Pel3.1_FluidSolver`
 
 We need to change something in the file, according to your computer settings
 
