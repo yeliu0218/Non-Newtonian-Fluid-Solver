@@ -1,0 +1,1 @@
+../Geometry/include/GE_Segment_QR3.hh

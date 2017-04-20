@@ -1,8 +1,8 @@
-<?xml version='1.0' encoding='ISO-8859-1' standalone='yes' ?>
+<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
 <tagfile>
   <compound kind="file">
     <name>AP_AdvectionDiffusion1G.cc</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/SecondOrderAdvectionDiffusion/src/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/SecondOrderAdvectionDiffusion/src/</path>
     <filename>AP__AdvectionDiffusion1G_8cc</filename>
     <includes id="AP__AdvectionDiffusion1G_8hh" name="AP_AdvectionDiffusion1G.hh" local="no" imported="no">AP_AdvectionDiffusion1G.hh</includes>
     <member kind="variable">
@@ -22,386 +22,500 @@
   </compound>
   <compound kind="file">
     <name>opt0/AP_AdvectionDiffusion1G.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
     <filename>opt0_2AP__AdvectionDiffusion1G_8d</filename>
   </compound>
   <compound kind="file">
     <name>opt2/AP_AdvectionDiffusion1G.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
     <filename>opt2_2AP__AdvectionDiffusion1G_8d</filename>
   </compound>
   <compound kind="file">
     <name>optg/AP_AdvectionDiffusion1G.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
     <filename>optg_2AP__AdvectionDiffusion1G_8d</filename>
   </compound>
   <compound kind="file">
     <name>AP_AdvectionDiffusion1G.hh</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/SecondOrderAdvectionDiffusion/include/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/SecondOrderAdvectionDiffusion/include/</path>
     <filename>AP__AdvectionDiffusion1G_8hh</filename>
     <class kind="class">AP_AdvectionDiffusion1G</class>
   </compound>
   <compound kind="file">
-    <name>DB_PLIC_Advection.cc</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/SecondOrderAdvectionDiffusion/src/</path>
-    <filename>DB__PLIC__Advection_8cc</filename>
-    <includes id="DB__PLIC__Advection_8hh" name="DB_PLIC_Advection.hh" local="no" imported="no">DB_PLIC_Advection.hh</includes>
-    <includes id="FE__LocalTimeIteratorAdapter_8hh" name="FE_LocalTimeIteratorAdapter.hh" local="no" imported="no">FE_LocalTimeIteratorAdapter.hh</includes>
+    <name>AS_NavierStokes.cc</name>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/NavierStokes/src/</path>
+    <filename>AS__NavierStokes_8cc</filename>
+    <includes id="AS__NavierStokes_8hh" name="AS_NavierStokes.hh" local="no" imported="no">AS_NavierStokes.hh</includes>
+    <includes id="FE__PrintVariables_8hh" name="FE_PrintVariables.hh" local="no" imported="no">FE_PrintVariables.hh</includes>
+    <includes id="FE__TensorFormAssembling_8hh" name="FE_TensorFormAssembling.hh" local="no" imported="no">FE_TensorFormAssembling.hh</includes>
+    <includes id="ML__NavierStokesSystem_8hh" name="ML_NavierStokesSystem.hh" local="no" imported="no">ML_NavierStokesSystem.hh</includes>
+    <includes id="AS__Viscoplastic_8hh" name="AS_Viscoplastic.hh" local="no" imported="no">AS_Viscoplastic.hh</includes>
+    <member kind="variable">
+      <type>PDE_LocalFE::field_id const</type>
+      <name>row</name>
+      <anchorfile>AS__NavierStokes_8cc.html</anchorfile>
+      <anchor>ab063117bbc7156727531072081b7f6d4</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>PDE_LocalFE::field_id const</type>
+      <name>col</name>
+      <anchorfile>AS__NavierStokes_8cc.html</anchorfile>
+      <anchor>a3946d4dddb8601620e1580ed52447e0b</anchor>
+      <arglist></arglist>
+    </member>
   </compound>
   <compound kind="file">
-    <name>opt0/DB_PLIC_Advection.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
-    <filename>opt0_2DB__PLIC__Advection_8d</filename>
+    <name>opt0/AS_NavierStokes.d</name>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
+    <filename>opt0_2AS__NavierStokes_8d</filename>
   </compound>
   <compound kind="file">
-    <name>opt2/DB_PLIC_Advection.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
-    <filename>opt2_2DB__PLIC__Advection_8d</filename>
+    <name>opt2/AS_NavierStokes.d</name>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
+    <filename>opt2_2AS__NavierStokes_8d</filename>
   </compound>
   <compound kind="file">
-    <name>optg/DB_PLIC_Advection.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
-    <filename>optg_2DB__PLIC__Advection_8d</filename>
+    <name>optg/AS_NavierStokes.d</name>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
+    <filename>optg_2AS__NavierStokes_8d</filename>
   </compound>
   <compound kind="file">
-    <name>DB_PLIC_Advection.hh</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/SecondOrderAdvectionDiffusion/include/</path>
-    <filename>DB__PLIC__Advection_8hh</filename>
-    <class kind="class">DB_PLIC_Advection</class>
+    <name>AS_NavierStokes.hh</name>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/NavierStokes/include/</path>
+    <filename>AS__NavierStokes_8hh</filename>
+    <class kind="class">AS_NavierStokes</class>
+  </compound>
+  <compound kind="file">
+    <name>AS_Viscoplastic.cc</name>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/NavierStokes/src/</path>
+    <filename>AS__Viscoplastic_8cc</filename>
+    <includes id="AS__Viscoplastic_8hh" name="AS_Viscoplastic.hh" local="no" imported="no">AS_Viscoplastic.hh</includes>
+    <member kind="variable">
+      <type>PDE_LocalFE::field_id const</type>
+      <name>row</name>
+      <anchorfile>AS__Viscoplastic_8cc.html</anchorfile>
+      <anchor>ab063117bbc7156727531072081b7f6d4</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>PDE_LocalFE::field_id const</type>
+      <name>col</name>
+      <anchorfile>AS__Viscoplastic_8cc.html</anchorfile>
+      <anchor>a3946d4dddb8601620e1580ed52447e0b</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="file">
+    <name>opt0/AS_Viscoplastic.d</name>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
+    <filename>opt0_2AS__Viscoplastic_8d</filename>
+  </compound>
+  <compound kind="file">
+    <name>opt2/AS_Viscoplastic.d</name>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
+    <filename>opt2_2AS__Viscoplastic_8d</filename>
+  </compound>
+  <compound kind="file">
+    <name>optg/AS_Viscoplastic.d</name>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
+    <filename>optg_2AS__Viscoplastic_8d</filename>
+  </compound>
+  <compound kind="file">
+    <name>AS_Viscoplastic.hh</name>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/NavierStokes/include/</path>
+    <filename>AS__Viscoplastic_8hh</filename>
+    <class kind="class">AS_Viscoplastic</class>
   </compound>
   <compound kind="file">
     <name>DC_PLIC_Advection.cc</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/SecondOrderAdvectionDiffusion/src/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/SecondOrderAdvectionDiffusion/src/</path>
     <filename>DC__PLIC__Advection_8cc</filename>
     <includes id="DC__PLIC__Advection_8hh" name="DC_PLIC_Advection.hh" local="no" imported="no">DC_PLIC_Advection.hh</includes>
     <includes id="FE__LocalTimeIteratorAdapter_8hh" name="FE_LocalTimeIteratorAdapter.hh" local="no" imported="no">FE_LocalTimeIteratorAdapter.hh</includes>
   </compound>
   <compound kind="file">
     <name>opt0/DC_PLIC_Advection.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
     <filename>opt0_2DC__PLIC__Advection_8d</filename>
   </compound>
   <compound kind="file">
     <name>opt2/DC_PLIC_Advection.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
     <filename>opt2_2DC__PLIC__Advection_8d</filename>
   </compound>
   <compound kind="file">
     <name>optg/DC_PLIC_Advection.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
     <filename>optg_2DC__PLIC__Advection_8d</filename>
   </compound>
   <compound kind="file">
     <name>DC_PLIC_Advection.hh</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/SecondOrderAdvectionDiffusion/include/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/SecondOrderAdvectionDiffusion/include/</path>
     <filename>DC__PLIC__Advection_8hh</filename>
     <class kind="class">DC_PLIC_Advection</class>
   </compound>
   <compound kind="file">
     <name>DD_PLIC_Advection.cc</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/SecondOrderAdvectionDiffusion/src/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/SecondOrderAdvectionDiffusion/src/</path>
     <filename>DD__PLIC__Advection_8cc</filename>
     <includes id="DD__PLIC__Advection_8hh" name="DD_PLIC_Advection.hh" local="no" imported="no">DD_PLIC_Advection.hh</includes>
     <includes id="FE__LocalTimeIteratorAdapter_8hh" name="FE_LocalTimeIteratorAdapter.hh" local="no" imported="no">FE_LocalTimeIteratorAdapter.hh</includes>
   </compound>
   <compound kind="file">
     <name>opt0/DD_PLIC_Advection.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
     <filename>opt0_2DD__PLIC__Advection_8d</filename>
   </compound>
   <compound kind="file">
     <name>opt2/DD_PLIC_Advection.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
     <filename>opt2_2DD__PLIC__Advection_8d</filename>
   </compound>
   <compound kind="file">
     <name>optg/DD_PLIC_Advection.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
     <filename>optg_2DD__PLIC__Advection_8d</filename>
   </compound>
   <compound kind="file">
     <name>DD_PLIC_Advection.hh</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/SecondOrderAdvectionDiffusion/include/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/SecondOrderAdvectionDiffusion/include/</path>
     <filename>DD__PLIC__Advection_8hh</filename>
     <class kind="class">DD_PLIC_Advection</class>
   </compound>
   <compound kind="file">
+    <name>DF_PLIC_Advection.cc</name>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/SecondOrderAdvectionDiffusion/src/</path>
+    <filename>DF__PLIC__Advection_8cc</filename>
+    <includes id="DF__PLIC__Advection_8hh" name="DF_PLIC_Advection.hh" local="no" imported="no">DF_PLIC_Advection.hh</includes>
+    <includes id="FE__LocalTimeIteratorAdapter_8hh" name="FE_LocalTimeIteratorAdapter.hh" local="no" imported="no">FE_LocalTimeIteratorAdapter.hh</includes>
+  </compound>
+  <compound kind="file">
+    <name>opt0/DF_PLIC_Advection.d</name>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
+    <filename>opt0_2DF__PLIC__Advection_8d</filename>
+  </compound>
+  <compound kind="file">
+    <name>opt2/DF_PLIC_Advection.d</name>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
+    <filename>opt2_2DF__PLIC__Advection_8d</filename>
+  </compound>
+  <compound kind="file">
+    <name>optg/DF_PLIC_Advection.d</name>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
+    <filename>optg_2DF__PLIC__Advection_8d</filename>
+  </compound>
+  <compound kind="file">
+    <name>DF_PLIC_Advection.hh</name>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/SecondOrderAdvectionDiffusion/include/</path>
+    <filename>DF__PLIC__Advection_8hh</filename>
+    <class kind="class">DF_PLIC_Advection</class>
+  </compound>
+  <compound kind="file">
     <name>FE_2PhaseConvexParameter.cc</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/FrameFE/src/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/FrameFE/src/</path>
     <filename>FE__2PhaseConvexParameter_8cc</filename>
     <includes id="FE__2PhaseConvexParameter_8hh" name="FE_2PhaseConvexParameter.hh" local="no" imported="no">FE_2PhaseConvexParameter.hh</includes>
   </compound>
   <compound kind="file">
     <name>opt0/FE_2PhaseConvexParameter.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
     <filename>opt0_2FE__2PhaseConvexParameter_8d</filename>
   </compound>
   <compound kind="file">
     <name>opt2/FE_2PhaseConvexParameter.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
     <filename>opt2_2FE__2PhaseConvexParameter_8d</filename>
   </compound>
   <compound kind="file">
     <name>optg/FE_2PhaseConvexParameter.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
     <filename>optg_2FE__2PhaseConvexParameter_8d</filename>
   </compound>
   <compound kind="file">
     <name>FE_2PhaseConvexParameter.hh</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/FrameFE/include/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/FrameFE/include/</path>
     <filename>FE__2PhaseConvexParameter_8hh</filename>
     <class kind="class">FE_2PhaseConvexParameter</class>
   </compound>
   <compound kind="file">
     <name>FE_2PhaseViscHBParameter.cc</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/FrameFE/src/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/FrameFE/src/</path>
     <filename>FE__2PhaseViscHBParameter_8cc</filename>
     <includes id="FE__2PhaseViscHBParameter_8hh" name="FE_2PhaseViscHBParameter.hh" local="no" imported="no">FE_2PhaseViscHBParameter.hh</includes>
   </compound>
   <compound kind="file">
     <name>opt0/FE_2PhaseViscHBParameter.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
     <filename>opt0_2FE__2PhaseViscHBParameter_8d</filename>
   </compound>
   <compound kind="file">
     <name>opt2/FE_2PhaseViscHBParameter.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
     <filename>opt2_2FE__2PhaseViscHBParameter_8d</filename>
   </compound>
   <compound kind="file">
     <name>optg/FE_2PhaseViscHBParameter.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
     <filename>optg_2FE__2PhaseViscHBParameter_8d</filename>
   </compound>
   <compound kind="file">
     <name>FE_2PhaseViscHBParameter.hh</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/FrameFE/include/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/FrameFE/include/</path>
     <filename>FE__2PhaseViscHBParameter_8hh</filename>
     <class kind="class">FE_2PhaseViscHBParameter</class>
   </compound>
   <compound kind="file">
     <name>FE_ConvexParameter.cc</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/FrameFE/src/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/FrameFE/src/</path>
     <filename>FE__ConvexParameter_8cc</filename>
     <includes id="FE__ConvexParameter_8hh" name="FE_ConvexParameter.hh" local="no" imported="no">FE_ConvexParameter.hh</includes>
   </compound>
   <compound kind="file">
     <name>opt0/FE_ConvexParameter.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
     <filename>opt0_2FE__ConvexParameter_8d</filename>
   </compound>
   <compound kind="file">
     <name>opt2/FE_ConvexParameter.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
     <filename>opt2_2FE__ConvexParameter_8d</filename>
   </compound>
   <compound kind="file">
     <name>optg/FE_ConvexParameter.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
     <filename>optg_2FE__ConvexParameter_8d</filename>
   </compound>
   <compound kind="file">
     <name>FE_ConvexParameter.hh</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/FrameFE/include/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/FrameFE/include/</path>
     <filename>FE__ConvexParameter_8hh</filename>
     <class kind="class">FE_ConvexParameter</class>
   </compound>
   <compound kind="file">
     <name>FE_DivergenceParameter.cc</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/FrameFE/src/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/FrameFE/src/</path>
     <filename>FE__DivergenceParameter_8cc</filename>
     <includes id="FE__DivergenceParameter_8hh" name="FE_DivergenceParameter.hh" local="no" imported="no">FE_DivergenceParameter.hh</includes>
     <class kind="struct">FE_DivergenceParameter_ERROR</class>
   </compound>
   <compound kind="file">
     <name>opt0/FE_DivergenceParameter.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
     <filename>opt0_2FE__DivergenceParameter_8d</filename>
   </compound>
   <compound kind="file">
     <name>opt2/FE_DivergenceParameter.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
     <filename>opt2_2FE__DivergenceParameter_8d</filename>
   </compound>
   <compound kind="file">
     <name>optg/FE_DivergenceParameter.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
     <filename>optg_2FE__DivergenceParameter_8d</filename>
   </compound>
   <compound kind="file">
     <name>FE_DivergenceParameter.hh</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/FrameFE/include/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/FrameFE/include/</path>
     <filename>FE__DivergenceParameter_8hh</filename>
     <class kind="class">FE_DivergenceParameter</class>
   </compound>
   <compound kind="file">
     <name>FE_DuDuFieldParameter.cc</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/FrameFE/src/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/FrameFE/src/</path>
     <filename>FE__DuDuFieldParameter_8cc</filename>
     <includes id="FE__DuDuFieldParameter_8hh" name="FE_DuDuFieldParameter.hh" local="no" imported="no">FE_DuDuFieldParameter.hh</includes>
   </compound>
   <compound kind="file">
     <name>opt0/FE_DuDuFieldParameter.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
     <filename>opt0_2FE__DuDuFieldParameter_8d</filename>
   </compound>
   <compound kind="file">
     <name>opt2/FE_DuDuFieldParameter.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
     <filename>opt2_2FE__DuDuFieldParameter_8d</filename>
   </compound>
   <compound kind="file">
     <name>optg/FE_DuDuFieldParameter.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
     <filename>optg_2FE__DuDuFieldParameter_8d</filename>
   </compound>
   <compound kind="file">
     <name>FE_DuDuFieldParameter.hh</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/FrameFE/include/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/FrameFE/include/</path>
     <filename>FE__DuDuFieldParameter_8hh</filename>
     <class kind="class">FE_DuDuFieldParameter</class>
   </compound>
   <compound kind="file">
     <name>FE_ExponentialParameter.cc</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/FrameFE/src/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/FrameFE/src/</path>
     <filename>FE__ExponentialParameter_8cc</filename>
     <includes id="FE__ExponentialParameter_8hh" name="FE_ExponentialParameter.hh" local="no" imported="no">FE_ExponentialParameter.hh</includes>
   </compound>
   <compound kind="file">
     <name>opt0/FE_ExponentialParameter.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
     <filename>opt0_2FE__ExponentialParameter_8d</filename>
   </compound>
   <compound kind="file">
     <name>opt2/FE_ExponentialParameter.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
     <filename>opt2_2FE__ExponentialParameter_8d</filename>
   </compound>
   <compound kind="file">
     <name>optg/FE_ExponentialParameter.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
     <filename>optg_2FE__ExponentialParameter_8d</filename>
   </compound>
   <compound kind="file">
     <name>FE_ExponentialParameter.hh</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/FrameFE/include/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/FrameFE/include/</path>
     <filename>FE__ExponentialParameter_8hh</filename>
     <class kind="class">FE_ExponentialParameter</class>
   </compound>
   <compound kind="file">
     <name>FE_HarmonicParameter.cc</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/FrameFE/src/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/FrameFE/src/</path>
     <filename>FE__HarmonicParameter_8cc</filename>
     <includes id="FE__HarmonicParameter_8hh" name="FE_HarmonicParameter.hh" local="no" imported="no">FE_HarmonicParameter.hh</includes>
   </compound>
   <compound kind="file">
     <name>opt0/FE_HarmonicParameter.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
     <filename>opt0_2FE__HarmonicParameter_8d</filename>
   </compound>
   <compound kind="file">
     <name>opt2/FE_HarmonicParameter.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
     <filename>opt2_2FE__HarmonicParameter_8d</filename>
   </compound>
   <compound kind="file">
     <name>optg/FE_HarmonicParameter.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
     <filename>optg_2FE__HarmonicParameter_8d</filename>
   </compound>
   <compound kind="file">
     <name>FE_HarmonicParameter.hh</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/FrameFE/include/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/FrameFE/include/</path>
     <filename>FE__HarmonicParameter_8hh</filename>
     <class kind="class">FE_HarmonicParameter</class>
   </compound>
   <compound kind="file">
     <name>FE_InverseParameter.cc</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/FrameFE/src/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/FrameFE/src/</path>
     <filename>FE__InverseParameter_8cc</filename>
     <includes id="FE__InverseParameter_8hh" name="FE_InverseParameter.hh" local="no" imported="no">FE_InverseParameter.hh</includes>
   </compound>
   <compound kind="file">
     <name>opt0/FE_InverseParameter.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
     <filename>opt0_2FE__InverseParameter_8d</filename>
   </compound>
   <compound kind="file">
     <name>opt2/FE_InverseParameter.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
     <filename>opt2_2FE__InverseParameter_8d</filename>
   </compound>
   <compound kind="file">
     <name>optg/FE_InverseParameter.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
     <filename>optg_2FE__InverseParameter_8d</filename>
   </compound>
   <compound kind="file">
     <name>FE_InverseParameter.hh</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/FrameFE/include/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/FrameFE/include/</path>
     <filename>FE__InverseParameter_8hh</filename>
     <class kind="class">FE_InverseParameter</class>
   </compound>
   <compound kind="file">
     <name>FE_LocalTimeIteratorAdapter.cc</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/FrameFE/src/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/FrameFE/src/</path>
     <filename>FE__LocalTimeIteratorAdapter_8cc</filename>
     <includes id="FE__LocalTimeIteratorAdapter_8hh" name="FE_LocalTimeIteratorAdapter.hh" local="no" imported="no">FE_LocalTimeIteratorAdapter.hh</includes>
   </compound>
   <compound kind="file">
     <name>opt0/FE_LocalTimeIteratorAdapter.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
     <filename>opt0_2FE__LocalTimeIteratorAdapter_8d</filename>
   </compound>
   <compound kind="file">
     <name>opt2/FE_LocalTimeIteratorAdapter.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
     <filename>opt2_2FE__LocalTimeIteratorAdapter_8d</filename>
   </compound>
   <compound kind="file">
     <name>optg/FE_LocalTimeIteratorAdapter.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
     <filename>optg_2FE__LocalTimeIteratorAdapter_8d</filename>
   </compound>
   <compound kind="file">
     <name>FE_LocalTimeIteratorAdapter.hh</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/FrameFE/include/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/FrameFE/include/</path>
     <filename>FE__LocalTimeIteratorAdapter_8hh</filename>
     <class kind="class">FE_LocalTimeIteratorAdapter</class>
   </compound>
   <compound kind="file">
     <name>FE_PrintVariables.cc</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/FrameFE/src/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/FrameFE/src/</path>
     <filename>FE__PrintVariables_8cc</filename>
     <includes id="FE__PrintVariables_8hh" name="FE_PrintVariables.hh" local="no" imported="no">FE_PrintVariables.hh</includes>
   </compound>
   <compound kind="file">
     <name>opt0/FE_PrintVariables.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
     <filename>opt0_2FE__PrintVariables_8d</filename>
   </compound>
   <compound kind="file">
     <name>opt2/FE_PrintVariables.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
     <filename>opt2_2FE__PrintVariables_8d</filename>
   </compound>
   <compound kind="file">
     <name>optg/FE_PrintVariables.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
     <filename>optg_2FE__PrintVariables_8d</filename>
   </compound>
   <compound kind="file">
     <name>FE_PrintVariables.hh</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/FrameFE/include/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/FrameFE/include/</path>
     <filename>FE__PrintVariables_8hh</filename>
     <class kind="class">FE_PrintVariables</class>
   </compound>
   <compound kind="file">
+    <name>FE_StepParameter.cc</name>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/FrameFE/src/</path>
+    <filename>FE__StepParameter_8cc</filename>
+    <includes id="FE__StepParameter_8hh" name="FE_StepParameter.hh" local="no" imported="no">FE_StepParameter.hh</includes>
+  </compound>
+  <compound kind="file">
+    <name>opt0/FE_StepParameter.d</name>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
+    <filename>opt0_2FE__StepParameter_8d</filename>
+  </compound>
+  <compound kind="file">
+    <name>opt2/FE_StepParameter.d</name>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
+    <filename>opt2_2FE__StepParameter_8d</filename>
+  </compound>
+  <compound kind="file">
+    <name>optg/FE_StepParameter.d</name>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
+    <filename>optg_2FE__StepParameter_8d</filename>
+  </compound>
+  <compound kind="file">
+    <name>FE_StepParameter.hh</name>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/FrameFE/include/</path>
+    <filename>FE__StepParameter_8hh</filename>
+    <class kind="class">FE_StepParameter</class>
+  </compound>
+  <compound kind="file">
     <name>FE_TensorFormAssembling.cc</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/FrameFE/src/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/FrameFE/src/</path>
     <filename>FE__TensorFormAssembling_8cc</filename>
     <includes id="FE__TensorFormAssembling_8hh" name="FE_TensorFormAssembling.hh" local="no" imported="no">FE_TensorFormAssembling.hh</includes>
     <includes id="UT__Viscoplastic_8hh" name="UT_Viscoplastic.hh" local="no" imported="no">UT_Viscoplastic.hh</includes>
+    <includes id="AS__Viscoplastic_8hh" name="AS_Viscoplastic.hh" local="no" imported="no">AS_Viscoplastic.hh</includes>
     <member kind="variable">
       <type>PDE_LocalFE::field_id const</type>
       <name>row</name>
@@ -419,110 +533,168 @@
   </compound>
   <compound kind="file">
     <name>opt0/FE_TensorFormAssembling.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
     <filename>opt0_2FE__TensorFormAssembling_8d</filename>
   </compound>
   <compound kind="file">
     <name>opt2/FE_TensorFormAssembling.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
     <filename>opt2_2FE__TensorFormAssembling_8d</filename>
   </compound>
   <compound kind="file">
     <name>optg/FE_TensorFormAssembling.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
     <filename>optg_2FE__TensorFormAssembling_8d</filename>
   </compound>
   <compound kind="file">
     <name>FE_TensorFormAssembling.hh</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/FrameFE/include/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/FrameFE/include/</path>
     <filename>FE__TensorFormAssembling_8hh</filename>
     <class kind="class">FE_TensorFormAssembling</class>
   </compound>
   <compound kind="file">
     <name>FE_ViscosityHBParameter.cc</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/FrameFE/src/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/FrameFE/src/</path>
     <filename>FE__ViscosityHBParameter_8cc</filename>
     <includes id="FE__ViscosityHBParameter_8hh" name="FE_ViscosityHBParameter.hh" local="no" imported="no">FE_ViscosityHBParameter.hh</includes>
   </compound>
   <compound kind="file">
     <name>opt0/FE_ViscosityHBParameter.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
     <filename>opt0_2FE__ViscosityHBParameter_8d</filename>
   </compound>
   <compound kind="file">
     <name>opt2/FE_ViscosityHBParameter.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
     <filename>opt2_2FE__ViscosityHBParameter_8d</filename>
   </compound>
   <compound kind="file">
     <name>optg/FE_ViscosityHBParameter.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
     <filename>optg_2FE__ViscosityHBParameter_8d</filename>
   </compound>
   <compound kind="file">
     <name>FE_ViscosityHBParameter.hh</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/FrameFE/include/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/FrameFE/include/</path>
     <filename>FE__ViscosityHBParameter_8hh</filename>
     <class kind="class">FE_ViscosityHBParameter</class>
   </compound>
   <compound kind="file">
     <name>FE_ViscosityHBParameterNew.cc</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/FrameFE/src/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/FrameFE/src/</path>
     <filename>FE__ViscosityHBParameterNew_8cc</filename>
     <includes id="FE__ViscosityHBParameterNew_8hh" name="FE_ViscosityHBParameterNew.hh" local="no" imported="no">FE_ViscosityHBParameterNew.hh</includes>
   </compound>
   <compound kind="file">
     <name>opt0/FE_ViscosityHBParameterNew.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
     <filename>opt0_2FE__ViscosityHBParameterNew_8d</filename>
   </compound>
   <compound kind="file">
     <name>opt2/FE_ViscosityHBParameterNew.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
     <filename>opt2_2FE__ViscosityHBParameterNew_8d</filename>
   </compound>
   <compound kind="file">
     <name>optg/FE_ViscosityHBParameterNew.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
     <filename>optg_2FE__ViscosityHBParameterNew_8d</filename>
   </compound>
   <compound kind="file">
     <name>FE_ViscosityHBParameterNew.hh</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/FrameFE/include/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/FrameFE/include/</path>
     <filename>FE__ViscosityHBParameterNew_8hh</filename>
     <class kind="class">FE_ViscosityHBParameterNew</class>
   </compound>
   <compound kind="file">
-    <name>LEO_PLIC_Advection.cc</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/SecondOrderAdvectionDiffusion/src/</path>
-    <filename>LEO__PLIC__Advection_8cc</filename>
-    <includes id="LEO__PLIC__Advection_8hh" name="LEO_PLIC_Advection.hh" local="no" imported="no">LEO_PLIC_Advection.hh</includes>
-    <includes id="FE__LocalTimeIteratorAdapter_8hh" name="FE_LocalTimeIteratorAdapter.hh" local="no" imported="no">FE_LocalTimeIteratorAdapter.hh</includes>
+    <name>Leo_NavierStokes.cc</name>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/NavierStokes/src/</path>
+    <filename>Leo__NavierStokes_8cc</filename>
+    <includes id="Leo__NavierStokes_8hh" name="Leo_NavierStokes.hh" local="no" imported="no">Leo_NavierStokes.hh</includes>
+    <includes id="FE__PrintVariables_8hh" name="FE_PrintVariables.hh" local="no" imported="no">FE_PrintVariables.hh</includes>
+    <includes id="FE__TensorFormAssembling_8hh" name="FE_TensorFormAssembling.hh" local="no" imported="no">FE_TensorFormAssembling.hh</includes>
+    <includes id="ML__NavierStokesSystem_8hh" name="ML_NavierStokesSystem.hh" local="no" imported="no">ML_NavierStokesSystem.hh</includes>
+    <includes id="Leo__Viscoplastic_8hh" name="Leo_Viscoplastic.hh" local="no" imported="no">Leo_Viscoplastic.hh</includes>
+    <member kind="variable">
+      <type>PDE_LocalFE::field_id const</type>
+      <name>row</name>
+      <anchorfile>Leo__NavierStokes_8cc.html</anchorfile>
+      <anchor>ab063117bbc7156727531072081b7f6d4</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>PDE_LocalFE::field_id const</type>
+      <name>col</name>
+      <anchorfile>Leo__NavierStokes_8cc.html</anchorfile>
+      <anchor>a3946d4dddb8601620e1580ed52447e0b</anchor>
+      <arglist></arglist>
+    </member>
   </compound>
   <compound kind="file">
-    <name>opt0/LEO_PLIC_Advection.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
-    <filename>opt0_2LEO__PLIC__Advection_8d</filename>
+    <name>opt0/Leo_NavierStokes.d</name>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
+    <filename>opt0_2Leo__NavierStokes_8d</filename>
   </compound>
   <compound kind="file">
-    <name>opt2/LEO_PLIC_Advection.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
-    <filename>opt2_2LEO__PLIC__Advection_8d</filename>
+    <name>opt2/Leo_NavierStokes.d</name>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
+    <filename>opt2_2Leo__NavierStokes_8d</filename>
   </compound>
   <compound kind="file">
-    <name>optg/LEO_PLIC_Advection.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
-    <filename>optg_2LEO__PLIC__Advection_8d</filename>
+    <name>optg/Leo_NavierStokes.d</name>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
+    <filename>optg_2Leo__NavierStokes_8d</filename>
   </compound>
   <compound kind="file">
-    <name>LEO_PLIC_Advection.hh</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/SecondOrderAdvectionDiffusion/include/</path>
-    <filename>LEO__PLIC__Advection_8hh</filename>
-    <class kind="class">LEO_PLIC_Advection</class>
+    <name>Leo_NavierStokes.hh</name>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/NavierStokes/include/</path>
+    <filename>Leo__NavierStokes_8hh</filename>
+    <class kind="class">Leo_NavierStokes</class>
+  </compound>
+  <compound kind="file">
+    <name>Leo_Viscoplastic.cc</name>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/NavierStokes/src/</path>
+    <filename>Leo__Viscoplastic_8cc</filename>
+    <includes id="Leo__Viscoplastic_8hh" name="Leo_Viscoplastic.hh" local="no" imported="no">Leo_Viscoplastic.hh</includes>
+    <member kind="variable">
+      <type>PDE_LocalFE::field_id const</type>
+      <name>row</name>
+      <anchorfile>Leo__Viscoplastic_8cc.html</anchorfile>
+      <anchor>ab063117bbc7156727531072081b7f6d4</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>PDE_LocalFE::field_id const</type>
+      <name>col</name>
+      <anchorfile>Leo__Viscoplastic_8cc.html</anchorfile>
+      <anchor>a3946d4dddb8601620e1580ed52447e0b</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="file">
+    <name>opt0/Leo_Viscoplastic.d</name>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
+    <filename>opt0_2Leo__Viscoplastic_8d</filename>
+  </compound>
+  <compound kind="file">
+    <name>opt2/Leo_Viscoplastic.d</name>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
+    <filename>opt2_2Leo__Viscoplastic_8d</filename>
+  </compound>
+  <compound kind="file">
+    <name>optg/Leo_Viscoplastic.d</name>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
+    <filename>optg_2Leo__Viscoplastic_8d</filename>
+  </compound>
+  <compound kind="file">
+    <name>Leo_Viscoplastic.hh</name>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/NavierStokes/include/</path>
+    <filename>Leo__Viscoplastic_8hh</filename>
+    <class kind="class">Leo_Viscoplastic</class>
   </compound>
   <compound kind="file">
     <name>MI_ElasticStress.cc</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/NavierStokes/src/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/NavierStokes/src/</path>
     <filename>MI__ElasticStress_8cc</filename>
     <includes id="MI__ElasticStress_8hh" name="MI_ElasticStress.hh" local="no" imported="no">MI_ElasticStress.hh</includes>
     <includes id="UT__Viscoelastic_8hh" name="UT_Viscoelastic.hh" local="no" imported="no">UT_Viscoelastic.hh</includes>
@@ -543,28 +715,28 @@
   </compound>
   <compound kind="file">
     <name>opt0/MI_ElasticStress.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
     <filename>opt0_2MI__ElasticStress_8d</filename>
   </compound>
   <compound kind="file">
     <name>opt2/MI_ElasticStress.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
     <filename>opt2_2MI__ElasticStress_8d</filename>
   </compound>
   <compound kind="file">
     <name>optg/MI_ElasticStress.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
     <filename>optg_2MI__ElasticStress_8d</filename>
   </compound>
   <compound kind="file">
     <name>MI_ElasticStress.hh</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/NavierStokes/include/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/NavierStokes/include/</path>
     <filename>MI__ElasticStress_8hh</filename>
     <class kind="class">MI_ElasticStress</class>
   </compound>
   <compound kind="file">
     <name>MI_NavierStokes.cc</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/NavierStokes/src/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/NavierStokes/src/</path>
     <filename>MI__NavierStokes_8cc</filename>
     <includes id="MI__NavierStokes_8hh" name="MI_NavierStokes.hh" local="no" imported="no">MI_NavierStokes.hh</includes>
     <includes id="FE__PrintVariables_8hh" name="FE_PrintVariables.hh" local="no" imported="no">FE_PrintVariables.hh</includes>
@@ -586,55 +758,55 @@
   </compound>
   <compound kind="file">
     <name>opt0/MI_NavierStokes.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
     <filename>opt0_2MI__NavierStokes_8d</filename>
   </compound>
   <compound kind="file">
     <name>opt2/MI_NavierStokes.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
     <filename>opt2_2MI__NavierStokes_8d</filename>
   </compound>
   <compound kind="file">
     <name>optg/MI_NavierStokes.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
     <filename>optg_2MI__NavierStokes_8d</filename>
   </compound>
   <compound kind="file">
     <name>MI_NavierStokes.hh</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/NavierStokes/include/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/NavierStokes/include/</path>
     <filename>MI__NavierStokes_8hh</filename>
     <class kind="class">MI_NavierStokes</class>
   </compound>
   <compound kind="file">
     <name>MI_NavierStokesSystem.cc</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/NavierStokes/src/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/NavierStokes/src/</path>
     <filename>MI__NavierStokesSystem_8cc</filename>
     <includes id="MI__NavierStokesSystem_8hh" name="MI_NavierStokesSystem.hh" local="no" imported="no">MI_NavierStokesSystem.hh</includes>
   </compound>
   <compound kind="file">
     <name>opt0/MI_NavierStokesSystem.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
     <filename>opt0_2MI__NavierStokesSystem_8d</filename>
   </compound>
   <compound kind="file">
     <name>opt2/MI_NavierStokesSystem.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
     <filename>opt2_2MI__NavierStokesSystem_8d</filename>
   </compound>
   <compound kind="file">
     <name>optg/MI_NavierStokesSystem.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
     <filename>optg_2MI__NavierStokesSystem_8d</filename>
   </compound>
   <compound kind="file">
     <name>MI_NavierStokesSystem.hh</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/NavierStokes/include/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/NavierStokes/include/</path>
     <filename>MI__NavierStokesSystem_8hh</filename>
     <class kind="class">MI_NavierStokesSystem</class>
   </compound>
   <compound kind="file">
     <name>MI_ViscoElastic.cc</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/NavierStokes/src/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/NavierStokes/src/</path>
     <filename>MI__ViscoElastic_8cc</filename>
     <includes id="MI__ViscoElastic_8hh" name="MI_ViscoElastic.hh" local="no" imported="no">MI_ViscoElastic.hh</includes>
     <includes id="FE__TensorFormAssembling_8hh" name="FE_TensorFormAssembling.hh" local="no" imported="no">FE_TensorFormAssembling.hh</includes>
@@ -659,55 +831,55 @@
   </compound>
   <compound kind="file">
     <name>opt0/MI_ViscoElastic.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
     <filename>opt0_2MI__ViscoElastic_8d</filename>
   </compound>
   <compound kind="file">
     <name>opt2/MI_ViscoElastic.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
     <filename>opt2_2MI__ViscoElastic_8d</filename>
   </compound>
   <compound kind="file">
     <name>optg/MI_ViscoElastic.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
     <filename>optg_2MI__ViscoElastic_8d</filename>
   </compound>
   <compound kind="file">
     <name>MI_ViscoElastic.hh</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/NavierStokes/include/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/NavierStokes/include/</path>
     <filename>MI__ViscoElastic_8hh</filename>
     <class kind="class">MI_ViscoElastic</class>
   </compound>
   <compound kind="file">
     <name>MI_ViscoElasticSystem.cc</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/NavierStokes/src/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/NavierStokes/src/</path>
     <filename>MI__ViscoElasticSystem_8cc</filename>
     <includes id="MI__ViscoElasticSystem_8hh" name="MI_ViscoElasticSystem.hh" local="no" imported="no">MI_ViscoElasticSystem.hh</includes>
   </compound>
   <compound kind="file">
     <name>opt0/MI_ViscoElasticSystem.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
     <filename>opt0_2MI__ViscoElasticSystem_8d</filename>
   </compound>
   <compound kind="file">
     <name>opt2/MI_ViscoElasticSystem.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
     <filename>opt2_2MI__ViscoElasticSystem_8d</filename>
   </compound>
   <compound kind="file">
     <name>optg/MI_ViscoElasticSystem.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
     <filename>optg_2MI__ViscoElasticSystem_8d</filename>
   </compound>
   <compound kind="file">
     <name>MI_ViscoElasticSystem.hh</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/NavierStokes/include/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/NavierStokes/include/</path>
     <filename>MI__ViscoElasticSystem_8hh</filename>
     <class kind="class">MI_ViscoElasticSystem</class>
   </compound>
   <compound kind="file">
     <name>ML_NavierStokes.cc</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/NavierStokes/src/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/NavierStokes/src/</path>
     <filename>ML__NavierStokes_8cc</filename>
     <includes id="ML__NavierStokes_8hh" name="ML_NavierStokes.hh" local="no" imported="no">ML_NavierStokes.hh</includes>
     <includes id="FE__PrintVariables_8hh" name="FE_PrintVariables.hh" local="no" imported="no">FE_PrintVariables.hh</includes>
@@ -731,55 +903,55 @@
   </compound>
   <compound kind="file">
     <name>opt0/ML_NavierStokes.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
     <filename>opt0_2ML__NavierStokes_8d</filename>
   </compound>
   <compound kind="file">
     <name>opt2/ML_NavierStokes.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
     <filename>opt2_2ML__NavierStokes_8d</filename>
   </compound>
   <compound kind="file">
     <name>optg/ML_NavierStokes.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
     <filename>optg_2ML__NavierStokes_8d</filename>
   </compound>
   <compound kind="file">
     <name>ML_NavierStokes.hh</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/NavierStokes/include/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/NavierStokes/include/</path>
     <filename>ML__NavierStokes_8hh</filename>
     <class kind="class">ML_NavierStokes</class>
   </compound>
   <compound kind="file">
     <name>ML_NavierStokesSystem.cc</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/NavierStokes/src/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/NavierStokes/src/</path>
     <filename>ML__NavierStokesSystem_8cc</filename>
     <includes id="ML__NavierStokesSystem_8hh" name="ML_NavierStokesSystem.hh" local="no" imported="no">ML_NavierStokesSystem.hh</includes>
   </compound>
   <compound kind="file">
     <name>opt0/ML_NavierStokesSystem.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
     <filename>opt0_2ML__NavierStokesSystem_8d</filename>
   </compound>
   <compound kind="file">
     <name>opt2/ML_NavierStokesSystem.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
     <filename>opt2_2ML__NavierStokesSystem_8d</filename>
   </compound>
   <compound kind="file">
     <name>optg/ML_NavierStokesSystem.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
     <filename>optg_2ML__NavierStokesSystem_8d</filename>
   </compound>
   <compound kind="file">
     <name>ML_NavierStokesSystem.hh</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/NavierStokes/include/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/NavierStokes/include/</path>
     <filename>ML__NavierStokesSystem_8hh</filename>
     <class kind="class">ML_NavierStokesSystem</class>
   </compound>
   <compound kind="file">
     <name>MY_AdvectionDiffusion.cc</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/SecondOrderAdvectionDiffusion/src/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/SecondOrderAdvectionDiffusion/src/</path>
     <filename>MY__AdvectionDiffusion_8cc</filename>
     <includes id="MY__AdvectionDiffusion_8hh" name="MY_AdvectionDiffusion.hh" local="no" imported="no">MY_AdvectionDiffusion.hh</includes>
     <includes id="FE__LocalTimeIteratorAdapter_8hh" name="FE_LocalTimeIteratorAdapter.hh" local="no" imported="no">FE_LocalTimeIteratorAdapter.hh</includes>
@@ -787,55 +959,55 @@
   </compound>
   <compound kind="file">
     <name>opt0/MY_AdvectionDiffusion.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
     <filename>opt0_2MY__AdvectionDiffusion_8d</filename>
   </compound>
   <compound kind="file">
     <name>opt2/MY_AdvectionDiffusion.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
     <filename>opt2_2MY__AdvectionDiffusion_8d</filename>
   </compound>
   <compound kind="file">
     <name>optg/MY_AdvectionDiffusion.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
     <filename>optg_2MY__AdvectionDiffusion_8d</filename>
   </compound>
   <compound kind="file">
     <name>MY_AdvectionDiffusion.hh</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/SecondOrderAdvectionDiffusion/include/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/SecondOrderAdvectionDiffusion/include/</path>
     <filename>MY__AdvectionDiffusion_8hh</filename>
     <class kind="class">MY_AdvectionDiffusion</class>
   </compound>
   <compound kind="file">
     <name>MY_AdvectiveScheme.cc</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/SecondOrderAdvectionDiffusion/src/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/SecondOrderAdvectionDiffusion/src/</path>
     <filename>MY__AdvectiveScheme_8cc</filename>
     <includes id="MY__AdvectiveScheme_8hh" name="MY_AdvectiveScheme.hh" local="no" imported="no">MY_AdvectiveScheme.hh</includes>
   </compound>
   <compound kind="file">
     <name>opt0/MY_AdvectiveScheme.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
     <filename>opt0_2MY__AdvectiveScheme_8d</filename>
   </compound>
   <compound kind="file">
     <name>opt2/MY_AdvectiveScheme.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
     <filename>opt2_2MY__AdvectiveScheme_8d</filename>
   </compound>
   <compound kind="file">
     <name>optg/MY_AdvectiveScheme.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
     <filename>optg_2MY__AdvectiveScheme_8d</filename>
   </compound>
   <compound kind="file">
     <name>MY_AdvectiveScheme.hh</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/SecondOrderAdvectionDiffusion/include/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/SecondOrderAdvectionDiffusion/include/</path>
     <filename>MY__AdvectiveScheme_8hh</filename>
     <class kind="class">MY_AdvectiveScheme</class>
   </compound>
   <compound kind="file">
     <name>MY_MUSCL_DataStructure.cc</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/SecondOrderAdvectionDiffusion/src/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/SecondOrderAdvectionDiffusion/src/</path>
     <filename>MY__MUSCL__DataStructure_8cc</filename>
     <includes id="MY__MUSCL__DataStructure_8hh" name="MY_MUSCL_DataStructure.hh" local="no" imported="no">MY_MUSCL_DataStructure.hh</includes>
     <class kind="class">MY_OneSideStreamCellNodes</class>
@@ -843,140 +1015,112 @@
   </compound>
   <compound kind="file">
     <name>opt0/MY_MUSCL_DataStructure.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
     <filename>opt0_2MY__MUSCL__DataStructure_8d</filename>
   </compound>
   <compound kind="file">
     <name>opt2/MY_MUSCL_DataStructure.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
     <filename>opt2_2MY__MUSCL__DataStructure_8d</filename>
   </compound>
   <compound kind="file">
     <name>optg/MY_MUSCL_DataStructure.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
     <filename>optg_2MY__MUSCL__DataStructure_8d</filename>
   </compound>
   <compound kind="file">
     <name>MY_MUSCL_DataStructure.hh</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/SecondOrderAdvectionDiffusion/include/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/SecondOrderAdvectionDiffusion/include/</path>
     <filename>MY__MUSCL__DataStructure_8hh</filename>
     <class kind="class">MY_MUSCL_DataStructure</class>
   </compound>
   <compound kind="file">
     <name>MY_MUSCL_Scheme.cc</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/SecondOrderAdvectionDiffusion/src/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/SecondOrderAdvectionDiffusion/src/</path>
     <filename>MY__MUSCL__Scheme_8cc</filename>
     <includes id="MY__MUSCL__Scheme_8hh" name="MY_MUSCL_Scheme.hh" local="no" imported="no">MY_MUSCL_Scheme.hh</includes>
     <includes id="MY__MUSCL__DataStructure_8hh" name="MY_MUSCL_DataStructure.hh" local="no" imported="no">MY_MUSCL_DataStructure.hh</includes>
   </compound>
   <compound kind="file">
     <name>opt0/MY_MUSCL_Scheme.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
     <filename>opt0_2MY__MUSCL__Scheme_8d</filename>
   </compound>
   <compound kind="file">
     <name>opt2/MY_MUSCL_Scheme.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
     <filename>opt2_2MY__MUSCL__Scheme_8d</filename>
   </compound>
   <compound kind="file">
     <name>optg/MY_MUSCL_Scheme.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
     <filename>optg_2MY__MUSCL__Scheme_8d</filename>
   </compound>
   <compound kind="file">
     <name>MY_MUSCL_Scheme.hh</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/SecondOrderAdvectionDiffusion/include/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/SecondOrderAdvectionDiffusion/include/</path>
     <filename>MY__MUSCL__Scheme_8hh</filename>
     <includes id="MY__AdvectiveScheme_8hh" name="MY_AdvectiveScheme.hh" local="no" imported="no">MY_AdvectiveScheme.hh</includes>
     <class kind="class">MY_MUSCL_Scheme</class>
   </compound>
   <compound kind="file">
-    <name>MY_PLIC_Advection.cc</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/SecondOrderAdvectionDiffusion/src/</path>
-    <filename>MY__PLIC__Advection_8cc</filename>
-    <includes id="MY__PLIC__Advection_8hh" name="MY_PLIC_Advection.hh" local="no" imported="no">MY_PLIC_Advection.hh</includes>
-    <includes id="FE__LocalTimeIteratorAdapter_8hh" name="FE_LocalTimeIteratorAdapter.hh" local="no" imported="no">FE_LocalTimeIteratorAdapter.hh</includes>
-  </compound>
-  <compound kind="file">
-    <name>opt0/MY_PLIC_Advection.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
-    <filename>opt0_2MY__PLIC__Advection_8d</filename>
-  </compound>
-  <compound kind="file">
-    <name>opt2/MY_PLIC_Advection.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
-    <filename>opt2_2MY__PLIC__Advection_8d</filename>
-  </compound>
-  <compound kind="file">
-    <name>optg/MY_PLIC_Advection.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
-    <filename>optg_2MY__PLIC__Advection_8d</filename>
-  </compound>
-  <compound kind="file">
-    <name>MY_PLIC_Advection.hh</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/SecondOrderAdvectionDiffusion/include/</path>
-    <filename>MY__PLIC__Advection_8hh</filename>
-    <class kind="class">MY_PLIC_Advection</class>
-  </compound>
-  <compound kind="file">
     <name>MY_UpwindScheme.cc</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/SecondOrderAdvectionDiffusion/src/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/SecondOrderAdvectionDiffusion/src/</path>
     <filename>MY__UpwindScheme_8cc</filename>
     <includes id="MY__UpwindScheme_8hh" name="MY_UpwindScheme.hh" local="no" imported="no">MY_UpwindScheme.hh</includes>
   </compound>
   <compound kind="file">
     <name>opt0/MY_UpwindScheme.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
     <filename>opt0_2MY__UpwindScheme_8d</filename>
   </compound>
   <compound kind="file">
     <name>opt2/MY_UpwindScheme.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
     <filename>opt2_2MY__UpwindScheme_8d</filename>
   </compound>
   <compound kind="file">
     <name>optg/MY_UpwindScheme.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
     <filename>optg_2MY__UpwindScheme_8d</filename>
   </compound>
   <compound kind="file">
     <name>MY_UpwindScheme.hh</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/SecondOrderAdvectionDiffusion/include/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/SecondOrderAdvectionDiffusion/include/</path>
     <filename>MY__UpwindScheme_8hh</filename>
     <includes id="MY__AdvectiveScheme_8hh" name="MY_AdvectiveScheme.hh" local="no" imported="no">MY_AdvectiveScheme.hh</includes>
     <class kind="class">MY_UpwindScheme</class>
   </compound>
   <compound kind="file">
     <name>PDE_2D_P0isoP2_4nodes.cc</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/PDEsolver/src/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/PDEsolver/src/</path>
     <filename>PDE__2D__P0isoP2__4nodes_8cc</filename>
     <includes id="PDE__2D__P0isoP2__4nodes_8hh" name="PDE_2D_P0isoP2_4nodes.hh" local="no" imported="no">PDE_2D_P0isoP2_4nodes.hh</includes>
   </compound>
   <compound kind="file">
     <name>opt0/PDE_2D_P0isoP2_4nodes.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
     <filename>opt0_2PDE__2D__P0isoP2__4nodes_8d</filename>
   </compound>
   <compound kind="file">
     <name>opt2/PDE_2D_P0isoP2_4nodes.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
     <filename>opt2_2PDE__2D__P0isoP2__4nodes_8d</filename>
   </compound>
   <compound kind="file">
     <name>optg/PDE_2D_P0isoP2_4nodes.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
     <filename>optg_2PDE__2D__P0isoP2__4nodes_8d</filename>
   </compound>
   <compound kind="file">
     <name>PDE_2D_P0isoP2_4nodes.hh</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/PDEsolver/include/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/PDEsolver/include/</path>
     <filename>PDE__2D__P0isoP2__4nodes_8hh</filename>
     <class kind="class">PDE_2D_P0isoP2_4nodes</class>
   </compound>
   <compound kind="file">
     <name>PDE_2D_P1DC_3nodes.cc</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/PDEsolver/src/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/PDEsolver/src/</path>
     <filename>PDE__2D__P1DC__3nodes_8cc</filename>
     <includes id="PDE__2D__P1DC__3nodes_8hh" name="PDE_2D_P1DC_3nodes.hh" local="no" imported="no">PDE_2D_P1DC_3nodes.hh</includes>
     <member kind="variable">
@@ -989,109 +1133,109 @@
   </compound>
   <compound kind="file">
     <name>opt0/PDE_2D_P1DC_3nodes.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
     <filename>opt0_2PDE__2D__P1DC__3nodes_8d</filename>
   </compound>
   <compound kind="file">
     <name>opt2/PDE_2D_P1DC_3nodes.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
     <filename>opt2_2PDE__2D__P1DC__3nodes_8d</filename>
   </compound>
   <compound kind="file">
     <name>optg/PDE_2D_P1DC_3nodes.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
     <filename>optg_2PDE__2D__P1DC__3nodes_8d</filename>
   </compound>
   <compound kind="file">
     <name>PDE_2D_P1DC_3nodes.hh</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/PDEsolver/include/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/PDEsolver/include/</path>
     <filename>PDE__2D__P1DC__3nodes_8hh</filename>
     <class kind="class">PDE_2D_P1DC_3nodes</class>
   </compound>
   <compound kind="file">
     <name>PDE_2D_Q0isoQ1_4nodes.cc</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/PDEsolver/src/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/PDEsolver/src/</path>
     <filename>PDE__2D__Q0isoQ1__4nodes_8cc</filename>
     <includes id="PDE__2D__Q0isoQ1__4nodes_8hh" name="PDE_2D_Q0isoQ1_4nodes.hh" local="no" imported="no">PDE_2D_Q0isoQ1_4nodes.hh</includes>
   </compound>
   <compound kind="file">
     <name>opt0/PDE_2D_Q0isoQ1_4nodes.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
     <filename>opt0_2PDE__2D__Q0isoQ1__4nodes_8d</filename>
   </compound>
   <compound kind="file">
     <name>opt2/PDE_2D_Q0isoQ1_4nodes.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
     <filename>opt2_2PDE__2D__Q0isoQ1__4nodes_8d</filename>
   </compound>
   <compound kind="file">
     <name>optg/PDE_2D_Q0isoQ1_4nodes.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
     <filename>optg_2PDE__2D__Q0isoQ1__4nodes_8d</filename>
   </compound>
   <compound kind="file">
     <name>PDE_2D_Q0isoQ1_4nodes.hh</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/PDEsolver/include/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/PDEsolver/include/</path>
     <filename>PDE__2D__Q0isoQ1__4nodes_8hh</filename>
     <class kind="class">PDE_2D_Q0isoQ1_4nodes</class>
   </compound>
   <compound kind="file">
     <name>PDE_2D_Q1CR_3nodes.cc</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/PDEsolver/src/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/PDEsolver/src/</path>
     <filename>PDE__2D__Q1CR__3nodes_8cc</filename>
     <includes id="PDE__2D__Q1CR__3nodes_8hh" name="PDE_2D_Q1CR_3nodes.hh" local="no" imported="no">PDE_2D_Q1CR_3nodes.hh</includes>
   </compound>
   <compound kind="file">
     <name>opt0/PDE_2D_Q1CR_3nodes.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
     <filename>opt0_2PDE__2D__Q1CR__3nodes_8d</filename>
   </compound>
   <compound kind="file">
     <name>opt2/PDE_2D_Q1CR_3nodes.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
     <filename>opt2_2PDE__2D__Q1CR__3nodes_8d</filename>
   </compound>
   <compound kind="file">
     <name>optg/PDE_2D_Q1CR_3nodes.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
     <filename>optg_2PDE__2D__Q1CR__3nodes_8d</filename>
   </compound>
   <compound kind="file">
     <name>PDE_2D_Q1CR_3nodes.hh</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/PDEsolver/include/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/PDEsolver/include/</path>
     <filename>PDE__2D__Q1CR__3nodes_8hh</filename>
     <class kind="class">PDE_2D_Q1CR_3nodes</class>
   </compound>
   <compound kind="file">
     <name>PDE_2D_Q1cross_5nodes.cc</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/PDEsolver/src/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/PDEsolver/src/</path>
     <filename>PDE__2D__Q1cross__5nodes_8cc</filename>
     <includes id="PDE__2D__Q1cross__5nodes_8hh" name="PDE_2D_Q1cross_5nodes.hh" local="no" imported="no">PDE_2D_Q1cross_5nodes.hh</includes>
   </compound>
   <compound kind="file">
     <name>opt0/PDE_2D_Q1cross_5nodes.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
     <filename>opt0_2PDE__2D__Q1cross__5nodes_8d</filename>
   </compound>
   <compound kind="file">
     <name>opt2/PDE_2D_Q1cross_5nodes.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
     <filename>opt2_2PDE__2D__Q1cross__5nodes_8d</filename>
   </compound>
   <compound kind="file">
     <name>optg/PDE_2D_Q1cross_5nodes.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
     <filename>optg_2PDE__2D__Q1cross__5nodes_8d</filename>
   </compound>
   <compound kind="file">
     <name>PDE_2D_Q1cross_5nodes.hh</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/PDEsolver/include/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/PDEsolver/include/</path>
     <filename>PDE__2D__Q1cross__5nodes_8hh</filename>
     <class kind="class">PDE_2D_Q1cross_5nodes</class>
   </compound>
   <compound kind="file">
     <name>PDE_2D_Q1DC_4nodes.cc</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/PDEsolver/src/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/PDEsolver/src/</path>
     <filename>PDE__2D__Q1DC__4nodes_8cc</filename>
     <includes id="PDE__2D__Q1DC__4nodes_8hh" name="PDE_2D_Q1DC_4nodes.hh" local="no" imported="no">PDE_2D_Q1DC_4nodes.hh</includes>
     <member kind="variable">
@@ -1104,111 +1248,111 @@
   </compound>
   <compound kind="file">
     <name>opt0/PDE_2D_Q1DC_4nodes.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
     <filename>opt0_2PDE__2D__Q1DC__4nodes_8d</filename>
   </compound>
   <compound kind="file">
     <name>opt2/PDE_2D_Q1DC_4nodes.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
     <filename>opt2_2PDE__2D__Q1DC__4nodes_8d</filename>
   </compound>
   <compound kind="file">
     <name>optg/PDE_2D_Q1DC_4nodes.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
     <filename>optg_2PDE__2D__Q1DC__4nodes_8d</filename>
   </compound>
   <compound kind="file">
     <name>PDE_2D_Q1DC_4nodes.hh</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/PDEsolver/include/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/PDEsolver/include/</path>
     <filename>PDE__2D__Q1DC__4nodes_8hh</filename>
     <class kind="class">PDE_2D_Q1DC_4nodes</class>
   </compound>
   <compound kind="file">
     <name>PEL_MATLABio.cc</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/PELbase/src/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/PELbase/src/</path>
     <filename>PEL__MATLABio_8cc</filename>
     <includes id="PEL__MATLABio_8hh" name="PEL_MATLABio.hh" local="no" imported="no">PEL_MATLABio.hh</includes>
     <class kind="struct">PEL_MATLABio_ERROR</class>
   </compound>
   <compound kind="file">
     <name>opt0/PEL_MATLABio.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
     <filename>opt0_2PEL__MATLABio_8d</filename>
   </compound>
   <compound kind="file">
     <name>opt2/PEL_MATLABio.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
     <filename>opt2_2PEL__MATLABio_8d</filename>
   </compound>
   <compound kind="file">
     <name>optg/PEL_MATLABio.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
     <filename>optg_2PEL__MATLABio_8d</filename>
   </compound>
   <compound kind="file">
     <name>PEL_MATLABio.hh</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/PELbase/include/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/PELbase/include/</path>
     <filename>PEL__MATLABio_8hh</filename>
     <class kind="class">PEL_MATLABio</class>
   </compound>
   <compound kind="file">
     <name>PEL_MATLABwriter.cc</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/PELbase/src/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/PELbase/src/</path>
     <filename>PEL__MATLABwriter_8cc</filename>
     <includes id="PEL__MATLABwriter_8hh" name="PEL_MATLABwriter.hh" local="no" imported="no">PEL_MATLABwriter.hh</includes>
   </compound>
   <compound kind="file">
     <name>opt0/PEL_MATLABwriter.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
     <filename>opt0_2PEL__MATLABwriter_8d</filename>
   </compound>
   <compound kind="file">
     <name>opt2/PEL_MATLABwriter.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
     <filename>opt2_2PEL__MATLABwriter_8d</filename>
   </compound>
   <compound kind="file">
     <name>optg/PEL_MATLABwriter.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
     <filename>optg_2PEL__MATLABwriter_8d</filename>
   </compound>
   <compound kind="file">
     <name>PEL_MATLABwriter.hh</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/PELbase/include/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/PELbase/include/</path>
     <filename>PEL__MATLABwriter_8hh</filename>
     <includes id="PEL__MATLABio_8hh" name="PEL_MATLABio.hh" local="no" imported="no">PEL_MATLABio.hh</includes>
     <class kind="class">PEL_MATLABwriter</class>
   </compound>
   <compound kind="file">
     <name>RS_Asymmetry.cc</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/RefSol/src/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/RefSol/src/</path>
     <filename>RS__Asymmetry_8cc</filename>
     <includes id="RS__Asymmetry_8hh" name="RS_Asymmetry.hh" local="no" imported="no">RS_Asymmetry.hh</includes>
   </compound>
   <compound kind="file">
     <name>opt0/RS_Asymmetry.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
     <filename>opt0_2RS__Asymmetry_8d</filename>
   </compound>
   <compound kind="file">
     <name>opt2/RS_Asymmetry.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
     <filename>opt2_2RS__Asymmetry_8d</filename>
   </compound>
   <compound kind="file">
     <name>optg/RS_Asymmetry.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
     <filename>optg_2RS__Asymmetry_8d</filename>
   </compound>
   <compound kind="file">
     <name>RS_Asymmetry.hh</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/RefSol/include/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/RefSol/include/</path>
     <filename>RS__Asymmetry_8hh</filename>
     <class kind="class">RS_Asymmetry</class>
   </compound>
   <compound kind="file">
     <name>RS_Bingham.cc</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/RefSol/src/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/RefSol/src/</path>
     <filename>RS__Bingham_8cc</filename>
     <includes id="RS__Bingham_8hh" name="RS_Bingham.hh" local="no" imported="no">RS_Bingham.hh</includes>
     <member kind="function">
@@ -1242,268 +1386,268 @@
   </compound>
   <compound kind="file">
     <name>opt0/RS_Bingham.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
     <filename>opt0_2RS__Bingham_8d</filename>
   </compound>
   <compound kind="file">
     <name>opt2/RS_Bingham.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
     <filename>opt2_2RS__Bingham_8d</filename>
   </compound>
   <compound kind="file">
     <name>optg/RS_Bingham.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
     <filename>optg_2RS__Bingham_8d</filename>
   </compound>
   <compound kind="file">
     <name>RS_Bingham.hh</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/RefSol/include/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/RefSol/include/</path>
     <filename>RS__Bingham_8hh</filename>
     <class kind="class">RS_Bingham</class>
   </compound>
   <compound kind="file">
     <name>RS_LogC.cc</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/RefSol/src/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/RefSol/src/</path>
     <filename>RS__LogC_8cc</filename>
     <includes id="RS__LogC_8hh" name="RS_LogC.hh" local="no" imported="no">RS_LogC.hh</includes>
   </compound>
   <compound kind="file">
     <name>opt0/RS_LogC.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
     <filename>opt0_2RS__LogC_8d</filename>
   </compound>
   <compound kind="file">
     <name>opt2/RS_LogC.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
     <filename>opt2_2RS__LogC_8d</filename>
   </compound>
   <compound kind="file">
     <name>optg/RS_LogC.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
     <filename>optg_2RS__LogC_8d</filename>
   </compound>
   <compound kind="file">
     <name>RS_LogC.hh</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/RefSol/include/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/RefSol/include/</path>
     <filename>RS__LogC_8hh</filename>
     <class kind="class">RS_LogC</class>
   </compound>
   <compound kind="file">
     <name>RS_Move_BC.cc</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/RefSol/src/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/RefSol/src/</path>
     <filename>RS__Move__BC_8cc</filename>
     <includes id="RS__Move__BC_8hh" name="RS_Move_BC.hh" local="no" imported="no">RS_Move_BC.hh</includes>
   </compound>
   <compound kind="file">
     <name>opt0/RS_Move_BC.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
     <filename>opt0_2RS__Move__BC_8d</filename>
   </compound>
   <compound kind="file">
     <name>opt2/RS_Move_BC.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
     <filename>opt2_2RS__Move__BC_8d</filename>
   </compound>
   <compound kind="file">
     <name>optg/RS_Move_BC.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
     <filename>optg_2RS__Move__BC_8d</filename>
   </compound>
   <compound kind="file">
     <name>RS_Move_BC.hh</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/RefSol/include/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/RefSol/include/</path>
     <filename>RS__Move__BC_8hh</filename>
     <class kind="class">RS_Move_BC</class>
   </compound>
   <compound kind="file">
     <name>RS_Multi_Layer.cc</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/RefSol/src/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/RefSol/src/</path>
     <filename>RS__Multi__Layer_8cc</filename>
     <includes id="RS__Multi__Layer_8hh" name="RS_Multi_Layer.hh" local="no" imported="no">RS_Multi_Layer.hh</includes>
   </compound>
   <compound kind="file">
     <name>opt0/RS_Multi_Layer.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
     <filename>opt0_2RS__Multi__Layer_8d</filename>
   </compound>
   <compound kind="file">
     <name>opt2/RS_Multi_Layer.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
     <filename>opt2_2RS__Multi__Layer_8d</filename>
   </compound>
   <compound kind="file">
     <name>optg/RS_Multi_Layer.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
     <filename>optg_2RS__Multi__Layer_8d</filename>
   </compound>
   <compound kind="file">
     <name>RS_Multi_Layer.hh</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/RefSol/include/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/RefSol/include/</path>
     <filename>RS__Multi__Layer_8hh</filename>
     <class kind="class">RS_Multi_Layer</class>
   </compound>
   <compound kind="file">
     <name>RS_Perturbation.cc</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/RefSol/src/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/RefSol/src/</path>
     <filename>RS__Perturbation_8cc</filename>
     <includes id="RS__Perturbation_8hh" name="RS_Perturbation.hh" local="no" imported="no">RS_Perturbation.hh</includes>
   </compound>
   <compound kind="file">
     <name>opt0/RS_Perturbation.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
     <filename>opt0_2RS__Perturbation_8d</filename>
   </compound>
   <compound kind="file">
     <name>opt2/RS_Perturbation.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
     <filename>opt2_2RS__Perturbation_8d</filename>
   </compound>
   <compound kind="file">
     <name>optg/RS_Perturbation.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
     <filename>optg_2RS__Perturbation_8d</filename>
   </compound>
   <compound kind="file">
     <name>RS_Perturbation.hh</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/RefSol/include/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/RefSol/include/</path>
     <filename>RS__Perturbation_8hh</filename>
     <class kind="class">RS_Perturbation</class>
   </compound>
   <compound kind="file">
     <name>RS_PotentialField.cc</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/RefSol/src/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/RefSol/src/</path>
     <filename>RS__PotentialField_8cc</filename>
     <includes id="RS__PotentialField_8hh" name="RS_PotentialField.hh" local="no" imported="no">RS_PotentialField.hh</includes>
     <includes id="RS__Bingham_8hh" name="RS_Bingham.hh" local="no" imported="no">RS_Bingham.hh</includes>
   </compound>
   <compound kind="file">
     <name>opt0/RS_PotentialField.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
     <filename>opt0_2RS__PotentialField_8d</filename>
   </compound>
   <compound kind="file">
     <name>opt2/RS_PotentialField.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
     <filename>opt2_2RS__PotentialField_8d</filename>
   </compound>
   <compound kind="file">
     <name>optg/RS_PotentialField.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
     <filename>optg_2RS__PotentialField_8d</filename>
   </compound>
   <compound kind="file">
     <name>RS_PotentialField.hh</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/RefSol/include/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/RefSol/include/</path>
     <filename>RS__PotentialField_8hh</filename>
     <class kind="class">RS_PotentialField</class>
   </compound>
   <compound kind="file">
     <name>RS_Pulse.cc</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/RefSol/src/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/RefSol/src/</path>
     <filename>RS__Pulse_8cc</filename>
     <includes id="RS__Pulse_8hh" name="RS_Pulse.hh" local="no" imported="no">RS_Pulse.hh</includes>
     <includes id="RS__Bingham_8hh" name="RS_Bingham.hh" local="no" imported="no">RS_Bingham.hh</includes>
   </compound>
   <compound kind="file">
     <name>opt0/RS_Pulse.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
     <filename>opt0_2RS__Pulse_8d</filename>
   </compound>
   <compound kind="file">
     <name>opt2/RS_Pulse.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
     <filename>opt2_2RS__Pulse_8d</filename>
   </compound>
   <compound kind="file">
     <name>optg/RS_Pulse.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
     <filename>optg_2RS__Pulse_8d</filename>
   </compound>
   <compound kind="file">
     <name>RS_Pulse.hh</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/RefSol/include/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/RefSol/include/</path>
     <filename>RS__Pulse_8hh</filename>
     <class kind="class">RS_Pulse</class>
   </compound>
   <compound kind="file">
     <name>RS_TimeDependent.cc</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/RefSol/src/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/RefSol/src/</path>
     <filename>RS__TimeDependent_8cc</filename>
     <includes id="RS__TimeDependent_8hh" name="RS_TimeDependent.hh" local="no" imported="no">RS_TimeDependent.hh</includes>
     <includes id="RS__Bingham_8hh" name="RS_Bingham.hh" local="no" imported="no">RS_Bingham.hh</includes>
   </compound>
   <compound kind="file">
     <name>opt0/RS_TimeDependent.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
     <filename>opt0_2RS__TimeDependent_8d</filename>
   </compound>
   <compound kind="file">
     <name>opt2/RS_TimeDependent.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
     <filename>opt2_2RS__TimeDependent_8d</filename>
   </compound>
   <compound kind="file">
     <name>optg/RS_TimeDependent.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
     <filename>optg_2RS__TimeDependent_8d</filename>
   </compound>
   <compound kind="file">
     <name>RS_TimeDependent.hh</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/RefSol/include/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/RefSol/include/</path>
     <filename>RS__TimeDependent_8hh</filename>
     <class kind="class">RS_TimeDependent</class>
   </compound>
   <compound kind="file">
     <name>RS_Writing.cc</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/RefSol/src/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/RefSol/src/</path>
     <filename>RS__Writing_8cc</filename>
     <includes id="RS__Writing_8hh" name="RS_Writing.hh" local="no" imported="no">RS_Writing.hh</includes>
   </compound>
   <compound kind="file">
     <name>opt0/RS_Writing.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
     <filename>opt0_2RS__Writing_8d</filename>
   </compound>
   <compound kind="file">
     <name>opt2/RS_Writing.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
     <filename>opt2_2RS__Writing_8d</filename>
   </compound>
   <compound kind="file">
     <name>optg/RS_Writing.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
     <filename>optg_2RS__Writing_8d</filename>
   </compound>
   <compound kind="file">
     <name>RS_Writing.hh</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/RefSol/include/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/RefSol/include/</path>
     <filename>RS__Writing_8hh</filename>
     <class kind="class">RS_Writing</class>
   </compound>
   <compound kind="file">
     <name>RS_Writing_A.cc</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/RefSol/src/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/RefSol/src/</path>
     <filename>RS__Writing__A_8cc</filename>
     <includes id="RS__Writing__A_8hh" name="RS_Writing_A.hh" local="no" imported="no">RS_Writing_A.hh</includes>
   </compound>
   <compound kind="file">
     <name>opt0/RS_Writing_A.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
     <filename>opt0_2RS__Writing__A_8d</filename>
   </compound>
   <compound kind="file">
     <name>opt2/RS_Writing_A.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
     <filename>opt2_2RS__Writing__A_8d</filename>
   </compound>
   <compound kind="file">
     <name>optg/RS_Writing_A.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
     <filename>optg_2RS__Writing__A_8d</filename>
   </compound>
   <compound kind="file">
     <name>RS_Writing_A.hh</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/RefSol/include/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/RefSol/include/</path>
     <filename>RS__Writing__A_8hh</filename>
     <class kind="class">RS_Writing_A</class>
     <member kind="define">
@@ -1516,28 +1660,28 @@
   </compound>
   <compound kind="file">
     <name>RS_Writing_C.cc</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/RefSol/src/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/RefSol/src/</path>
     <filename>RS__Writing__C_8cc</filename>
     <includes id="RS__Writing__C_8hh" name="RS_Writing_C.hh" local="no" imported="no">RS_Writing_C.hh</includes>
   </compound>
   <compound kind="file">
     <name>opt0/RS_Writing_C.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
     <filename>opt0_2RS__Writing__C_8d</filename>
   </compound>
   <compound kind="file">
     <name>opt2/RS_Writing_C.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
     <filename>opt2_2RS__Writing__C_8d</filename>
   </compound>
   <compound kind="file">
     <name>optg/RS_Writing_C.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
     <filename>optg_2RS__Writing__C_8d</filename>
   </compound>
   <compound kind="file">
     <name>RS_Writing_C.hh</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/RefSol/include/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/RefSol/include/</path>
     <filename>RS__Writing__C_8hh</filename>
     <class kind="class">RS_Writing_C</class>
     <member kind="define">
@@ -1550,28 +1694,28 @@
   </compound>
   <compound kind="file">
     <name>RS_Writing_E.cc</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/RefSol/src/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/RefSol/src/</path>
     <filename>RS__Writing__E_8cc</filename>
     <includes id="RS__Writing__E_8hh" name="RS_Writing_E.hh" local="no" imported="no">RS_Writing_E.hh</includes>
   </compound>
   <compound kind="file">
     <name>opt0/RS_Writing_E.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
     <filename>opt0_2RS__Writing__E_8d</filename>
   </compound>
   <compound kind="file">
     <name>opt2/RS_Writing_E.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
     <filename>opt2_2RS__Writing__E_8d</filename>
   </compound>
   <compound kind="file">
     <name>optg/RS_Writing_E.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
     <filename>optg_2RS__Writing__E_8d</filename>
   </compound>
   <compound kind="file">
     <name>RS_Writing_E.hh</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/RefSol/include/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/RefSol/include/</path>
     <filename>RS__Writing__E_8hh</filename>
     <class kind="class">RS_Writing_E</class>
     <member kind="define">
@@ -1584,28 +1728,28 @@
   </compound>
   <compound kind="file">
     <name>RS_Writing_N.cc</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/RefSol/src/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/RefSol/src/</path>
     <filename>RS__Writing__N_8cc</filename>
     <includes id="RS__Writing__N_8hh" name="RS_Writing_N.hh" local="no" imported="no">RS_Writing_N.hh</includes>
   </compound>
   <compound kind="file">
     <name>opt0/RS_Writing_N.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
     <filename>opt0_2RS__Writing__N_8d</filename>
   </compound>
   <compound kind="file">
     <name>opt2/RS_Writing_N.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
     <filename>opt2_2RS__Writing__N_8d</filename>
   </compound>
   <compound kind="file">
     <name>optg/RS_Writing_N.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
     <filename>optg_2RS__Writing__N_8d</filename>
   </compound>
   <compound kind="file">
     <name>RS_Writing_N.hh</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/RefSol/include/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/RefSol/include/</path>
     <filename>RS__Writing__N_8hh</filename>
     <class kind="class">RS_Writing_N</class>
     <member kind="define">
@@ -1618,28 +1762,28 @@
   </compound>
   <compound kind="file">
     <name>RS_Writing_O.cc</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/RefSol/src/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/RefSol/src/</path>
     <filename>RS__Writing__O_8cc</filename>
     <includes id="RS__Writing__O_8hh" name="RS_Writing_O.hh" local="no" imported="no">RS_Writing_O.hh</includes>
   </compound>
   <compound kind="file">
     <name>opt0/RS_Writing_O.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
     <filename>opt0_2RS__Writing__O_8d</filename>
   </compound>
   <compound kind="file">
     <name>opt2/RS_Writing_O.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
     <filename>opt2_2RS__Writing__O_8d</filename>
   </compound>
   <compound kind="file">
     <name>optg/RS_Writing_O.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
     <filename>optg_2RS__Writing__O_8d</filename>
   </compound>
   <compound kind="file">
     <name>RS_Writing_O.hh</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/RefSol/include/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/RefSol/include/</path>
     <filename>RS__Writing__O_8hh</filename>
     <class kind="class">RS_Writing_O</class>
     <member kind="define">
@@ -1652,28 +1796,28 @@
   </compound>
   <compound kind="file">
     <name>RS_Writing_R.cc</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/RefSol/src/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/RefSol/src/</path>
     <filename>RS__Writing__R_8cc</filename>
     <includes id="RS__Writing__R_8hh" name="RS_Writing_R.hh" local="no" imported="no">RS_Writing_R.hh</includes>
   </compound>
   <compound kind="file">
     <name>opt0/RS_Writing_R.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
     <filename>opt0_2RS__Writing__R_8d</filename>
   </compound>
   <compound kind="file">
     <name>opt2/RS_Writing_R.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
     <filename>opt2_2RS__Writing__R_8d</filename>
   </compound>
   <compound kind="file">
     <name>optg/RS_Writing_R.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
     <filename>optg_2RS__Writing__R_8d</filename>
   </compound>
   <compound kind="file">
     <name>RS_Writing_R.hh</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/RefSol/include/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/RefSol/include/</path>
     <filename>RS__Writing__R_8hh</filename>
     <class kind="class">RS_Writing_R</class>
     <member kind="define">
@@ -1686,28 +1830,28 @@
   </compound>
   <compound kind="file">
     <name>RS_Writing_S2.cc</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/RefSol/src/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/RefSol/src/</path>
     <filename>RS__Writing__S2_8cc</filename>
     <includes id="RS__Writing__S2_8hh" name="RS_Writing_S2.hh" local="no" imported="no">RS_Writing_S2.hh</includes>
   </compound>
   <compound kind="file">
     <name>opt0/RS_Writing_S2.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
     <filename>opt0_2RS__Writing__S2_8d</filename>
   </compound>
   <compound kind="file">
     <name>opt2/RS_Writing_S2.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
     <filename>opt2_2RS__Writing__S2_8d</filename>
   </compound>
   <compound kind="file">
     <name>optg/RS_Writing_S2.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
     <filename>optg_2RS__Writing__S2_8d</filename>
   </compound>
   <compound kind="file">
     <name>RS_Writing_S2.hh</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/RefSol/include/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/RefSol/include/</path>
     <filename>RS__Writing__S2_8hh</filename>
     <class kind="class">RS_Writing_S2</class>
     <member kind="define">
@@ -1720,28 +1864,28 @@
   </compound>
   <compound kind="file">
     <name>RS_Writing_U.cc</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/RefSol/src/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/RefSol/src/</path>
     <filename>RS__Writing__U_8cc</filename>
     <includes id="RS__Writing__U_8hh" name="RS_Writing_U.hh" local="no" imported="no">RS_Writing_U.hh</includes>
   </compound>
   <compound kind="file">
     <name>opt0/RS_Writing_U.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
     <filename>opt0_2RS__Writing__U_8d</filename>
   </compound>
   <compound kind="file">
     <name>opt2/RS_Writing_U.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
     <filename>opt2_2RS__Writing__U_8d</filename>
   </compound>
   <compound kind="file">
     <name>optg/RS_Writing_U.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
     <filename>optg_2RS__Writing__U_8d</filename>
   </compound>
   <compound kind="file">
     <name>RS_Writing_U.hh</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/RefSol/include/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/RefSol/include/</path>
     <filename>RS__Writing__U_8hh</filename>
     <class kind="class">RS_Writing_U</class>
     <member kind="define">
@@ -1754,28 +1898,28 @@
   </compound>
   <compound kind="file">
     <name>RS_Writing_V.cc</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/RefSol/src/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/RefSol/src/</path>
     <filename>RS__Writing__V_8cc</filename>
     <includes id="RS__Writing__V_8hh" name="RS_Writing_V.hh" local="no" imported="no">RS_Writing_V.hh</includes>
   </compound>
   <compound kind="file">
     <name>opt0/RS_Writing_V.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
     <filename>opt0_2RS__Writing__V_8d</filename>
   </compound>
   <compound kind="file">
     <name>opt2/RS_Writing_V.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
     <filename>opt2_2RS__Writing__V_8d</filename>
   </compound>
   <compound kind="file">
     <name>optg/RS_Writing_V.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
     <filename>optg_2RS__Writing__V_8d</filename>
   </compound>
   <compound kind="file">
     <name>RS_Writing_V.hh</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/RefSol/include/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/RefSol/include/</path>
     <filename>RS__Writing__V_8hh</filename>
     <class kind="class">RS_Writing_V</class>
     <member kind="define">
@@ -1788,34 +1932,34 @@
   </compound>
   <compound kind="file">
     <name>UT_Viscoelastic.cc</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/NavierStokes/src/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/NavierStokes/src/</path>
     <filename>UT__Viscoelastic_8cc</filename>
     <includes id="UT__Viscoelastic_8hh" name="UT_Viscoelastic.hh" local="no" imported="no">UT_Viscoelastic.hh</includes>
   </compound>
   <compound kind="file">
     <name>opt0/UT_Viscoelastic.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
     <filename>opt0_2UT__Viscoelastic_8d</filename>
   </compound>
   <compound kind="file">
     <name>opt2/UT_Viscoelastic.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
     <filename>opt2_2UT__Viscoelastic_8d</filename>
   </compound>
   <compound kind="file">
     <name>optg/UT_Viscoelastic.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
     <filename>optg_2UT__Viscoelastic_8d</filename>
   </compound>
   <compound kind="file">
     <name>UT_Viscoelastic.hh</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/NavierStokes/include/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/NavierStokes/include/</path>
     <filename>UT__Viscoelastic_8hh</filename>
     <class kind="class">UT_Viscoelastic</class>
   </compound>
   <compound kind="file">
     <name>UT_Viscoplastic.cc</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/NavierStokes/src/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/NavierStokes/src/</path>
     <filename>UT__Viscoplastic_8cc</filename>
     <includes id="UT__Viscoplastic_8hh" name="UT_Viscoplastic.hh" local="no" imported="no">UT_Viscoplastic.hh</includes>
     <member kind="variable">
@@ -1835,22 +1979,22 @@
   </compound>
   <compound kind="file">
     <name>opt0/UT_Viscoplastic.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
     <filename>opt0_2UT__Viscoplastic_8d</filename>
   </compound>
   <compound kind="file">
     <name>opt2/UT_Viscoplastic.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
     <filename>opt2_2UT__Viscoplastic_8d</filename>
   </compound>
   <compound kind="file">
     <name>optg/UT_Viscoplastic.d</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
     <filename>optg_2UT__Viscoplastic_8d</filename>
   </compound>
   <compound kind="file">
     <name>UT_Viscoplastic.hh</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/NavierStokes/include/</path>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/NavierStokes/include/</path>
     <filename>UT__Viscoplastic_8hh</filename>
     <class kind="class">UT_Viscoplastic</class>
   </compound>
@@ -1878,55 +2022,64 @@
       <anchor>a0d39e203359910bf7c7b0bb412a85054</anchor>
       <arglist>(FE_TimeIterator const *t_it, PDE_ResultSaver *rs)</arglist>
     </member>
-    <member kind="enumeration">
+    <member kind="enumeration" protection="private">
+      <type></type>
       <name>TimeDisc</name>
       <anchorfile>classAP__AdvectionDiffusion1G.html</anchorfile>
       <anchor>a2c8ccdc8d77e231cc0d4991412e54803</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>Euler</name>
       <anchorfile>classAP__AdvectionDiffusion1G.html</anchorfile>
       <anchor>a2c8ccdc8d77e231cc0d4991412e54803a3e3238fa05472458aa24ab8eb204415f</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>BDF2</name>
       <anchorfile>classAP__AdvectionDiffusion1G.html</anchorfile>
       <anchor>a2c8ccdc8d77e231cc0d4991412e54803a875dee579cd64e0871bd543a6139079c</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>NoTime</name>
       <anchorfile>classAP__AdvectionDiffusion1G.html</anchorfile>
       <anchor>a2c8ccdc8d77e231cc0d4991412e54803ad90461da30e3aa6e6b48f630208c7615</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumeration">
+    <member kind="enumeration" protection="private">
+      <type></type>
       <name>StabType</name>
       <anchorfile>classAP__AdvectionDiffusion1G.html</anchorfile>
       <anchor>a6b558b548dce5f5edf8355d06de7d96b</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>SUPG</name>
       <anchorfile>classAP__AdvectionDiffusion1G.html</anchorfile>
       <anchor>a6b558b548dce5f5edf8355d06de7d96ba21fd430999eb6ddbd59610539cdf9cb6</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>GLS</name>
       <anchorfile>classAP__AdvectionDiffusion1G.html</anchorfile>
       <anchor>a6b558b548dce5f5edf8355d06de7d96ba8c085292e932fb7c6896a07d867e7e2d</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>USFEM</name>
       <anchorfile>classAP__AdvectionDiffusion1G.html</anchorfile>
       <anchor>a6b558b548dce5f5edf8355d06de7d96ba7cd970eb7556087b88ef8fb2b1d51e91</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>NoStab</name>
       <anchorfile>classAP__AdvectionDiffusion1G.html</anchorfile>
       <anchor>a6b558b548dce5f5edf8355d06de7d96baf5283b3c2e190087727547c86d6649f1</anchor>
@@ -2228,301 +2381,620 @@
     </member>
   </compound>
   <compound kind="class">
-    <name>DB_PLIC_Advection</name>
-    <filename>classDB__PLIC__Advection.html</filename>
-    <member kind="function" protection="private">
-      <type>bool</type>
-      <name>AD_inner_iterations_are_completed</name>
-      <anchorfile>classDB__PLIC__Advection.html</anchorfile>
-      <anchor>a78426ba16780a873604a5302743af94b</anchor>
-      <arglist>(FE_TimeIterator *t_global, FE_TimeIterator const *t_it, double epsilon) const </arglist>
-    </member>
-    <member kind="function" protection="private">
-      <type>double</type>
-      <name>time_step_by_Courant</name>
-      <anchorfile>classDB__PLIC__Advection.html</anchorfile>
-      <anchor>af93e27affd2ef48252cb8ffc48eea59b</anchor>
-      <arglist>(double dt_new, FE_TimeIterator const *t_it)</arglist>
-    </member>
-    <member kind="function" protection="private">
-      <type>double</type>
-      <name>smallest_vertices</name>
-      <anchorfile>classDB__PLIC__Advection.html</anchorfile>
-      <anchor>ae2001f75bd09e405c10a42e769e34ed8</anchor>
-      <arglist>(void)</arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>FE_LocalTimeIteratorAdapter *</type>
-      <name>t_local</name>
-      <anchorfile>classDB__PLIC__Advection.html</anchorfile>
-      <anchor>a27b2872121af1983c73f242c37563970</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>FE_TimeIterator *</type>
-      <name>t_global</name>
-      <anchorfile>classDB__PLIC__Advection.html</anchorfile>
-      <anchor>a52b1c88081d986165fb453fe680f60bb</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>PEL_Object *</type>
-      <name>A_OWNER</name>
-      <anchorfile>classDB__PLIC__Advection.html</anchorfile>
-      <anchor>a4091b6e0da780bcf554cc195cce47845</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>PDE_DomainAndFields const *</type>
-      <name>DOM</name>
-      <anchorfile>classDB__PLIC__Advection.html</anchorfile>
-      <anchor>a496c37289762a21ef78787279d06b5e4</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>FE_SetOfParameters const *</type>
-      <name>PRMS</name>
-      <anchorfile>classDB__PLIC__Advection.html</anchorfile>
-      <anchor>a6290b02fdd780b3cf6c59fbcbe0d11ac</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>PEL_ModuleExplorer const *</type>
-      <name>EXP</name>
-      <anchorfile>classDB__PLIC__Advection.html</anchorfile>
-      <anchor>ad70b6fb569944f2ff5f6e678941c02a4</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>bool</type>
-      <name>useCOURANT</name>
-      <anchorfile>classDB__PLIC__Advection.html</anchorfile>
-      <anchor>a1a6bb9d7fdc5a3c3db60be423e87439c</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>PDE_SetOfDiscreteFields const *const</type>
-      <name>FIELDS</name>
-      <anchorfile>classDB__PLIC__Advection.html</anchorfile>
-      <anchor>a9d67270269d2a159a93b1dc6adec0bd4</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>size_t</type>
-      <name>LEVEL0</name>
-      <anchorfile>classDB__PLIC__Advection.html</anchorfile>
-      <anchor>a77d8e4ae0836b2617c702c95192295db</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>stringVector</type>
-      <name>FIELDS_TABLE</name>
-      <anchorfile>classDB__PLIC__Advection.html</anchorfile>
-      <anchor>a8ff0e7207aeba07c3b4aa02df1aedf10</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>double</type>
-      <name>COURANT</name>
-      <anchorfile>classDB__PLIC__Advection.html</anchorfile>
-      <anchor>adf458e26dbe5ea088efde4dc59958d94</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private" static="yes">
-      <type>static DB_PLIC_Advection const *</type>
-      <name>PROTOTYPE</name>
-      <anchorfile>classDB__PLIC__Advection.html</anchorfile>
-      <anchor>a5705dabebeca8d2779f062d20c490610</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>PDE_DiscreteField *</type>
-      <name>CC</name>
-      <anchorfile>classDB__PLIC__Advection.html</anchorfile>
-      <anchor>a41c7884288a12226853487bec049e8e6</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>PDE_DiscreteField *</type>
-      <name>UU</name>
-      <anchorfile>classDB__PLIC__Advection.html</anchorfile>
-      <anchor>a856e3c755aa6e7d8bd4450780cfd75e0</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>size_t</type>
-      <name>L_UPDATE</name>
-      <anchorfile>classDB__PLIC__Advection.html</anchorfile>
-      <anchor>a11ab84627788d1d2337686d0b9a2f801</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>PDE_LocalFEcell *</type>
-      <name>cFE</name>
-      <anchorfile>classDB__PLIC__Advection.html</anchorfile>
-      <anchor>adb1521738c37fcdbba999b19f3a74a8d</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>PDE_CursorFEside *</type>
-      <name>sFE</name>
-      <anchorfile>classDB__PLIC__Advection.html</anchorfile>
-      <anchor>ac316e89519c81f7d6f8d55cb7678ed1c</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>PDE_LocalFEbound *</type>
-      <name>bFE</name>
-      <anchorfile>classDB__PLIC__Advection.html</anchorfile>
-      <anchor>abd3c7d8a7c69e70137dd4d07e2f91815</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>double const</type>
-      <name>EPSILON</name>
-      <anchorfile>classDB__PLIC__Advection.html</anchorfile>
-      <anchor>ad86cf2fad9b4cd444d7ab76576fde072</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>size_t</type>
-      <name>NX</name>
-      <anchorfile>classDB__PLIC__Advection.html</anchorfile>
-      <anchor>a1ccfcf6ff4e079a61c5e2ed5ba0687f2</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>size_t</type>
-      <name>NY</name>
-      <anchorfile>classDB__PLIC__Advection.html</anchorfile>
-      <anchor>aaf807e94198d4cd29819c9f72461311c</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>double</type>
-      <name>ddx</name>
-      <anchorfile>classDB__PLIC__Advection.html</anchorfile>
-      <anchor>afd2b25b09080c266d14f3288e04b4708</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>double</type>
-      <name>ddy</name>
-      <anchorfile>classDB__PLIC__Advection.html</anchorfile>
-      <anchor>a480c73c3058d60fb6b4e1f713f142bfb</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>double</type>
-      <name>Cmax</name>
-      <anchorfile>classDB__PLIC__Advection.html</anchorfile>
-      <anchor>a46e54e995a09ff24db6127d4bb839d0f</anchor>
-      <arglist></arglist>
+    <name>AS_NavierStokes</name>
+    <filename>classAS__NavierStokes.html</filename>
+    <member kind="function" virtualness="virtual">
+      <type>virtual void</type>
+      <name>do_before_time_stepping</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>a4aa928e1595f09252df5d19e1ae092eb</anchor>
+      <arglist>(FE_TimeIterator const *t_it)</arglist>
     </member>
     <member kind="function" virtualness="virtual">
       <type>virtual void</type>
       <name>do_before_inner_iterations_stage</name>
-      <anchorfile>classDB__PLIC__Advection.html</anchorfile>
-      <anchor>a9bde734124be6d222f139836765d5d44</anchor>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>ae96e8189c75c3b4f923b2d3c33dcc42a</anchor>
       <arglist>(FE_TimeIterator const *t_it)</arglist>
     </member>
     <member kind="function" virtualness="virtual">
       <type>virtual void</type>
       <name>do_inner_iterations_stage</name>
-      <anchorfile>classDB__PLIC__Advection.html</anchorfile>
-      <anchor>a51b97ee4c551c8d1a05fd289c84d3e4b</anchor>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>af2e9d3f59d6e82e1f41f6d6bb4536680</anchor>
       <arglist>(FE_TimeIterator const *t_it)</arglist>
     </member>
     <member kind="function" virtualness="virtual">
       <type>virtual void</type>
       <name>do_one_inner_iteration</name>
-      <anchorfile>classDB__PLIC__Advection.html</anchorfile>
-      <anchor>a013b53f26ee163ef42abe2f79d074844</anchor>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>a84565a89283e4743f7c9978747c8fe67</anchor>
       <arglist>(FE_TimeIterator const *t_it)</arglist>
     </member>
     <member kind="function" virtualness="virtual">
-      <type>virtual void</type>
-      <name>reset_discrete_problem</name>
-      <anchorfile>classDB__PLIC__Advection.html</anchorfile>
-      <anchor>a9193b9e9bcff2661b95beef79832201a</anchor>
-      <arglist>(FE_TimeIterator const *t_it)</arglist>
+      <type>virtual bool</type>
+      <name>inner_iterations_are_completed</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>ac41a50cf4318453d102326190e205aab</anchor>
+      <arglist>(FE_TimeIterator const *t_it) const </arglist>
+    </member>
+    <member kind="function">
+      <type>double</type>
+      <name>compute_L2_norm</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>a48637d089cf2e37a3c277e16122f8080</anchor>
+      <arglist>(PDE_DiscreteField const *FIELD, size_t level1, size_t level2) const </arglist>
+    </member>
+    <member kind="function">
+      <type>double</type>
+      <name>compute_flowrate</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>acd831dfd547c85d9dc41b205556059f3</anchor>
+      <arglist>(PDE_DiscreteField const *FIELD, size_t level1) const </arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>update_pressuredrop</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>aa11d87425608f12f39dbc82cbc2c7123</anchor>
+      <arglist>()</arglist>
+    </member>
+    <member kind="function" protection="private">
+      <type>double</type>
+      <name>param_euclidian_norm</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>a62374a522e92922a3283d03f2963bd92</anchor>
+      <arglist>(FE_TimeIterator const *t_it, FE_Parameter const *param) const </arglist>
+    </member>
+    <member kind="function" protection="private">
+      <type>double</type>
+      <name>param_yield_stress_function</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>a6cc281038f5a4940feba501a68a33536</anchor>
+      <arglist>(double const param_norm) const </arglist>
     </member>
     <member kind="function" protection="private">
       <type></type>
-      <name>~DB_PLIC_Advection</name>
-      <anchorfile>classDB__PLIC__Advection.html</anchorfile>
-      <anchor>a3210a6d6da08ae01d4bc2b7798a2b126</anchor>
+      <name>~AS_NavierStokes</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>a0da35cf7102d475bd532b816098e76f3</anchor>
       <arglist>(void)</arglist>
     </member>
     <member kind="function" protection="private">
       <type></type>
-      <name>DB_PLIC_Advection</name>
-      <anchorfile>classDB__PLIC__Advection.html</anchorfile>
-      <anchor>a9491e50318e1bd2ad93aa1a04469aa34</anchor>
-      <arglist>(DB_PLIC_Advection const &amp;other)</arglist>
+      <name>AS_NavierStokes</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>a42280f5bd426512bb54d2d98e8db0e2c</anchor>
+      <arglist>(AS_NavierStokes const &amp;other)</arglist>
     </member>
     <member kind="function" protection="private">
-      <type>DB_PLIC_Advection &amp;</type>
+      <type>AS_NavierStokes &amp;</type>
       <name>operator=</name>
-      <anchorfile>classDB__PLIC__Advection.html</anchorfile>
-      <anchor>ad5bd937d2fd3281cc64c736038fb084a</anchor>
-      <arglist>(DB_PLIC_Advection const &amp;other)</arglist>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>af3e107c81f0aa51cbae8fcad5b374971</anchor>
+      <arglist>(AS_NavierStokes const &amp;other)</arglist>
     </member>
     <member kind="function" protection="private">
       <type></type>
-      <name>DB_PLIC_Advection</name>
-      <anchorfile>classDB__PLIC__Advection.html</anchorfile>
-      <anchor>a9d7b8b6668564d05d77f49321f08b653</anchor>
+      <name>AS_NavierStokes</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>a1fc920ab71e166979275756cd5f1c855</anchor>
       <arglist>(PEL_Object *a_owner, PDE_DomainAndFields const *dom, FE_SetOfParameters const *prms, PEL_ModuleExplorer const *exp)</arglist>
     </member>
     <member kind="function" protection="private">
       <type></type>
-      <name>DB_PLIC_Advection</name>
-      <anchorfile>classDB__PLIC__Advection.html</anchorfile>
-      <anchor>ad30bbe336669f49777a845036a13cec0</anchor>
+      <name>AS_NavierStokes</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>a16a593049a24548d88177d33022aaf69</anchor>
       <arglist>(void)</arglist>
     </member>
     <member kind="function" protection="private" virtualness="virtual">
-      <type>virtual DB_PLIC_Advection *</type>
+      <type>virtual AS_NavierStokes *</type>
       <name>create_replica</name>
-      <anchorfile>classDB__PLIC__Advection.html</anchorfile>
-      <anchor>ad93e302781bceaf95b0693bbdbd3d812</anchor>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>a09934eecfba5e16356b44b321b51591e</anchor>
       <arglist>(PEL_Object *a_owner, PDE_DomainAndFields const *dom, FE_SetOfParameters const *prms, PEL_ModuleExplorer *exp) const </arglist>
     </member>
+    <member kind="variable" protection="private">
+      <type>bool</type>
+      <name>ADV</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>a53734d262bcfbb95549d78bf2b7715d0</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>size_t</type>
+      <name>ORDER</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>a6af561214da666586a3345022452606e</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>bool</type>
+      <name>LAPL_UU</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>a673e265c80f03ea31f9027c23d32e63c</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>name Nonstandard Boundary</type>
+      <name>Conditions</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>a05b29ea0be153d0fc7b5f9883af7ab49</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>bool</type>
+      <name>BC_STRESS</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>a84a5c45646e4e5ea934ae3b24f4f3b7d</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>FE_Parameter *</type>
+      <name>BC_STRESS_VALUE</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>a57a3ace44743af0d022a74673b8b1ab9</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>FE_LocalBCsBuilder *</type>
+      <name>LOCAL_BC</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>acbaa39b3f15be3d66fc199a3b0f3c0ee</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>name Flowrate</type>
+      <name>Parameters</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>aa38f36a694fa7a73c7b23fe254f9b8b2</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>size_t</type>
+      <name>FlowrateCP</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>a2d4fb1f803e89387b5e1d1a20d98dfe5</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>size_t</type>
+      <name>FlowrateMaxiter</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>adda2625f6b1dbbfa5fa06c3af833993d</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>double</type>
+      <name>FlowrateTarget</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>a9c56d9a7a3da6868ef68664a4abee3a3</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>double</type>
+      <name>FlowrateResidual</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>ae9d70f11733511849fa22e1d7ff06a1a</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>std::vector&lt; double &gt;</type>
+      <name>FlowratedPdL</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>aafc11974fba167f95158a8251a2bcf08</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>std::vector&lt; double &gt;</type>
+      <name>FlowrateFr</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>a58b70ae3ec3696088a2b82f57a8d48d8</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>double</type>
+      <name>FlowrateScale</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>a02b17b39b1d2dcc35b15e9002f0bcdf5</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>std::string</type>
+      <name>FlowrateMethod</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>ab240843e96e5d078933ec940a8a409f9</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>PEL_Communicator const *const</type>
+      <name>COM</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>a32d9fdb7b3b3bca7f7e5c1ecbced98f2</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>PEL_ContextSimple *</type>
+      <name>CONTEXT</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>ae76135bde92bbd12c2c18652454cc2cd</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>PEL_DoubleVector *</type>
+      <name>COORDS</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>acaf8d331bc35eb889e8369327ec5c21d</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>bool</type>
+      <name>ElectricField</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>a3a5358650d0ea2be5a7e47dc0fe69f6d</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>double</type>
+      <name>FUNC_E</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>a873bbca497f90433969fd4286e162218</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>name Parameters FE_Parameter *</type>
+      <name>ALPHA</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>a8907a447529059488958b6d5cea25254</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>FE_Parameter *</type>
+      <name>RE</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>ab248da8f4cc79103cc9bc295e35e6da9</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>FE_Parameter *</type>
+      <name>RHSU</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>a58c1beffbb12b7cd7462a28a9f584eef</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>FE_Parameter *</type>
+      <name>KAPPA</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>a66f0c5d15213afbf074ca32d45d0d93e</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>FE_Parameter *</type>
+      <name>BN</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>a3295bbee0da15c7ccf8620e921cc5fa3</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>FE_Parameter *</type>
+      <name>HB_n</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>a1f5d2f213a73679a5b14bd0a8a4286d9</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>FE_Parameter *</type>
+      <name>E_FIELD</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>ad3e46fc269c4dd00eb4c50988d153556</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>name Discrete system builder PDE_LocalEquation *</type>
+      <name>ELEMENT_EQ</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>a3d5a22f4c9f287652500e8c916be1439</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>GE_QRprovider const *</type>
+      <name>QRP</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>a35931a4d7af0ed9f3d449cd84823ce65</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>PDE_LocalFEcell *</type>
+      <name>cFE</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>af5d5ac8f4a52158c6f18c2e2fe9634d0</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>PDE_LocalFEbound *</type>
+      <name>bFE</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>a70f86a40d3284d9304b9e13715a2a9bd</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>ML_NavierStokesSystem *</type>
+      <name>GLOBAL_EQ</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>ac5ba09d9f6f892f572a5c08db150b51e</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>name Piccard Iteration Parameters bool</type>
+      <name>Viscoplastic</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>a778585167cdb93aa66a9a3a33ba9cdbe</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>std::string</type>
+      <name>ViscoplasticType</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>a02f9dabb38060ad9fb7e339e81bc4531</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>int</type>
+      <name>ViscoplasticMaxiter</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>af846989ca70026ff7b492e21e53f37e7</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>double</type>
+      <name>ViscoplasticResidual</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>aeb470f3e3e51a7decad69aa49fab6123</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>double</type>
+      <name>ViscoplasticAug</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>acf423617dd52309ea07d8bdbd8d90a20</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>int</type>
+      <name>ViscoplasticIter</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>adb1e354d523c3578c1bf7ccea35fae5d</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>bool</type>
+      <name>FACTORIZE</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>a2c8cfd33a2925f944764e42ba9504425</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>size_t</type>
+      <name>L_ViscoplasticU</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>a3b2b7d67f5a09e818d078b23c95fd19c</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private" static="yes">
+      <type>static AS_NavierStokes const *</type>
+      <name>PROTOTYPE</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>a0e7259bd993418fb26b0ff80c779e685</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>PDE_DiscreteField *</type>
+      <name>UU</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>a12dd09730ab48191c014ae4e8e2199bf</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>size_t</type>
+      <name>L_UU</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>a12777ea2bf9058364880722e1d8ca88a</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>size_t</type>
+      <name>L_UPDATE_UU</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>a35cdb403591c8d398ded8d7e6155fa30</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>PDE_DiscreteField *</type>
+      <name>PP</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>aa5eecd31ee6400d31c35511d7ffe5c4a</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>size_t</type>
+      <name>L_PP</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>ad96d9cba99d603ab4668b35c9fd65ca3</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>size_t</type>
+      <name>L_UPDATE_PP</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>af87e91c2ba3c5bcc27821e77c88b4ae3</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>PDE_DiscreteField *</type>
+      <name>STRESS</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>a5b08be5e4ab44d2e3dc194f10fad13a1</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>PDE_DiscreteField *</type>
+      <name>GAMMADOT</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>a69641ef1f229e23a6b142075a1cbc1f6</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>PDE_DiscreteField *</type>
+      <name>GAMMA</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>a48a10653cfc78faefd9256b08b945061</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>std::vector&lt; PDE_DiscreteField const * &gt;</type>
+      <name>AAs</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>a140d3706f7c440c076d10ee4a44cdc5d</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>std::vector&lt; size_t &gt;</type>
+      <name>L_AAs</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>a07ba077b819a853cf884886a7cba0418</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>std::vector&lt; FE_Parameter * &gt;</type>
+      <name>COEF_AAs</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>af59333f97a8bab7d9de0baf4d9e3c8f2</anchor>
+      <arglist></arglist>
+    </member>
     <member kind="function" protection="private">
       <type>void</type>
-      <name>loop_on_cellsXX</name>
-      <anchorfile>classDB__PLIC__Advection.html</anchorfile>
-      <anchor>a330e02c4c86342e02506159c128221de</anchor>
+      <name>loop_on_cells_Outer</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>aa18e42a173fac56cf1aa63eb74c98dfb</anchor>
       <arglist>(FE_TimeIterator const *t_it)</arglist>
     </member>
     <member kind="function" protection="private">
       <type>void</type>
-      <name>loop_on_cellsZZ</name>
-      <anchorfile>classDB__PLIC__Advection.html</anchorfile>
-      <anchor>aa8c924f14b4c219ab0a45c9bc26822b6</anchor>
+      <name>loop_on_bounds_Outer</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>adb4b86243f5702db66daa56c2052c994</anchor>
       <arglist>(FE_TimeIterator const *t_it)</arglist>
     </member>
     <member kind="function" protection="private">
       <type>void</type>
-      <name>update_fields</name>
-      <anchorfile>classDB__PLIC__Advection.html</anchorfile>
-      <anchor>a310e1aa0ec7987c0a5317c4d5eedf3d4</anchor>
+      <name>loop_on_cells_Inner</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>ad50bfac1e4498a06337c86417baceb2e</anchor>
+      <arglist>(FE_TimeIterator const *t_it)</arglist>
+    </member>
+    <member kind="function" protection="private">
+      <type>void</type>
+      <name>loop_on_bounds_Inner</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>a8a5e649c556e9bcd7bdfcfbd6f38c6ce</anchor>
+      <arglist>(FE_TimeIterator const *t_it)</arglist>
+    </member>
+    <member kind="function" protection="private">
+      <type>void</type>
+      <name>setup_Outer</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>ac69949941b5b2b7b039fa19361ebcc33</anchor>
+      <arglist>(FE_TimeIterator const *t_it)</arglist>
+    </member>
+    <member kind="function" protection="private">
+      <type>void</type>
+      <name>setup_Inner</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>a497b5b8bf1ac1811eaa9e5c7e9976032</anchor>
+      <arglist>(FE_TimeIterator const *t_it)</arglist>
+    </member>
+    <member kind="function" protection="private">
+      <type>void</type>
+      <name>setup_Flowrate</name>
+      <anchorfile>classAS__NavierStokes.html</anchorfile>
+      <anchor>a5566d3a35ddc6210765424b73b9e0480</anchor>
+      <arglist>(FE_TimeIterator const *t_it)</arglist>
+    </member>
+  </compound>
+  <compound kind="class">
+    <name>AS_Viscoplastic</name>
+    <filename>classAS__Viscoplastic.html</filename>
+    <member kind="function" static="yes">
+      <type>static void</type>
+      <name>compute_strain_rate_tensor</name>
+      <anchorfile>classAS__Viscoplastic.html</anchorfile>
+      <anchor>a3dc5b36b8a715e397f7c0e5a3ef455e5</anchor>
+      <arglist>(PDE_LocalFEcell *cFE, PDE_DiscreteField const *UU, PDE_DiscreteField *gammadot)</arglist>
+    </member>
+    <member kind="function" static="yes">
+      <type>static void</type>
+      <name>update_Lagrange_multiplier</name>
+      <anchorfile>classAS__Viscoplastic.html</anchorfile>
+      <anchor>add13758506f2c6ef2e60c68cba9ec466</anchor>
+      <arglist>(PDE_LocalFEcell *cFE, PDE_DiscreteField *LAMBDA, PDE_DiscreteField const *gammadot, PDE_DiscreteField const *gamma, double const &amp;aug_param)</arglist>
+    </member>
+    <member kind="function" static="yes">
+      <type>static void</type>
+      <name>update_strain_rate_tensor_d</name>
+      <anchorfile>classAS__Viscoplastic.html</anchorfile>
+      <anchor>a87fd89d019931358268b77e42c765483</anchor>
+      <arglist>(PDE_LocalFEcell *cFE, PDE_DiscreteField const *LAMBDA, PDE_DiscreteField const *DUU, PDE_DiscreteField *d, double const &amp;aug_param, FE_Parameter const *kappa, FE_Parameter const *Bn, double func_E, FE_TimeIterator const *t_it)</arglist>
+    </member>
+    <member kind="function" static="yes">
+      <type>static void</type>
+      <name>update_strain_rate_tensor_d_HB</name>
+      <anchorfile>classAS__Viscoplastic.html</anchorfile>
+      <anchor>afaedd5a4538546eddb9e237912296f92</anchor>
+      <arglist>(PDE_LocalFEcell *cFE, PDE_DiscreteField const *LAMBDA, PDE_DiscreteField const *DUU, PDE_DiscreteField *d, double const &amp;aug_param, FE_Parameter const *kappa, FE_Parameter const *Bn, FE_Parameter const *HB_n, double func_E, FE_TimeIterator const *t_it)</arglist>
+    </member>
+    <member kind="function" static="yes">
+      <type>static double</type>
+      <name>compute_norm_Dminusd</name>
+      <anchorfile>classAS__Viscoplastic.html</anchorfile>
+      <anchor>a7dfad8ee7c4a72d95575bd5a485fc6b5</anchor>
+      <arglist>(PDE_LocalFEcell *cFE, PDE_DiscreteField const *DUU, PDE_DiscreteField const *d)</arglist>
+    </member>
+    <member kind="function" static="yes">
+      <type>static pair&lt; size_t, double &gt;</type>
+      <name>strain_rate_component_number</name>
+      <anchorfile>classAS__Viscoplastic.html</anchorfile>
+      <anchor>a414420bc4cafd0dec6ffdf1b2203a049</anchor>
+      <arglist>(size_t const &amp;dimension, size_t const &amp;compIdx, size_t const &amp;direcIdx)</arglist>
+    </member>
+    <member kind="function" static="yes">
+      <type>static double</type>
+      <name>Euclidian_norm</name>
+      <anchorfile>classAS__Viscoplastic.html</anchorfile>
+      <anchor>a19cf12c5a7fa083bc7b31db89ade58cf</anchor>
+      <arglist>(doubleVector const &amp;tensor)</arglist>
+    </member>
+    <member kind="function" protection="private">
+      <type></type>
+      <name>~AS_Viscoplastic</name>
+      <anchorfile>classAS__Viscoplastic.html</anchorfile>
+      <anchor>af0f6ac29c677038ed2e6153ad907bc58</anchor>
       <arglist>(void)</arglist>
     </member>
     <member kind="function" protection="private">
-      <type>double</type>
-      <name>vol2</name>
-      <anchorfile>classDB__PLIC__Advection.html</anchorfile>
-      <anchor>a4c664fcfe39a3e25f28f538a0055cf45</anchor>
-      <arglist>(double mx, double mz, double alfa, double b)</arglist>
+      <type></type>
+      <name>AS_Viscoplastic</name>
+      <anchorfile>classAS__Viscoplastic.html</anchorfile>
+      <anchor>a0f7bdb68ca70eb5fc34e62a4204a16b2</anchor>
+      <arglist>(AS_Viscoplastic const &amp;other)</arglist>
     </member>
     <member kind="function" protection="private">
-      <type>void</type>
-      <name>print_mesh</name>
-      <anchorfile>classDB__PLIC__Advection.html</anchorfile>
-      <anchor>a7704bb3e433aee0cc3a4f8448839458f</anchor>
-      <arglist>(FE_TimeIterator const *t_it)</arglist>
+      <type></type>
+      <name>AS_Viscoplastic</name>
+      <anchorfile>classAS__Viscoplastic.html</anchorfile>
+      <anchor>a52a3bb3d145f584e73e317c92e1a3e9a</anchor>
+      <arglist>(void)</arglist>
     </member>
   </compound>
   <compound kind="class">
@@ -3015,6 +3487,13 @@
       <anchor>aef12d569a7604746d5f3046872181f5e</anchor>
       <arglist></arglist>
     </member>
+    <member kind="variable" protection="private">
+      <type>size_t</type>
+      <name>Xlimit</name>
+      <anchorfile>classDD__PLIC__Advection.html</anchorfile>
+      <anchor>a3dec9ccb043f976dabca94c8e3503296</anchor>
+      <arglist></arglist>
+    </member>
     <member kind="function" virtualness="virtual">
       <type>virtual void</type>
       <name>do_before_inner_iterations_stage</name>
@@ -3118,6 +3597,318 @@
       <name>print_mesh</name>
       <anchorfile>classDD__PLIC__Advection.html</anchorfile>
       <anchor>a26fc264a3745930bf7b3a53799e13ee0</anchor>
+      <arglist>(FE_TimeIterator const *t_it)</arglist>
+    </member>
+  </compound>
+  <compound kind="class">
+    <name>DF_PLIC_Advection</name>
+    <filename>classDF__PLIC__Advection.html</filename>
+    <member kind="function" protection="private">
+      <type>bool</type>
+      <name>AD_inner_iterations_are_completed</name>
+      <anchorfile>classDF__PLIC__Advection.html</anchorfile>
+      <anchor>acd7f87147541308c29bf6ca39c7e75bb</anchor>
+      <arglist>(FE_TimeIterator *t_global, FE_TimeIterator const *t_it, double epsilon) const </arglist>
+    </member>
+    <member kind="function" protection="private">
+      <type>double</type>
+      <name>time_step_by_Courant</name>
+      <anchorfile>classDF__PLIC__Advection.html</anchorfile>
+      <anchor>a592bcbf64d98f71c03cf6bd1a8265306</anchor>
+      <arglist>(double dt_new, FE_TimeIterator const *t_it)</arglist>
+    </member>
+    <member kind="function" protection="private">
+      <type>double</type>
+      <name>smallest_vertices</name>
+      <anchorfile>classDF__PLIC__Advection.html</anchorfile>
+      <anchor>a06ec4eb75daef1cc2b028154d3c6524e</anchor>
+      <arglist>(void)</arglist>
+    </member>
+    <member kind="function" protection="private">
+      <type>void</type>
+      <name>update_interface</name>
+      <anchorfile>classDF__PLIC__Advection.html</anchorfile>
+      <anchor>a132c4623c10ab8529b75fd0c34af7448</anchor>
+      <arglist>(double)</arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>FE_LocalTimeIteratorAdapter *</type>
+      <name>t_local</name>
+      <anchorfile>classDF__PLIC__Advection.html</anchorfile>
+      <anchor>af0784d4d044e100b1b502a63f9747bf7</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>FE_TimeIterator *</type>
+      <name>t_global</name>
+      <anchorfile>classDF__PLIC__Advection.html</anchorfile>
+      <anchor>a7540fb2bb160f7d23531a9c017e67cb9</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>PEL_Object *</type>
+      <name>A_OWNER</name>
+      <anchorfile>classDF__PLIC__Advection.html</anchorfile>
+      <anchor>a19e65f4bab4cf8e6359d36677d09c81b</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>PDE_DomainAndFields const *</type>
+      <name>DOM</name>
+      <anchorfile>classDF__PLIC__Advection.html</anchorfile>
+      <anchor>aac66e869588b06910f9b193512f909be</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>FE_SetOfParameters const *</type>
+      <name>PRMS</name>
+      <anchorfile>classDF__PLIC__Advection.html</anchorfile>
+      <anchor>a7995be1245685431e1e010e7c8c6ea76</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>PEL_ModuleExplorer const *</type>
+      <name>EXP</name>
+      <anchorfile>classDF__PLIC__Advection.html</anchorfile>
+      <anchor>ab1656d5d41ce585239a80a9c6afc800d</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>bool</type>
+      <name>useCOURANT</name>
+      <anchorfile>classDF__PLIC__Advection.html</anchorfile>
+      <anchor>af5d5e4ed9084825414c5ccaffa0fd3d2</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>PDE_SetOfDiscreteFields const *const</type>
+      <name>FIELDS</name>
+      <anchorfile>classDF__PLIC__Advection.html</anchorfile>
+      <anchor>a9ed3c253d770d2e669a7a8ef57a238a7</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>size_t</type>
+      <name>LEVEL0</name>
+      <anchorfile>classDF__PLIC__Advection.html</anchorfile>
+      <anchor>aa3f95b8c8973e263d1b52eeabb97897a</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>stringVector</type>
+      <name>FIELDS_TABLE</name>
+      <anchorfile>classDF__PLIC__Advection.html</anchorfile>
+      <anchor>a32d4a5113ea7dd58a24d7a08811fdb59</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>double</type>
+      <name>COURANT</name>
+      <anchorfile>classDF__PLIC__Advection.html</anchorfile>
+      <anchor>ae3505e469378e9dea557baf765d6e377</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private" static="yes">
+      <type>static DF_PLIC_Advection const *</type>
+      <name>PROTOTYPE</name>
+      <anchorfile>classDF__PLIC__Advection.html</anchorfile>
+      <anchor>af43ae789aec807dd69c0b630a33a3c60</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>PDE_DiscreteField *</type>
+      <name>CC</name>
+      <anchorfile>classDF__PLIC__Advection.html</anchorfile>
+      <anchor>ab7290a2e0f85615240a20991057590b2</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>PDE_DiscreteField *</type>
+      <name>UU</name>
+      <anchorfile>classDF__PLIC__Advection.html</anchorfile>
+      <anchor>ac25466f6e5b2317036588f1dc5acb7c4</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>size_t</type>
+      <name>L_UPDATE</name>
+      <anchorfile>classDF__PLIC__Advection.html</anchorfile>
+      <anchor>a5f47a37209dcfe6b30dedc3c0db6e999</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>PDE_LocalFEcell *</type>
+      <name>cFE</name>
+      <anchorfile>classDF__PLIC__Advection.html</anchorfile>
+      <anchor>ad2e69f392d5dabbc7b4a2f5fe833e4ae</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>PDE_CursorFEside *</type>
+      <name>sFE</name>
+      <anchorfile>classDF__PLIC__Advection.html</anchorfile>
+      <anchor>a6b46de08ccd13cebfe2776f2ab0e6a69</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>PDE_LocalFEbound *</type>
+      <name>bFE</name>
+      <anchorfile>classDF__PLIC__Advection.html</anchorfile>
+      <anchor>ab9b4d34a1333dc243450193c55a99fac</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>double const</type>
+      <name>EPSILON</name>
+      <anchorfile>classDF__PLIC__Advection.html</anchorfile>
+      <anchor>a753c0ae3c7cd2c22135b6cc0ed1cc4b0</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>size_t</type>
+      <name>NX</name>
+      <anchorfile>classDF__PLIC__Advection.html</anchorfile>
+      <anchor>a5be174504f32cda543afde524deda5eb</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>size_t</type>
+      <name>NY</name>
+      <anchorfile>classDF__PLIC__Advection.html</anchorfile>
+      <anchor>a9b8efcccd425fb5dc15889589d09e6cc</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>doubleVector</type>
+      <name>Xvector</name>
+      <anchorfile>classDF__PLIC__Advection.html</anchorfile>
+      <anchor>a58f6bb35d088cabaa821f6ce1691c3df</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>doubleVector</type>
+      <name>Yvector</name>
+      <anchorfile>classDF__PLIC__Advection.html</anchorfile>
+      <anchor>a4c4fe86663054168984f59b9b7b4c814</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>doubleVector</type>
+      <name>Xcoord</name>
+      <anchorfile>classDF__PLIC__Advection.html</anchorfile>
+      <anchor>a83f8f3b7757cbf9000753ab1fc32eb6d</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>double</type>
+      <name>Cmax</name>
+      <anchorfile>classDF__PLIC__Advection.html</anchorfile>
+      <anchor>a5fb681d993e6d2cfd77aa559b73ccee3</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="function" virtualness="virtual">
+      <type>virtual void</type>
+      <name>do_before_inner_iterations_stage</name>
+      <anchorfile>classDF__PLIC__Advection.html</anchorfile>
+      <anchor>a27152e4fce19eb2871f9f353c5e6e357</anchor>
+      <arglist>(FE_TimeIterator const *t_it)</arglist>
+    </member>
+    <member kind="function" virtualness="virtual">
+      <type>virtual void</type>
+      <name>do_inner_iterations_stage</name>
+      <anchorfile>classDF__PLIC__Advection.html</anchorfile>
+      <anchor>a864e265e6d03ad6d780c998c4adeb7b7</anchor>
+      <arglist>(FE_TimeIterator const *t_it)</arglist>
+    </member>
+    <member kind="function" virtualness="virtual">
+      <type>virtual void</type>
+      <name>do_one_inner_iteration</name>
+      <anchorfile>classDF__PLIC__Advection.html</anchorfile>
+      <anchor>aea12557fc8cb4282d9773c2f36bc0e00</anchor>
+      <arglist>(FE_TimeIterator const *t_it)</arglist>
+    </member>
+    <member kind="function" virtualness="virtual">
+      <type>virtual void</type>
+      <name>reset_discrete_problem</name>
+      <anchorfile>classDF__PLIC__Advection.html</anchorfile>
+      <anchor>af27825f5debe80e44f3f41465adb5f63</anchor>
+      <arglist>(FE_TimeIterator const *t_it)</arglist>
+    </member>
+    <member kind="function" protection="private">
+      <type></type>
+      <name>~DF_PLIC_Advection</name>
+      <anchorfile>classDF__PLIC__Advection.html</anchorfile>
+      <anchor>a37714e247bcebb2ff7b54ccd3b17afa8</anchor>
+      <arglist>(void)</arglist>
+    </member>
+    <member kind="function" protection="private">
+      <type></type>
+      <name>DF_PLIC_Advection</name>
+      <anchorfile>classDF__PLIC__Advection.html</anchorfile>
+      <anchor>abec9516eb977299b68af780aa19f59ec</anchor>
+      <arglist>(DF_PLIC_Advection const &amp;other)</arglist>
+    </member>
+    <member kind="function" protection="private">
+      <type>DF_PLIC_Advection &amp;</type>
+      <name>operator=</name>
+      <anchorfile>classDF__PLIC__Advection.html</anchorfile>
+      <anchor>a8ef55bd94d4ef8d0eee3c010bb4fbc0a</anchor>
+      <arglist>(DF_PLIC_Advection const &amp;other)</arglist>
+    </member>
+    <member kind="function" protection="private">
+      <type></type>
+      <name>DF_PLIC_Advection</name>
+      <anchorfile>classDF__PLIC__Advection.html</anchorfile>
+      <anchor>ade38feab5809dca7da95e48c4e5944a0</anchor>
+      <arglist>(PEL_Object *a_owner, PDE_DomainAndFields const *dom, FE_SetOfParameters const *prms, PEL_ModuleExplorer const *exp)</arglist>
+    </member>
+    <member kind="function" protection="private">
+      <type></type>
+      <name>DF_PLIC_Advection</name>
+      <anchorfile>classDF__PLIC__Advection.html</anchorfile>
+      <anchor>a079a776fdc77a38a4a1ebe8e9d0f94f3</anchor>
+      <arglist>(void)</arglist>
+    </member>
+    <member kind="function" protection="private" virtualness="virtual">
+      <type>virtual DF_PLIC_Advection *</type>
+      <name>create_replica</name>
+      <anchorfile>classDF__PLIC__Advection.html</anchorfile>
+      <anchor>a2459088c95c24d141d0ab20438cf5b79</anchor>
+      <arglist>(PEL_Object *a_owner, PDE_DomainAndFields const *dom, FE_SetOfParameters const *prms, PEL_ModuleExplorer *exp) const </arglist>
+    </member>
+    <member kind="function" protection="private">
+      <type>void</type>
+      <name>loop_on_cellsXX</name>
+      <anchorfile>classDF__PLIC__Advection.html</anchorfile>
+      <anchor>a8d0f887a5ea9c269ab0c128c645f0a04</anchor>
+      <arglist>(FE_TimeIterator const *t_it)</arglist>
+    </member>
+    <member kind="function" protection="private">
+      <type>void</type>
+      <name>loop_on_cellsZZ</name>
+      <anchorfile>classDF__PLIC__Advection.html</anchorfile>
+      <anchor>a86c27af45c295959ec8d00dfdd6992e1</anchor>
+      <arglist>(FE_TimeIterator const *t_it)</arglist>
+    </member>
+    <member kind="function" protection="private">
+      <type>void</type>
+      <name>update_fields</name>
+      <anchorfile>classDF__PLIC__Advection.html</anchorfile>
+      <anchor>a14eb935d4acb7bbd082ea52709068ad5</anchor>
+      <arglist>(void)</arglist>
+    </member>
+    <member kind="function" protection="private">
+      <type>double</type>
+      <name>vol2</name>
+      <anchorfile>classDF__PLIC__Advection.html</anchorfile>
+      <anchor>a8a543b4235ef1b76aef3526e0f73cc54</anchor>
+      <arglist>(double mx, double mz, double alfa, double b)</arglist>
+    </member>
+    <member kind="function" protection="private">
+      <type>void</type>
+      <name>print_mesh</name>
+      <anchorfile>classDF__PLIC__Advection.html</anchorfile>
+      <anchor>a04bd7f7d498b0df7b17c8f451b6a5922</anchor>
       <arglist>(FE_TimeIterator const *t_it)</arglist>
     </member>
   </compound>
@@ -4888,6 +5679,192 @@
     </member>
   </compound>
   <compound kind="class">
+    <name>FE_StepParameter</name>
+    <filename>classFE__StepParameter.html</filename>
+    <member kind="function" virtualness="virtual">
+      <type>virtual size_t</type>
+      <name>nb_components</name>
+      <anchorfile>classFE__StepParameter.html</anchorfile>
+      <anchor>a131bb2b9df21aeffcf21ade6f97604dd</anchor>
+      <arglist>(void) const </arglist>
+    </member>
+    <member kind="function" virtualness="virtual">
+      <type>virtual double</type>
+      <name>cell_value_at_pt</name>
+      <anchorfile>classFE__StepParameter.html</anchorfile>
+      <anchor>a6a4f588511a08a50308728a2f18c33e6</anchor>
+      <arglist>(FE_TimeIterator const *t_it, PDE_LocalFEcell const *fe, size_t ic=0) const </arglist>
+    </member>
+    <member kind="function" virtualness="virtual">
+      <type>virtual double</type>
+      <name>cell_value_at_IP</name>
+      <anchorfile>classFE__StepParameter.html</anchorfile>
+      <anchor>aa6f164fb903d3a264e2381e66fc2550f</anchor>
+      <arglist>(FE_TimeIterator const *t_it, PDE_LocalFEcell const *fe, size_t ic=0) const </arglist>
+    </member>
+    <member kind="function" virtualness="virtual">
+      <type>virtual double</type>
+      <name>bound_value_at_pt</name>
+      <anchorfile>classFE__StepParameter.html</anchorfile>
+      <anchor>af025f3f180a03a263a4a8cf370ac3b90</anchor>
+      <arglist>(FE_TimeIterator const *t_it, PDE_LocalFEbound const *fe, size_t ic=0) const </arglist>
+    </member>
+    <member kind="function" virtualness="virtual">
+      <type>virtual double</type>
+      <name>bound_value_at_IP</name>
+      <anchorfile>classFE__StepParameter.html</anchorfile>
+      <anchor>ab55230d67c5f5a42a4d690f9890f54b1</anchor>
+      <arglist>(FE_TimeIterator const *t_it, PDE_LocalFEbound const *fe, size_t ic=0) const </arglist>
+    </member>
+    <member kind="function" virtualness="virtual">
+      <type>virtual void</type>
+      <name>do_the_links</name>
+      <anchorfile>classFE__StepParameter.html</anchorfile>
+      <anchor>ad3beef912937ea31e0ef229529804ebe</anchor>
+      <arglist>(FE_SetOfParameters const *prms)</arglist>
+    </member>
+    <member kind="function" protection="private">
+      <type></type>
+      <name>~FE_StepParameter</name>
+      <anchorfile>classFE__StepParameter.html</anchorfile>
+      <anchor>a8022d37bdecceb59bbfab1b61ddfe71a</anchor>
+      <arglist>(void)</arglist>
+    </member>
+    <member kind="function" protection="private">
+      <type></type>
+      <name>FE_StepParameter</name>
+      <anchorfile>classFE__StepParameter.html</anchorfile>
+      <anchor>a813c53c973d4b1ef1147f4c46f622be4</anchor>
+      <arglist>(FE_StepParameter const &amp;other)</arglist>
+    </member>
+    <member kind="function" protection="private">
+      <type>FE_StepParameter &amp;</type>
+      <name>operator=</name>
+      <anchorfile>classFE__StepParameter.html</anchorfile>
+      <anchor>aad58c87519c52e69ca0e1137f3ebedec</anchor>
+      <arglist>(FE_StepParameter const &amp;other)</arglist>
+    </member>
+    <member kind="function" protection="private">
+      <type></type>
+      <name>FE_StepParameter</name>
+      <anchorfile>classFE__StepParameter.html</anchorfile>
+      <anchor>aa95f09b8df02ca5ecd3792fb311d7cb8</anchor>
+      <arglist>(PEL_Object *a_owner, PDE_DomainAndFields const *dom, PEL_ModuleExplorer const *exp)</arglist>
+    </member>
+    <member kind="function" protection="private">
+      <type></type>
+      <name>FE_StepParameter</name>
+      <anchorfile>classFE__StepParameter.html</anchorfile>
+      <anchor>afb88b77d30648a54adecbaf8c34f401a</anchor>
+      <arglist>(void)</arglist>
+    </member>
+    <member kind="function" protection="private" virtualness="virtual">
+      <type>virtual FE_StepParameter *</type>
+      <name>create_replica</name>
+      <anchorfile>classFE__StepParameter.html</anchorfile>
+      <anchor>abc15a252a80229517a7a3a080bdeef78</anchor>
+      <arglist>(PEL_Object *a_owner, PDE_DomainAndFields const *dom, PEL_ModuleExplorer const *exp) const </arglist>
+    </member>
+    <member kind="function" protection="private" virtualness="virtual">
+      <type>virtual void</type>
+      <name>prepare_for_value_on_cells</name>
+      <anchorfile>classFE__StepParameter.html</anchorfile>
+      <anchor>ad0c8c87f32d940ae4d19ff55ada71fae</anchor>
+      <arglist>(PDE_LocalFEcell *fe) const </arglist>
+    </member>
+    <member kind="function" protection="private" virtualness="virtual">
+      <type>virtual void</type>
+      <name>prepare_for_value_on_bounds</name>
+      <anchorfile>classFE__StepParameter.html</anchorfile>
+      <anchor>a7d7dbee9bad1b07282fb096b56dfed69</anchor>
+      <arglist>(PDE_LocalFEbound *fe) const </arglist>
+    </member>
+    <member kind="variable" protection="private" static="yes">
+      <type>static FE_StepParameter const *</type>
+      <name>PROTOTYPE</name>
+      <anchorfile>classFE__StepParameter.html</anchorfile>
+      <anchor>af785e0120e76528b505d6f7b1d6eadbe</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="typedef" protection="private">
+      <type>std::map&lt; std::string, FE_Parameter * &gt;</type>
+      <name>FE_PARAMS_MAP</name>
+      <anchorfile>classFE__StepParameter.html</anchorfile>
+      <anchor>aac59afd9a22407ba415122150bdb481d</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="typedef" protection="private">
+      <type>std::map&lt; std::string, std::string &gt;</type>
+      <name>FE_PARAMS_STRING_MAP</name>
+      <anchorfile>classFE__StepParameter.html</anchorfile>
+      <anchor>a996d3c4be5a6e062e5c5927515ce39d3</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>FE_PARAMS_MAP</type>
+      <name>FE_PARAMS</name>
+      <anchorfile>classFE__StepParameter.html</anchorfile>
+      <anchor>a67cf7bed89b5eab8fde0e00a4f4f51e4</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>FE_PARAMS_STRING_MAP</type>
+      <name>FE_PARAMS_REALNAMES</name>
+      <anchorfile>classFE__StepParameter.html</anchorfile>
+      <anchor>a5a0d2d506ce52dbb994548d65ce6ec18</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>FE_Parameter *</type>
+      <name>ParFE_C1</name>
+      <anchorfile>classFE__StepParameter.html</anchorfile>
+      <anchor>aa06457eb326cc4d9eaa2aecdc8379dfd</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>FE_Parameter *</type>
+      <name>ParFE_C2</name>
+      <anchorfile>classFE__StepParameter.html</anchorfile>
+      <anchor>a28e0e93d0ec7955e14fac617dfe26fcf</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>FE_Parameter *</type>
+      <name>ParFE_Cs</name>
+      <anchorfile>classFE__StepParameter.html</anchorfile>
+      <anchor>a4ca8d76e087ed4f7966118b04204b5fb</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>FE_Parameter *</type>
+      <name>ParFE_Lambda</name>
+      <anchorfile>classFE__StepParameter.html</anchorfile>
+      <anchor>a58ad18ef61860801081346e3884083de</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>size_t</type>
+      <name>NBCS</name>
+      <anchorfile>classFE__StepParameter.html</anchorfile>
+      <anchor>a9216c3d13d3de01d62b626cfaac6a571</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>bool</type>
+      <name>CPOW</name>
+      <anchorfile>classFE__StepParameter.html</anchorfile>
+      <anchor>aeec87b99d3d73429d08d16ceeacd84c1</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>FE_Parameter *</type>
+      <name>ParFE_Cpow</name>
+      <anchorfile>classFE__StepParameter.html</anchorfile>
+      <anchor>a9a3d3c6397a0427e68b7034559b44ab7</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="class">
     <name>FE_TensorFormAssembling</name>
     <filename>classFE__TensorFormAssembling.html</filename>
     <member kind="function" static="yes">
@@ -4895,6 +5872,20 @@
       <name>add_grad_row_col</name>
       <anchorfile>classFE__TensorFormAssembling.html</anchorfile>
       <anchor>a509871734ec4edef9b63de0125034dcb</anchor>
+      <arglist>(PDE_LocalEquation *leq, PDE_LocalFEcell const *fe, double coef)</arglist>
+    </member>
+    <member kind="function" static="yes">
+      <type>static void</type>
+      <name>add_grad_row_col_A</name>
+      <anchorfile>classFE__TensorFormAssembling.html</anchorfile>
+      <anchor>a1a8a289a3647aa6432e925f28ec09213</anchor>
+      <arglist>(PDE_LocalEquation *leq, PDE_LocalFEcell const *fe, double coef)</arglist>
+    </member>
+    <member kind="function" static="yes">
+      <type>static void</type>
+      <name>add_grad_row_col_Leo</name>
+      <anchorfile>classFE__TensorFormAssembling.html</anchorfile>
+      <anchor>a81ffa1f98f79de0e4d81ff4619660366</anchor>
       <arglist>(PDE_LocalEquation *leq, PDE_LocalFEcell const *fe, double coef)</arglist>
     </member>
     <member kind="function" static="yes">
@@ -5362,357 +6353,620 @@
     </member>
   </compound>
   <compound kind="class">
-    <name>LEO_PLIC_Advection</name>
-    <filename>classLEO__PLIC__Advection.html</filename>
-    <member kind="function" protection="private">
-      <type>bool</type>
-      <name>AD_inner_iterations_are_completed</name>
-      <anchorfile>classLEO__PLIC__Advection.html</anchorfile>
-      <anchor>acb4a0924021b378a485b9d7a741ed887</anchor>
-      <arglist>(FE_TimeIterator *t_global, FE_TimeIterator const *t_it, double epsilon) const </arglist>
-    </member>
-    <member kind="function" protection="private">
-      <type>double</type>
-      <name>time_step_by_Courant</name>
-      <anchorfile>classLEO__PLIC__Advection.html</anchorfile>
-      <anchor>a771833c985db3c78b2ad3756b83cc109</anchor>
-      <arglist>(double dt_new, FE_TimeIterator const *t_it)</arglist>
-    </member>
-    <member kind="function" protection="private">
-      <type>double</type>
-      <name>smallest_vertices</name>
-      <anchorfile>classLEO__PLIC__Advection.html</anchorfile>
-      <anchor>adc055e8df0b2a697fc391ec4769de685</anchor>
-      <arglist>(void)</arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>FE_LocalTimeIteratorAdapter *</type>
-      <name>t_local</name>
-      <anchorfile>classLEO__PLIC__Advection.html</anchorfile>
-      <anchor>a685d9e19078d12dea5039f848d5ea4a7</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>FE_TimeIterator *</type>
-      <name>t_global</name>
-      <anchorfile>classLEO__PLIC__Advection.html</anchorfile>
-      <anchor>a597a07a69815e5086fd6c714b653a07e</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>PEL_Object *</type>
-      <name>A_OWNER</name>
-      <anchorfile>classLEO__PLIC__Advection.html</anchorfile>
-      <anchor>a606a64de71ab6682f0444be024b6859b</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>PDE_DomainAndFields const *</type>
-      <name>DOM</name>
-      <anchorfile>classLEO__PLIC__Advection.html</anchorfile>
-      <anchor>a07b2e6cf80abd5abebf8c8d070590ee9</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>FE_SetOfParameters const *</type>
-      <name>PRMS</name>
-      <anchorfile>classLEO__PLIC__Advection.html</anchorfile>
-      <anchor>a846f80a70d0ed09fc349147e301fcf89</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>PEL_ModuleExplorer const *</type>
-      <name>EXP</name>
-      <anchorfile>classLEO__PLIC__Advection.html</anchorfile>
-      <anchor>a542a146bd4dd86cf1b7ee306d1db780c</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>bool</type>
-      <name>useCOURANT</name>
-      <anchorfile>classLEO__PLIC__Advection.html</anchorfile>
-      <anchor>afb725235177a3e34666b9d9739b4064e</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>PDE_SetOfDiscreteFields const *const</type>
-      <name>FIELDS</name>
-      <anchorfile>classLEO__PLIC__Advection.html</anchorfile>
-      <anchor>aba550c4dc8916e975aec47f11780eafc</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>size_t</type>
-      <name>LEVEL0</name>
-      <anchorfile>classLEO__PLIC__Advection.html</anchorfile>
-      <anchor>a2f82926f29a1ce97a21e78d1c5214055</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>stringVector</type>
-      <name>FIELDS_TABLE</name>
-      <anchorfile>classLEO__PLIC__Advection.html</anchorfile>
-      <anchor>ab22df7cdd2f365d417a96047c42c23a3</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>double</type>
-      <name>COURANT</name>
-      <anchorfile>classLEO__PLIC__Advection.html</anchorfile>
-      <anchor>a033339183020a3a7c0078e7942254497</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private" static="yes">
-      <type>static LEO_PLIC_Advection const *</type>
-      <name>PROTOTYPE</name>
-      <anchorfile>classLEO__PLIC__Advection.html</anchorfile>
-      <anchor>a149b01bfc6c966dd3818947a84f4aa9e</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>PDE_DiscreteField *</type>
-      <name>CC</name>
-      <anchorfile>classLEO__PLIC__Advection.html</anchorfile>
-      <anchor>a6f905693a03c15549c82773b5b54aa44</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>PDE_DiscreteField *</type>
-      <name>UU</name>
-      <anchorfile>classLEO__PLIC__Advection.html</anchorfile>
-      <anchor>ae3bce822a1d878754786c522d0a593bf</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>size_t</type>
-      <name>L_UPDATE</name>
-      <anchorfile>classLEO__PLIC__Advection.html</anchorfile>
-      <anchor>a49435d56c2945039a6ea3f40e93f5785</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>FE_Parameter *</type>
-      <name>GRAD_C</name>
-      <anchorfile>classLEO__PLIC__Advection.html</anchorfile>
-      <anchor>a7deb3cd45709ef1eef8d162de6aa59c3</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>FE_Parameter *</type>
-      <name>GRAD_C1</name>
-      <anchorfile>classLEO__PLIC__Advection.html</anchorfile>
-      <anchor>a555966a3a6e51d22abcda0238f28f9c6</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>PDE_LocalFEcell *</type>
-      <name>cFE</name>
-      <anchorfile>classLEO__PLIC__Advection.html</anchorfile>
-      <anchor>ac5e2d6588fcd66d6cb9d6db8de497bfd</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>PDE_CursorFEside *</type>
-      <name>sFE</name>
-      <anchorfile>classLEO__PLIC__Advection.html</anchorfile>
-      <anchor>adf3d355d2535997be13f9df18807fe25</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>PDE_LocalFEbound *</type>
-      <name>bFE</name>
-      <anchorfile>classLEO__PLIC__Advection.html</anchorfile>
-      <anchor>a0fd7e694d0f9f8f465da2d77d3996f53</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>double const</type>
-      <name>EPSILON</name>
-      <anchorfile>classLEO__PLIC__Advection.html</anchorfile>
-      <anchor>affe4634c92c04a296d009f3f22a7f663</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>size_t</type>
-      <name>NX</name>
-      <anchorfile>classLEO__PLIC__Advection.html</anchorfile>
-      <anchor>a8a505b38b370f478fa4033a3c6ad32be</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>size_t</type>
-      <name>NY</name>
-      <anchorfile>classLEO__PLIC__Advection.html</anchorfile>
-      <anchor>abcf28cf73c55b59d04b0b3214870b618</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>double</type>
-      <name>ddx</name>
-      <anchorfile>classLEO__PLIC__Advection.html</anchorfile>
-      <anchor>aea3c6675b9bfe91ccbb615f0961963b9</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>double</type>
-      <name>ddy</name>
-      <anchorfile>classLEO__PLIC__Advection.html</anchorfile>
-      <anchor>ad903cf35696275a99eb8bad9dad96b02</anchor>
-      <arglist></arglist>
+    <name>Leo_NavierStokes</name>
+    <filename>classLeo__NavierStokes.html</filename>
+    <member kind="function" virtualness="virtual">
+      <type>virtual void</type>
+      <name>do_before_time_stepping</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>acc296656f16e19f2fe8d57748d13a537</anchor>
+      <arglist>(FE_TimeIterator const *t_it)</arglist>
     </member>
     <member kind="function" virtualness="virtual">
       <type>virtual void</type>
       <name>do_before_inner_iterations_stage</name>
-      <anchorfile>classLEO__PLIC__Advection.html</anchorfile>
-      <anchor>ad7a5556ec6de7ede934b26d7a9be9007</anchor>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>a60e343b745f5371a5f135e5baf1986b5</anchor>
       <arglist>(FE_TimeIterator const *t_it)</arglist>
     </member>
     <member kind="function" virtualness="virtual">
       <type>virtual void</type>
       <name>do_inner_iterations_stage</name>
-      <anchorfile>classLEO__PLIC__Advection.html</anchorfile>
-      <anchor>a70d23dca51c578b6d0fce18b9b78c3da</anchor>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>ab89c2f9eb1512f75e11f7a76c8497d3b</anchor>
       <arglist>(FE_TimeIterator const *t_it)</arglist>
     </member>
     <member kind="function" virtualness="virtual">
       <type>virtual void</type>
       <name>do_one_inner_iteration</name>
-      <anchorfile>classLEO__PLIC__Advection.html</anchorfile>
-      <anchor>a0e616f4618e75022b87ba827ae2a14cc</anchor>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>a782afecc9f2d0a390cfd78d5cbdb4120</anchor>
       <arglist>(FE_TimeIterator const *t_it)</arglist>
     </member>
     <member kind="function" virtualness="virtual">
-      <type>virtual void</type>
-      <name>reset_discrete_problem</name>
-      <anchorfile>classLEO__PLIC__Advection.html</anchorfile>
-      <anchor>a036a79f1485aae24c0113425a2563330</anchor>
-      <arglist>(FE_TimeIterator const *t_it)</arglist>
+      <type>virtual bool</type>
+      <name>inner_iterations_are_completed</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>a2b8946afdca4aab3cefd963cb934a841</anchor>
+      <arglist>(FE_TimeIterator const *t_it) const </arglist>
+    </member>
+    <member kind="function">
+      <type>double</type>
+      <name>compute_L2_norm</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>ad30d3516a8bd5f30f4530e1fa7f48d13</anchor>
+      <arglist>(PDE_DiscreteField const *FIELD, size_t level1, size_t level2) const </arglist>
+    </member>
+    <member kind="function">
+      <type>double</type>
+      <name>compute_flowrate</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>a287ed25d336addabbad179a31569bc0c</anchor>
+      <arglist>(PDE_DiscreteField const *FIELD, size_t level1) const </arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>update_pressuredrop</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>acde8583c3777518192367c75115f391d</anchor>
+      <arglist>()</arglist>
+    </member>
+    <member kind="function" protection="private">
+      <type>double</type>
+      <name>param_euclidian_norm</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>af2634b3105c87ee5cf9296ae57c53fed</anchor>
+      <arglist>(FE_TimeIterator const *t_it, FE_Parameter const *param) const </arglist>
+    </member>
+    <member kind="function" protection="private">
+      <type>double</type>
+      <name>param_yield_stress_function</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>a92e3192423777985012a8f0a1fa535b3</anchor>
+      <arglist>(double const param_norm) const </arglist>
     </member>
     <member kind="function" protection="private">
       <type></type>
-      <name>~LEO_PLIC_Advection</name>
-      <anchorfile>classLEO__PLIC__Advection.html</anchorfile>
-      <anchor>a3a8fecf71e9d584bb990d9084dfd2062</anchor>
+      <name>~Leo_NavierStokes</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>a4188ee7c68cde3a91d37c0de60f4f1fe</anchor>
       <arglist>(void)</arglist>
     </member>
     <member kind="function" protection="private">
       <type></type>
-      <name>LEO_PLIC_Advection</name>
-      <anchorfile>classLEO__PLIC__Advection.html</anchorfile>
-      <anchor>a82955858513eef0ea4e0ee5112226b75</anchor>
-      <arglist>(LEO_PLIC_Advection const &amp;other)</arglist>
+      <name>Leo_NavierStokes</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>a818f823eb201ea49f38b4cf0e7ab7baf</anchor>
+      <arglist>(Leo_NavierStokes const &amp;other)</arglist>
     </member>
     <member kind="function" protection="private">
-      <type>LEO_PLIC_Advection &amp;</type>
+      <type>Leo_NavierStokes &amp;</type>
       <name>operator=</name>
-      <anchorfile>classLEO__PLIC__Advection.html</anchorfile>
-      <anchor>ad71e5aca540f293639b2677e41f5ae23</anchor>
-      <arglist>(LEO_PLIC_Advection const &amp;other)</arglist>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>a4b2786fcd8a559459470bb5d400ac13e</anchor>
+      <arglist>(Leo_NavierStokes const &amp;other)</arglist>
     </member>
     <member kind="function" protection="private">
       <type></type>
-      <name>LEO_PLIC_Advection</name>
-      <anchorfile>classLEO__PLIC__Advection.html</anchorfile>
-      <anchor>a095d4142ec5c1a175d65de8e58256ea2</anchor>
+      <name>Leo_NavierStokes</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>af59f2bfca5b7412fb327830c8856679e</anchor>
       <arglist>(PEL_Object *a_owner, PDE_DomainAndFields const *dom, FE_SetOfParameters const *prms, PEL_ModuleExplorer const *exp)</arglist>
     </member>
     <member kind="function" protection="private">
       <type></type>
-      <name>LEO_PLIC_Advection</name>
-      <anchorfile>classLEO__PLIC__Advection.html</anchorfile>
-      <anchor>aa1811a3a61651a520a94937ad1ad2211</anchor>
+      <name>Leo_NavierStokes</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>a0d3d184e2cfb7856d0bd9ce056120d2a</anchor>
       <arglist>(void)</arglist>
     </member>
     <member kind="function" protection="private" virtualness="virtual">
-      <type>virtual LEO_PLIC_Advection *</type>
+      <type>virtual Leo_NavierStokes *</type>
       <name>create_replica</name>
-      <anchorfile>classLEO__PLIC__Advection.html</anchorfile>
-      <anchor>a4d46c06c91f9adbbb93bc8b7fe8cd42f</anchor>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>a5ff269a22aac26c65c26937ac87dc3a2</anchor>
       <arglist>(PEL_Object *a_owner, PDE_DomainAndFields const *dom, FE_SetOfParameters const *prms, PEL_ModuleExplorer *exp) const </arglist>
     </member>
+    <member kind="variable" protection="private">
+      <type>bool</type>
+      <name>ADV</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>afee1ee80dc58cbbfc51df0e81797e600</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>size_t</type>
+      <name>ORDER</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>a943540553dcf22078e25235a251bdd82</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>bool</type>
+      <name>LAPL_UU</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>a868a1cda5a086088e5830fd1971b4bfa</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>name Nonstandard Boundary</type>
+      <name>Conditions</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>a230aeee27e455adfcd632fbb65cea6e0</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>bool</type>
+      <name>BC_STRESS</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>a5a2d0accbd74b4fdb38b6a384d37d509</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>FE_Parameter *</type>
+      <name>BC_STRESS_VALUE</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>aa71a7406cd751459bd230e34b098da32</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>FE_LocalBCsBuilder *</type>
+      <name>LOCAL_BC</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>a0d0969a95c69dc418840d7f3b14097f2</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>name Flowrate</type>
+      <name>Parameters</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>aa2cd6b2fc47f6a816898c72fc6f85fd6</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>size_t</type>
+      <name>FlowrateCP</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>a21df16aa6d1809109084ff2dc5749c63</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>size_t</type>
+      <name>FlowrateMaxiter</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>a7dfbb07eb6c843698df297cf9c679025</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>double</type>
+      <name>FlowrateTarget</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>ada9cdc6038bbeac9661e5daaebb46a32</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>double</type>
+      <name>FlowrateResidual</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>afd26d25c742401af995c9b210613c982</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>std::vector&lt; double &gt;</type>
+      <name>FlowratedPdL</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>abec6ad61655a44205aa2ae06e728a37c</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>std::vector&lt; double &gt;</type>
+      <name>FlowrateFr</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>ae4bd89e2ca422d65eac8cce0bb2e3f5c</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>double</type>
+      <name>FlowrateScale</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>a8dfa06a718c994e3c540c0c96de6af2f</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>std::string</type>
+      <name>FlowrateMethod</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>af9ed4d83016296a1f3ecff87df10af9f</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>PEL_Communicator const *const</type>
+      <name>COM</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>a57fa22097980ca39f520df7ab0e009dc</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>PEL_ContextSimple *</type>
+      <name>CONTEXT</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>a7d68229cbdc2a856dfc36e7ad47142c0</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>PEL_DoubleVector *</type>
+      <name>COORDS</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>aff06d3cc870e59c125ab3b7bd639d114</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>bool</type>
+      <name>ElectricField</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>a7790212a4238f48a5210456528c7d862</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>double</type>
+      <name>FUNC_E</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>a848716abb97b06e49482b30f15f15fc2</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>name Parameters FE_Parameter *</type>
+      <name>ALPHA</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>ac657a8b69b9f5e66dd8ce5c689839851</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>FE_Parameter *</type>
+      <name>RE</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>a89d47f459df8822197ca5672f815cacb</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>FE_Parameter *</type>
+      <name>RHSU</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>a21d19c873a11b779f95c3e65d96312fb</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>FE_Parameter *</type>
+      <name>KAPPA</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>a04b510f8ea574c35955376b654b837f1</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>FE_Parameter *</type>
+      <name>BN</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>a8422c730e041cd65235096cd0c262a47</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>FE_Parameter *</type>
+      <name>HB_n</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>a09a7ad21875671fb5e9466a318240778</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>FE_Parameter *</type>
+      <name>E_FIELD</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>ac5da30d67159fa364e091e78438db110</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>name Discrete system builder PDE_LocalEquation *</type>
+      <name>ELEMENT_EQ</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>a80ad78d398aa94e6cce24da9c0f2d345</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>GE_QRprovider const *</type>
+      <name>QRP</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>ab6626dedd576e12d2371436a6b17bd0e</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>PDE_LocalFEcell *</type>
+      <name>cFE</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>a80655bc9058c6f4f5bff9f89b6971caf</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>PDE_LocalFEbound *</type>
+      <name>bFE</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>a7ee81312dea7a82cbc8f2b9ddecf5d8d</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>ML_NavierStokesSystem *</type>
+      <name>GLOBAL_EQ</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>a1824b8f8d2b898160bd8687d04e52781</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>name Piccard Iteration Parameters bool</type>
+      <name>Viscoplastic</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>a6662a9ccb2fc3586867d71dd93d0cbac</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>std::string</type>
+      <name>ViscoplasticType</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>ab4a1bbce382fbcebc76806ee40edb102</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>int</type>
+      <name>ViscoplasticMaxiter</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>ac2a0e5f90c2a60729763697262baa72e</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>double</type>
+      <name>ViscoplasticResidual</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>a4473d526677c491120e8ed2ec13c5e27</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>double</type>
+      <name>ViscoplasticAug</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>ae9b4b7194cf0846311adefedf6ef2b86</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>int</type>
+      <name>ViscoplasticIter</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>ada5df17b42c93b8eaf5421a8c9567f5f</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>bool</type>
+      <name>FACTORIZE</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>a643869e40d03a83d1fc92d7b380c8277</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>size_t</type>
+      <name>L_ViscoplasticU</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>a123d9dc6f4254352cde4827a42cecbb4</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private" static="yes">
+      <type>static Leo_NavierStokes const *</type>
+      <name>PROTOTYPE</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>a0ee9429ba4d2d9ecef2b8ec0099453b2</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>PDE_DiscreteField *</type>
+      <name>UU</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>a1dd797e5664c453fe7a870c41e278651</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>size_t</type>
+      <name>L_UU</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>a2018f6bb25b23a3fbca19466be0e2d90</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>size_t</type>
+      <name>L_UPDATE_UU</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>aa033451ca0e63e80d833ca5865a92b1e</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>PDE_DiscreteField *</type>
+      <name>PP</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>aac63998fbe37c8a9f24498f59c0b55ac</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>size_t</type>
+      <name>L_PP</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>a86656507b0683ab6a0249974d12a7154</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>size_t</type>
+      <name>L_UPDATE_PP</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>a9cc3c56be01b9bc1e6773e50b096aae0</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>PDE_DiscreteField *</type>
+      <name>STRESS</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>a727855aef7c3090e2d73dca68a448436</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>PDE_DiscreteField *</type>
+      <name>GAMMADOT</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>a9fd965ce6ead224a7478316c0ac3ced7</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>PDE_DiscreteField *</type>
+      <name>GAMMA</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>a95926e6d0069af10bebfbbd3ce1a5b49</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>std::vector&lt; PDE_DiscreteField const * &gt;</type>
+      <name>AAs</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>a635c8f17ca862f3ae4dfada6f513247f</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>std::vector&lt; size_t &gt;</type>
+      <name>L_AAs</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>aa9a31d97f979f2a5885701c78e533efd</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" protection="private">
+      <type>std::vector&lt; FE_Parameter * &gt;</type>
+      <name>COEF_AAs</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>aa3907b814478f2eb82f61b9980ffe65d</anchor>
+      <arglist></arglist>
+    </member>
     <member kind="function" protection="private">
       <type>void</type>
-      <name>loop_on_cellsX</name>
-      <anchorfile>classLEO__PLIC__Advection.html</anchorfile>
-      <anchor>a5b37fc76c38449dc4b5b1d79e587cd9f</anchor>
+      <name>loop_on_cells_Outer</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>af9acb98b4eaec73c4455b171eccac445</anchor>
       <arglist>(FE_TimeIterator const *t_it)</arglist>
     </member>
     <member kind="function" protection="private">
       <type>void</type>
-      <name>loop_on_cellsXX</name>
-      <anchorfile>classLEO__PLIC__Advection.html</anchorfile>
-      <anchor>a18cf45c7f7a18599429dc4f0620d6a46</anchor>
+      <name>loop_on_bounds_Outer</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>aba66252fd32ff35e04f3ee230a7252bd</anchor>
       <arglist>(FE_TimeIterator const *t_it)</arglist>
     </member>
     <member kind="function" protection="private">
       <type>void</type>
-      <name>loop_on_cellsZZ</name>
-      <anchorfile>classLEO__PLIC__Advection.html</anchorfile>
-      <anchor>a8be6656d72301984e327e009bceeb6a4</anchor>
+      <name>loop_on_cells_Inner</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>a9efdcffd7b4752707c7e914261c44063</anchor>
       <arglist>(FE_TimeIterator const *t_it)</arglist>
     </member>
     <member kind="function" protection="private">
       <type>void</type>
-      <name>loop_on_sidesX</name>
-      <anchorfile>classLEO__PLIC__Advection.html</anchorfile>
-      <anchor>a425ace1fd98cc5ba2ca8ada0c9ba05b8</anchor>
+      <name>loop_on_bounds_Inner</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>aa1e0be2f287166b0e75b0dc6410b1269</anchor>
       <arglist>(FE_TimeIterator const *t_it)</arglist>
     </member>
     <member kind="function" protection="private">
       <type>void</type>
-      <name>loop_on_sidesY</name>
-      <anchorfile>classLEO__PLIC__Advection.html</anchorfile>
-      <anchor>a3b4d43a2d29c2c904644f7470163b730</anchor>
+      <name>setup_Outer</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>a85a267b7a3bafe4d10d13bbc13dad3cb</anchor>
       <arglist>(FE_TimeIterator const *t_it)</arglist>
     </member>
     <member kind="function" protection="private">
       <type>void</type>
-      <name>update_fields</name>
-      <anchorfile>classLEO__PLIC__Advection.html</anchorfile>
-      <anchor>aeb0177cd3331095ec51d0ae706e03931</anchor>
+      <name>setup_Inner</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>ab541b98f699f827a645dd61af743a3c1</anchor>
+      <arglist>(FE_TimeIterator const *t_it)</arglist>
+    </member>
+    <member kind="function" protection="private">
+      <type>void</type>
+      <name>setup_Flowrate</name>
+      <anchorfile>classLeo__NavierStokes.html</anchorfile>
+      <anchor>a96e1fd0f41d3b62bddf5bca1f82ffdac</anchor>
+      <arglist>(FE_TimeIterator const *t_it)</arglist>
+    </member>
+  </compound>
+  <compound kind="class">
+    <name>Leo_Viscoplastic</name>
+    <filename>classLeo__Viscoplastic.html</filename>
+    <member kind="function" static="yes">
+      <type>static void</type>
+      <name>compute_strain_rate_tensor</name>
+      <anchorfile>classLeo__Viscoplastic.html</anchorfile>
+      <anchor>a47c6efcaf26f7e5db21692962fd9051b</anchor>
+      <arglist>(PDE_LocalFEcell *cFE, PDE_DiscreteField const *UU, PDE_DiscreteField *gammadot)</arglist>
+    </member>
+    <member kind="function" static="yes">
+      <type>static void</type>
+      <name>update_Lagrange_multiplier</name>
+      <anchorfile>classLeo__Viscoplastic.html</anchorfile>
+      <anchor>a4015a3e6bb96c6b20a098d9224ba9662</anchor>
+      <arglist>(PDE_LocalFEcell *cFE, PDE_DiscreteField *LAMBDA, PDE_DiscreteField const *gammadot, PDE_DiscreteField const *gamma, double const &amp;aug_param)</arglist>
+    </member>
+    <member kind="function" static="yes">
+      <type>static void</type>
+      <name>update_strain_rate_tensor_d</name>
+      <anchorfile>classLeo__Viscoplastic.html</anchorfile>
+      <anchor>aa15a50b9d3699b5ee76f6f88ea1025a4</anchor>
+      <arglist>(PDE_LocalFEcell *cFE, PDE_DiscreteField const *LAMBDA, PDE_DiscreteField const *DUU, PDE_DiscreteField *d, double const &amp;aug_param, FE_Parameter const *kappa, FE_Parameter const *Bn, double func_E, FE_TimeIterator const *t_it)</arglist>
+    </member>
+    <member kind="function" static="yes">
+      <type>static void</type>
+      <name>update_strain_rate_tensor_d_HB</name>
+      <anchorfile>classLeo__Viscoplastic.html</anchorfile>
+      <anchor>a441385ea31f01c7b5c286199ce6a7dbf</anchor>
+      <arglist>(PDE_LocalFEcell *cFE, PDE_DiscreteField const *LAMBDA, PDE_DiscreteField const *DUU, PDE_DiscreteField *d, double const &amp;aug_param, FE_Parameter const *kappa, FE_Parameter const *Bn, FE_Parameter const *HB_n, double func_E, FE_TimeIterator const *t_it)</arglist>
+    </member>
+    <member kind="function" static="yes">
+      <type>static double</type>
+      <name>compute_norm_Dminusd</name>
+      <anchorfile>classLeo__Viscoplastic.html</anchorfile>
+      <anchor>a40a1b865dc91cd2ff0b41181c6f017f9</anchor>
+      <arglist>(PDE_LocalFEcell *cFE, PDE_DiscreteField const *DUU, PDE_DiscreteField const *d)</arglist>
+    </member>
+    <member kind="function" static="yes">
+      <type>static pair&lt; size_t, double &gt;</type>
+      <name>strain_rate_component_number</name>
+      <anchorfile>classLeo__Viscoplastic.html</anchorfile>
+      <anchor>a2d777c7b5b8136328f83f0bdf5441146</anchor>
+      <arglist>(size_t const &amp;dimension, size_t const &amp;compIdx, size_t const &amp;direcIdx)</arglist>
+    </member>
+    <member kind="function" static="yes">
+      <type>static double</type>
+      <name>Euclidian_norm</name>
+      <anchorfile>classLeo__Viscoplastic.html</anchorfile>
+      <anchor>ad4b18b51b6c874d1dfcc2c5c298a93e7</anchor>
+      <arglist>(doubleVector const &amp;tensor)</arglist>
+    </member>
+    <member kind="function" protection="private">
+      <type></type>
+      <name>~Leo_Viscoplastic</name>
+      <anchorfile>classLeo__Viscoplastic.html</anchorfile>
+      <anchor>a48370094271927e71e84526f1dda2892</anchor>
       <arglist>(void)</arglist>
     </member>
     <member kind="function" protection="private">
-      <type>double</type>
-      <name>Heaviside</name>
-      <anchorfile>classLEO__PLIC__Advection.html</anchorfile>
-      <anchor>a79763571de71b007298ae3fb8335e18d</anchor>
-      <arglist>(double x)</arglist>
+      <type></type>
+      <name>Leo_Viscoplastic</name>
+      <anchorfile>classLeo__Viscoplastic.html</anchorfile>
+      <anchor>a6c46dbe69b5f27073fe3f16d505681e0</anchor>
+      <arglist>(Leo_Viscoplastic const &amp;other)</arglist>
     </member>
     <member kind="function" protection="private">
-      <type>double</type>
-      <name>C2Alpha</name>
-      <anchorfile>classLEO__PLIC__Advection.html</anchorfile>
-      <anchor>ae55dc4d1acdd14d88566af4122b16bf9</anchor>
-      <arglist>(double mx, double my, double dx, double dy, double C)</arglist>
-    </member>
-    <member kind="function" protection="private">
-      <type>double</type>
-      <name>Alpha2C</name>
-      <anchorfile>classLEO__PLIC__Advection.html</anchorfile>
-      <anchor>a7904a984f474b1f624a954d3ac0c660e</anchor>
-      <arglist>(double mx, double my, double dx, double dy, double alpha)</arglist>
-    </member>
-    <member kind="function" protection="private">
-      <type>double</type>
-      <name>DeltaC</name>
-      <anchorfile>classLEO__PLIC__Advection.html</anchorfile>
-      <anchor>a37a74ee0bb616c55aff029c2a2ce4d74</anchor>
-      <arglist>(double mx, double my, double dx, double dy, double C, double u0, double u1, double dt)</arglist>
-    </member>
-    <member kind="function" protection="private">
-      <type>double</type>
-      <name>vol2</name>
-      <anchorfile>classLEO__PLIC__Advection.html</anchorfile>
-      <anchor>af695e98d20c5c1f2c0159d6bb996943d</anchor>
-      <arglist>(double mx, double mz, double alfa, double b)</arglist>
-    </member>
-    <member kind="function" protection="private">
-      <type>void</type>
-      <name>print_mesh</name>
-      <anchorfile>classLEO__PLIC__Advection.html</anchorfile>
-      <anchor>a31a68fa24b0fe6f8396f76bac815b032</anchor>
-      <arglist>(FE_TimeIterator const *t_it)</arglist>
+      <type></type>
+      <name>Leo_Viscoplastic</name>
+      <anchorfile>classLeo__Viscoplastic.html</anchorfile>
+      <anchor>a3ebfcacf8d241a8c7031be17e3154095</anchor>
+      <arglist>(void)</arglist>
     </member>
   </compound>
   <compound kind="class">
@@ -5746,55 +7000,64 @@
       <anchor>a95a3e2a375a1f5859eeee48eb093f92d</anchor>
       <arglist>(FE_TimeIterator const *t_it, PDE_ResultSaver *rs)</arglist>
     </member>
-    <member kind="enumeration">
+    <member kind="enumeration" protection="private">
+      <type></type>
       <name>TimeDisc</name>
       <anchorfile>classMI__ElasticStress.html</anchorfile>
       <anchor>a996a0b56edc6130b54d576fa70191197</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>Euler</name>
       <anchorfile>classMI__ElasticStress.html</anchorfile>
       <anchor>a996a0b56edc6130b54d576fa70191197a477ecedb881f93e708ba1dd443936ab0</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>BDF2</name>
       <anchorfile>classMI__ElasticStress.html</anchorfile>
       <anchor>a996a0b56edc6130b54d576fa70191197a347daad195bbc165e8081574a3b9aa07</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>NoTime</name>
       <anchorfile>classMI__ElasticStress.html</anchorfile>
       <anchor>a996a0b56edc6130b54d576fa70191197ac38861b2a08ea689390b75c4efa66b78</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumeration">
+    <member kind="enumeration" protection="private">
+      <type></type>
       <name>StabType</name>
       <anchorfile>classMI__ElasticStress.html</anchorfile>
       <anchor>ace6d0ce70fdd2e42547df0ba0989baf6</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>SUPG</name>
       <anchorfile>classMI__ElasticStress.html</anchorfile>
       <anchor>ace6d0ce70fdd2e42547df0ba0989baf6a09d961ee116af54af0f8d58751eb9a74</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>GLS</name>
       <anchorfile>classMI__ElasticStress.html</anchorfile>
       <anchor>ace6d0ce70fdd2e42547df0ba0989baf6a1711aa8120154cee94eb4a0bce8ac905</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>USFEM</name>
       <anchorfile>classMI__ElasticStress.html</anchorfile>
       <anchor>ace6d0ce70fdd2e42547df0ba0989baf6afd2e9bdbb0557ea4f1c781f11f3192a1</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>NoStab</name>
       <anchorfile>classMI__ElasticStress.html</anchorfile>
       <anchor>ace6d0ce70fdd2e42547df0ba0989baf6a244118772b2ef032b10c024aca8e9c7d</anchor>
@@ -6893,31 +8156,36 @@
       <anchor>a81c72460dfd192b1c00fb568556414d2</anchor>
       <arglist>(PEL_Object *a_owner, PEL_ModuleExplorer const *exp, PDE_LinkDOF2Unknown *uu_link, PDE_LinkDOF2Unknown *pp_link)</arglist>
     </member>
-    <member kind="enumeration">
+    <member kind="enumeration" protection="private">
+      <type></type>
       <name>MethodType</name>
       <anchorfile>classMI__NavierStokesSystem.html</anchorfile>
       <anchor>aaa57fb91498edfaed4cfe09380838bd1</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>AL</name>
       <anchorfile>classMI__NavierStokesSystem.html</anchorfile>
       <anchor>aaa57fb91498edfaed4cfe09380838bd1ab854d98de75380a5adb7ee09532f2856</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>YOS</name>
       <anchorfile>classMI__NavierStokesSystem.html</anchorfile>
       <anchor>aaa57fb91498edfaed4cfe09380838bd1ad90fb1555c5f909e815921aae266bd74</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>PP</name>
       <anchorfile>classMI__NavierStokesSystem.html</anchorfile>
       <anchor>aaa57fb91498edfaed4cfe09380838bd1a97f48103a54ecc408d6075d7157e96e9</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>invalid</name>
       <anchorfile>classMI__NavierStokesSystem.html</anchorfile>
       <anchor>aaa57fb91498edfaed4cfe09380838bd1a94d1a6dfe88e07eff0219a1daefe08b4</anchor>
@@ -7375,55 +8643,64 @@
       <anchor>a7197cfd1daf6e3b7cdd41f1b8766589c</anchor>
       <arglist>()</arglist>
     </member>
-    <member kind="enumeration">
+    <member kind="enumeration" protection="private">
+      <type></type>
       <name>TimeDisc</name>
       <anchorfile>classMI__ViscoElastic.html</anchorfile>
       <anchor>ab835f8a4072c540685e22cd6500600a3</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>Euler</name>
       <anchorfile>classMI__ViscoElastic.html</anchorfile>
       <anchor>ab835f8a4072c540685e22cd6500600a3acb46c6e0cc35588a834d932d767e1d7a</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>BDF2</name>
       <anchorfile>classMI__ViscoElastic.html</anchorfile>
       <anchor>ab835f8a4072c540685e22cd6500600a3a57856c75e52be009e257ffd1809ffdcf</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>NoTime</name>
       <anchorfile>classMI__ViscoElastic.html</anchorfile>
       <anchor>ab835f8a4072c540685e22cd6500600a3a91cb194020b060b46a674531a43529cd</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumeration">
+    <member kind="enumeration" protection="private">
+      <type></type>
       <name>StabType</name>
       <anchorfile>classMI__ViscoElastic.html</anchorfile>
       <anchor>a2548b1ca36540f7e15a2f1948bf2ceb4</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>SUPG</name>
       <anchorfile>classMI__ViscoElastic.html</anchorfile>
       <anchor>a2548b1ca36540f7e15a2f1948bf2ceb4ae2fd4bca8077b2b2898e6738c09e7d25</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>GLS</name>
       <anchorfile>classMI__ViscoElastic.html</anchorfile>
       <anchor>a2548b1ca36540f7e15a2f1948bf2ceb4a07e827663fbe6e1d9c0dcbb67af2982b</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>USFEM</name>
       <anchorfile>classMI__ViscoElastic.html</anchorfile>
       <anchor>a2548b1ca36540f7e15a2f1948bf2ceb4a27a5e47bf74600c986fc58ed3973ef32</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>NoStab</name>
       <anchorfile>classMI__ViscoElastic.html</anchorfile>
       <anchor>a2548b1ca36540f7e15a2f1948bf2ceb4a781bf927522e77b6830ef69fcd496bcd</anchor>
@@ -8420,31 +9697,36 @@
       <anchor>a23d65ee46ba063687fb3cb94011b10f5</anchor>
       <arglist>(PEL_Object *a_owner, PEL_ModuleExplorer const *exp, PDE_LinkDOF2Unknown *uu_link, PDE_LinkDOF2Unknown *pp_link, PDE_LinkDOF2Unknown *dd_link, PDE_LinkDOF2Unknown *ss_link, PDE_LinkDOF2Unknown *stress_link)</arglist>
     </member>
-    <member kind="enumeration">
+    <member kind="enumeration" protection="private">
+      <type></type>
       <name>MethodType</name>
       <anchorfile>classMI__ViscoElasticSystem.html</anchorfile>
       <anchor>aeaa8e1f593b71fc76aa19e1b5ace1aec</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>AL</name>
       <anchorfile>classMI__ViscoElasticSystem.html</anchorfile>
       <anchor>aeaa8e1f593b71fc76aa19e1b5ace1aecaa9d8a29eae8e7c8dc0f598fa857f03ed</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>YOS</name>
       <anchorfile>classMI__ViscoElasticSystem.html</anchorfile>
       <anchor>aeaa8e1f593b71fc76aa19e1b5ace1aeca47d7ce75bcfce61b99477036abef40f4</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>PP</name>
       <anchorfile>classMI__ViscoElasticSystem.html</anchorfile>
       <anchor>aeaa8e1f593b71fc76aa19e1b5ace1aecaf583155f15a8d9588a18b14dec61f59d</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>invalid</name>
       <anchorfile>classMI__ViscoElasticSystem.html</anchorfile>
       <anchor>aeaa8e1f593b71fc76aa19e1b5ace1aeca174fb99ccc54b39445c998141cac6220</anchor>
@@ -9851,31 +11133,36 @@
       <anchor>a22bd978be54a42b196f5e916cdf96c14</anchor>
       <arglist>(PEL_Object *a_owner, PEL_ModuleExplorer const *exp, PDE_LinkDOF2Unknown *uu_link, PDE_LinkDOF2Unknown *pp_link, PDE_LinkDOF2Unknown *tt_link, PDE_LinkDOF2Unknown *gamma_link)</arglist>
     </member>
-    <member kind="enumeration">
+    <member kind="enumeration" protection="private">
+      <type></type>
       <name>MethodType</name>
       <anchorfile>classML__NavierStokesSystem.html</anchorfile>
       <anchor>acbbf136fa00e5af08c31347fccd8b8c2</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>AL</name>
       <anchorfile>classML__NavierStokesSystem.html</anchorfile>
       <anchor>acbbf136fa00e5af08c31347fccd8b8c2a084ed26b2069e82212b117040993c7d0</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>YOS</name>
       <anchorfile>classML__NavierStokesSystem.html</anchorfile>
       <anchor>acbbf136fa00e5af08c31347fccd8b8c2a33ab099796a0c630fb0e6cdfe35f6021</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>PP</name>
       <anchorfile>classML__NavierStokesSystem.html</anchorfile>
       <anchor>acbbf136fa00e5af08c31347fccd8b8c2a10391f1cb4e8d47af887b81da339700d</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>invalid</name>
       <anchorfile>classML__NavierStokesSystem.html</anchorfile>
       <anchor>acbbf136fa00e5af08c31347fccd8b8c2a3a31fb1f1b9fc0fde7ff218b3e031687</anchor>
@@ -11378,346 +12665,6 @@
     </member>
   </compound>
   <compound kind="class">
-    <name>MY_PLIC_Advection</name>
-    <filename>classMY__PLIC__Advection.html</filename>
-    <member kind="function" protection="private">
-      <type>bool</type>
-      <name>AD_inner_iterations_are_completed</name>
-      <anchorfile>classMY__PLIC__Advection.html</anchorfile>
-      <anchor>a54805a57b9d243686ade89be54cb696a</anchor>
-      <arglist>(FE_TimeIterator *t_global, FE_TimeIterator const *t_it, double epsilon) const </arglist>
-    </member>
-    <member kind="function" protection="private">
-      <type>double</type>
-      <name>time_step_by_Courant</name>
-      <anchorfile>classMY__PLIC__Advection.html</anchorfile>
-      <anchor>acbe76c0c2a4f8d4b3cf80ceec187335e</anchor>
-      <arglist>(double dt_new, FE_TimeIterator const *t_it)</arglist>
-    </member>
-    <member kind="function" protection="private">
-      <type>double</type>
-      <name>smallest_vertices</name>
-      <anchorfile>classMY__PLIC__Advection.html</anchorfile>
-      <anchor>ae0ea4ae5f002c790cd48061f755d7f5a</anchor>
-      <arglist>(void)</arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>FE_LocalTimeIteratorAdapter *</type>
-      <name>t_local</name>
-      <anchorfile>classMY__PLIC__Advection.html</anchorfile>
-      <anchor>a16e116d078df1ddb3bf0dc9b04047718</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>FE_TimeIterator *</type>
-      <name>t_global</name>
-      <anchorfile>classMY__PLIC__Advection.html</anchorfile>
-      <anchor>a35e8be7d7fe371cfa030c1895cb15190</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>PEL_Object *</type>
-      <name>A_OWNER</name>
-      <anchorfile>classMY__PLIC__Advection.html</anchorfile>
-      <anchor>a077ec166193a3cd4c83b921f9183ed0b</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>PDE_DomainAndFields const *</type>
-      <name>DOM</name>
-      <anchorfile>classMY__PLIC__Advection.html</anchorfile>
-      <anchor>a89675077e5bb1ba01a6f4e97914a02dc</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>FE_SetOfParameters const *</type>
-      <name>PRMS</name>
-      <anchorfile>classMY__PLIC__Advection.html</anchorfile>
-      <anchor>ad207644db0bff6bad24d39ccdd397572</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>PEL_ModuleExplorer const *</type>
-      <name>EXP</name>
-      <anchorfile>classMY__PLIC__Advection.html</anchorfile>
-      <anchor>a875cffcdfa239dfdce79a0c56807f697</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>bool</type>
-      <name>useCOURANT</name>
-      <anchorfile>classMY__PLIC__Advection.html</anchorfile>
-      <anchor>a3dfad47f8d320101f27b8a0a696c2abe</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>PDE_SetOfDiscreteFields const *const</type>
-      <name>FIELDS</name>
-      <anchorfile>classMY__PLIC__Advection.html</anchorfile>
-      <anchor>a12127779349bcafed9b4798f57ee81ca</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>size_t</type>
-      <name>LEVEL0</name>
-      <anchorfile>classMY__PLIC__Advection.html</anchorfile>
-      <anchor>a0249f046b827fa59f10668cf3d3f09c7</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>stringVector</type>
-      <name>FIELDS_TABLE</name>
-      <anchorfile>classMY__PLIC__Advection.html</anchorfile>
-      <anchor>a7bb3981a68f97b4406b3a53df64dc64f</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>double</type>
-      <name>COURANT</name>
-      <anchorfile>classMY__PLIC__Advection.html</anchorfile>
-      <anchor>a1f15bb3556d0fabf720a8881e7e6c554</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private" static="yes">
-      <type>static MY_PLIC_Advection const *</type>
-      <name>PROTOTYPE</name>
-      <anchorfile>classMY__PLIC__Advection.html</anchorfile>
-      <anchor>af3e8a570283a76bde2bea047ab5a4b6b</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>PDE_DiscreteField *</type>
-      <name>CC</name>
-      <anchorfile>classMY__PLIC__Advection.html</anchorfile>
-      <anchor>a5820e533c4dadede71bf44fcc60e1d90</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>PDE_DiscreteField *</type>
-      <name>UU</name>
-      <anchorfile>classMY__PLIC__Advection.html</anchorfile>
-      <anchor>a4b8f2a389e961c7029602b76b07b7934</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>size_t</type>
-      <name>L_UPDATE</name>
-      <anchorfile>classMY__PLIC__Advection.html</anchorfile>
-      <anchor>af25093271082141ba956133087f5ffd1</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>PDE_LocalFEcell *</type>
-      <name>cFE</name>
-      <anchorfile>classMY__PLIC__Advection.html</anchorfile>
-      <anchor>aae7660df6663d58f09ad6d7e166be544</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>PDE_CursorFEside *</type>
-      <name>sFE</name>
-      <anchorfile>classMY__PLIC__Advection.html</anchorfile>
-      <anchor>aa08dab6c45be63947bddb4852e1db939</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>PDE_LocalFEbound *</type>
-      <name>bFE</name>
-      <anchorfile>classMY__PLIC__Advection.html</anchorfile>
-      <anchor>a2868ce68571c0682757ef4467aa4d5f0</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>double const</type>
-      <name>EPSILON</name>
-      <anchorfile>classMY__PLIC__Advection.html</anchorfile>
-      <anchor>a25d422f7e6dab63cb2ec93c0422bb27a</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>size_t</type>
-      <name>NX</name>
-      <anchorfile>classMY__PLIC__Advection.html</anchorfile>
-      <anchor>abb4802bcd6da0704412f436e75844335</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>size_t</type>
-      <name>NY</name>
-      <anchorfile>classMY__PLIC__Advection.html</anchorfile>
-      <anchor>ae05cc438a4984908175135e7133142dc</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>double</type>
-      <name>ddx</name>
-      <anchorfile>classMY__PLIC__Advection.html</anchorfile>
-      <anchor>a924e67f641e14c8eabc4b69905df0d7b</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable" protection="private">
-      <type>double</type>
-      <name>ddy</name>
-      <anchorfile>classMY__PLIC__Advection.html</anchorfile>
-      <anchor>ac752726a871bf486c4094c1273007b3c</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="function" virtualness="virtual">
-      <type>virtual void</type>
-      <name>do_before_inner_iterations_stage</name>
-      <anchorfile>classMY__PLIC__Advection.html</anchorfile>
-      <anchor>afe4a174b1a15124a27f4bec4a64924f6</anchor>
-      <arglist>(FE_TimeIterator const *t_it)</arglist>
-    </member>
-    <member kind="function" virtualness="virtual">
-      <type>virtual void</type>
-      <name>do_inner_iterations_stage</name>
-      <anchorfile>classMY__PLIC__Advection.html</anchorfile>
-      <anchor>a5f3e1554bbc64e59037a89d8d612ad93</anchor>
-      <arglist>(FE_TimeIterator const *t_it)</arglist>
-    </member>
-    <member kind="function" virtualness="virtual">
-      <type>virtual void</type>
-      <name>do_one_inner_iteration</name>
-      <anchorfile>classMY__PLIC__Advection.html</anchorfile>
-      <anchor>a553ef062cd6874437b7ba548d87dfffd</anchor>
-      <arglist>(FE_TimeIterator const *t_it)</arglist>
-    </member>
-    <member kind="function" virtualness="virtual">
-      <type>virtual void</type>
-      <name>reset_discrete_problem</name>
-      <anchorfile>classMY__PLIC__Advection.html</anchorfile>
-      <anchor>a6f3198991891704c442d56f8b8909f95</anchor>
-      <arglist>(FE_TimeIterator const *t_it)</arglist>
-    </member>
-    <member kind="function" protection="private">
-      <type></type>
-      <name>~MY_PLIC_Advection</name>
-      <anchorfile>classMY__PLIC__Advection.html</anchorfile>
-      <anchor>a5143c5b12065a5f6201900ea1a4acba2</anchor>
-      <arglist>(void)</arglist>
-    </member>
-    <member kind="function" protection="private">
-      <type></type>
-      <name>MY_PLIC_Advection</name>
-      <anchorfile>classMY__PLIC__Advection.html</anchorfile>
-      <anchor>a06369459448297ba30556bef9cf48d08</anchor>
-      <arglist>(MY_PLIC_Advection const &amp;other)</arglist>
-    </member>
-    <member kind="function" protection="private">
-      <type>MY_PLIC_Advection &amp;</type>
-      <name>operator=</name>
-      <anchorfile>classMY__PLIC__Advection.html</anchorfile>
-      <anchor>ae24b69c053c89259ff51a6b39b9febdc</anchor>
-      <arglist>(MY_PLIC_Advection const &amp;other)</arglist>
-    </member>
-    <member kind="function" protection="private">
-      <type></type>
-      <name>MY_PLIC_Advection</name>
-      <anchorfile>classMY__PLIC__Advection.html</anchorfile>
-      <anchor>abb5bce47b0f74880edfa6b2fd81a883f</anchor>
-      <arglist>(PEL_Object *a_owner, PDE_DomainAndFields const *dom, FE_SetOfParameters const *prms, PEL_ModuleExplorer const *exp)</arglist>
-    </member>
-    <member kind="function" protection="private">
-      <type></type>
-      <name>MY_PLIC_Advection</name>
-      <anchorfile>classMY__PLIC__Advection.html</anchorfile>
-      <anchor>ace3d0151a393ff107869d156f8fa9ed8</anchor>
-      <arglist>(void)</arglist>
-    </member>
-    <member kind="function" protection="private" virtualness="virtual">
-      <type>virtual MY_PLIC_Advection *</type>
-      <name>create_replica</name>
-      <anchorfile>classMY__PLIC__Advection.html</anchorfile>
-      <anchor>a2a3680f2e0e80d14df6ae9fddda8a43a</anchor>
-      <arglist>(PEL_Object *a_owner, PDE_DomainAndFields const *dom, FE_SetOfParameters const *prms, PEL_ModuleExplorer *exp) const </arglist>
-    </member>
-    <member kind="function" protection="private">
-      <type>void</type>
-      <name>loop_on_cellsX</name>
-      <anchorfile>classMY__PLIC__Advection.html</anchorfile>
-      <anchor>a8ea543098c08d872cbd64418e3a97ae9</anchor>
-      <arglist>(FE_TimeIterator const *t_it)</arglist>
-    </member>
-    <member kind="function" protection="private">
-      <type>void</type>
-      <name>loop_on_cellsXX</name>
-      <anchorfile>classMY__PLIC__Advection.html</anchorfile>
-      <anchor>abdc44fab6858c016531316faa9b44d1e</anchor>
-      <arglist>(FE_TimeIterator const *t_it)</arglist>
-    </member>
-    <member kind="function" protection="private">
-      <type>void</type>
-      <name>loop_on_cellsZZ</name>
-      <anchorfile>classMY__PLIC__Advection.html</anchorfile>
-      <anchor>aa07556d71ebf4b137c248344c3fc917c</anchor>
-      <arglist>(FE_TimeIterator const *t_it)</arglist>
-    </member>
-    <member kind="function" protection="private">
-      <type>void</type>
-      <name>loop_on_sidesX</name>
-      <anchorfile>classMY__PLIC__Advection.html</anchorfile>
-      <anchor>abb3b37109eb4d5b631c3cf87030388b1</anchor>
-      <arglist>(FE_TimeIterator const *t_it)</arglist>
-    </member>
-    <member kind="function" protection="private">
-      <type>void</type>
-      <name>loop_on_sidesY</name>
-      <anchorfile>classMY__PLIC__Advection.html</anchorfile>
-      <anchor>af80c5dbe07ba2db0e35d17fe770ef50f</anchor>
-      <arglist>(FE_TimeIterator const *t_it)</arglist>
-    </member>
-    <member kind="function" protection="private">
-      <type>void</type>
-      <name>update_fields</name>
-      <anchorfile>classMY__PLIC__Advection.html</anchorfile>
-      <anchor>a217ec00ddf45b6a3d79d03ba3b575605</anchor>
-      <arglist>(void)</arglist>
-    </member>
-    <member kind="function" protection="private">
-      <type>double</type>
-      <name>Heaviside</name>
-      <anchorfile>classMY__PLIC__Advection.html</anchorfile>
-      <anchor>ac3c123cdf10cab2d0ac8c31511205e6f</anchor>
-      <arglist>(double x)</arglist>
-    </member>
-    <member kind="function" protection="private">
-      <type>double</type>
-      <name>C2Alpha</name>
-      <anchorfile>classMY__PLIC__Advection.html</anchorfile>
-      <anchor>a11c3cf72ec88b513aa1056d92a50ee62</anchor>
-      <arglist>(double mx, double my, double dx, double dy, double C)</arglist>
-    </member>
-    <member kind="function" protection="private">
-      <type>double</type>
-      <name>Alpha2C</name>
-      <anchorfile>classMY__PLIC__Advection.html</anchorfile>
-      <anchor>a519bb54f624c82413778f9f6b309a228</anchor>
-      <arglist>(double mx, double my, double dx, double dy, double alpha)</arglist>
-    </member>
-    <member kind="function" protection="private">
-      <type>double</type>
-      <name>DeltaC</name>
-      <anchorfile>classMY__PLIC__Advection.html</anchorfile>
-      <anchor>a97ef5241c98bc2ad788bdb1ed41c26ed</anchor>
-      <arglist>(double mx, double my, double dx, double dy, double C, double u0, double u1, double dt)</arglist>
-    </member>
-    <member kind="function" protection="private">
-      <type>double</type>
-      <name>vol2</name>
-      <anchorfile>classMY__PLIC__Advection.html</anchorfile>
-      <anchor>a7b00c4912048295092749eaaf589caa9</anchor>
-      <arglist>(double mx, double mz, double alfa, double b)</arglist>
-    </member>
-    <member kind="function" protection="private">
-      <type>void</type>
-      <name>print_mesh</name>
-      <anchorfile>classMY__PLIC__Advection.html</anchorfile>
-      <anchor>a1a5b4ea962a86107379acf08291a1b17</anchor>
-      <arglist>(FE_TimeIterator const *t_it)</arglist>
-    </member>
-  </compound>
-  <compound kind="class">
     <name>MY_UpwindScheme</name>
     <filename>classMY__UpwindScheme.html</filename>
     <base>MY_AdvectiveScheme</base>
@@ -12170,18 +13117,21 @@
     <name>PEL_MATLABio</name>
     <filename>classPEL__MATLABio.html</filename>
     <member kind="enumeration">
+      <type></type>
       <name>MATLAB_FORMAT</name>
       <anchorfile>classPEL__MATLABio.html</anchorfile>
       <anchor>a6a70607910bba05f933af3667de254a1</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
+      <type>@</type>
       <name>Unspecified</name>
       <anchorfile>classPEL__MATLABio.html</anchorfile>
       <anchor>a6a70607910bba05f933af3667de254a1a42dcb3104b0999bb5e6065dbe56dc48c</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
+      <type>@</type>
       <name>Text</name>
       <anchorfile>classPEL__MATLABio.html</anchorfile>
       <anchor>a6a70607910bba05f933af3667de254a1a65bef8050d9f862bd0c5af415e64824d</anchor>
@@ -12605,19 +13555,22 @@
       <anchor>af6b6976ba54ce47bef3cc9d7fb4ff2b4</anchor>
       <arglist>(PEL_Context const *ct=0) const </arglist>
     </member>
-    <member kind="enumeration">
+    <member kind="enumeration" protection="private">
+      <type></type>
       <name>Func</name>
       <anchorfile>classRS__Asymmetry.html</anchorfile>
       <anchor>aeab8fb6bfe81f6db64fbe9bff2e9cd10</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>U</name>
       <anchorfile>classRS__Asymmetry.html</anchorfile>
       <anchor>aeab8fb6bfe81f6db64fbe9bff2e9cd10ad167a3ffc6797b508e18dd7527f644e6</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>CC</name>
       <anchorfile>classRS__Asymmetry.html</anchorfile>
       <anchor>aeab8fb6bfe81f6db64fbe9bff2e9cd10a2c0c838d73b4758974f7db72aa7c2d88</anchor>
@@ -12746,37 +13699,43 @@
       <anchor>a6d4dc2a3d73e65cf428c1d54166e89b2</anchor>
       <arglist>(PEL_Context const *ct=0) const </arglist>
     </member>
-    <member kind="enumeration">
+    <member kind="enumeration" protection="private">
+      <type></type>
       <name>Func</name>
       <anchorfile>classRS__Bingham.html</anchorfile>
       <anchor>a1783af9f2ebc483a6c57f93a549e5d67</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>ONE</name>
       <anchorfile>classRS__Bingham.html</anchorfile>
       <anchor>a1783af9f2ebc483a6c57f93a549e5d67a6f8d6fc31a7707e57604704fa6092f7b</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>TWO</name>
       <anchorfile>classRS__Bingham.html</anchorfile>
       <anchor>a1783af9f2ebc483a6c57f93a549e5d67afa851b00d8f45560c243693493a2b138</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>THREE</name>
       <anchorfile>classRS__Bingham.html</anchorfile>
       <anchor>a1783af9f2ebc483a6c57f93a549e5d67a0305cf260ed61dc7a569a1cb6f539cb2</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>FOUR</name>
       <anchorfile>classRS__Bingham.html</anchorfile>
       <anchor>a1783af9f2ebc483a6c57f93a549e5d67a21999a0f5d91421e7b5aeb433f082494</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>Five</name>
       <anchorfile>classRS__Bingham.html</anchorfile>
       <anchor>a1783af9f2ebc483a6c57f93a549e5d67a88c75a7947e80b26cb1991acca43e1c0</anchor>
@@ -12905,19 +13864,22 @@
       <anchor>a8af55bfb8376420ea816e1315d184639</anchor>
       <arglist>(PEL_Context const *ct=0) const </arglist>
     </member>
-    <member kind="enumeration">
+    <member kind="enumeration" protection="private">
+      <type></type>
       <name>Func</name>
       <anchorfile>classRS__LogC.html</anchorfile>
       <anchor>af77d1159cda5ab475c39b1f75856a429</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>Chan</name>
       <anchorfile>classRS__LogC.html</anchorfile>
       <anchor>af77d1159cda5ab475c39b1f75856a429a1459cea36b30e1a27871bfcd453975a3</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>Pipe</name>
       <anchorfile>classRS__LogC.html</anchorfile>
       <anchor>af77d1159cda5ab475c39b1f75856a429ab53feea50a8e3e6d7054624c624b6379</anchor>
@@ -13032,19 +13994,22 @@
       <anchor>ae750a683ade43d8b94c39ab5219f07cd</anchor>
       <arglist>(PEL_Context const *ct=0) const </arglist>
     </member>
-    <member kind="enumeration">
+    <member kind="enumeration" protection="private">
+      <type></type>
       <name>Func</name>
       <anchorfile>classRS__Move__BC.html</anchorfile>
       <anchor>ae5d1caf4c34d5bb042f3263dbc40e09b</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>U</name>
       <anchorfile>classRS__Move__BC.html</anchorfile>
       <anchor>ae5d1caf4c34d5bb042f3263dbc40e09bacc1e3fa21e22ad4212d6ead0c4d41030</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>CC</name>
       <anchorfile>classRS__Move__BC.html</anchorfile>
       <anchor>ae5d1caf4c34d5bb042f3263dbc40e09bac248b4e20175b0623bd5b234a340db2f</anchor>
@@ -13173,19 +14138,22 @@
       <anchor>a6c8d01ecdd740f800a0cb7d5b996941d</anchor>
       <arglist>(PEL_Context const *ct=0) const </arglist>
     </member>
-    <member kind="enumeration">
+    <member kind="enumeration" protection="private">
+      <type></type>
       <name>Func</name>
       <anchorfile>classRS__Multi__Layer.html</anchorfile>
       <anchor>a252e09b0de6f9d8491bf000ff1cc7c02</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>U</name>
       <anchorfile>classRS__Multi__Layer.html</anchorfile>
       <anchor>a252e09b0de6f9d8491bf000ff1cc7c02a1a39e7ad8c21171d49c31b4321a5c6bc</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>CC</name>
       <anchorfile>classRS__Multi__Layer.html</anchorfile>
       <anchor>a252e09b0de6f9d8491bf000ff1cc7c02a63645449c757f68db42e21f1c221d582</anchor>
@@ -13321,43 +14289,50 @@
       <anchor>aca2a4431dd7e3edb5c2b425ad10220a0</anchor>
       <arglist>(PEL_Context const *ct=0) const </arglist>
     </member>
-    <member kind="enumeration">
+    <member kind="enumeration" protection="private">
+      <type></type>
       <name>Func</name>
       <anchorfile>classRS__Perturbation.html</anchorfile>
       <anchor>a40721d24093274e5f436fdefdc0b4d39</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>U</name>
       <anchorfile>classRS__Perturbation.html</anchorfile>
       <anchor>a40721d24093274e5f436fdefdc0b4d39a11aed7feb49bd3340db4fc88eba2d561</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>P</name>
       <anchorfile>classRS__Perturbation.html</anchorfile>
       <anchor>a40721d24093274e5f436fdefdc0b4d39a91adff57b65eb33bb1042e96fa9f5373</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>RHO</name>
       <anchorfile>classRS__Perturbation.html</anchorfile>
       <anchor>a40721d24093274e5f436fdefdc0b4d39a3361cbdf4792c879cc08ef681b707c18</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>UD</name>
       <anchorfile>classRS__Perturbation.html</anchorfile>
       <anchor>a40721d24093274e5f436fdefdc0b4d39a49dce5402cfe1c043bebd9d00690c27b</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>CC</name>
       <anchorfile>classRS__Perturbation.html</anchorfile>
       <anchor>a40721d24093274e5f436fdefdc0b4d39a2712ab6bb2370ee09e242375804c8f3b</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>Uave</name>
       <anchorfile>classRS__Perturbation.html</anchorfile>
       <anchor>a40721d24093274e5f436fdefdc0b4d39ad5279bf818a40f6d056f23cc6d86411d</anchor>
@@ -13521,19 +14496,22 @@
       <anchor>a618ba81c062bb8a552c0feafa9191b10</anchor>
       <arglist>(PEL_Context const *ct=0) const </arglist>
     </member>
-    <member kind="enumeration">
+    <member kind="enumeration" protection="private">
+      <type></type>
       <name>Func</name>
       <anchorfile>classRS__PotentialField.html</anchorfile>
       <anchor>aeb127c4465781ab2a2889405742ddc12</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>ONE</name>
       <anchorfile>classRS__PotentialField.html</anchorfile>
       <anchor>aeb127c4465781ab2a2889405742ddc12a9999949a3e9de305a2f50999b1003e60</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>TWO</name>
       <anchorfile>classRS__PotentialField.html</anchorfile>
       <anchor>aeb127c4465781ab2a2889405742ddc12a27c7d370817b07c1512cdaf56d98139e</anchor>
@@ -13641,31 +14619,36 @@
       <anchor>a57a24eac161a7c84f1ff0d4318a40238</anchor>
       <arglist>(PEL_Context const *ct=0) const </arglist>
     </member>
-    <member kind="enumeration">
+    <member kind="enumeration" protection="private">
+      <type></type>
       <name>Func</name>
       <anchorfile>classRS__Pulse.html</anchorfile>
       <anchor>a47f5ac3c982aa5430e147eb725fb1dad</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>ONE</name>
       <anchorfile>classRS__Pulse.html</anchorfile>
       <anchor>a47f5ac3c982aa5430e147eb725fb1dada501f5acd2d9f06506c3f49eba4a2cd2a</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>TWO</name>
       <anchorfile>classRS__Pulse.html</anchorfile>
       <anchor>a47f5ac3c982aa5430e147eb725fb1dadac51c9a2b1a6e024365974374c1cb7547</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>THREE</name>
       <anchorfile>classRS__Pulse.html</anchorfile>
       <anchor>a47f5ac3c982aa5430e147eb725fb1dadad46dca6f3e3e223b448a5b11ed9e4451</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>FOUR</name>
       <anchorfile>classRS__Pulse.html</anchorfile>
       <anchor>a47f5ac3c982aa5430e147eb725fb1dada2f923edd7ae7f544f6d9ce3ed81b8651</anchor>
@@ -13787,31 +14770,36 @@
       <anchor>afd6b5c4fccbe73b62e2ecd8f496efa2e</anchor>
       <arglist>(PEL_Context const *ct=0) const </arglist>
     </member>
-    <member kind="enumeration">
+    <member kind="enumeration" protection="private">
+      <type></type>
       <name>Func</name>
       <anchorfile>classRS__TimeDependent.html</anchorfile>
       <anchor>a1f58d77a49f79ec1ca55551d087f1825</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>ONE</name>
       <anchorfile>classRS__TimeDependent.html</anchorfile>
       <anchor>a1f58d77a49f79ec1ca55551d087f1825aeea5a543f3a2e7e96591db8d1d28855d</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>TWO</name>
       <anchorfile>classRS__TimeDependent.html</anchorfile>
       <anchor>a1f58d77a49f79ec1ca55551d087f1825a9d372bdd78e138b9505691b7e47d356a</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>THREE</name>
       <anchorfile>classRS__TimeDependent.html</anchorfile>
       <anchor>a1f58d77a49f79ec1ca55551d087f1825a16b11fb1d2888ad01a9041ec1a38bfd2</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>FOUR</name>
       <anchorfile>classRS__TimeDependent.html</anchorfile>
       <anchor>a1f58d77a49f79ec1ca55551d087f1825a808029b998ca886bcb2c5c4d6338f81a</anchor>
@@ -13933,19 +14921,22 @@
       <anchor>ab5ccbbf51109b035a6a78297d12039c5</anchor>
       <arglist>(PEL_Context const *ct=0) const </arglist>
     </member>
-    <member kind="enumeration">
+    <member kind="enumeration" protection="private">
+      <type></type>
       <name>Func</name>
       <anchorfile>classRS__Writing.html</anchorfile>
       <anchor>a64850e81a13c67423af8a0349e5ca653</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>U</name>
       <anchorfile>classRS__Writing.html</anchorfile>
       <anchor>a64850e81a13c67423af8a0349e5ca653a07953f778dc5a28bff4afd0b3f89f8b3</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>CC</name>
       <anchorfile>classRS__Writing.html</anchorfile>
       <anchor>a64850e81a13c67423af8a0349e5ca653a721172f7dbc9132e32e067884e189cc2</anchor>
@@ -14074,19 +15065,22 @@
       <anchor>a8614108c282f98e16b09f19641c11e1c</anchor>
       <arglist>(PEL_Context const *ct=0) const </arglist>
     </member>
-    <member kind="enumeration">
+    <member kind="enumeration" protection="private">
+      <type></type>
       <name>Func</name>
       <anchorfile>classRS__Writing__A.html</anchorfile>
       <anchor>a56b8a83af989a76083e368f37c65a71a</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>U</name>
       <anchorfile>classRS__Writing__A.html</anchorfile>
       <anchor>a56b8a83af989a76083e368f37c65a71aa0f7d4ab707bd30b5244d271738eb7e45</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>CC</name>
       <anchorfile>classRS__Writing__A.html</anchorfile>
       <anchor>a56b8a83af989a76083e368f37c65a71aae6b0b6494dd51f4b19592b45f5eadccc</anchor>
@@ -14215,19 +15209,22 @@
       <anchor>adeed6412902ca2f889f6efa21ae9e695</anchor>
       <arglist>(PEL_Context const *ct=0) const </arglist>
     </member>
-    <member kind="enumeration">
+    <member kind="enumeration" protection="private">
+      <type></type>
       <name>Func</name>
       <anchorfile>classRS__Writing__C.html</anchorfile>
       <anchor>ab519bfae058626335c80205cd4745b68</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>U</name>
       <anchorfile>classRS__Writing__C.html</anchorfile>
       <anchor>ab519bfae058626335c80205cd4745b68af2c3074bc522e4062c2c5f6a24a41fc2</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>CC</name>
       <anchorfile>classRS__Writing__C.html</anchorfile>
       <anchor>ab519bfae058626335c80205cd4745b68a9cc1f5efe2f2f19dc03942c6bbcb07a4</anchor>
@@ -14356,19 +15353,22 @@
       <anchor>a5a2c50fade804f4ba8329da45416df5a</anchor>
       <arglist>(PEL_Context const *ct=0) const </arglist>
     </member>
-    <member kind="enumeration">
+    <member kind="enumeration" protection="private">
+      <type></type>
       <name>Func</name>
       <anchorfile>classRS__Writing__E.html</anchorfile>
       <anchor>aea9751babfdbfd9e02b3a01675280a33</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>U</name>
       <anchorfile>classRS__Writing__E.html</anchorfile>
       <anchor>aea9751babfdbfd9e02b3a01675280a33a403853651da46d48af001e34c2036b73</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>CC</name>
       <anchorfile>classRS__Writing__E.html</anchorfile>
       <anchor>aea9751babfdbfd9e02b3a01675280a33afb9a4c92c7268fa41e4dcc340c0154a2</anchor>
@@ -14497,19 +15497,22 @@
       <anchor>a00c7b373267cee2cd66dc018ce5491aa</anchor>
       <arglist>(PEL_Context const *ct=0) const </arglist>
     </member>
-    <member kind="enumeration">
+    <member kind="enumeration" protection="private">
+      <type></type>
       <name>Func</name>
       <anchorfile>classRS__Writing__N.html</anchorfile>
       <anchor>a84414433980c9f810d9a9bbeb8a86b44</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>U</name>
       <anchorfile>classRS__Writing__N.html</anchorfile>
       <anchor>a84414433980c9f810d9a9bbeb8a86b44a68029b05322e73f19e8f611e808bf9f6</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>CC</name>
       <anchorfile>classRS__Writing__N.html</anchorfile>
       <anchor>a84414433980c9f810d9a9bbeb8a86b44a53f9f74b786c0a6b87ecf34247247ec9</anchor>
@@ -14638,19 +15641,22 @@
       <anchor>a354cfb5325b1221b88724726c3afcb67</anchor>
       <arglist>(PEL_Context const *ct=0) const </arglist>
     </member>
-    <member kind="enumeration">
+    <member kind="enumeration" protection="private">
+      <type></type>
       <name>Func</name>
       <anchorfile>classRS__Writing__O.html</anchorfile>
       <anchor>a8174b7685c1f1233c5d6064e04087cea</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>U</name>
       <anchorfile>classRS__Writing__O.html</anchorfile>
       <anchor>a8174b7685c1f1233c5d6064e04087ceaa23bf97616ee7a6cc7d1a2ea405018f33</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>CC</name>
       <anchorfile>classRS__Writing__O.html</anchorfile>
       <anchor>a8174b7685c1f1233c5d6064e04087ceaac3e99b123e193fcd858703d2caee3b1a</anchor>
@@ -14779,19 +15785,22 @@
       <anchor>a145d0e65a4bd51b3f36fd0f4b9353648</anchor>
       <arglist>(PEL_Context const *ct=0) const </arglist>
     </member>
-    <member kind="enumeration">
+    <member kind="enumeration" protection="private">
+      <type></type>
       <name>Func</name>
       <anchorfile>classRS__Writing__R.html</anchorfile>
       <anchor>ade838b622a2da3c6cca9e7f3e45bcec0</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>U</name>
       <anchorfile>classRS__Writing__R.html</anchorfile>
       <anchor>ade838b622a2da3c6cca9e7f3e45bcec0aa6eefcafc0704d72b4cbc012334225c2</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>CC</name>
       <anchorfile>classRS__Writing__R.html</anchorfile>
       <anchor>ade838b622a2da3c6cca9e7f3e45bcec0aacafdb5ba945053b36280a970618a773</anchor>
@@ -14920,19 +15929,22 @@
       <anchor>a775eb2bd4ef0626c7a312b4d3ca178ab</anchor>
       <arglist>(PEL_Context const *ct=0) const </arglist>
     </member>
-    <member kind="enumeration">
+    <member kind="enumeration" protection="private">
+      <type></type>
       <name>Func</name>
       <anchorfile>classRS__Writing__S2.html</anchorfile>
       <anchor>a5a8657393d74edcb31b937c10af33abd</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>U</name>
       <anchorfile>classRS__Writing__S2.html</anchorfile>
       <anchor>a5a8657393d74edcb31b937c10af33abda5713e55fde74e1d2055ff998a9e3504c</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>CC</name>
       <anchorfile>classRS__Writing__S2.html</anchorfile>
       <anchor>a5a8657393d74edcb31b937c10af33abdac8d3282f94bb3f6626f8aeb3c649af81</anchor>
@@ -15061,19 +16073,22 @@
       <anchor>abe94ce902b80883906f5b6b95dc088b9</anchor>
       <arglist>(PEL_Context const *ct=0) const </arglist>
     </member>
-    <member kind="enumeration">
+    <member kind="enumeration" protection="private">
+      <type></type>
       <name>Func</name>
       <anchorfile>classRS__Writing__U.html</anchorfile>
       <anchor>a2353cb6c37755ea08c27a62f0225b15e</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>U</name>
       <anchorfile>classRS__Writing__U.html</anchorfile>
       <anchor>a2353cb6c37755ea08c27a62f0225b15eaed9e1b839e2d892b4baaa4d16abc73f2</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>CC</name>
       <anchorfile>classRS__Writing__U.html</anchorfile>
       <anchor>a2353cb6c37755ea08c27a62f0225b15ea96d313a82702e6ed7bc5c6af4a1e04f3</anchor>
@@ -15202,19 +16217,22 @@
       <anchor>a6af99969a60d4206fcfb21cc4448e83e</anchor>
       <arglist>(PEL_Context const *ct=0) const </arglist>
     </member>
-    <member kind="enumeration">
+    <member kind="enumeration" protection="private">
+      <type></type>
       <name>Func</name>
       <anchorfile>classRS__Writing__V.html</anchorfile>
       <anchor>aca6643a72f081c8f18811f4c649caa04</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>U</name>
       <anchorfile>classRS__Writing__V.html</anchorfile>
       <anchor>aca6643a72f081c8f18811f4c649caa04a042bda08171250815bb6ccc746688362</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumvalue">
+    <member kind="enumvalue" protection="private">
+      <type>@</type>
       <name>CC</name>
       <anchorfile>classRS__Writing__V.html</anchorfile>
       <anchor>aca6643a72f081c8f18811f4c649caa04a661d784d55e69436319027353c561eca</anchor>
@@ -15440,22 +16458,22 @@
     </member>
   </compound>
   <compound kind="dir">
-    <name>/home/leo/pelican/Pel3.1_FluidSolver/FrameFE/</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/FrameFE/</path>
-    <filename>dir_8386bf0c8fef527ddce6a981b5df24bb.html</filename>
-    <dir>/home/leo/pelican/Pel3.1_FluidSolver/FrameFE/include/</dir>
-    <dir>/home/leo/pelican/Pel3.1_FluidSolver/FrameFE/src/</dir>
+    <name>FrameFE</name>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/FrameFE/</path>
+    <filename>dir_c32197f87d8f2b2eac95b3c722246b58.html</filename>
+    <dir>include</dir>
+    <dir>src</dir>
   </compound>
   <compound kind="dir">
-    <name>/home/</name>
+    <name>home</name>
     <path>/home/</path>
     <filename>dir_75b82e7e4a5feb05200b9ad7adf06257.html</filename>
-    <dir>/home/leo/</dir>
+    <dir>yliu0218</dir>
   </compound>
   <compound kind="dir">
-    <name>/home/leo/pelican/Pel3.1_FluidSolver/RefSol/include/</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/RefSol/include/</path>
-    <filename>dir_7c8349ebb5383bbab3fc60b9dd276287.html</filename>
+    <name>include</name>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/RefSol/include/</path>
+    <filename>dir_bd1fbce39a38836f28b864eb99b862a4.html</filename>
     <file>RS_Asymmetry.hh</file>
     <file>RS_Bingham.hh</file>
     <file>RS_LogC.hh</file>
@@ -15477,16 +16495,16 @@
     <file>RS_Writing_V.hh</file>
   </compound>
   <compound kind="dir">
-    <name>/home/leo/pelican/Pel3.1_FluidSolver/PELbase/include/</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/PELbase/include/</path>
-    <filename>dir_77a300ee27a9d1edd8601174dab2668c.html</filename>
+    <name>include</name>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/PELbase/include/</path>
+    <filename>dir_378dec218be61cecdb99192249ce427a.html</filename>
     <file>PEL_MATLABio.hh</file>
     <file>PEL_MATLABwriter.hh</file>
   </compound>
   <compound kind="dir">
-    <name>/home/leo/pelican/Pel3.1_FluidSolver/PDEsolver/include/</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/PDEsolver/include/</path>
-    <filename>dir_fcdb499426d93545e1d9505cdfd1f671.html</filename>
+    <name>include</name>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/PDEsolver/include/</path>
+    <filename>dir_0a92b745d352c840191a454051923b55.html</filename>
     <file>PDE_2D_P0isoP2_4nodes.hh</file>
     <file>PDE_2D_P1DC_3nodes.hh</file>
     <file>PDE_2D_Q0isoQ1_4nodes.hh</file>
@@ -15495,9 +16513,32 @@
     <file>PDE_2D_Q1DC_4nodes.hh</file>
   </compound>
   <compound kind="dir">
-    <name>/home/leo/pelican/Pel3.1_FluidSolver/NavierStokes/include/</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/NavierStokes/include/</path>
-    <filename>dir_7c946dfadce9f9b0078aa055a6cbf227.html</filename>
+    <name>include</name>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/FrameFE/include/</path>
+    <filename>dir_e8d9556a78cfc4eb0ef4219326bf3865.html</filename>
+    <file>FE_2PhaseConvexParameter.hh</file>
+    <file>FE_2PhaseViscHBParameter.hh</file>
+    <file>FE_ConvexParameter.hh</file>
+    <file>FE_DivergenceParameter.hh</file>
+    <file>FE_DuDuFieldParameter.hh</file>
+    <file>FE_ExponentialParameter.hh</file>
+    <file>FE_HarmonicParameter.hh</file>
+    <file>FE_InverseParameter.hh</file>
+    <file>FE_LocalTimeIteratorAdapter.hh</file>
+    <file>FE_PrintVariables.hh</file>
+    <file>FE_StepParameter.hh</file>
+    <file>FE_TensorFormAssembling.hh</file>
+    <file>FE_ViscosityHBParameter.hh</file>
+    <file>FE_ViscosityHBParameterNew.hh</file>
+  </compound>
+  <compound kind="dir">
+    <name>include</name>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/NavierStokes/include/</path>
+    <filename>dir_368809eb8508da3ff5a4d8ce653acb94.html</filename>
+    <file>AS_NavierStokes.hh</file>
+    <file>AS_Viscoplastic.hh</file>
+    <file>Leo_NavierStokes.hh</file>
+    <file>Leo_Viscoplastic.hh</file>
     <file>MI_ElasticStress.hh</file>
     <file>MI_NavierStokes.hh</file>
     <file>MI_NavierStokesSystem.hh</file>
@@ -15509,74 +16550,50 @@
     <file>UT_Viscoplastic.hh</file>
   </compound>
   <compound kind="dir">
-    <name>/home/leo/pelican/Pel3.1_FluidSolver/FrameFE/include/</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/FrameFE/include/</path>
-    <filename>dir_eccf10042ef9cdfe629a06541e2a80e0.html</filename>
-    <file>FE_2PhaseConvexParameter.hh</file>
-    <file>FE_2PhaseViscHBParameter.hh</file>
-    <file>FE_ConvexParameter.hh</file>
-    <file>FE_DivergenceParameter.hh</file>
-    <file>FE_DuDuFieldParameter.hh</file>
-    <file>FE_ExponentialParameter.hh</file>
-    <file>FE_HarmonicParameter.hh</file>
-    <file>FE_InverseParameter.hh</file>
-    <file>FE_LocalTimeIteratorAdapter.hh</file>
-    <file>FE_PrintVariables.hh</file>
-    <file>FE_TensorFormAssembling.hh</file>
-    <file>FE_ViscosityHBParameter.hh</file>
-    <file>FE_ViscosityHBParameterNew.hh</file>
-  </compound>
-  <compound kind="dir">
-    <name>/home/leo/pelican/Pel3.1_FluidSolver/SecondOrderAdvectionDiffusion/include/</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/SecondOrderAdvectionDiffusion/include/</path>
-    <filename>dir_5fb3b5cbb213066023a1cd1dae6736ea.html</filename>
+    <name>include</name>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/SecondOrderAdvectionDiffusion/include/</path>
+    <filename>dir_d9e56964a768c342268467bb2380a08c.html</filename>
     <file>AP_AdvectionDiffusion1G.hh</file>
-    <file>DB_PLIC_Advection.hh</file>
     <file>DC_PLIC_Advection.hh</file>
     <file>DD_PLIC_Advection.hh</file>
-    <file>LEO_PLIC_Advection.hh</file>
+    <file>DF_PLIC_Advection.hh</file>
     <file>MY_AdvectionDiffusion.hh</file>
     <file>MY_AdvectiveScheme.hh</file>
     <file>MY_MUSCL_DataStructure.hh</file>
     <file>MY_MUSCL_Scheme.hh</file>
-    <file>MY_PLIC_Advection.hh</file>
     <file>MY_UpwindScheme.hh</file>
   </compound>
   <compound kind="dir">
-    <name>/home/leo/</name>
-    <path>/home/leo/</path>
-    <filename>dir_841d19c35af552c7de2e3ff074985786.html</filename>
-    <dir>/home/leo/pelican/</dir>
+    <name>lib</name>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/</path>
+    <filename>dir_d8ecfd3df6c58d93bee9db0c15b5731c.html</filename>
+    <dir>Linux-gcc</dir>
   </compound>
   <compound kind="dir">
-    <name>/home/leo/pelican/Pel3.1_FluidSolver/lib/</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/</path>
-    <filename>dir_0ed067c2f3162dd29ccaff8f3822daf7.html</filename>
-    <dir>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/</dir>
+    <name>Linux-gcc</name>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/</path>
+    <filename>dir_c51b83f4166ee349dc14f1b5ba337d69.html</filename>
+    <dir>opt0</dir>
+    <dir>opt2</dir>
+    <dir>optg</dir>
   </compound>
   <compound kind="dir">
-    <name>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/</path>
-    <filename>dir_c9444e90907238ab0972dd76b00a60ed.html</filename>
-    <dir>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</dir>
-    <dir>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</dir>
-    <dir>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</dir>
+    <name>NavierStokes</name>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/NavierStokes/</path>
+    <filename>dir_7c32e864e1c14d639783734320ff9208.html</filename>
+    <dir>include</dir>
+    <dir>src</dir>
   </compound>
   <compound kind="dir">
-    <name>/home/leo/pelican/Pel3.1_FluidSolver/NavierStokes/</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/NavierStokes/</path>
-    <filename>dir_c225a6c8a50c070564ed96d10f529ea9.html</filename>
-    <dir>/home/leo/pelican/Pel3.1_FluidSolver/NavierStokes/include/</dir>
-    <dir>/home/leo/pelican/Pel3.1_FluidSolver/NavierStokes/src/</dir>
-  </compound>
-  <compound kind="dir">
-    <name>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
-    <filename>dir_0ca2a57467d8e00048eb8c2518bce70d.html</filename>
+    <name>opt0</name>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt0/</path>
+    <filename>dir_a3cff3e9c417e3f6bf7288b97f92a737.html</filename>
     <file>opt0/AP_AdvectionDiffusion1G.d</file>
-    <file>opt0/DB_PLIC_Advection.d</file>
+    <file>opt0/AS_NavierStokes.d</file>
+    <file>opt0/AS_Viscoplastic.d</file>
     <file>opt0/DC_PLIC_Advection.d</file>
     <file>opt0/DD_PLIC_Advection.d</file>
+    <file>opt0/DF_PLIC_Advection.d</file>
     <file>opt0/FE_2PhaseConvexParameter.d</file>
     <file>opt0/FE_2PhaseViscHBParameter.d</file>
     <file>opt0/FE_ConvexParameter.d</file>
@@ -15587,10 +16604,12 @@
     <file>opt0/FE_InverseParameter.d</file>
     <file>opt0/FE_LocalTimeIteratorAdapter.d</file>
     <file>opt0/FE_PrintVariables.d</file>
+    <file>opt0/FE_StepParameter.d</file>
     <file>opt0/FE_TensorFormAssembling.d</file>
     <file>opt0/FE_ViscosityHBParameter.d</file>
     <file>opt0/FE_ViscosityHBParameterNew.d</file>
-    <file>opt0/LEO_PLIC_Advection.d</file>
+    <file>opt0/Leo_NavierStokes.d</file>
+    <file>opt0/Leo_Viscoplastic.d</file>
     <file>opt0/MI_ElasticStress.d</file>
     <file>opt0/MI_NavierStokes.d</file>
     <file>opt0/MI_NavierStokesSystem.d</file>
@@ -15602,7 +16621,6 @@
     <file>opt0/MY_AdvectiveScheme.d</file>
     <file>opt0/MY_MUSCL_DataStructure.d</file>
     <file>opt0/MY_MUSCL_Scheme.d</file>
-    <file>opt0/MY_PLIC_Advection.d</file>
     <file>opt0/MY_UpwindScheme.d</file>
     <file>opt0/PDE_2D_P0isoP2_4nodes.d</file>
     <file>opt0/PDE_2D_P1DC_3nodes.d</file>
@@ -15635,13 +16653,15 @@
     <file>opt0/UT_Viscoplastic.d</file>
   </compound>
   <compound kind="dir">
-    <name>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
-    <filename>dir_b60ab1ba9eb697c96a8f4dea47b7f614.html</filename>
+    <name>opt2</name>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/opt2/</path>
+    <filename>dir_854144d79bb683ee1b58f63cff897001.html</filename>
     <file>opt2/AP_AdvectionDiffusion1G.d</file>
-    <file>opt2/DB_PLIC_Advection.d</file>
+    <file>opt2/AS_NavierStokes.d</file>
+    <file>opt2/AS_Viscoplastic.d</file>
     <file>opt2/DC_PLIC_Advection.d</file>
     <file>opt2/DD_PLIC_Advection.d</file>
+    <file>opt2/DF_PLIC_Advection.d</file>
     <file>opt2/FE_2PhaseConvexParameter.d</file>
     <file>opt2/FE_2PhaseViscHBParameter.d</file>
     <file>opt2/FE_ConvexParameter.d</file>
@@ -15652,10 +16672,12 @@
     <file>opt2/FE_InverseParameter.d</file>
     <file>opt2/FE_LocalTimeIteratorAdapter.d</file>
     <file>opt2/FE_PrintVariables.d</file>
+    <file>opt2/FE_StepParameter.d</file>
     <file>opt2/FE_TensorFormAssembling.d</file>
     <file>opt2/FE_ViscosityHBParameter.d</file>
     <file>opt2/FE_ViscosityHBParameterNew.d</file>
-    <file>opt2/LEO_PLIC_Advection.d</file>
+    <file>opt2/Leo_NavierStokes.d</file>
+    <file>opt2/Leo_Viscoplastic.d</file>
     <file>opt2/MI_ElasticStress.d</file>
     <file>opt2/MI_NavierStokes.d</file>
     <file>opt2/MI_NavierStokesSystem.d</file>
@@ -15667,7 +16689,6 @@
     <file>opt2/MY_AdvectiveScheme.d</file>
     <file>opt2/MY_MUSCL_DataStructure.d</file>
     <file>opt2/MY_MUSCL_Scheme.d</file>
-    <file>opt2/MY_PLIC_Advection.d</file>
     <file>opt2/MY_UpwindScheme.d</file>
     <file>opt2/PDE_2D_P0isoP2_4nodes.d</file>
     <file>opt2/PDE_2D_P1DC_3nodes.d</file>
@@ -15700,13 +16721,15 @@
     <file>opt2/UT_Viscoplastic.d</file>
   </compound>
   <compound kind="dir">
-    <name>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
-    <filename>dir_0131e9fc44c59cd03c57e704f4168fa1.html</filename>
+    <name>optg</name>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/lib/Linux-gcc/optg/</path>
+    <filename>dir_1b02cc4a7cbb600a30bbd482902be51f.html</filename>
     <file>optg/AP_AdvectionDiffusion1G.d</file>
-    <file>optg/DB_PLIC_Advection.d</file>
+    <file>optg/AS_NavierStokes.d</file>
+    <file>optg/AS_Viscoplastic.d</file>
     <file>optg/DC_PLIC_Advection.d</file>
     <file>optg/DD_PLIC_Advection.d</file>
+    <file>optg/DF_PLIC_Advection.d</file>
     <file>optg/FE_2PhaseConvexParameter.d</file>
     <file>optg/FE_2PhaseViscHBParameter.d</file>
     <file>optg/FE_ConvexParameter.d</file>
@@ -15717,10 +16740,12 @@
     <file>optg/FE_InverseParameter.d</file>
     <file>optg/FE_LocalTimeIteratorAdapter.d</file>
     <file>optg/FE_PrintVariables.d</file>
+    <file>optg/FE_StepParameter.d</file>
     <file>optg/FE_TensorFormAssembling.d</file>
     <file>optg/FE_ViscosityHBParameter.d</file>
     <file>optg/FE_ViscosityHBParameterNew.d</file>
-    <file>optg/LEO_PLIC_Advection.d</file>
+    <file>optg/Leo_NavierStokes.d</file>
+    <file>optg/Leo_Viscoplastic.d</file>
     <file>optg/MI_ElasticStress.d</file>
     <file>optg/MI_NavierStokes.d</file>
     <file>optg/MI_NavierStokesSystem.d</file>
@@ -15732,7 +16757,6 @@
     <file>optg/MY_AdvectiveScheme.d</file>
     <file>optg/MY_MUSCL_DataStructure.d</file>
     <file>optg/MY_MUSCL_Scheme.d</file>
-    <file>optg/MY_PLIC_Advection.d</file>
     <file>optg/MY_UpwindScheme.d</file>
     <file>optg/PDE_2D_P0isoP2_4nodes.d</file>
     <file>optg/PDE_2D_P1DC_3nodes.d</file>
@@ -15765,55 +16789,55 @@
     <file>optg/UT_Viscoplastic.d</file>
   </compound>
   <compound kind="dir">
-    <name>/home/leo/pelican/Pel3.1_FluidSolver/PDEsolver/</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/PDEsolver/</path>
-    <filename>dir_aa880ca8b0bdd6b7aa365c4a46413d19.html</filename>
-    <dir>/home/leo/pelican/Pel3.1_FluidSolver/PDEsolver/include/</dir>
-    <dir>/home/leo/pelican/Pel3.1_FluidSolver/PDEsolver/src/</dir>
+    <name>PDEsolver</name>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/PDEsolver/</path>
+    <filename>dir_a3943837e80eafc1ad8955f67b9fead6.html</filename>
+    <dir>include</dir>
+    <dir>src</dir>
   </compound>
   <compound kind="dir">
-    <name>/home/leo/pelican/Pel3.1_FluidSolver/</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/</path>
-    <filename>dir_186ea73c0c9df0b559cdb2b614adf7aa.html</filename>
-    <dir>/home/leo/pelican/Pel3.1_FluidSolver/FrameFE/</dir>
-    <dir>/home/leo/pelican/Pel3.1_FluidSolver/lib/</dir>
-    <dir>/home/leo/pelican/Pel3.1_FluidSolver/NavierStokes/</dir>
-    <dir>/home/leo/pelican/Pel3.1_FluidSolver/PDEsolver/</dir>
-    <dir>/home/leo/pelican/Pel3.1_FluidSolver/PELbase/</dir>
-    <dir>/home/leo/pelican/Pel3.1_FluidSolver/RefSol/</dir>
-    <dir>/home/leo/pelican/Pel3.1_FluidSolver/SecondOrderAdvectionDiffusion/</dir>
+    <name>Pel3.1_FluidSolver</name>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/</path>
+    <filename>dir_40756537e4268e5bd76782710169e3ac.html</filename>
+    <dir>FrameFE</dir>
+    <dir>lib</dir>
+    <dir>NavierStokes</dir>
+    <dir>PDEsolver</dir>
+    <dir>PELbase</dir>
+    <dir>RefSol</dir>
+    <dir>SecondOrderAdvectionDiffusion</dir>
   </compound>
   <compound kind="dir">
-    <name>/home/leo/pelican/Pel3.1_FluidSolver/PELbase/</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/PELbase/</path>
-    <filename>dir_65e9eddc0f08fc3c3855592c1e138278.html</filename>
-    <dir>/home/leo/pelican/Pel3.1_FluidSolver/PELbase/include/</dir>
-    <dir>/home/leo/pelican/Pel3.1_FluidSolver/PELbase/src/</dir>
+    <name>PELbase</name>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/PELbase/</path>
+    <filename>dir_f69d5a47e0c847ee3f15417c8076ef32.html</filename>
+    <dir>include</dir>
+    <dir>src</dir>
   </compound>
   <compound kind="dir">
-    <name>/home/leo/pelican/</name>
-    <path>/home/leo/pelican/</path>
-    <filename>dir_87cf499d56b400fa327491fbf88609fc.html</filename>
-    <dir>/home/leo/pelican/Pel3.1_FluidSolver/</dir>
+    <name>pelicans</name>
+    <path>/home/yliu0218/pelicans/</path>
+    <filename>dir_d917d81ad55d0d4f7daaeebdaf65357e.html</filename>
+    <dir>Pel3.1_FluidSolver</dir>
   </compound>
   <compound kind="dir">
-    <name>/home/leo/pelican/Pel3.1_FluidSolver/RefSol/</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/RefSol/</path>
-    <filename>dir_e167666dfb475dc58df7da1e1b03dd1e.html</filename>
-    <dir>/home/leo/pelican/Pel3.1_FluidSolver/RefSol/include/</dir>
-    <dir>/home/leo/pelican/Pel3.1_FluidSolver/RefSol/src/</dir>
+    <name>RefSol</name>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/RefSol/</path>
+    <filename>dir_a4618882bbbba528c41d31e86d10140d.html</filename>
+    <dir>include</dir>
+    <dir>src</dir>
   </compound>
   <compound kind="dir">
-    <name>/home/leo/pelican/Pel3.1_FluidSolver/SecondOrderAdvectionDiffusion/</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/SecondOrderAdvectionDiffusion/</path>
-    <filename>dir_45032c11784539abcb5e380f7f7fc497.html</filename>
-    <dir>/home/leo/pelican/Pel3.1_FluidSolver/SecondOrderAdvectionDiffusion/include/</dir>
-    <dir>/home/leo/pelican/Pel3.1_FluidSolver/SecondOrderAdvectionDiffusion/src/</dir>
+    <name>SecondOrderAdvectionDiffusion</name>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/SecondOrderAdvectionDiffusion/</path>
+    <filename>dir_107429bac950daddbc109dc0b6470e9c.html</filename>
+    <dir>include</dir>
+    <dir>src</dir>
   </compound>
   <compound kind="dir">
-    <name>/home/leo/pelican/Pel3.1_FluidSolver/RefSol/src/</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/RefSol/src/</path>
-    <filename>dir_2aab676f719b7b22e1f7332438133e4c.html</filename>
+    <name>src</name>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/RefSol/src/</path>
+    <filename>dir_2767eadf7df46cb3a8ce0c0945164fec.html</filename>
     <file>RS_Asymmetry.cc</file>
     <file>RS_Bingham.cc</file>
     <file>RS_LogC.cc</file>
@@ -15835,16 +16859,16 @@
     <file>RS_Writing_V.cc</file>
   </compound>
   <compound kind="dir">
-    <name>/home/leo/pelican/Pel3.1_FluidSolver/PELbase/src/</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/PELbase/src/</path>
-    <filename>dir_e10dd0f8f46c4281fb7bb9142470af47.html</filename>
+    <name>src</name>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/PELbase/src/</path>
+    <filename>dir_26c6a4afe07f105846750996771fe7f0.html</filename>
     <file>PEL_MATLABio.cc</file>
     <file>PEL_MATLABwriter.cc</file>
   </compound>
   <compound kind="dir">
-    <name>/home/leo/pelican/Pel3.1_FluidSolver/PDEsolver/src/</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/PDEsolver/src/</path>
-    <filename>dir_21ce684533c77a2e88de5e3e1f97cbe8.html</filename>
+    <name>src</name>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/PDEsolver/src/</path>
+    <filename>dir_6b3ed846aa99a619f178b83d101fbc5f.html</filename>
     <file>PDE_2D_P0isoP2_4nodes.cc</file>
     <file>PDE_2D_P1DC_3nodes.cc</file>
     <file>PDE_2D_Q0isoQ1_4nodes.cc</file>
@@ -15853,9 +16877,32 @@
     <file>PDE_2D_Q1DC_4nodes.cc</file>
   </compound>
   <compound kind="dir">
-    <name>/home/leo/pelican/Pel3.1_FluidSolver/NavierStokes/src/</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/NavierStokes/src/</path>
-    <filename>dir_dc9c646cf224d5e5e54092745865a3c7.html</filename>
+    <name>src</name>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/FrameFE/src/</path>
+    <filename>dir_638c617723353acb59d19e50fa91c36c.html</filename>
+    <file>FE_2PhaseConvexParameter.cc</file>
+    <file>FE_2PhaseViscHBParameter.cc</file>
+    <file>FE_ConvexParameter.cc</file>
+    <file>FE_DivergenceParameter.cc</file>
+    <file>FE_DuDuFieldParameter.cc</file>
+    <file>FE_ExponentialParameter.cc</file>
+    <file>FE_HarmonicParameter.cc</file>
+    <file>FE_InverseParameter.cc</file>
+    <file>FE_LocalTimeIteratorAdapter.cc</file>
+    <file>FE_PrintVariables.cc</file>
+    <file>FE_StepParameter.cc</file>
+    <file>FE_TensorFormAssembling.cc</file>
+    <file>FE_ViscosityHBParameter.cc</file>
+    <file>FE_ViscosityHBParameterNew.cc</file>
+  </compound>
+  <compound kind="dir">
+    <name>src</name>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/NavierStokes/src/</path>
+    <filename>dir_24091b302ab18bb5c1a19dc215bccc9b.html</filename>
+    <file>AS_NavierStokes.cc</file>
+    <file>AS_Viscoplastic.cc</file>
+    <file>Leo_NavierStokes.cc</file>
+    <file>Leo_Viscoplastic.cc</file>
     <file>MI_ElasticStress.cc</file>
     <file>MI_NavierStokes.cc</file>
     <file>MI_NavierStokesSystem.cc</file>
@@ -15867,37 +16914,23 @@
     <file>UT_Viscoplastic.cc</file>
   </compound>
   <compound kind="dir">
-    <name>/home/leo/pelican/Pel3.1_FluidSolver/FrameFE/src/</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/FrameFE/src/</path>
-    <filename>dir_1f6e9b3dbbfb12a4491a07fef68f7411.html</filename>
-    <file>FE_2PhaseConvexParameter.cc</file>
-    <file>FE_2PhaseViscHBParameter.cc</file>
-    <file>FE_ConvexParameter.cc</file>
-    <file>FE_DivergenceParameter.cc</file>
-    <file>FE_DuDuFieldParameter.cc</file>
-    <file>FE_ExponentialParameter.cc</file>
-    <file>FE_HarmonicParameter.cc</file>
-    <file>FE_InverseParameter.cc</file>
-    <file>FE_LocalTimeIteratorAdapter.cc</file>
-    <file>FE_PrintVariables.cc</file>
-    <file>FE_TensorFormAssembling.cc</file>
-    <file>FE_ViscosityHBParameter.cc</file>
-    <file>FE_ViscosityHBParameterNew.cc</file>
-  </compound>
-  <compound kind="dir">
-    <name>/home/leo/pelican/Pel3.1_FluidSolver/SecondOrderAdvectionDiffusion/src/</name>
-    <path>/home/leo/pelican/Pel3.1_FluidSolver/SecondOrderAdvectionDiffusion/src/</path>
-    <filename>dir_a1c3485abbea998fef5e8972aede63c2.html</filename>
+    <name>src</name>
+    <path>/home/yliu0218/pelicans/Pel3.1_FluidSolver/SecondOrderAdvectionDiffusion/src/</path>
+    <filename>dir_522fc77b6d11a74eaf2dd4941db7f9cd.html</filename>
     <file>AP_AdvectionDiffusion1G.cc</file>
-    <file>DB_PLIC_Advection.cc</file>
     <file>DC_PLIC_Advection.cc</file>
     <file>DD_PLIC_Advection.cc</file>
-    <file>LEO_PLIC_Advection.cc</file>
+    <file>DF_PLIC_Advection.cc</file>
     <file>MY_AdvectionDiffusion.cc</file>
     <file>MY_AdvectiveScheme.cc</file>
     <file>MY_MUSCL_DataStructure.cc</file>
     <file>MY_MUSCL_Scheme.cc</file>
-    <file>MY_PLIC_Advection.cc</file>
     <file>MY_UpwindScheme.cc</file>
+  </compound>
+  <compound kind="dir">
+    <name>yliu0218</name>
+    <path>/home/yliu0218/</path>
+    <filename>dir_551f1313e9642ad105623a872590a8b5.html</filename>
+    <dir>pelicans</dir>
   </compound>
 </tagfile>

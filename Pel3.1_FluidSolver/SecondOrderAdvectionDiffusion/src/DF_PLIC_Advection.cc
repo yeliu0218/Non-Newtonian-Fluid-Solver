@@ -1,3 +1,7 @@
+//This is the implementation of the Piecewise Linear Interface Reconstruction (PLIC) scheme with a correction scheme to resolve the moving contact line
+//Notice that it only works with a structural rectangular domain, with rectangular elements, while the mesh size is allowed to be non-uniform
+
+
 #include <DF_PLIC_Advection.hh>
 
 #include <PEL.hh>
@@ -234,7 +238,7 @@ DF_PLIC_Advection:: print_mesh( FE_TimeIterator const* t_it )
    }
 }
 
-
+//Move the interface along the X-axis
 //------------------------------------------------------------------------
 void
 DF_PLIC_Advection:: loop_on_cellsXX( FE_TimeIterator const* t_it )
@@ -244,9 +248,14 @@ DF_PLIC_Advection:: loop_on_cellsXX( FE_TimeIterator const* t_it )
    double const dt = 0.5*t_it->time_step() ;
    double s1,s2,s3,s4,mm1,mm2,V1,V2,mx,mz,alfa;
    size_t n_C, n_U, inv;
+   for( cFE->start() ; cFE->is_valid() ; cFE->go_next() )
+   {
+      n_C = cFE->global_node( CC, 0 ) ;
+      CC->set_DOF_value(4, n_C, CC->DOF_value(0,n_C));
+   }
    for ( cFE->start() ; cFE->is_valid() ; cFE->go_next() )
    {
-       
+       //Compute the velocity
        n_U = cFE->global_node( UU, 0 ) ;
        if (n_U>2*NY)
        {
@@ -274,7 +283,7 @@ DF_PLIC_Advection:: loop_on_cellsXX( FE_TimeIterator const* t_it )
           s2= ( UU->DOF_value( 0, 1, 0 )+ UU->DOF_value( 0, 2, 0 ) )*0.5 ;
        }
        
-      //current programming
+      //Compute the flux
        n_C = cFE->global_node( CC, 0 ) ;
        s1=s1*dt/Xvector(n_C/NY);
        s2=s2*dt/Xvector(n_C/NY);
@@ -467,8 +476,16 @@ DF_PLIC_Advection:: loop_on_cellsXX( FE_TimeIterator const* t_it )
       PEL::out() << indent() << "increment of volume = " <<  increment << std::endl;
       update_interface(increment);
    }
+   for( cFE->start() ; cFE->is_valid() ; cFE->go_next() )
+   {
+      n_C = cFE->global_node( CC, 0 ) ;
+      if (n_C%NY==0)
+         CC->set_DOF_value(0, n_C, CC->DOF_value(4,n_C));
+   }
 }
 
+
+//Move the interface along the Z-axis
 //------------------------------------------------------------------------
 void
 DF_PLIC_Advection:: loop_on_cellsZZ( FE_TimeIterator const* t_it )
@@ -478,6 +495,11 @@ DF_PLIC_Advection:: loop_on_cellsZZ( FE_TimeIterator const* t_it )
    double const dt = 0.5*t_it->time_step() ;
    double s1,s2,s3,s4,mm1,mm2,V1,V2,mx,mz,alfa;
    size_t n_C, n_U, inv;
+   for( cFE->start() ; cFE->is_valid() ; cFE->go_next() )
+   {
+      n_C = cFE->global_node( CC, 0 ) ;
+      CC->set_DOF_value(4, n_C, CC->DOF_value(0,n_C));
+   }
    for ( cFE->start() ; cFE->is_valid() ; cFE->go_next() )
    {
        n_U = cFE->global_node( UU, 0 ) ;
@@ -692,6 +714,12 @@ DF_PLIC_Advection:: loop_on_cellsZZ( FE_TimeIterator const* t_it )
       PEL::out() << indent() << "increment of volume = " <<  increment << std::endl;
       update_interface(increment);
    }
+   for( cFE->start() ; cFE->is_valid() ; cFE->go_next() )
+   {
+      n_C = cFE->global_node( CC, 0 ) ;
+      if (n_C%NY==0)
+         CC->set_DOF_value(0, n_C, CC->DOF_value(4,n_C));
+   }
 }
 
 //-------------------------------------------------------------------------
@@ -848,6 +876,9 @@ DF_PLIC_Advection::time_step_by_Courant( double dt_new, FE_TimeIterator const* t
    return( dt_new );
 }
 
+
+
+//Given mx*x+mz*z=alfa and flux, compute the volume change in the cell
 double
 DF_PLIC_Advection::vol2( double mx, double mz, double alfa, double b)
 //----------------------------------------------------------------------
