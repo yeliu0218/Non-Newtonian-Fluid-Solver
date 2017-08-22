@@ -1,0 +1,481 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>FE_SplitSystem.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="FE_SplitSystem.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="FEpack-tree.html"><span>Tree</span></a>
+    <a href="FE_SplitSystem.html"><span>Class</span></a>
+    <a href="FE_SplitSystem.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="FEpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE_SplitSystem</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_List</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ListIterator</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_assertions</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_DomainAndFields</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_SetOfDomains</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE_TimeIterator</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;iostream&gt;
+
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> ;
+
+</font><font class="kw3">FE_SplitSystem</font><font class="text"> </font><font class="kw1">const</font><font class="text">* </font><font class="kw3">FE_SplitSystem</font><font class="text">::PROTOTYPE = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">FE_SplitSystem</font><font class="text">() ;
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw3">FE_SplitSystem</font><font class="text">:: </font><font class="kw3">FE_SplitSystem</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">FE_OneStepIteration</font><font class="text">( </font><font class="string">&quot;FE_SplitSystem&quot;</font><font class="text"> )
+{
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw3">FE_SplitSystem</font><font class="text">*
+</font><font class="kw3">FE_SplitSystem</font><font class="text">:: create_replica( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                 </font><font class="kw3">PDE_DomainAndFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dom,
+                                 </font><font class="kw3">FE_SetOfParameters</font><font class="text"> </font><font class="kw1">const</font><font class="text">* prms,
+                                 </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* exp ) </font><font class="kw1">const
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_SplitSystem:: create_replica&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_PRE( a_owner, dom, prms, exp ) ) ;
+
+   </font><font class="kw3">FE_SplitSystem</font><font class="text">* result = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">FE_SplitSystem</font><font class="text">( a_owner, dom, prms, exp ) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_POST( result, a_owner, dom, prms, exp ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw3">FE_SplitSystem</font><font class="text">:: </font><font class="kw3">FE_SplitSystem</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                 </font><font class="kw3">PDE_DomainAndFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dom,
+                                 </font><font class="kw3">FE_SetOfParameters</font><font class="text"> </font><font class="kw1">const</font><font class="text">* prms,
+                                 </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp )
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">FE_OneStepIteration</font><font class="text">( a_owner, dom, exp )
+   , CMPS( </font><font class="kw3">PEL_List</font><font class="text">::create( </font><font class="kw1">this</font><font class="text"> ) )
+   , IT( 0 )
+{
+   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* e = exp-&gt;create_subexplorer( 0, 
+                                             </font><font class="string">&quot;list_of_FE_OneStepIteration&quot;</font><font class="text"> ) ;
+   e-&gt;start_module_iterator() ;
+   </font><font class="kw1">for</font><font class="text">( ; e-&gt;is_valid_module() ; e-&gt;go_next_module() )
+   {
+      </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* ee = e-&gt;create_subexplorer( 0 ) ; 
+      </font><font class="kw3">FE_OneStepIteration</font><font class="text">* cmp = 
+                           </font><font class="kw3">FE_OneStepIteration</font><font class="text">::make( CMPS, dom, prms, ee ) ;
+      CMPS-&gt;append( cmp ) ;
+      ee-&gt;destroy() ; ee = 0 ;
+   }
+   e-&gt;destroy() ; e = 0 ;
+
+   IT = </font><font class="kw3">PEL_ListIterator</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, CMPS ) ;
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw3">FE_SplitSystem</font><font class="text">*
+</font><font class="kw3">FE_SplitSystem</font><font class="text">:: create_replica( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                 </font><font class="kw3">PDE_SetOfDomains</font><font class="text"> </font><font class="kw1">const</font><font class="text">* sdoms,
+                                 </font><font class="kw3">FE_SetOfParameters</font><font class="text"> </font><font class="kw1">const</font><font class="text">* prms,
+                                 </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* exp ) </font><font class="kw1">const
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_SplitSystem:: create_replica&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_PRE( a_owner, sdoms, prms, exp ) ) ;
+
+   </font><font class="kw3">FE_SplitSystem</font><font class="text">* result = 0 ;
+
+   </font><font class="kw1">if</font><font class="text">( exp-&gt;has_entry( </font><font class="string">&quot;domain&quot;</font><font class="text"> ) )
+   {
+      </font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; dom_name = exp-&gt;string_data( </font><font class="string">&quot;domain&quot;</font><font class="text"> ) ;
+      </font><font class="kw3">PDE_DomainAndFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dom = sdoms-&gt;domain( dom_name ) ;
+      result = create_replica( a_owner, dom, prms, exp ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      result = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">FE_SplitSystem</font><font class="text">( a_owner, sdoms, prms, exp ) ;
+   }
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_POST( result, a_owner, sdoms, prms, exp ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw3">FE_SplitSystem</font><font class="text">:: </font><font class="kw3">FE_SplitSystem</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                 </font><font class="kw3">PDE_SetOfDomains</font><font class="text"> </font><font class="kw1">const</font><font class="text">* sdoms,
+                                 </font><font class="kw3">FE_SetOfParameters</font><font class="text"> </font><font class="kw1">const</font><font class="text">* prms,
+                                 </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp )
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">FE_OneStepIteration</font><font class="text">( a_owner, sdoms, exp )
+   , CMPS( </font><font class="kw3">PEL_List</font><font class="text">::create( </font><font class="kw1">this</font><font class="text"> ) )
+   , IT( 0 )
+{
+   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* e = exp-&gt;create_subexplorer( 0, 
+                                             </font><font class="string">&quot;list_of_FE_OneStepIteration&quot;</font><font class="text"> ) ;
+   e-&gt;start_module_iterator() ;
+   </font><font class="kw1">for</font><font class="text">( ; e-&gt;is_valid_module() ; e-&gt;go_next_module() )
+   {
+      </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* ee = e-&gt;create_subexplorer( 0 ) ; 
+      </font><font class="kw3">FE_OneStepIteration</font><font class="text">* cmp = 
+                           </font><font class="kw3">FE_OneStepIteration</font><font class="text">::make( CMPS, sdoms, prms, ee ) ;
+      CMPS-&gt;append( cmp ) ;
+      ee-&gt;destroy() ; ee = 0 ;
+   }
+   e-&gt;destroy() ; e = 0 ;
+
+   IT = </font><font class="kw3">PEL_ListIterator</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, CMPS ) ;
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw3">FE_SplitSystem</font><font class="text">:: ~</font><font class="kw3">FE_SplitSystem</font><font class="text">( </font><font class="kw1">void</font><font class="text"> ) 
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_SplitSystem</font><font class="text">:: do_before_time_stepping( </font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* t_it )
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_SplitSystem:: do_before_time_stepping&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( do_before_time_stepping_PRE( t_it ) ) ;
+
+   start_total_timer( </font><font class="string">&quot;FE_SplitSystem:: do_before_time_stepping&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw1">for</font><font class="text">( IT-&gt;start() ; IT-&gt;is_valid() ; IT-&gt;go_next() )
+   {
+      </font><font class="kw3">FE_OneStepIteration</font><font class="text">* pb = 
+                           </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">FE_OneStepIteration</font><font class="text">*&gt;( IT-&gt;item() ) ;
+      pb-&gt;do_before_time_stepping( t_it ) ;
+   }
+
+   stop_total_timer() ;
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_SplitSystem</font><font class="text">:: do_before_inner_iterations_stage( 
+                                             </font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* t_it )
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_SplitSystem:: do_before_inner_iterations_stage&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( do_before_inner_iterations_stage_PRE( t_it ) ) ;
+
+   start_total_timer( </font><font class="string">&quot;FE_SplitSystem:: do_before_inner_iterations_stage&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">for</font><font class="text">( IT-&gt;start() ; IT-&gt;is_valid() ; IT-&gt;go_next() )
+   {
+      </font><font class="kw3">FE_OneStepIteration</font><font class="text">* pb = 
+                           </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">FE_OneStepIteration</font><font class="text">*&gt;( IT-&gt;item() ) ;
+      pb-&gt;do_before_inner_iterations_stage( t_it ) ;
+   }
+
+   stop_total_timer() ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( do_before_inner_iterations_stage_POST( t_it ) ) ;
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_SplitSystem</font><font class="text">:: do_inner_iterations_stage( </font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* t_it )
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_SplitSystem:: do_inner_iterations_stage&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( do_inner_iterations_stage_PRE( t_it ) ) ;
+
+   start_total_timer( </font><font class="string">&quot;FE_SplitSystem:: do_inner_iterations_stage&quot;</font><font class="text"> ) ;
+
+   IT-&gt;start() ;
+   </font><font class="kw1">for</font><font class="text">( ; !inner_iterations_stage_failed() &amp;&amp; IT-&gt;is_valid() ; IT-&gt;go_next() )
+   {
+      </font><font class="kw3">FE_OneStepIteration</font><font class="text">* pb = 
+                           </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">FE_OneStepIteration</font><font class="text">*&gt;( IT-&gt;item() ) ;
+      pb-&gt;do_inner_iterations_stage( t_it ) ;
+      </font><font class="kw1">if</font><font class="text">( pb-&gt;inner_iterations_stage_failed() )
+      {
+         notify_inner_iterations_stage_failure() ;
+      }
+   }
+
+   stop_total_timer() ;
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_SplitSystem</font><font class="text">:: do_one_inner_iteration( </font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* t_it )
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_SplitSystem:: do_one_inner_iteration&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( do_one_inner_iteration_PRE( t_it ) ) ;
+
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( </font><font class="string">&quot;should not be called&quot;</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">FE_SplitSystem</font><font class="text">:: inner_iterations_are_completed( 
+                                         </font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* t_it ) </font><font class="kw1">const
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_SplitSystem:: inner_iterations_are_completed&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( inner_iterations_are_completed_PRE( t_it ) ) ;
+
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_SplitSystem</font><font class="text">:: do_after_inner_iterations_stage( </font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* t_it )
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_SplitSystem:: do_after_inner_iterations_stage&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( do_after_inner_iterations_stage_PRE( t_it ) ) ;
+
+   start_total_timer( </font><font class="string">&quot;FE_SplitSystem:: do_after_inner_iterations_stage&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw1">for</font><font class="text">( IT-&gt;start() ; IT-&gt;is_valid() ; IT-&gt;go_next() )
+   {
+      </font><font class="kw3">FE_OneStepIteration</font><font class="text">* pb = 
+                           </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">FE_OneStepIteration</font><font class="text">*&gt;( IT-&gt;item() ) ;
+      pb-&gt;do_after_inner_iterations_stage( t_it ) ;
+   }
+   
+   stop_total_timer() ;
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_SplitSystem</font><font class="text">:: do_after_time_adaptation( </font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* t_it )
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_SplitSystem:: do_after_time_adaptation&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( do_after_time_adaptation_PRE( t_it ) ) ;
+
+   start_total_timer( </font><font class="string">&quot;FE_SplitSystem:: do_after_time_adaptation&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw1">for</font><font class="text">( IT-&gt;start() ; IT-&gt;is_valid() ; IT-&gt;go_next() )
+   {
+      </font><font class="kw3">FE_OneStepIteration</font><font class="text">* pb =  
+                           </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">FE_OneStepIteration</font><font class="text">*&gt;( IT-&gt;item() ) ;
+      pb-&gt;do_after_time_adaptation( t_it ) ;
+   }
+   
+   stop_total_timer() ;
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_SplitSystem</font><font class="text">:: do_additional_savings( </font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* t_it,
+                                        </font><font class="kw3">PDE_ResultSaver</font><font class="text">* rs )
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_SplitSystem:: do_additional_savings&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( do_additional_savings_PRE( t_it, rs ) ) ;
+
+   start_total_timer( </font><font class="string">&quot;FE_SplitSystem:: do_additional_savings&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">for</font><font class="text">( IT-&gt;start() ; IT-&gt;is_valid() ; IT-&gt;go_next() )
+   {
+      </font><font class="kw3">FE_OneStepIteration</font><font class="text">* pb = 
+                           </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">FE_OneStepIteration</font><font class="text">*&gt;( IT-&gt;item() ) ;
+      pb-&gt;do_additional_savings( t_it, rs ) ;
+   }
+
+   stop_total_timer() ;
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_SplitSystem</font><font class="text">:: do_after_time_stepping( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_SplitSystem:: do_after_time_stepping&quot;</font><font class="text"> ) ;
+
+   start_total_timer( </font><font class="string">&quot;FE_SplitSystem:: do_after_time_stepping&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">for</font><font class="text">( IT-&gt;start() ; IT-&gt;is_valid() ; IT-&gt;go_next() )
+   {
+      </font><font class="kw3">FE_OneStepIteration</font><font class="text">* pb = 
+                           </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">FE_OneStepIteration</font><font class="text">*&gt;( IT-&gt;item() ) ;
+      pb-&gt;do_after_time_stepping() ;
+   }
+
+   stop_total_timer() ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_SplitSystem</font><font class="text">:: print_additional_times( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostream</font><font class="text">&amp; os,
+                                         </font><font class="kw2">size_t</font><font class="text"> indent_width ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_SplitSystem:: print_additional_times&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">for</font><font class="text">( IT-&gt;start() ; IT-&gt;is_valid() ; IT-&gt;go_next() )
+   {
+      </font><font class="kw3">FE_OneStepIteration</font><font class="text">* pb = 
+                           </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">FE_OneStepIteration</font><font class="text">*&gt;( IT-&gt;item() ) ;
+      pb-&gt;print_additional_times( os, indent_width ) ;
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_SplitSystem</font><font class="text">:: notify_inner_iterations_stage_failure( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_SplitSystem:: notify_inner_iterations_stage_failure&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( notify_inner_iterations_stage_failure_PRE() ) ;
+
+   </font><font class="kw3">FE_OneStepIteration</font><font class="text">::notify_inner_iterations_stage_failure() ;
+   </font><font class="kw3">PEL_ListIterator</font><font class="text">* it = </font><font class="kw3">PEL_ListIterator</font><font class="text">::create( 0, CMPS ) ;
+   </font><font class="kw1">for</font><font class="text">( it-&gt;start() ; it-&gt;is_valid() ; it-&gt;go_next() )
+   {
+      </font><font class="kw3">FE_OneStepIteration</font><font class="text">* pb = 
+                           </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">FE_OneStepIteration</font><font class="text">*&gt;( it-&gt;item() ) ;
+      </font><font class="kw1">if</font><font class="text">( !pb-&gt;inner_iterations_stage_failed() )
+      {
+         pb-&gt;notify_inner_iterations_stage_failure() ;
+      }
+   }
+   it-&gt;destroy() ; it = 0 ;
+   
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( notify_inner_iterations_stage_failure_POST() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_SplitSystem</font><font class="text">:: reset_after_inner_iterations_stage_failure( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_SplitSystem:: reset_after_inner_iterations_stage_failure&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( reset_after_inner_iterations_stage_failure_PRE() ) ;
+
+   </font><font class="kw3">FE_OneStepIteration</font><font class="text">::reset_after_inner_iterations_stage_failure() ;
+   </font><font class="kw1">for</font><font class="text">( IT-&gt;start() ; IT-&gt;is_valid() ; IT-&gt;go_next() )
+   {
+      </font><font class="kw3">FE_OneStepIteration</font><font class="text">* pb = 
+                           </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">FE_OneStepIteration</font><font class="text">*&gt;( IT-&gt;item() ) ;
+      pb-&gt;reset_after_inner_iterations_stage_failure() ;
+   }
+   
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( reset_after_inner_iterations_stage_failure_POST() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_SplitSystem</font><font class="text">:: adapt_time_iterator( </font><font class="kw3">FE_TimeIteratorAdapter</font><font class="text">* t_adapter )
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_SplitSystem:: adapt_time_iterator&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( adapt_time_iterator_PRE( t_adapter ) ) ;
+
+   </font><font class="kw1">for</font><font class="text">( IT-&gt;start() ; IT-&gt;is_valid() ; IT-&gt;go_next() )
+   {
+      </font><font class="kw3">FE_OneStepIteration</font><font class="text">* pb = 
+                           </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">FE_OneStepIteration</font><font class="text">*&gt;( IT-&gt;item() ) ;
+      pb-&gt;adapt_time_iterator( t_adapter ) ;
+   }
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_SplitSystem</font><font class="text">:: add_storable_objects( </font><font class="kw3">PEL_ListIdentity</font><font class="text">* list )
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_SplitSystem:: add_storable_objects&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">for</font><font class="text">( IT-&gt;start() ; IT-&gt;is_valid() ; IT-&gt;go_next() )
+   {
+      </font><font class="kw3">FE_OneStepIteration</font><font class="text">* pb = 
+                           </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">FE_OneStepIteration</font><font class="text">*&gt;( IT-&gt;item() ) ;
+      pb-&gt;add_storable_objects( list ) ;
+   }
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_SplitSystem</font><font class="text">:: print( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostream</font><font class="text">&amp; os, </font><font class="kw2">size_t</font><font class="text"> indent_width ) </font><font class="kw1">const
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_SplitSystem:: print&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw3">FE_OneStepIteration</font><font class="text">:: print( os, indent_width ) ;
+
+   </font><font class="kw1">for</font><font class="text">( IT-&gt;start() ; IT-&gt;is_valid() ; IT-&gt;go_next() )
+   {
+      </font><font class="kw3">FE_OneStepIteration</font><font class="text">* pb = 
+                           </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">FE_OneStepIteration</font><font class="text">*&gt;( IT-&gt;item() ) ;
+      pb-&gt;print( os, indent_width+3 ) ;
+   }
+}
+
+</font>
+</pre>
+</body>
+</html>

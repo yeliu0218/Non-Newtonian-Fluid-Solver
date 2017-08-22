@@ -1,0 +1,139 @@
+MODULE PEL_Application
+   
+   concrete_name = "FE_StepByStepProgression"
+
+   $DS_x = component( $DV_X, 0 )
+   $DS_x0 = 4.* $DS_x
+   $DS_y = component( $DV_X, 1 )
+   $DS_y0 = -6.4 * $DS_y
+   $DS_z = component( $DV_X, 2 )
+   $DS_z0 = 2.3 * $DS_z
+   
+   MODULE FE_TimeIterator
+      time_initial = 0.0
+      time_end = 1.
+      time_step = 1.
+   END MODULE FE_TimeIterator
+
+   graphics_output_times = regular_vector( 0., 1, 1. )
+   
+   MODULE PDE_DomainAndFields
+      
+      verbose_level = 1
+      nb_space_dimensions = 3
+      type = "finite_element"
+      
+      MODULE GE_Meshing
+         concrete_name = "GE_BoxWithBoxes"
+
+         vertices_coordinate_0 = regular_vector( 0.0, 2, 1.0 )
+         vertices_coordinate_1 = regular_vector( 0.0, 1, 1.0 )
+         vertices_coordinate_2 = regular_vector( 0.0, 1, 1.0 )
+         
+         mesh_polyhedron = < "GE_Rectangle" "GE_Cuboid" >
+      END MODULE GE_Meshing
+      
+      MODULE interior_fields
+         
+         MODULE uu
+            name = "uu"
+            nb_components = 3
+            element_name = "PDE_3D_Q1_8nodes"
+            storage_depth = 1
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = vector( $DS_x0, $DS_y0, $DS_z0 )
+            END MODULE DOFs_values
+         END MODULE uu
+
+         MODULE ss
+            name = "ss"
+            nb_components = 6
+            element_name = "PDE_3D_Q1_8nodes"
+            storage_depth = 1
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = vector( 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 )
+            END MODULE DOFs_values
+         END MODULE ss
+         
+      END MODULE interior_fields
+      
+      MODULE boundary_conditions
+      END MODULE boundary_conditions
+      
+      MODULE PDE_ResultSaver
+         
+         writers = < "PEL_VTKwriter" >
+         
+         writing_mode = "text"
+         files_basename = "save"
+         
+         MODULE uu
+            where_to_save = "at_vertices"
+            entry_name = "UU"
+            field = "uu"
+         END MODULE uu
+
+         MODULE ss
+            where_to_save = "at_vertices"
+            entry_name = "SS"
+            field = "ss"
+         END MODULE ss
+         
+      END MODULE PDE_ResultSaver
+      
+   END MODULE PDE_DomainAndFields
+
+   MODULE FE_SetOfParameters
+   END MODULE FE_SetOfParameters
+
+   MODULE FE_OneStepIteration
+
+      concrete_name = "FE_SplitSystem"
+
+      MODULE list_of_FE_OneStepIteration
+
+         MODULE FE_OneStepIteration#1
+            concrete_name = "AP_L2projectionS"
+
+            structure_stress = "ss"
+            level_of_stress = 0
+
+            structure_displacement = "uu"
+            level_of_displacement = 0
+
+            quadrature_rule_provider = "GE_QRprovider_5"
+
+            MODULE AP_ConstitutiveLaw
+               concrete_name = "AP_LawL2_TEST"
+            END MODULE AP_ConstitutiveLaw
+ 
+            MODULE LA_Matrix
+               concrete_name = "LA_PelMatrix"
+            END MODULE LA_Matrix
+            MODULE LA_Solver
+               concrete_name = "LA_PreconditionedSolver"   
+               MODULE LA_IterativeSolver
+                  concrete_name = "LA_CG_IS"
+                  nb_iterations_max = 2000
+                  MODULE LA_ConvergenceTest
+                     concrete_name = "LA_DefaultConvergenceTest"
+                     relative_tolerance =  1.E-10
+                     absolute_tolerance = 1.E-20
+                  END MODULE LA_ConvergenceTest
+                  verbose = false
+               END MODULE LA_IterativeSolver
+               MODULE LA_Preconditioner
+                  concrete_name = "LA_Jacobi_PC"
+                  smallest_inverted_item = 1.0e-20
+               END MODULE LA_Preconditioner                  
+            END MODULE LA_Solver
+            
+         END MODULE FE_OneStepIteration#1
+
+      END MODULE list_of_FE_OneStepIteration
+      
+   END MODULE FE_OneStepIteration
+   
+END MODULE PEL_Application

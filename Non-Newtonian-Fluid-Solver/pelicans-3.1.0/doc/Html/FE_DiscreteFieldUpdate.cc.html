@@ -1,0 +1,452 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>FE_DiscreteFieldUpdate.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="FE_DiscreteFieldUpdate.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="FEpack-tree.html"><span>Tree</span></a>
+    <a href="FE_DiscreteFieldUpdate.html"><span>Class</span></a>
+    <a href="FE_DiscreteFieldUpdate.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="FEpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE_DiscreteFieldUpdate</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_assertions</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ContextSimple</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_DataWithContext</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Double</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_DoubleVector</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Root</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Variable</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">doubleVector</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">GE_Color</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">GE_Mpolyhedron</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">GE_Point</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_DiscreteField</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_DomainAndFields</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_FieldComposition</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_LocalFEcell</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_SetOfDiscreteFields</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_SetOfFieldCompositions</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE_Parameter</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE_TimeIterator</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE_SetOfParameters</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;iostream&gt;
+
+</font><font class="kw3">FE_DiscreteFieldUpdate</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">FE_DiscreteFieldUpdate</font><font class="text">::PROTOTYPE = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">FE_DiscreteFieldUpdate</font><font class="text">() ;
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw3">FE_DiscreteFieldUpdate</font><font class="text">:: </font><font class="kw3">FE_DiscreteFieldUpdate</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">FE_OneStepIteration</font><font class="text">( </font><font class="string">&quot;FE_DiscreteFieldUpdate&quot;</font><font class="text"> )
+   , FIELD( 0 )
+   , FIELD_LEVEL( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+   , cFE( 0 )
+   , VALUE_TYPE( </font><font class="kw3">FE_DiscreteFieldUpdate</font><font class="text">::from_analytic )
+   , VALUE( 0 )
+   , COMPO( 0 )
+   , COMPO_LEVEL( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+   , PARAMETER( 0 )
+{
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw3">FE_DiscreteFieldUpdate</font><font class="text">*
+</font><font class="kw3">FE_DiscreteFieldUpdate</font><font class="text">:: create_replica(
+                             </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                             </font><font class="kw3">PDE_DomainAndFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dom,
+                             </font><font class="kw3">FE_SetOfParameters</font><font class="text"> </font><font class="kw1">const</font><font class="text">* prms,
+                             </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* exp ) </font><font class="kw1">const
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_DiscreteFieldUpdate:: create_replica&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_PRE( a_owner, dom, prms, exp ) ) ;
+
+   </font><font class="kw3">FE_DiscreteFieldUpdate</font><font class="text">* result =
+      </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">FE_DiscreteFieldUpdate</font><font class="text">( a_owner, dom, prms, exp ) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_POST( result, a_owner, dom, prms, exp ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw3">FE_DiscreteFieldUpdate</font><font class="text">:: </font><font class="kw3">FE_DiscreteFieldUpdate</font><font class="text">(
+                             </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                             </font><font class="kw3">PDE_DomainAndFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dom,
+                             </font><font class="kw3">FE_SetOfParameters</font><font class="text"> </font><font class="kw1">const</font><font class="text">* prms,
+                             </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">FE_OneStepIteration</font><font class="text">( a_owner, dom, exp )
+   , FIELD(
+      dom-&gt;set_of_discrete_fields()-&gt;item( exp-&gt;string_data( </font><font class="string">&quot;field_name&quot;</font><font class="text"> ) ) )
+   , FIELD_LEVEL( (</font><font class="kw2">size_t</font><font class="text">) exp-&gt;int_data( </font><font class="string">&quot;field_level&quot;</font><font class="text"> ) )
+   , cFE( dom-&gt;create_LocalFEcell( </font><font class="kw1">this</font><font class="text"> ) )
+   , VALUE_TYPE( </font><font class="kw3">FE_DiscreteFieldUpdate</font><font class="text">::from_analytic )
+   , VALUE( 0 )
+   , COMPO( 0 )
+   , COMPO_LEVEL( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+   , PARAMETER( 0 )
+{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_DiscreteFieldUpdate:: FE_DiscreteFieldUpdate&quot;</font><font class="text"> ) ;
+
+   check_field_storage_depth( FIELD, FIELD_LEVEL ) ;
+
+   cFE-&gt;require_field_calculation( FIELD, </font><font class="kw3">PDE_LocalFE</font><font class="text">::node ) ;
+
+   </font><font class="comment">// Parallel computation : halo color has to be considered :
+</font><font class="text">   </font><font class="kw1">if</font><font class="text">( cFE-&gt;is_excluded( </font><font class="kw3">GE_Color</font><font class="text">::halo_color() ) )
+   {
+      cFE-&gt;include_color( </font><font class="kw3">GE_Color</font><font class="text">::halo_color() ) ;
+   }
+
+   </font><font class="comment">// Value strategy :
+</font><font class="text">   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ee = exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;DOFs_values&quot;</font><font class="text"> ) ;
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; type = ee-&gt;string_data( </font><font class="string">&quot;type&quot;</font><font class="text"> ) ;
+   </font><font class="kw1">if</font><font class="text">( type == </font><font class="string">&quot;from_analytic&quot;</font><font class="text"> )
+   {
+      VALUE_TYPE = </font><font class="kw3">FE_DiscreteFieldUpdate</font><font class="text">::from_analytic ;
+      VALUE = ee-&gt;abstract_data( </font><font class="kw1">this</font><font class="text">, </font><font class="string">&quot;value&quot;</font><font class="text"> ) ;
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( type == </font><font class="string">&quot;from_field_composition&quot;</font><font class="text"> )
+   {
+      VALUE_TYPE = </font><font class="kw3">FE_DiscreteFieldUpdate</font><font class="text">::from_composition ;
+      COMPO_LEVEL = (</font><font class="kw2">size_t</font><font class="text">) ee-&gt;int_data( </font><font class="string">&quot;fields_level&quot;</font><font class="text"> ) ;
+      COMPO = dom-&gt;set_of_field_compositions()-&gt;item(
+                       ee-&gt;string_data( </font><font class="string">&quot;field_composition_name&quot;</font><font class="text"> ) ) ;
+      COMPO-&gt;start_variable_iterator() ;
+      </font><font class="kw1">for</font><font class="text">( ; COMPO-&gt;valid_variable() ; COMPO-&gt;go_next_variable() )
+      {
+         </font><font class="kw3">PDE_DiscreteField</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ff = COMPO-&gt;variable() ;
+         cFE-&gt;require_field_calculation( ff, </font><font class="kw3">PDE_LocalFE</font><font class="text">::N ) ;
+         </font><font class="kw1">if</font><font class="text">( COMPO_LEVEL &gt;= ff-&gt;storage_depth() )
+         {
+            </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain(
+                </font><font class="string">&quot;*** FE_DiscreteFieldUpdate&lt;&quot;</font><font class="text">+FIELD-&gt;name()+</font><font class="string">&quot;&gt; error\n&quot;
+</font><font class="text">                   </font><font class="string">&quot;    bad \&quot;</font><font class="text">fields_level\</font><font class="string">&quot; regarding the storage depth\n&quot;
+</font><font class="text">                   </font><font class="string">&quot;    of the field \&quot;&quot;+ff-&gt;name()+&quot;</font><font class="text">\</font><font class="string">&quot;&quot;</font><font class="text"> ) ;
+         }
+      }
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( type == </font><font class="string">&quot;from_parameter&quot;</font><font class="text"> )
+   {
+      VALUE_TYPE = </font><font class="kw3">FE_DiscreteFieldUpdate</font><font class="text">::from_parameter ;
+      PARAMETER = prms-&gt;item( ee-&gt;string_data( </font><font class="string">&quot;parameter_name&quot;</font><font class="text"> ) ) ;
+      PARAMETER-&gt;transfer_cell_calculation_requirements(
+                                           cFE, </font><font class="kw3">FE_Parameter</font><font class="text">::Val ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_bad_data_value(
+         ee, </font><font class="string">&quot;type&quot;</font><font class="text">,
+         </font><font class="string">&quot;   - \&quot;</font><font class="text">from_analytic\</font><font class="string">&quot;\n&quot;
+</font><font class="text">         </font><font class="string">&quot;   - \&quot;</font><font class="text">from_field_composition\</font><font class="string">&quot;\n&quot;
+</font><font class="text">         </font><font class="string">&quot;   - \&quot;</font><font class="text">from_parameter\</font><font class="string">&quot;\n&quot;</font><font class="text"> ) ;
+   }
+   ee-&gt;destroy() ; ee = 0 ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw3">FE_DiscreteFieldUpdate</font><font class="text">:: ~</font><font class="kw3">FE_DiscreteFieldUpdate</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">if</font><font class="text">( is_a_prototype() )
+   {
+      PROTOTYPE = 0 ;
+   }
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_DiscreteFieldUpdate</font><font class="text">:: do_before_time_stepping( </font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* t_it )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_DiscreteFieldUpdate:: do_before_time_stepping&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw3">FE_OneStepIteration</font><font class="text">::do_before_time_stepping( t_it ) ;
+
+   </font><font class="comment">// Verify datas :
+</font><font class="text">   {
+      </font><font class="kw1">if</font><font class="text">( VALUE_TYPE == </font><font class="kw3">FE_DiscreteFieldUpdate</font><font class="text">::from_analytic )
+      {
+         cFE-&gt;start() ;
+         cFE-&gt;set_calculation_point( cFE-&gt;polyhedron()-&gt;center() ) ;
+         </font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ct = context_at_pt( t_it, cFE ) ;
+         </font><font class="kw1">if</font><font class="text">( !VALUE-&gt;value_can_be_evaluated( ct ) )
+         {
+            </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain(
+               </font><font class="string">&quot;*** FE_DiscreteFieldUpdate&lt;&quot;</font><font class="text">+FIELD-&gt;name()+</font><font class="string">&quot; error :\n&quot;
+</font><font class="text">               </font><font class="string">&quot;    the expression \&quot;</font><font class="text">value\</font><font class="string">&quot; cannot be evaluated\n&quot;
+</font><font class="text">               </font><font class="string">&quot;    (check the variables)&quot;</font><font class="text"> ) ;
+         }
+         </font><font class="kw1">if</font><font class="text">( VALUE-&gt;data_type() != </font><font class="kw3">PEL_Data</font><font class="text">::DoubleVector )
+         {
+            </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain(
+               </font><font class="string">&quot;*** FE_DiscreteFieldUpdate&lt;&quot;</font><font class="text">+FIELD-&gt;name()+</font><font class="string">&quot; error :\n&quot;
+</font><font class="text">               </font><font class="string">&quot;    the expression \&quot;</font><font class="text">value\</font><font class="string">&quot; has not the good type\n&quot;
+</font><font class="text">               </font><font class="string">&quot;    (doubleVector is expected)&quot;</font><font class="text"> ) ;
+         }
+         </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; val = VALUE-&gt;to_double_vector( ct ) ;
+         </font><font class="kw1">if</font><font class="text">( val.size() != FIELD-&gt;nb_components() )
+         {
+            </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain(
+               </font><font class="string">&quot;*** FE_DiscreteFieldUpdate&lt;&quot;</font><font class="text">+FIELD-&gt;name()+</font><font class="string">&quot; error :\n&quot;
+</font><font class="text">               </font><font class="string">&quot;    the expression \&quot;</font><font class="text">value\</font><font class="string">&quot; has not the good dimension&quot;</font><font class="text"> ) ;
+         }
+      }
+   }
+   
+   </font><font class="kw1">if</font><font class="text">( t_it-&gt;time() == t_it-&gt;initial_time() ) </font><font class="comment">// Not a restoration
+</font><font class="text">   {
+      start_total_timer(
+         </font><font class="string">&quot;FE_DiscreteFieldUpdate&lt;&quot;</font><font class="text">+FIELD-&gt;name()+</font><font class="string">&quot;&gt;:: do_before_time_stepping&quot;</font><font class="text"> ) ;
+      set_field_values( 0, t_it ) ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> level = 1 ; level&lt;FIELD-&gt;storage_depth() ; ++level )
+      {
+         FIELD-&gt;copy_DOFs_value( 0, level ) ;
+      }
+      stop_total_timer() ;
+   }
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_DiscreteFieldUpdate</font><font class="text">:: do_one_inner_iteration( </font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* t_it )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_DiscreteFieldUpdate:: do_one_inner_iteration&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( do_one_inner_iteration_PRE( t_it ) ) ;
+    
+   start_total_timer(
+      </font><font class="string">&quot;FE_DiscreteFieldUpdate&lt;&quot;</font><font class="text">+FIELD-&gt;name()+</font><font class="string">&quot;&gt;:: do_one_inner_iteration&quot;</font><font class="text"> ) ;
+   set_field_values( FIELD_LEVEL, t_it ) ;
+   stop_total_timer() ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_DiscreteFieldUpdate</font><font class="text">:: print( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostream</font><font class="text">&amp; os, </font><font class="kw2">size_t</font><font class="text"> indent_width ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_DiscreteFieldUpdate:: print&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw3">FE_OneStepIteration</font><font class="text">::print( os, indent_width ) ;
+   
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text"> s( indent_width+3, </font><font class="string">' '</font><font class="text"> ) ;
+   os &lt;&lt; s &lt;&lt; </font><font class="string">&quot;field_name : \&quot;&quot;
+      &lt;&lt; FIELD-&gt;name()  &lt;&lt; &quot;</font><font class="text">\</font><font class="string">&quot;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   os &lt;&lt; s &lt;&lt; </font><font class="string">&quot;field_level : &quot;
+</font><font class="text">      &lt;&lt; FIELD_LEVEL  &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   os &lt;&lt; s &lt;&lt; </font><font class="string">&quot;field_value : &quot;</font><font class="text"> ;
+   </font><font class="kw1">if</font><font class="text">( VALUE_TYPE == </font><font class="kw3">FE_DiscreteFieldUpdate</font><font class="text">::from_analytic )
+   {
+      os &lt;&lt; </font><font class="string">&quot;\&quot;</font><font class="text">from_analytic\</font><font class="string">&quot;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( VALUE_TYPE == </font><font class="kw3">FE_DiscreteFieldUpdate</font><font class="text">::from_composition )
+   {
+      os &lt;&lt; </font><font class="string">&quot;\&quot;</font><font class="text">from_field_composition\</font><font class="string">&quot;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+      os &lt;&lt; s &lt;&lt; </font><font class="string">&quot;   field_composition_name : \&quot;&quot;
+         &lt;&lt; COMPO-&gt;name() &lt;&lt; &quot;</font><font class="text">\</font><font class="string">&quot;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+      os &lt;&lt; s &lt;&lt; </font><font class="string">&quot;   fields_level : &quot;</font><font class="text"> &lt;&lt; COMPO_LEVEL &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( VALUE_TYPE == </font><font class="kw3">FE_DiscreteFieldUpdate</font><font class="text">::from_parameter )
+   {
+      os &lt;&lt; </font><font class="string">&quot;\&quot;</font><font class="text">from_parameter\</font><font class="string">&quot;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+      os &lt;&lt; s &lt;&lt; </font><font class="string">&quot;   parameter_name : \&quot;&quot;
+         &lt;&lt; PARAMETER-&gt;name() &lt;&lt; &quot;</font><font class="text">\</font><font class="string">&quot;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      os &lt;&lt; </font><font class="string">&quot;\&quot;</font><font class="text">undefined\</font><font class="string">&quot;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   }
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_DiscreteFieldUpdate</font><font class="text">:: set_field_values( </font><font class="kw2">size_t</font><font class="text"> f_level,
+                                           </font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* t_it )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_DiscreteFieldUpdate:: set_field_values&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( t_it != 0 ) ;
+   </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> nb_comps = FIELD-&gt;nb_components() ;
+   </font><font class="kw3">doubleVector</font><font class="text"> field_value( nb_comps ) ;
+   </font><font class="kw1">for</font><font class="text">( cFE-&gt;start() ; cFE-&gt;is_valid() ; cFE-&gt;go_next() )
+   {
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i_node=0 ; i_node&lt;cFE-&gt;nb_local_nodes( FIELD ) ; ++i_node )
+      {
+         </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> n = cFE-&gt;global_node( FIELD, i_node ) ;
+         cFE-&gt;set_calculation_point(
+                            cFE-&gt;local_node_location( FIELD, i_node ) ) ;
+         compute_field_value_at_pt( t_it, cFE, field_value ) ;
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> ic=0 ; ic&lt;nb_comps ; ++ic )
+         {
+            FIELD-&gt;set_DOF_value( f_level, n, field_value(ic), ic ) ;
+         }
+      }
+   }
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_DiscreteFieldUpdate</font><font class="text">:: compute_field_value_at_pt( </font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* t_it,
+                                                    </font><font class="kw3">PDE_LocalFEcell</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fe,
+                                                    </font><font class="kw3">doubleVector</font><font class="text">&amp; result )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_DiscreteFieldUpdate:: compute_field_value_at_pt&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( t_it != 0 ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( fe != 0 ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( fe-&gt;is_valid() ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( fe-&gt;calculation_point() != 0 ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( result.size() == FIELD-&gt;nb_components() ) ;
+   
+   </font><font class="kw1">if</font><font class="text">( VALUE_TYPE == </font><font class="kw3">FE_DiscreteFieldUpdate</font><font class="text">::from_analytic )
+   {
+      </font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ct = context_at_pt( t_it, fe ) ;
+      result = VALUE-&gt;to_double_vector( ct ) ;
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( VALUE_TYPE == </font><font class="kw3">FE_DiscreteFieldUpdate</font><font class="text">::from_composition )
+   {
+      COMPO-&gt;start_variable_iterator() ;
+      </font><font class="kw1">for</font><font class="text">( ; COMPO-&gt;valid_variable() ; COMPO-&gt;go_next_variable() )
+      {
+         </font><font class="kw3">PDE_DiscreteField</font><font class="text"> </font><font class="kw1">const</font><font class="text">* f = COMPO-&gt;variable() ;
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;f-&gt;nb_components() ; ++i )
+         {
+            </font><font class="kw1">double</font><font class="text"> </font><font class="kw1">const</font><font class="text"> val = fe-&gt;value_at_pt( f, COMPO_LEVEL, i ) ;
+            COMPO-&gt;set_variable_value( f, i, val ) ;
+         }
+      }
+      COMPO-&gt;compute() ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> ic=0 ; ic&lt;result.size() ; ++ic )
+      {
+         result(ic) = COMPO-&gt;value( ic ) ;
+      }
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( VALUE_TYPE == </font><font class="kw3">FE_DiscreteFieldUpdate</font><font class="text">::from_parameter )
+   {
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> ic=0 ; ic&lt;result.size() ; ++ic )
+      {
+         result(ic) = PARAMETER-&gt;cell_value_at_pt( t_it, fe, ic ) ;
+      }
+   }
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">FE_DiscreteFieldUpdate</font><font class="text">:: context_at_pt( </font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* t_it,
+                                        </font><font class="kw3">PDE_LocalFEcell</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fe ) </font><font class="kw1">const
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_DiscreteFieldUpdate:: context_at_pt&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( t_it != 0 ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( fe != 0 ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( fe-&gt;is_valid() ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( fe-&gt;calculation_point() != 0 ) ;
+
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw3">PEL_ContextSimple</font><font class="text">* result = 0 ;
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw3">PEL_Double</font><font class="text">* time = 0 ;
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw3">PEL_DoubleVector</font><font class="text">* coords = 0 ;
+   </font><font class="kw1">if</font><font class="text">( result == 0 )
+   {
+      result = </font><font class="kw3">PEL_ContextSimple</font><font class="text">::create( </font><font class="kw3">PEL_Root</font><font class="text">::object() ) ;
+      coords = </font><font class="kw3">PEL_DoubleVector</font><font class="text">::create( result, </font><font class="kw3">doubleVector</font><font class="text">( 0 ) ) ;
+      result-&gt;extend( </font><font class="kw3">PEL_Variable</font><font class="text">::object( </font><font class="string">&quot;DV_X&quot;</font><font class="text"> ), coords ) ;
+      time = </font><font class="kw3">PEL_Double</font><font class="text">::create( result, 0. ) ;
+      result-&gt;extend( </font><font class="kw3">PEL_Variable</font><font class="text">::object( </font><font class="string">&quot;DS_T&quot;</font><font class="text"> ), time ) ;
+   }
+   coords-&gt;</font><font class="kw2">set</font><font class="text">( fe-&gt;calculation_point()-&gt;coordinate_vector() ) ;
+   </font><font class="kw1">if</font><font class="text">( t_it-&gt;is_started() )
+   {
+      time-&gt;</font><font class="kw2">set</font><font class="text">( t_it-&gt;time() ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      time-&gt;</font><font class="kw2">set</font><font class="text">( t_it-&gt;initial_time() ) ;
+   }
+   
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result!=0 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;has_variable( </font><font class="kw3">PEL_Variable</font><font class="text">::object( </font><font class="string">&quot;DV_X&quot;</font><font class="text"> ) ) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;has_variable( </font><font class="kw3">PEL_Variable</font><font class="text">::object( </font><font class="string">&quot;DS_T&quot;</font><font class="text"> ) ) ) ;  
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">FE_DiscreteFieldUpdate</font><font class="text">:: invariant( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( </font><font class="kw3">FE_OneStepIteration</font><font class="text">::invariant() ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font>
+</pre>
+</body>
+</html>

@@ -1,0 +1,300 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>EXT_PETScMatrix.hh</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="EXT_PETScMatrix.hh_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="LApack-tree.html"><span>Tree</span></a>
+    <a href="EXT_PETScMatrix.html"><span>Class</span></a>
+    <span class=selected>Header</span>
+    <a href="EXT_PETScMatrix.cc.html"><span>Implementation</span></a>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="LApack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated
+ *  reusable components, whose purpose is to simplify the task of developing
+ *  softwares of numerical mathematics and scientific computing.
+ *
+ *  This software is governed by the CeCILL-C license under French law and
+ *  abiding by the rules of distribution of free software. You can use, modify
+ *  and/or redistribute the software under the terms of the CeCILL-C license
+ *  as circulated by CEA, CNRS and INRIA at the following URL
+ *  &quot;http://www.cecill.info&quot;.
+ *
+ *  As a counterpart to the access to the source code and rights to copy,
+ *  modify and redistribute granted by the license, users are provided only
+ *  with a limited warranty and the software's author, the holder of the
+ *  economic rights, and the successive licensors have only limited liability.
+ *
+ *  In this respect, the user's attention is drawn to the risks associated
+ *  with loading, using, modifying and/or developing or reproducing the
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also
+ *  therefore means that it is reserved for developers and experienced
+ *  professionals having in-depth computer knowledge. Users are therefore
+ *  encouraged to load and test the software's suitability as regards their
+ *  requirements in conditions enabling the security of their systems and/or
+ *  data to be ensured and, more generally, to use and operate it in the same
+ *  conditions as regards security.
+ *
+ *  The fact that you are presently reading this means that you have had
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#ifndef</font><font class="text"> EXT_PETSC_MATRIX_HH
+</font><font class="kw2">#define</font><font class="text"> EXT_PETSC_MATRIX_HH
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_Matrix</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">EXT_PETScAPI</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">EXT_PETScVector</font><font class="text">.hh&gt;
+
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> ;
+
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">LA_SeqMatrix</font><font class="text"> ;
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">intVector</font><font class="text"> ;
+
+</font><font class="comment">/*
+   PETSc matrices.
+</font><font class="text">
+</font><font class="comment">   They can be instantiated in PELICANS datafiles with following modules :
+</font><font class="text">
+</font><font class="comment">   For sparse sequential matrix :
+   MODULE LA_Matrix
+      concrete_name = &quot;PETSc_SeqAIJ&quot;
+   END MODULE LA_Matrix
+</font><font class="text">
+</font><font class="comment">   For sparse, block, symmetric and sequential matrix :
+   MODULE LA_Matrix
+      concrete_name = &quot;PETSc_SeqSBAIJ&quot;
+      block_size = `size of blocks'
+   END MODULE LA_Matrix
+</font><font class="text">
+</font><font class="comment">   For sparse distributed matrix :
+   MODULE LA_Matrix
+      concrete_name = &quot;PETSc_MPIAIJ&quot;
+      d_nz = `max nb non-null items on diagonal sub-matrix'
+      o_nz = `max nb non-null items on extra diagonal sub-matrices'
+   END MODULE LA_Matrix
+</font><font class="text">
+</font><font class="comment">   For sparse, block, symmetric and distributed matrix :
+   MODULE LA_Matrix
+      concrete_name = &quot;PETSc_MPISBAIJ&quot;
+      d_nz = `max nb non-null items on diagonal sub-matrix'
+      o_nz = `max nb non-null items on extra diagonal sub-matrices'
+      block_size = `size of blocks'
+   END MODULE LA_Matrix
+</font><font class="text">
+</font><font class="comment">   For sparse, block, and distributed matrix :
+   MODULE LA_Matrix
+      concrete_name = &quot;PETSc_MPIBAIJ&quot;
+      d_nz = `max nb non-null items on diagonal sub-matrix'
+      o_nz = `max nb non-null items on extra diagonal sub-matrices'
+      block_size = `size of blocks'
+    END MODULE LA_Matrix
+</font><font class="text">
+</font><font class="comment">PUBLISHED
+*/
+</font><font class="text">
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">EXT_PETScMatrix</font><font class="text"> : </font><font class="kw1">public</font><font class="text"> </font><font class="kw3">LA_Matrix
+</font><font class="text">{
+   </font><font class="kw1">public</font><font class="text">: </font><font class="comment">//-----------------------------------------------------------------
+</font><font class="text">
+   </font><font class="comment">//-- Instance delivery and initialization
+</font><font class="text">
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw3">EXT_PETScMatrix</font><font class="text">* create_matrix( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw3">EXT_PETScVector</font><font class="text">* create_vector( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> re_initialize(
+                        </font><font class="kw2">size_t</font><font class="text"> a_nb_rows, </font><font class="kw2">size_t</font><font class="text"> a_nb_cols,
+                        </font><font class="kw2">size_t</font><font class="text"> a_nb_local_rows = </font><font class="kw3">PEL</font><font class="text">::bad_index(),
+                        </font><font class="kw2">size_t</font><font class="text"> a_nb_local_cols = </font><font class="kw3">PEL</font><font class="text">::bad_index() ) ;
+
+   </font><font class="comment">//-- Characteristics
+</font><font class="text">
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw3">LA_Implementation</font><font class="text"> </font><font class="kw1">const</font><font class="text">* implementation( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> is_symmetric( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+
+   </font><font class="comment">//-- Distributed processing
+</font><font class="text">
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> is_desynchronizable( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> start_local_modifs( </font><font class="kw1">void</font><font class="text"> ) ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> stop_local_modifs( </font><font class="kw1">void</font><font class="text"> ) ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> synchronize( </font><font class="kw1">void</font><font class="text"> )  ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw3">PEL_DistributedPartition</font><font class="text"> </font><font class="kw1">const</font><font class="text">* row_distribution( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw3">PEL_DistributedPartition</font><font class="text"> </font><font class="kw1">const</font><font class="text">* col_distribution( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+
+   </font><font class="comment">//-- Access
+</font><font class="text">
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw3">LA_SeqMatrix</font><font class="text">* create_local_matrix( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw2">size_t</font><font class="text"> nb_stored_items( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw2">size_t</font><font class="text"> nb_rows( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw2">size_t</font><font class="text"> nb_cols( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> extract_diag( </font><font class="kw3">LA_Vector</font><font class="text">* diag ) </font><font class="kw1">const</font><font class="text"> ;
+
+   </font><font class="comment">//-- BLAS level 2 : matrix-vector operators
+</font><font class="text">
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> multiply_vec_then_add(
+                        </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* x, </font><font class="kw3">LA_Vector</font><font class="text">* y,
+                        </font><font class="kw1">double</font><font class="text"> alpha = 1.0, </font><font class="kw1">double</font><font class="text"> beta = 0. ) </font><font class="kw1">const</font><font class="text">  ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> tr_multiply_vec_then_add(
+                        </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* x, </font><font class="kw3">LA_Vector</font><font class="text">* y,
+                        </font><font class="kw1">double</font><font class="text"> alpha = 1.0, </font><font class="kw1">double</font><font class="text"> beta = 0. ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> scale_as_diag_mat_mat( </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* lvec ) ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> scale_as_mat_diag_mat( </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* rvec ) ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> add_to_diag( </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* vec ) ;
+
+   </font><font class="comment">//-- BLAS level 3 : matrix-matrix operators
+</font><font class="text">
+      </font><font class="comment">// Create a PETSc matrix as a copy of `A'.
+</font><font class="text">      </font><font class="kw1">void</font><font class="text"> </font><font class="kw2">set</font><font class="text">( </font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* A ) ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> </font><font class="kw2">set</font><font class="text">( </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* A, </font><font class="kw1">bool</font><font class="text"> same_pattern=</font><font class="kw1">false</font><font class="text"> ) ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> add_Mat( </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* A, </font><font class="kw1">double</font><font class="text"> alpha = 1.0,
+                            </font><font class="kw1">bool</font><font class="text"> same_pattern=</font><font class="kw1">false</font><font class="text"> )  ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> add_tMat( </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* A, </font><font class="kw1">double</font><font class="text"> alpha = 1.0 ) ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> add_Mat_Mat( </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* A, </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* B,
+                                </font><font class="kw1">double</font><font class="text"> alpha = 1.0 ) ;
+
+   </font><font class="comment">//-- Element change
+</font><font class="text">
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> set_item( </font><font class="kw2">size_t</font><font class="text"> i, </font><font class="kw2">size_t</font><font class="text"> j, </font><font class="kw1">double</font><font class="text"> x )  ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> add_to_item( </font><font class="kw2">size_t</font><font class="text"> i, </font><font class="kw2">size_t</font><font class="text"> j, </font><font class="kw1">double</font><font class="text"> x )  ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> nullify( </font><font class="kw1">void</font><font class="text"> )  ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> scale( </font><font class="kw1">double</font><font class="text"> alpha )  ;
+
+   </font><font class="comment">//-- Input - Output
+</font><font class="text">
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> readMM( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; file ) ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> print( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostream</font><font class="text">&amp; os, </font><font class="kw2">size_t</font><font class="text"> indent_width ) </font><font class="kw1">const</font><font class="text"> ;
+
+   </font><font class="comment">//-- Hidden
+</font><font class="text">
+      </font><font class="comment">// pointer to internal data
+</font><font class="text">      </font><font class="comment">// (for time optimization, should be used with care)
+</font><font class="text">      Mat </font><font class="kw1">const</font><font class="text">&amp; matrix( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+
+   </font><font class="kw1">protected</font><font class="text">: </font><font class="comment">//--------------------------------------------------------------
+</font><font class="text">
+   </font><font class="kw1">private</font><font class="text">: </font><font class="comment">//----------------------------------------------------------------
+</font><font class="text">
+     ~</font><font class="kw3">EXT_PETScMatrix</font><font class="text">( </font><font class="kw1">void</font><font class="text"> ) ;
+      </font><font class="kw3">EXT_PETScMatrix</font><font class="text">( </font><font class="kw1">void</font><font class="text"> ) ;
+      </font><font class="kw3">EXT_PETScMatrix</font><font class="text">( </font><font class="kw3">EXT_PETScMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; other ) ;
+      </font><font class="kw3">EXT_PETScMatrix</font><font class="text">&amp; </font><font class="kw1">operator</font><font class="text">=( </font><font class="kw3">EXT_PETScMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; other ) ;
+
+      </font><font class="kw3">EXT_PETScMatrix</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                       </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp,
+                       </font><font class="kw3">EXT_PETScMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* other ) ;
+
+      </font><font class="kw3">EXT_PETScMatrix</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                       </font><font class="kw3">EXT_PETScMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* other ) ;
+
+      </font><font class="kw1">bool</font><font class="text"> is_assembled( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">void</font><font class="text"> build( </font><font class="kw3">intVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; nnz ) ;
+
+      </font><font class="kw1">void</font><font class="text"> destroy_matrix( </font><font class="kw1">void</font><font class="text"> ) ;
+
+    </font><font class="comment">//-- Plug in
+</font><font class="text">
+      </font><font class="kw3">EXT_PETScMatrix</font><font class="text">( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_name,
+                       </font><font class="kw1">bool</font><font class="text"> sequential,
+                       </font><font class="kw1">bool</font><font class="text"> symmetric,
+                       </font><font class="kw1">bool</font><font class="text"> block ) ;
+
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw3">EXT_PETScMatrix</font><font class="text">* create_replica(
+                                   </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp ) </font><font class="kw1">const</font><font class="text"> ;
+
+   </font><font class="comment">//-- BLAS level 3 : matrix-matrix operators
+</font><font class="text">
+      </font><font class="kw1">void</font><font class="text"> add_Mat_IMP( Mat A, </font><font class="kw1">double</font><font class="text"> alpha = 1.0,
+                        </font><font class="kw1">bool</font><font class="text"> same_pattern=</font><font class="kw1">false</font><font class="text"> )  ;
+
+   </font><font class="comment">//-- Preconditions, Postconditions, Invariant
+</font><font class="text">
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> invariant( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> implementation_POST(
+                                </font><font class="kw3">LA_Implementation</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result ) </font><font class="kw1">const</font><font class="text"> ;
+
+   </font><font class="comment">//-- Class attributes
+</font><font class="text">
+      </font><font class="kw1">static</font><font class="text"> </font><font class="kw3">EXT_PETScMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* PROTOTYPE_MPIAIJ ;
+      </font><font class="kw1">static</font><font class="text"> </font><font class="kw3">EXT_PETScMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* PROTOTYPE_MPISBAIJ ;
+      </font><font class="kw1">static</font><font class="text"> </font><font class="kw3">EXT_PETScMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* PROTOTYPE_MPIBAIJ ;
+      </font><font class="kw1">static</font><font class="text"> </font><font class="kw3">EXT_PETScMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* PROTOTYPE_SeqSBAIJ ;
+      </font><font class="kw1">static</font><font class="text"> </font><font class="kw3">EXT_PETScMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* PROTOTYPE_SeqAIJ ;
+      </font><font class="kw1">static</font><font class="text"> </font><font class="kw3">EXT_PETScMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* PROTOTYPE_AIJ ;
+
+   </font><font class="comment">//-- Attributes
+</font><font class="text">
+      </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* </font><font class="kw1">const</font><font class="text"> EXP ;
+      </font><font class="kw1">bool</font><font class="text"> </font><font class="kw1">const</font><font class="text"> DESTROY_ON_EXIT ;
+      </font><font class="kw1">bool</font><font class="text"> SYMMETRIC ;
+      </font><font class="kw1">bool</font><font class="text"> SEQ ;
+      </font><font class="kw1">bool</font><font class="text"> BLOCK ;
+      </font><font class="kw1">bool</font><font class="text"> HAS_OPT ;
+      </font><font class="kw1">bool</font><font class="text"> VERB ;
+      Mat MATRIX ;
+      </font><font class="kw2">size_t</font><font class="text"> NB_ROWS ;
+      </font><font class="kw2">size_t</font><font class="text"> NB_COLS ;
+      </font><font class="kw3">PEL_DistributedPartition</font><font class="text">* ROW_DIST ;
+      </font><font class="kw3">PEL_DistributedPartition</font><font class="text">* COL_DIST ;
+      </font><font class="kw1">bool</font><font class="text"> UPPER ;
+} ;
+
+</font><font class="kw2">#endif
+</font><font class="text">
+</font>
+</pre>
+</body>
+</html>

@@ -1,0 +1,329 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>PEL_DerivativeExp.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="PEL_DerivativeExp.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="PELpack-tree.html"><span>Tree</span></a>
+    <a href="PEL_DerivativeExp.html"><span>Class</span></a>
+    <a href="PEL_DerivativeExp.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="PELpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_DerivativeExp</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_assertions</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Double</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ContextSimple</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_List</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Root</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Sequence</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Variable</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;iostream&gt;
+
+</font><font class="kw3">PEL_DerivativeExp</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">PEL_DerivativeExp</font><font class="text">:: PROTOTYPE_d = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_DerivativeExp</font><font class="text">( </font><font class="string">&quot;d&quot;</font><font class="text">, d ) ;
+
+</font><font class="kw3">PEL_DerivativeExp</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">PEL_DerivativeExp</font><font class="text">:: PROTOTYPE_dnum = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_DerivativeExp</font><font class="text">( </font><font class="string">&quot;dnum&quot;</font><font class="text">, dnum ) ;
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_DerivativeExp</font><font class="text">:: </font><font class="kw3">PEL_DerivativeExp</font><font class="text">( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_name,
+                                       OP_TYPE a_op ) 
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_Expression</font><font class="text">( a_name )
+   , OP( a_op )
+   , EXP( 0 )
+   , VAR( 0 )
+   , DERIVATIVE( 0 )
+{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_DerivativeExp:: PEL_DerivativeExp&quot;</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_DerivativeExp</font><font class="text">*
+</font><font class="kw3">PEL_DerivativeExp</font><font class="text">:: create_replica( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                    </font><font class="kw3">PEL_Sequence</font><font class="text"> </font><font class="kw1">const</font><font class="text">* argument_list ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_DerivativeExp:: create_replica&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_PRE( a_owner, argument_list ) ) ;
+
+   </font><font class="kw3">PEL_DerivativeExp</font><font class="text">* result = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_DerivativeExp</font><font class="text">( a_owner,
+                                                      name(),
+                                                      OP,
+                                                      argument_list ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( create_replica_POST( result, a_owner, argument_list ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_DerivativeExp</font><font class="text">:: </font><font class="kw3">PEL_DerivativeExp</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                       </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_name,
+                                       OP_TYPE a_op,
+                                       </font><font class="kw3">PEL_Sequence</font><font class="text"> </font><font class="kw1">const</font><font class="text">* argument_list ) 
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_Expression</font><font class="text">( a_owner, a_name, argument_list )
+   , OP( a_op )
+   , EXP( arg(0) )
+   , VAR( </font><font class="kw3">PEL_Variable</font><font class="text">::object( arg(1)-&gt;to_string() ) )
+   , DERIVATIVE( 0 )
+{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_DerivativeExp:: PEL_DerivativeExp&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_DerivativeExp</font><font class="text">:: ~</font><font class="kw3">PEL_DerivativeExp</font><font class="text">( </font><font class="kw1">void</font><font class="text"> ) 
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_DerivativeExp:: ~PEL_DerivativeExp&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_DerivativeExp</font><font class="text">*
+</font><font class="kw3">PEL_DerivativeExp</font><font class="text">:: create_clone( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_DerivativeExp:: create_clone&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( !is_a_prototype() ) ;
+   
+   </font><font class="kw3">PEL_DerivativeExp</font><font class="text">* result =
+      </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">PEL_DerivativeExp</font><font class="text">*&gt;(
+         </font><font class="kw3">PEL_Expression</font><font class="text">::create_clone( a_owner ) ) ;
+
+   </font><font class="kw1">if</font><font class="text">( !is_a_prototype() &amp;&amp; DERIVATIVE!=0 )
+      result-&gt;DERIVATIVE = DERIVATIVE-&gt;create_clone( result ) ;
+   
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; 
+</font><font class="kw3">PEL_DerivativeExp</font><font class="text">:: usage( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> result ;
+   result = name() + </font><font class="string">&quot;(&lt;expression&gt;,SS)&quot;</font><font class="text"> ;
+   </font><font class="kw1">return</font><font class="text"> result ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">PEL_DerivativeExp</font><font class="text">:: valid_arguments( </font><font class="kw3">PEL_Sequence</font><font class="text"> </font><font class="kw1">const</font><font class="text">* some_arguments ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_DerivativeExp:: valid_arguments&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( valid_arguments_PRE( some_arguments ) ) ;
+   </font><font class="kw1">bool</font><font class="text"> result = some_arguments-&gt;count()==2 ;
+   </font><font class="kw1">if</font><font class="text">( result )
+   {
+      </font><font class="kw3">PEL_Data</font><font class="text">::Type k0 =  extract_arg( some_arguments, 0 )-&gt;data_type() ;
+      result = result &amp;&amp; ( k0==Double || k0==DoubleVector ) ;
+      </font><font class="kw3">PEL_Data</font><font class="text">::Type k1 =  extract_arg( some_arguments, 1 )-&gt;data_type() ;
+      result = result &amp;&amp; ( k1==String ) ;
+   }
+   </font><font class="kw1">return</font><font class="text"> result ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_Data</font><font class="text">::Type
+</font><font class="kw3">PEL_DerivativeExp</font><font class="text">:: data_type( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_DerivativeExp:: data_type&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw1">return</font><font class="text"> EXP-&gt;data_type() ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">double
+</font><font class="kw3">PEL_DerivativeExp</font><font class="text">:: to_double( </font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ct ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_DerivativeExp:: to_double&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( to_double_PRE(ct) ) ;
+
+   </font><font class="kw1">double</font><font class="text"> result ;
+   
+   </font><font class="kw1">if</font><font class="text">( OP==d )
+   {
+      result = derivative(ct)-&gt;to_double(ct) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      </font><font class="kw3">PEL_ASSERT</font><font class="text">( OP==dnum ) ;
+      </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">double</font><font class="text"> </font><font class="kw1">const</font><font class="text"> eps = 1.0e-8 ;
+      
+      </font><font class="kw1">double</font><font class="text"> val = ct-&gt;value( VAR )-&gt;to_double(ct) ;
+      </font><font class="kw3">PEL_ContextSimple</font><font class="text">* ctx = </font><font class="kw3">PEL_ContextSimple</font><font class="text">::create( 0 ) ;
+      ctx-&gt;extend( ct ) ;
+      </font><font class="kw1">double</font><font class="text"> dx = </font><font class="kw3">PEL</font><font class="text">::max( eps, val*eps ) ;
+      
+      ctx-&gt;set_value_of( VAR, </font><font class="kw3">PEL_Double</font><font class="text">::create( ctx, val+dx ) ) ;
+      result = ( EXP-&gt;to_double( ctx ) - EXP-&gt;to_double( ct ) )/dx ;
+      ctx-&gt;destroy() ; ctx=0 ;
+   }
+   </font><font class="kw1">return</font><font class="text"> result ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp;
+</font><font class="kw3">PEL_DerivativeExp</font><font class="text">:: to_double_vector( </font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ct ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_DerivativeExp:: to_double_vector&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( to_double_vector_PRE( ct ) ) ;
+
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( OP==d ) ;
+
+   </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; result = derivative(ct)-&gt;to_double_vector(ct) ;
+   </font><font class="kw1">return</font><font class="text"> result ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_Data</font><font class="text">*
+</font><font class="kw3">PEL_DerivativeExp</font><font class="text">:: create_derivative( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                       </font><font class="kw3">PEL_Variable</font><font class="text"> </font><font class="kw1">const</font><font class="text">* var,
+                                       </font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ct ) </font><font class="kw1">const</font><font class="text"> 
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_DerivativeExp:: create_derivative&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( create_derivative_PRE( a_owner, var, ct ) ) ;
+
+   </font><font class="kw1">if</font><font class="text">( OP!=d )
+   {
+      </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( </font><font class="string">&quot;Unable to differentiate &quot;</font><font class="text">+name()+</font><font class="string">&quot; operator&quot;</font><font class="text"> ) ;
+   }
+   
+   </font><font class="kw3">PEL_Data</font><font class="text">* result = derivative(ct)-&gt;create_derivative( a_owner, var, ct ) ;
+   
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( create_derivative_POST( a_owner, var, result ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_DerivativeExp</font><font class="text">:: print( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostream</font><font class="text">&amp; os, </font><font class="kw2">size_t</font><font class="text"> indent_width ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> space( indent_width, </font><font class="string">' '</font><font class="text"> ) ;
+   os &lt;&lt; space &lt;&lt; name() &lt;&lt; </font><font class="string">&quot;( &quot;</font><font class="text"> ;
+   EXP-&gt;print( os, 0 ) ;
+   os &lt;&lt; </font><font class="string">&quot;, \&quot;&quot; &lt;&lt; VAR-&gt;name() &lt;&lt; &quot;</font><font class="text">\</font><font class="string">&quot; )&quot;</font><font class="text"> ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_Data</font><font class="text">*
+</font><font class="kw3">PEL_DerivativeExp</font><font class="text">:: create_non_const_simplification(
+                                              </font><font class="kw3">PEL_Object</font><font class="text">* a_owner ) </font><font class="kw1">const</font><font class="text"> 
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_DerivativeExp:: create_non_const_simplification&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_non_const_simplification_PRE( a_owner ) ) ;
+   </font><font class="kw3">PEL_Data</font><font class="text">* result = 0 ;
+   
+   </font><font class="kw1">if</font><font class="text">( OP==d )
+   {
+      </font><font class="kw3">PEL_ASSERT</font><font class="text">( DERIVATIVE!=0 ) ;
+      result = DERIVATIVE-&gt;create_simplification( a_owner ) ;
+   }
+   
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_non_const_simplification_POST( a_owner, result ) ) ;
+   </font><font class="kw1">return</font><font class="text"> result ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_Data</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">PEL_DerivativeExp</font><font class="text">:: derivative( </font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ct ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_DerivativeExp:: derivative&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( OP==d ) ;
+   
+   </font><font class="kw1">if</font><font class="text">( DERIVATIVE==0 )
+   {
+      </font><font class="kw3">PEL_Data</font><font class="text">* der = EXP-&gt;create_derivative( 0, VAR, ct ) ;
+</font><font class="comment">//       std::cout &lt;&lt; &quot;Derivative of &quot; ;
+//       EX-&gt;print( std::cout, 1 ) ;
+//       std::cout &lt;&lt; std::endl &lt;&lt; &quot; with respect to &quot;  ;
+//       VAR-&gt;print( std::cout, 1 ) ;
+//       std::cout &lt;&lt; std::endl &lt;&lt; &quot; is : &quot; ;
+//       der-&gt;print( std::cout, 0 ) ;
+//       std::cout &lt;&lt; std::endl &lt;&lt; &quot; Simplified in &quot; ;
+</font><font class="text">      DERIVATIVE = der-&gt;create_simplification(
+         </font><font class="kw1">const_cast</font><font class="text">&lt;</font><font class="kw3">PEL_DerivativeExp</font><font class="text">*&gt;(</font><font class="kw1">this</font><font class="text">) ) ;
+</font><font class="comment">//       DERIVATIVE-&gt;print( std::cout, 0 ) ;
+//      std::cout &lt;&lt; std::endl ;
+</font><font class="text">      
+      der-&gt;destroy() ;
+   }
+   </font><font class="kw1">return</font><font class="text"> DERIVATIVE ;
+}
+
+</font>
+</pre>
+</body>
+</html>

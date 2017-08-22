@@ -1,0 +1,396 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>FE_FieldParameter.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="FE_FieldParameter.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="FEpack-tree.html"><span>Tree</span></a>
+    <a href="FE_FieldParameter.html"><span>Class</span></a>
+    <a href="FE_FieldParameter.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="FEpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE_FieldParameter</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_assertions</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_CursorFEside</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_DiscreteField</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_DomainAndFields</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_FieldComposition</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_LocalFEbound</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_LocalFEcell</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_SetOfDiscreteFields</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;sstream&gt;
+
+</font><font class="kw3">FE_FieldParameter</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">FE_FieldParameter</font><font class="text">:: PROTOTYPE = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">FE_FieldParameter</font><font class="text">() ;
+
+</font><font class="kw1">struct</font><font class="text"> FE_FieldParameter_ERROR
+{
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> n0( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; f_name,
+                   </font><font class="kw2">size_t</font><font class="text"> current, </font><font class="kw2">size_t</font><font class="text"> expected ) ;
+} ;
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw3">FE_FieldParameter</font><font class="text">:: </font><font class="kw3">FE_FieldParameter</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">FE_Parameter</font><font class="text">( </font><font class="string">&quot;FE_FieldParameter&quot;</font><font class="text"> )
+   , FIELD( 0 )
+   , FIELD_LEVEL( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+   , COEF( </font><font class="kw3">PEL</font><font class="text">::bad_double() )
+{
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw3">FE_FieldParameter</font><font class="text">*
+</font><font class="kw3">FE_FieldParameter</font><font class="text">:: create_replica( 
+                             </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                             </font><font class="kw3">PDE_DomainAndFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dom,
+                             </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp ) </font><font class="kw1">const
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_FieldParameter:: create_replica&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_PRE( a_owner, dom, exp ) ) ;
+   
+   </font><font class="kw3">FE_FieldParameter</font><font class="text">* result = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">FE_FieldParameter</font><font class="text">( a_owner, dom, exp ) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_POST( result, a_owner, dom, exp ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw3">FE_FieldParameter</font><font class="text">:: </font><font class="kw3">FE_FieldParameter</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                       </font><font class="kw3">PDE_DomainAndFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dom,
+                                       </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp )
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">FE_Parameter</font><font class="text">( a_owner, exp-&gt;string_data( </font><font class="string">&quot;name&quot;</font><font class="text"> ) )
+   , FIELD( dom-&gt;set_of_discrete_fields()-&gt;item( 
+                                           exp-&gt;string_data( </font><font class="string">&quot;field_name&quot;</font><font class="text"> ) ) )
+   , FIELD_LEVEL( exp-&gt;int_data( </font><font class="string">&quot;field_level&quot;</font><font class="text"> ) )
+   , COEF( exp-&gt;has_entry( </font><font class="string">&quot;coefficient&quot;</font><font class="text"> ) ? 
+                exp-&gt;double_data( </font><font class="string">&quot;coefficient&quot;</font><font class="text"> ) : 1.0 )
+{
+   </font><font class="kw1">if</font><font class="text">( FIELD_LEVEL&gt;=FIELD-&gt;storage_depth() )
+   {
+      FE_FieldParameter_ERROR::n0( exp-&gt;string_data( </font><font class="string">&quot;name&quot;</font><font class="text"> ),
+                                   FIELD-&gt;storage_depth(), FIELD_LEVEL ) ;
+   }
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw3">FE_FieldParameter</font><font class="text">:: ~</font><font class="kw3">FE_FieldParameter</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw1">double
+</font><font class="kw3">FE_FieldParameter</font><font class="text">:: cell_value_at_pt( </font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* t_it,
+                                      </font><font class="kw3">PDE_LocalFEcell</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fe,
+                                      </font><font class="kw2">size_t</font><font class="text"> ic ) </font><font class="kw1">const
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_FieldParameter:: cell_value_at_pt&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( cell_value_at_pt_PRE( t_it, fe, ic ) ) ;
+ 
+   </font><font class="kw1">double</font><font class="text"> result = COEF * fe-&gt;value_at_pt( FIELD, FIELD_LEVEL, ic ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw1">double
+</font><font class="kw3">FE_FieldParameter</font><font class="text">:: cell_gradient_at_pt( </font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* t_it,
+                                         </font><font class="kw3">PDE_LocalFEcell</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fe,
+                                         </font><font class="kw2">size_t</font><font class="text"> a,
+                                         </font><font class="kw2">size_t</font><font class="text"> ic ) </font><font class="kw1">const
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_FieldParameter:: cell_gradient_at_pt&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( cell_gradient_at_pt_PRE( t_it, fe, a, ic ) ) ;
+
+   </font><font class="kw1">double</font><font class="text"> result = COEF * fe-&gt;gradient_at_pt( FIELD, FIELD_LEVEL, a, ic ) ;
+   
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw1">double
+</font><font class="kw3">FE_FieldParameter</font><font class="text">:: cell_value_at_IP( </font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* t_it,
+                                      </font><font class="kw3">PDE_LocalFEcell</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fe,
+                                      </font><font class="kw2">size_t</font><font class="text"> ic ) </font><font class="kw1">const
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_FieldParameter:: cell_value_at_IP&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( cell_value_at_IP_PRE( t_it, fe, ic ) ) ;
+
+   </font><font class="kw1">double</font><font class="text"> result = COEF * fe-&gt;value_at_IP( FIELD, FIELD_LEVEL, ic ) ;
+   
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw1">double
+</font><font class="kw3">FE_FieldParameter</font><font class="text">:: cell_gradient_at_IP( </font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* t_it,
+                                         </font><font class="kw3">PDE_LocalFEcell</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fe,
+                                         </font><font class="kw2">size_t</font><font class="text"> a,
+                                         </font><font class="kw2">size_t</font><font class="text"> ic ) </font><font class="kw1">const
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_FieldParameter:: cell_gradient_at_IP&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( cell_gradient_at_IP_PRE( t_it, fe, a, ic ) ) ;
+
+   </font><font class="kw1">double</font><font class="text"> result = COEF * fe-&gt;gradient_at_IP( FIELD, FIELD_LEVEL, a, ic ) ;
+   
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw1">double
+</font><font class="kw3">FE_FieldParameter</font><font class="text">:: bound_value_at_pt( </font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* t_it,
+                                       </font><font class="kw3">PDE_LocalFEbound</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fe,
+                                       </font><font class="kw2">size_t</font><font class="text"> ic ) </font><font class="kw1">const
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_FieldParameter:: bound_value_at_pt&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( bound_value_at_pt_PRE( t_it, fe, ic ) ) ;
+
+   </font><font class="kw1">double</font><font class="text"> result = COEF * fe-&gt;value_at_pt( FIELD, FIELD_LEVEL, ic ) ;
+   
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw1">double
+</font><font class="kw3">FE_FieldParameter</font><font class="text">:: bound_gradient_at_pt( </font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* t_it,
+                                          </font><font class="kw3">PDE_LocalFEbound</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fe,
+                                          </font><font class="kw2">size_t</font><font class="text"> a,
+                                          </font><font class="kw2">size_t</font><font class="text"> ic ) </font><font class="kw1">const
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_FieldParameter:: bound_gradient_at_pt&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( bound_gradient_at_pt_PRE( t_it, fe, a, ic ) ) ;
+
+   </font><font class="kw1">double</font><font class="text"> result = COEF * fe-&gt;gradient_at_pt( FIELD, FIELD_LEVEL, a, ic ) ;
+   
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw1">double
+</font><font class="kw3">FE_FieldParameter</font><font class="text">:: bound_value_at_IP( </font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* t_it,
+                                       </font><font class="kw3">PDE_LocalFEbound</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fe,
+                                       </font><font class="kw2">size_t</font><font class="text"> ic ) </font><font class="kw1">const
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_FieldParameter:: bound_value_at_IP&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( bound_value_at_IP_PRE( t_it, fe, ic ) ) ;
+
+   </font><font class="kw1">double</font><font class="text"> result = COEF * fe-&gt;value_at_IP( FIELD, FIELD_LEVEL, ic ) ;
+   
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw1">double
+</font><font class="kw3">FE_FieldParameter</font><font class="text">:: bound_gradient_at_IP( </font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* t_it,
+                                          </font><font class="kw3">PDE_LocalFEbound</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fe,
+                                          </font><font class="kw2">size_t</font><font class="text"> a,
+                                          </font><font class="kw2">size_t</font><font class="text"> ic ) </font><font class="kw1">const
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_FieldParameter:: bound_gradient_at_IP&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( bound_gradient_at_IP_PRE( t_it, fe, a, ic ) ) ;
+
+   </font><font class="kw1">double</font><font class="text"> result = COEF * fe-&gt;gradient_at_IP( FIELD, FIELD_LEVEL, a, ic ) ;
+   
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw2">size_t
+</font><font class="kw3">FE_FieldParameter</font><font class="text">:: nb_components( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_FieldParameter:: nb_components&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw2">size_t</font><font class="text"> result = FIELD-&gt;nb_components() ;
+   
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result == discrete_field()-&gt;nb_components() ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw3">PDE_DiscreteField</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">FE_FieldParameter</font><font class="text">:: discrete_field( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_FieldParameter:: discrete_field&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw3">PDE_DiscreteField</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result = FIELD ;
+   
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result != 0 ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw2">size_t
+</font><font class="kw3">FE_FieldParameter</font><font class="text">:: field_level( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_FieldParameter:: field_level&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw2">size_t</font><font class="text"> result = FIELD_LEVEL ;
+   
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result &lt; discrete_field()-&gt;storage_depth() ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_FieldParameter</font><font class="text">:: prepare_for_value_on_cells( </font><font class="kw3">PDE_LocalFEcell</font><font class="text">* fe ) </font><font class="kw1">const
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_FieldParameter:: prepare_for_value_on_cells&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( prepare_for_value_on_cells_PRE( fe ) ) ;
+   
+   fe-&gt;require_field_calculation( FIELD, </font><font class="kw3">PDE_LocalFE</font><font class="text">::N ) ;
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_FieldParameter</font><font class="text">:: prepare_for_gradient_on_cells( </font><font class="kw3">PDE_LocalFEcell</font><font class="text">* fe ) </font><font class="kw1">const
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_FieldParameter:: prepare_for_gradient_on_cells&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( prepare_for_gradient_on_cells_PRE( fe ) ) ;
+   
+   fe-&gt;require_field_calculation( FIELD, </font><font class="kw3">PDE_LocalFE</font><font class="text">::dN ) ;
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_FieldParameter</font><font class="text">:: prepare_for_value_on_bounds(
+                                               </font><font class="kw3">PDE_LocalFEbound</font><font class="text">* fe ) </font><font class="kw1">const
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_FieldParameter:: prepare_for_value_on_bounds&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( prepare_for_value_on_bounds_PRE( fe ) ) ;
+   
+   fe-&gt;require_field_calculation( FIELD, </font><font class="kw3">PDE_LocalFE</font><font class="text">::N ) ;
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_FieldParameter</font><font class="text">:: prepare_for_gradient_on_bounds(
+                                               </font><font class="kw3">PDE_LocalFEbound</font><font class="text">* fe ) </font><font class="kw1">const
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_FieldParameter:: prepare_for_gradient_on_bounds&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( prepare_for_gradient_on_bounds_PRE( fe ) ) ;
+   
+   fe-&gt;require_field_calculation( FIELD, </font><font class="kw3">PDE_LocalFE</font><font class="text">::dN ) ;
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_FieldParameter</font><font class="text">:: prepare_for_value_on_sides( </font><font class="kw3">PDE_CursorFEside</font><font class="text">* fe ) </font><font class="kw1">const
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_FieldParameter:: prepare_for_value_on_sides&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( prepare_for_value_on_sides_PRE( fe ) ) ;
+   
+   fe-&gt;require_field_calculation( FIELD, </font><font class="kw3">PDE_LocalFE</font><font class="text">::N ) ;
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_FieldParameter</font><font class="text">:: prepare_for_gradient_on_sides( </font><font class="kw3">PDE_CursorFEside</font><font class="text">* fe ) </font><font class="kw1">const
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_FieldParameter:: prepare_for_gradient_on_sides&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( prepare_for_gradient_on_sides_PRE( fe ) ) ;
+   
+   fe-&gt;require_field_calculation( FIELD, </font><font class="kw3">PDE_LocalFE</font><font class="text">::dN ) ;
+}
+
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="kw1">void</font><font class="text"> 
+FE_FieldParameter_ERROR:: n0( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; f_name,
+                              </font><font class="kw2">size_t</font><font class="text"> current, </font><font class="kw2">size_t</font><font class="text"> expected )
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> mesg ;
+   mesg &lt;&lt; </font><font class="string">&quot;*** FE_FieldParameter error\n&quot;</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;    bad storage depth for the field \&quot;&quot;
+        &lt;&lt; f_name &lt;&lt; &quot;</font><font class="text">\</font><font class="string">&quot;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;       expected : &quot;</font><font class="text"> &lt;&lt; expected &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;       current  : &quot;</font><font class="text"> &lt;&lt; current &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( mesg.str() ) ;
+}
+
+</font>
+</pre>
+</body>
+</html>

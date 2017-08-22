@@ -1,0 +1,103 @@
+<html>
+<head>
+<title>data.pel</title>
+<link rel=stylesheet type="text/css" href="stylesheet.css">
+</head>
+<body>
+<pre>
+<font class="kw1">MODULE</font><font class="text"> </font><font class="kw3">PEL_Application
+</font><font class="text">   
+   </font><font class="kw1">concrete_name</font><font class="text"> = </font><font class="string">&quot;CH_Fsaver&quot;
+</font><font class="text">   
+   $DS_sigma_12 = 1.
+   $DS_sigma_13 = 2.
+   $DS_sigma_23 = 3.
+   
+   $DS_Sig1 = $DS_sigma_12 + $DS_sigma_13 - $DS_sigma_23
+   $DS_Sig2 = $DS_sigma_12 + $DS_sigma_23 - $DS_sigma_13
+   $DS_Sig3 = $DS_sigma_13 + $DS_sigma_23 - $DS_sigma_12
+
+   $DS_coef_lambda = 20.
+
+   </font><font class="kw1">MODULE</font><font class="text"> PDE_DomainAndFields
+      verbose_level = 1
+      nb_space_dimensions = 2
+      type = </font><font class="string">&quot;finite_element&quot;
+</font><font class="text">      
+      </font><font class="comment">// meshing of the Gibbs Triangle and its surroundings
+</font><font class="text">      $IS_nb_intervals = 5
+      </font><font class="kw1">#include</font><font class="text"> ( </font><font class="kw2">join</font><font class="text">( </font><font class="kw2">getenv</font><font class="text">( </font><font class="string">&quot;PELICANSHOME&quot;</font><font class="text"> ),
+                       </font><font class="string">&quot;ExamplesOfApplication&quot;</font><font class="text">,
+                       </font><font class="string">&quot;CahnHilliardNavierStokes&quot;</font><font class="text">,
+                       </font><font class="string">&quot;tests&quot;</font><font class="text">,
+                       </font><font class="string">&quot;Fsave&quot;</font><font class="text">,
+                       </font><font class="string">&quot;GibbsTriangleMeshing.pel&quot;</font><font class="text"> ) )
+      
+      </font><font class="kw1">MODULE</font><font class="text"> interior_fields
+      </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> interior_fields
+
+      </font><font class="kw1">MODULE</font><font class="text"> </font><font class="kw3">PDE_ResultSaver
+</font><font class="text">         writers = &lt; </font><font class="string">&quot;PEL_GMVwriter&quot;</font><font class="text"> &gt;         
+         writing_mode = </font><font class="string">&quot;text&quot;
+</font><font class="text">         files_basename = </font><font class="string">&quot;save&quot;</font><font class="text">    
+      </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> </font><font class="kw3">PDE_ResultSaver
+</font><font class="text">      
+   </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> PDE_DomainAndFields
+
+   </font><font class="kw1">MODULE</font><font class="text"> plots
+
+      </font><font class="kw1">MODULE</font><font class="text"> plot#F
+         type = </font><font class="string">&quot;CH_BulkChemicalPotential&quot;
+</font><font class="text">         
+         name = </font><font class="string">&quot;F&quot;
+</font><font class="text">         
+         coef_Sigma_1 = $DS_Sig1
+         coef_Sigma_2 = $DS_Sig2
+         coef_Sigma_3 = $DS_Sig3
+         </font><font class="kw1">MODULE</font><font class="text"> CH_BulkEnergy#F0
+            </font><font class="kw1">concrete_name</font><font class="text"> = </font><font class="string">&quot;CH_F0Implicit&quot;
+</font><font class="text">         </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> CH_BulkEnergy#F0
+         </font><font class="kw1">MODULE</font><font class="text"> CH_BulkEnergy#P
+            </font><font class="kw1">concrete_name</font><font class="text"> = </font><font class="string">&quot;CH_PSemiImplicit&quot;
+</font><font class="text">            coef_lambda = $DS_coef_lambda
+         </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> CH_BulkEnergy#P
+         
+      </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> plot#F
+
+      </font><font class="kw1">MODULE</font><font class="text"> plot#F0
+         type = </font><font class="string">&quot;CH_BulkEnergy&quot;
+</font><font class="text">         
+         name = </font><font class="string">&quot;F0&quot;
+</font><font class="text">
+         coef_Sigma_1 = $DS_Sig1
+         coef_Sigma_2 = $DS_Sig2
+         coef_Sigma_3 = $DS_Sig3
+         </font><font class="kw1">MODULE</font><font class="text"> CH_BulkEnergy
+            </font><font class="kw1">concrete_name</font><font class="text"> = </font><font class="string">&quot;CH_F0Implicit&quot;
+</font><font class="text">         </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> CH_BulkEnergy
+         
+      </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> plot#F0
+      
+      </font><font class="kw1">MODULE</font><font class="text"> plot#P
+         type = </font><font class="string">&quot;CH_BulkEnergy&quot;
+</font><font class="text">         
+         name = </font><font class="string">&quot;P&quot;
+</font><font class="text">         
+         coef_Sigma_1 = $DS_Sig1
+         coef_Sigma_2 = $DS_Sig2
+         coef_Sigma_3 = $DS_Sig3   
+         </font><font class="kw1">MODULE</font><font class="text"> CH_BulkEnergy
+            </font><font class="kw1">concrete_name</font><font class="text"> = </font><font class="string">&quot;CH_PSemiImplicit&quot;
+</font><font class="text">            coef_lambda = $DS_coef_lambda
+         </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> CH_BulkEnergy
+
+      </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> plot#P
+      
+   </font><font class="kw1">END</font><font class="text">  </font><font class="kw1">MODULE</font><font class="text"> plots
+   
+</font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> </font><font class="kw3">PEL_Application
+</font><font class="text">
+</font>
+</pre>
+</body>
+</html>

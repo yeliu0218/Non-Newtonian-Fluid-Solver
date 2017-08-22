@@ -1,0 +1,463 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>LA_GMRES_IS.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="LA_GMRES_IS.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="LApack-tree.html"><span>Tree</span></a>
+    <a href="LA_GMRES_IS.html"><span>Class</span></a>
+    <a href="LA_GMRES_IS.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="LApack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated
+ *  reusable components, whose purpose is to simplify the task of developing
+ *  softwares of numerical mathematics and scientific computing.
+ *
+ *  This software is governed by the CeCILL-C license under French law and
+ *  abiding by the rules of distribution of free software. You can use, modify
+ *  and/or redistribute the software under the terms of the CeCILL-C license
+ *  as circulated by CEA, CNRS and INRIA at the following URL
+ *  &quot;http://www.cecill.info&quot;.
+ *
+ *  As a counterpart to the access to the source code and rights to copy,
+ *  modify and redistribute granted by the license, users are provided only
+ *  with a limited warranty and the software's author, the holder of the
+ *  economic rights, and the successive licensors have only limited liability.
+ *
+ *  In this respect, the user's attention is drawn to the risks associated
+ *  with loading, using, modifying and/or developing or reproducing the
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also
+ *  therefore means that it is reserved for developers and experienced
+ *  professionals having in-depth computer knowledge. Users are therefore
+ *  encouraged to load and test the software's suitability as regards their
+ *  requirements in conditions enabling the security of their systems and/or
+ *  data to be ensured and, more generally, to use and operate it in the same
+ *  conditions as regards security.
+ *
+ *  The fact that you are presently reading this means that you have had
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_GMRES_IS</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_assertions</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_DistributedPartition</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Vector</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_SeqVector</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_Preconditioner</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_Matrix</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_DenseMatrix</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_Matrix</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_Vector</font><font class="text">.hh&gt;
+
+
+</font><font class="kw2">#include</font><font class="text"> &lt;iostream&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;sstream&gt;
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+
+</font><font class="comment">// happy breakdown tolerance
+//    it may not exactly correspond to that of PETSc, but it should...
+</font><font class="kw1">const</font><font class="text"> </font><font class="kw1">double</font><font class="text"> </font><font class="kw3">LA_GMRES_IS</font><font class="text">:: HAPTOL = 1.e-30 ;
+
+</font><font class="kw3">LA_GMRES_IS</font><font class="text"> </font><font class="kw1">const</font><font class="text">* </font><font class="kw3">LA_GMRES_IS</font><font class="text">::PROTOTYPE = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">LA_GMRES_IS</font><font class="text">() ;
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_GMRES_IS</font><font class="text">:: </font><font class="kw3">LA_GMRES_IS</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">LA_IterativeSolver</font><font class="text">( </font><font class="string">&quot;LA_GMRES_IS&quot;</font><font class="text"> )
+   , H( 0, 0 )
+   , S( 0 )
+   , cRot( 0 )
+   , sRot( 0 )
+   , UPY( 0 )
+{
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_GMRES_IS</font><font class="text">*
+</font><font class="kw3">LA_GMRES_IS</font><font class="text">:: create_replica( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                              </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_GMRES_IS:: create_replica&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_PRE( a_owner, exp ) ) ;
+
+   </font><font class="kw3">LA_GMRES_IS</font><font class="text">* result = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">LA_GMRES_IS</font><font class="text">( a_owner, exp ) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_POST( result, a_owner, exp ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_GMRES_IS</font><font class="text">:: </font><font class="kw3">LA_GMRES_IS</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                           </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">  : </font><font class="kw3">LA_IterativeSolver</font><font class="text">( a_owner, exp )
+  , H( 0, 0 )
+  , S( 0 )
+  , cRot( 0 )
+  , sRot( 0 )
+  , UPY( 0 )
+  , vTemp( 0 )
+{
+   </font><font class="kw1">int</font><font class="text"> restart = exp-&gt;int_data( </font><font class="string">&quot;restart&quot;</font><font class="text"> ) ;
+   exp-&gt;test_data( </font><font class="string">&quot;restart&quot;</font><font class="text">, </font><font class="string">&quot;restart&gt;0&quot;</font><font class="text"> ) ;
+
+   init( restart ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_GMRES_IS</font><font class="text">:: </font><font class="kw3">LA_GMRES_IS</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                             </font><font class="kw3">LA_GMRES_IS</font><font class="text"> </font><font class="kw1">const</font><font class="text">* other )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">LA_IterativeSolver</font><font class="text">( a_owner, other )
+   , H( 0, 0 )
+   , S( 0 )
+   , cRot( 0 )
+   , sRot( 0 )
+   , UPY( 0 )
+   , vTemp( 0 )
+{
+   init( other-&gt;RESTART ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_GMRES_IS</font><font class="text">:: init( </font><font class="kw2">size_t</font><font class="text"> restart )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   SIZE = 0 ;
+   RESTART = restart ;
+   vBasis = 0 ;
+   H.re_initialize( restart+1, restart ) ;
+   S.re_initialize( restart+1 ) ;
+   cRot.re_initialize( restart ) ;
+   sRot.re_initialize( restart ) ;
+   UPY.re_initialize( restart+1 ) ;
+   vBasis = </font><font class="kw3">PEL_Vector</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, restart+1  ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_GMRES_IS</font><font class="text">:: ~</font><font class="kw3">LA_GMRES_IS</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_GMRES_IS</font><font class="text">*
+</font><font class="kw3">LA_GMRES_IS</font><font class="text">:: create_clone( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_GMRES_IS:: create_clone&quot;</font><font class="text"> ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">LA_GMRES_IS</font><font class="text">( a_owner, </font><font class="kw1">this</font><font class="text"> ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_GMRES_IS</font><font class="text">:: do_solve( </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* A,
+                        </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* b,
+                        </font><font class="kw3">LA_Preconditioner</font><font class="text">* prec,
+                        </font><font class="kw1">bool</font><font class="text"> zero_initial_guess,
+                        </font><font class="kw3">LA_Vector</font><font class="text">* x )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_GMRES_IS:: do_solve&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( do_solve_PRE( A, b, prec, zero_initial_guess, x ) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   reset_internals( b ) ;
+
+   </font><font class="kw1">double</font><font class="text"> xx, rNorm ;
+   </font><font class="kw1">bool</font><font class="text"> no_error = </font><font class="kw1">true</font><font class="text"> ;
+
+   </font><font class="kw1">bool</font><font class="text"> zero_init = zero_initial_guess ;
+   </font><font class="kw2">size_t</font><font class="text"> it = 0 ;
+   </font><font class="kw1">do
+</font><font class="text">   {
+      r-&gt;</font><font class="kw2">set</font><font class="text">( b ) ;
+      </font><font class="kw1">if</font><font class="text">( zero_init )
+      {
+         x-&gt;</font><font class="kw2">set</font><font class="text">( 0.0 ) ;
+      }
+      </font><font class="kw1">else
+</font><font class="text">      {
+         A-&gt;multiply_vec_then_add( x, r, -1.0, 1.0 ) ;
+      }
+      apply_prec( it, prec, r, vTemp, no_error ) ;
+      </font><font class="kw1">if</font><font class="text">( !no_error )
+      {
+         set_converged_reason( it, </font><font class="kw3">LA_ConvergenceTest</font><font class="text">::PreconditionerFailure ) ;
+         </font><font class="kw1">break</font><font class="text"> ; </font><font class="comment">// &lt;---
+</font><font class="text">      }
+
+      rNorm = vTemp-&gt;two_norm() ;
+      test_convergence( it, rNorm, A, b, prec, zero_init ) ;
+      </font><font class="kw1">if</font><font class="text">( convergence_achieved() ) </font><font class="kw1">break</font><font class="text"> ; </font><font class="comment">// &lt;---
+</font><font class="text">
+      </font><font class="comment">//--- CONSTRUCT THE FIRST VECTOR OF THE OTHONORMAL BASIS OF THE
+</font><font class="text">      </font><font class="comment">//--- KRYLOV SUBSPACE, AND THE CURRENT VALUE OF s
+</font><font class="text">      </font><font class="kw3">LA_Vector</font><font class="text">* vb0 = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">LA_Vector</font><font class="text">*&gt;( vBasis-&gt;at( 0 ) ) ;
+      vb0-&gt;</font><font class="kw2">set</font><font class="text">( 0.0 ) ;
+      vb0-&gt;sum( vTemp, 1.0/rNorm ) ;
+      S.</font><font class="kw2">set</font><font class="text">( 0.0 ) ;
+      S( 0 ) = rNorm ;
+
+      </font><font class="kw1">int</font><font class="text"> k=0 ;
+      </font><font class="kw1">int</font><font class="text"> i ;
+      </font><font class="kw1">do
+</font><font class="text">      {
+         ++it ;
+
+         </font><font class="comment">//--- CONSTRUCT THE ( k+1 )-TH VECTOR OF THE ORTHONORMAL BASIS
+</font><font class="text">         </font><font class="comment">//--- OF THE KRYLOV SUBSPACE, I.E. CONSTRUCT THE k-TH COLUMN
+</font><font class="text">         </font><font class="comment">//--- OF H ORTHONORMAL TO THE PREVIOUS ( K-1 )-TH COLUMNS
+</font><font class="text">         </font><font class="kw3">LA_Vector</font><font class="text">* vbk   = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">LA_Vector</font><font class="text">*&gt;( vBasis-&gt;at( k   ) ) ;
+         </font><font class="kw3">LA_Vector</font><font class="text">* vbkp1 = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">LA_Vector</font><font class="text">*&gt;( vBasis-&gt;at( k+1 ) ) ;
+         A-&gt;multiply_vec_then_add( vbk, Avk ) ;
+         apply_prec( it, prec, Avk, vbkp1, no_error ) ;
+         </font><font class="kw1">if</font><font class="text">( !no_error )
+         {
+            set_converged_reason( it, </font><font class="kw3">LA_ConvergenceTest</font><font class="text">::PreconditionerFailure ) ;
+            </font><font class="kw1">break</font><font class="text"> ; </font><font class="comment">// &lt;---
+</font><font class="text">         }
+
+         </font><font class="comment">// Use modified Gram-Schmidt orthogonalization method
+</font><font class="text">         </font><font class="kw1">for</font><font class="text">( i=0 ; i&lt;=k ; i++ )
+         {
+            </font><font class="kw3">LA_Vector</font><font class="text">* vbi = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">LA_Vector</font><font class="text">*&gt;( vBasis-&gt;at( i ) ) ;
+            H( i, k ) = vbi-&gt;dot( vbkp1 ) ;
+            vbkp1-&gt;sum( vbi, - H( i, k ) ) ;
+         }
+
+         </font><font class="kw1">double</font><font class="text"> xNorm = vbkp1-&gt;two_norm() ;
+
+         </font><font class="comment">//--- APPLY THE PREVIOUS GIVENS ROTATIONS TO THE K-TH COLUMN
+</font><font class="text">         </font><font class="comment">//--- OF H
+</font><font class="text">         </font><font class="kw1">for</font><font class="text">( i=0 ; i&lt;=( k-1 ) ; i++ )
+         {
+            xx = H( i, k ) ;
+            H( i,   k ) = cRot( i )*xx - sRot( i )*H( i+1, k ) ;
+            H( i+1, k ) = sRot( i )*xx + cRot( i )*H( i+1, k ) ;
+         }
+
+         </font><font class="comment">//--- TEST FOR A POSSIBLE BREAKDOWN
+</font><font class="text">         </font><font class="kw1">if</font><font class="text">( xNorm&lt;HAPTOL )
+         {
+            update_solution( k, H, S, UPY, vBasis, x ) ;
+            r-&gt;</font><font class="kw2">set</font><font class="text">( b ) ;
+            A-&gt;multiply_vec_then_add( x, r, -1.0, 1.0 ) ;
+            rNorm = r-&gt;two_norm() ;
+
+            test_convergence( it, rNorm, A, b, prec, zero_init ) ;
+            no_error = convergence_achieved() ;
+            </font><font class="kw1">if</font><font class="text">( no_error )
+            {
+               set_converged_reason( it,
+                             </font><font class="kw3">LA_ConvergenceTest</font><font class="text">::ConvergedHappyBreakdown ) ;
+            }
+            </font><font class="kw1">else
+</font><font class="text">            {
+               set_converged_reason( it,
+                             </font><font class="kw3">LA_ConvergenceTest</font><font class="text">::DivergedBreakdown ) ;
+            }
+            </font><font class="kw1">break</font><font class="text"> ; </font><font class="comment">// &lt;---
+</font><font class="text">         }
+
+         H( k+1, k ) = xNorm ;
+         vbkp1-&gt;scale( 1.0/H( k+1, k ) ) ;
+
+         </font><font class="comment">//--- CONSTRUCT THE K-TH GIVENS ROTATION MATRIX
+</font><font class="text">         xx = </font><font class="kw3">PEL</font><font class="text">::sqrt( H( k, k )*H( k, k ) + H( k+1, k )*H( k+1, k ) ) ;
+         cRot( k ) = H( k, k )/xx  ;
+         sRot( k ) =  -1.0*H( k+1, k )/xx ;
+
+         </font><font class="comment">//--- APPLY THE K-TH GIVENS ROTATION MATRIX TO H SO THAT
+</font><font class="text">         </font><font class="comment">//--- H( k+1, k )=0
+</font><font class="text">         H( k,   k ) = cRot( k )*H( k, k ) - sRot( k )*H( k+1, k )  ;
+         H( k+1, k ) = 0.0 ;
+
+         </font><font class="comment">//--- APPLY THE K-TH GIVENS ROTATION MATRIX TO s
+</font><font class="text">         xx = S( k ) ;
+         S( k )   = cRot( k )*xx - sRot( k )*S( k+1 ) ;
+         S( k+1 ) = sRot( k )*xx + cRot( k )*S( k+1 ) ;
+
+         </font><font class="comment">//--- SET THE NORM OF THE RESIDUAL AT STEP K
+</font><font class="text">         rNorm = </font><font class="kw3">PEL</font><font class="text">::abs( S( k+1 ) ) ;
+
+         </font><font class="comment">//--- TEST ON THE NORM OF THE RESIDUAL
+</font><font class="text">         test_convergence( it, rNorm, A, b, prec, zero_init ) ;
+         </font><font class="kw1">if</font><font class="text">( convergence_achieved() )
+         {
+            update_solution( k, H, S, UPY, vBasis, x ) ;
+            </font><font class="kw1">break</font><font class="text"> ;
+         }
+         </font><font class="kw1">else
+</font><font class="text">         {
+            k++ ;
+         }
+      }
+      </font><font class="kw1">while</font><font class="text">( ( k &lt; (</font><font class="kw1">int</font><font class="text">)RESTART ) &amp;&amp; ( it &lt; max_nb_iterations() ) ) ;
+
+      </font><font class="kw1">if</font><font class="text">( !no_error || convergence_achieved() ) </font><font class="kw1">break</font><font class="text"> ; </font><font class="comment">// &lt;---
+</font><font class="text">
+      </font><font class="comment">//--- COMPUTATION OF THE NEW INITIAL VECTOR FOR THE RESTART
+</font><font class="text">      k = RESTART-1 ;
+      update_solution( k, H, S, UPY, vBasis, x ) ;
+
+      zero_init = </font><font class="kw1">false</font><font class="text"> ;
+   }
+   </font><font class="kw1">while</font><font class="text">( it &lt; max_nb_iterations() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_GMRES_IS</font><font class="text">:: reset_internals( </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* prototype )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_GMRES_IS:: reset_internals&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( prototype != 0 ) ;
+   
+   </font><font class="kw2">size_t</font><font class="text"> n = prototype-&gt;nb_rows() ;
+   </font><font class="kw1">bool</font><font class="text"> vTemp_is_compatible = </font><font class="kw1">true</font><font class="text"> ;
+
+   </font><font class="kw1">if</font><font class="text">(  ( vTemp == 0 ) ||
+       !( vTemp-&gt;row_distribution()-&gt;is_compatible( 
+                                    prototype-&gt;row_distribution() ) ) || 
+        ( vTemp-&gt;implementation() != prototype-&gt;implementation() ) )
+   {
+      vTemp_is_compatible = </font><font class="kw1">false</font><font class="text"> ;
+
+      </font><font class="kw1">if</font><font class="text">( vTemp!=0 )
+      {
+         destroy_possession( vTemp ) ; vTemp = 0 ;
+         destroy_possession( r ) ; r = 0 ;
+         destroy_possession( Avk ) ; Avk = 0 ;
+      }
+      vTemp = prototype-&gt;create_vector( </font><font class="kw1">this</font><font class="text"> ) ;
+      r = prototype-&gt;create_vector( </font><font class="kw1">this</font><font class="text"> ) ;
+      Avk = prototype-&gt;create_vector( </font><font class="kw1">this</font><font class="text"> ) ;
+   }
+
+   </font><font class="kw1">if</font><font class="text">( ( vBasis-&gt;at( 0 ) != 0 ) &amp;&amp;
+       ( SIZE == n ) &amp;&amp;
+       vTemp_is_compatible )
+   {
+      </font><font class="comment">// No initialization needed
+</font><font class="text">   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      </font><font class="kw2">size_t</font><font class="text"> bsize = RESTART+1 ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;bsize ; i++ )
+      {
+         </font><font class="kw3">PEL_Object</font><font class="text">* old = vBasis-&gt;at( i ) ;
+         </font><font class="kw1">if</font><font class="text">( old != 0 ) vBasis-&gt;destroy_possession( old ) ;
+
+         </font><font class="kw3">LA_Vector</font><font class="text">* v = prototype-&gt;create_vector( vBasis ) ;
+         v-&gt;</font><font class="kw2">set</font><font class="text">( 0.0 ) ;
+         vBasis-&gt;set_at( i, v ) ;
+      }
+   }
+   SIZE = n ;
+   
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( vTemp-&gt;implementation() == prototype-&gt;implementation() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( vTemp-&gt;is_synchronized() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( vTemp-&gt;row_distribution()-&gt;is_compatible( 
+                                            prototype-&gt;row_distribution() ) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( vTemp-&gt;nb_rows() == prototype-&gt;nb_rows() ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( Avk-&gt;implementation() == prototype-&gt;implementation() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( Avk-&gt;is_synchronized() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( Avk-&gt;row_distribution()-&gt;is_compatible( 
+                                            prototype-&gt;row_distribution() ) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( Avk-&gt;nb_rows() == prototype-&gt;nb_rows() ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( r-&gt;implementation() == prototype-&gt;implementation() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( r-&gt;is_synchronized() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( r-&gt;row_distribution()-&gt;is_compatible( 
+                                            prototype-&gt;row_distribution() ) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( r-&gt;nb_rows() == prototype-&gt;nb_rows() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_GMRES_IS</font><font class="text">:: update_solution( </font><font class="kw1">int</font><font class="text"> k,
+                               </font><font class="kw3">doubleArray2D</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; Hmat,
+                               </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; s,
+                               </font><font class="kw3">doubleVector</font><font class="text">&amp; work,
+                               </font><font class="kw3">PEL_Vector</font><font class="text">* vec_basis,
+                               </font><font class="kw3">LA_Vector</font><font class="text">* x )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_GMRES_IS:: update_solution&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">int</font><font class="text"> i, j ;
+
+   </font><font class="comment">//--- COMPUTATION OF THE COMPONENTS OF THE CURRENT SOLUTION VECTOR
+</font><font class="text">   </font><font class="comment">//--- WITH RESPECT TO THE BASIS ( V0, ...Vk )  OF THE k-TH KRYLOV
+</font><font class="text">   </font><font class="comment">//--- SPACE : RESOLUTION OF A LINEAR SYSTEM WITH UPPER
+</font><font class="text">   </font><font class="comment">//--- TRIANGULAR MATRIX
+</font><font class="text">   </font><font class="kw1">for</font><font class="text">( i=k ; i&gt;=0 ; i-- )
+   {
+      work( i ) = s( i ) ;
+      </font><font class="kw1">for</font><font class="text">( j=i+1 ; j&lt;=k ; j++ )
+      {
+         work( i ) -= Hmat( i, j ) * work( j ) ;
+      }
+      work( i ) /= Hmat( i, i ) ;
+   }
+
+   </font><font class="comment">//--- COMPUTATION OF THE CURRENT SOLUTION VECTOR
+</font><font class="text">   </font><font class="kw1">for</font><font class="text">( i=0 ; i&lt;=k ; i++ )
+   {
+      </font><font class="kw3">LA_Vector</font><font class="text">* vbi = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">LA_Vector</font><font class="text">*&gt;( vec_basis-&gt;at( i ) ) ;
+
+      x-&gt;sum( vbi, work( i ) ) ;
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_GMRES_IS</font><font class="text">:: print_more( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostream</font><font class="text">&amp; os, </font><font class="kw2">size_t</font><font class="text"> indent_width ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_GMRES_IS:: print_more&quot;</font><font class="text"> ) ;
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> s( indent_width, </font><font class="string">' '</font><font class="text">) ;
+   os &lt;&lt; s &lt;&lt; </font><font class="string">&quot;restart: &quot;</font><font class="text"> &lt;&lt; RESTART &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+}
+
+</font>
+</pre>
+</body>
+</html>

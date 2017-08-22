@@ -1,0 +1,186 @@
+<html>
+<head>
+<title>CH_BulkChemicalPotential.cc</title>
+<link rel=stylesheet type="text/css" href="stylesheet.css">
+</head>
+<body>
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated
+ *  reusable components, whose purpose is to simplify the task of developing
+ *  softwares of numerical mathematics and scientific computing.
+ *
+ *  This software is governed by the CeCILL-C license under French law and
+ *  abiding by the rules of distribution of free software. You can use, modify
+ *  and/or redistribute the software under the terms of the CeCILL-C license
+ *  as circulated by CEA, CNRS and INRIA at the following URL
+ *  &quot;http://www.cecill.info&quot;.
+ *
+ *  As a counterpart to the access to the source code and rights to copy,
+ *  modify and redistribute granted by the license, users are provided only
+ *  with a limited warranty and the software's author, the holder of the
+ *  economic rights, and the successive licensors have only limited liability.
+ *
+ *  In this respect, the user's attention is drawn to the risks associated
+ *  with loading, using, modifying and/or developing or reproducing the
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also
+ *  therefore means that it is reserved for developers and experienced
+ *  professionals having in-depth computer knowledge. Users are therefore
+ *  encouraged to load and test the software's suitability as regards their
+ *  requirements in conditions enabling the security of their systems and/or
+ *  data to be ensured and, more generally, to use and operate it in the same
+ *  conditions as regards security.
+ *
+ *  The fact that you are presently reading this means that you have had
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;CH_BulkChemicalPotential.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Object</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_assertions</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;CH_BulkEnergy.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;iostream&gt;
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">CH_BulkChemicalPotential*
+CH_BulkChemicalPotential:: create( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner, 
+                                   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;CH_BulkChemicalPotential:: create&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( exp != 0 ) ;
+
+   CH_BulkChemicalPotential* result = </font><font class="kw1">new</font><font class="text"> CH_BulkChemicalPotential( a_owner, exp ) ;
+   
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result!=0 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;owner()==a_owner ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">CH_BulkChemicalPotential:: CH_BulkChemicalPotential( 
+                                          </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                          </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_Object</font><font class="text">( a_owner )
+   , S1( exp-&gt;double_data( </font><font class="string">&quot;coef_Sigma_1&quot;</font><font class="text"> ) )
+   , S2( exp-&gt;double_data( </font><font class="string">&quot;coef_Sigma_2&quot;</font><font class="text"> ) )
+   , S3( exp-&gt;double_data( </font><font class="string">&quot;coef_Sigma_3&quot;</font><font class="text"> ) )
+   , F0( 0 )
+   , P( 0 )
+{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;CH_BulkChemicalPotential:: CH_BulkChemicalPotential&quot;</font><font class="text"> ) ;
+   
+   ST = 3.0*S1*S2*S3/(S1*S2+S1*S3+S2*S3) ;
+   
+   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* e = exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;CH_BulkEnergy#F0&quot;</font><font class="text"> ) ;
+   F0 = CH_BulkEnergy::make( </font><font class="kw1">this</font><font class="text">, S1, S2, S3, e ) ;
+   e-&gt;destroy() ; e = 0 ;
+   
+   </font><font class="kw1">if</font><font class="text">( exp-&gt;has_module( </font><font class="string">&quot;CH_BulkEnergy#P&quot;</font><font class="text"> ) )
+   {
+      e = exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;CH_BulkEnergy#P&quot;</font><font class="text"> ) ;
+      P = CH_BulkEnergy::make( </font><font class="kw1">this</font><font class="text">, S1, S2, S3, e ) ;
+      e-&gt;destroy() ; e = 0 ;
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">CH_BulkChemicalPotential:: ~CH_BulkChemicalPotential( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">double</font><font class="text"> 
+CH_BulkChemicalPotential:: Sigma1( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">return</font><font class="text">( S1 ) ; 
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">double</font><font class="text"> 
+CH_BulkChemicalPotential:: Sigma2( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">return</font><font class="text">( S2 ) ; 
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">double</font><font class="text"> 
+CH_BulkChemicalPotential:: Sigma3( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">return</font><font class="text">( S3 ) ; 
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">double</font><font class="text"> 
+CH_BulkChemicalPotential:: F( </font><font class="kw1">double</font><font class="text"> c1, </font><font class="kw1">double</font><font class="text"> c2, </font><font class="kw1">double</font><font class="text"> c3 ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;CH_BulkChemicalPotential:: F&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw1">double</font><font class="text"> result = F0-&gt;F( c1, c2, c3 ) ;
+   </font><font class="kw1">if</font><font class="text">( P != 0 )
+   {
+      result += P-&gt;F( c1, c2, c3 ) ;
+   }
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">double</font><font class="text"> 
+CH_BulkChemicalPotential:: DDiF( </font><font class="kw1">double</font><font class="text"> c1, </font><font class="kw1">double</font><font class="text"> c2, 
+                                </font><font class="kw1">double</font><font class="text"> c1_exp, </font><font class="kw1">double</font><font class="text"> c2_exp, 
+                                </font><font class="kw2">size_t</font><font class="text"> i, </font><font class="kw1">double</font><font class="text"> eps ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;CH_BulkChemicalPotential:: DDiF&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( i==1 || i==2 ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( eps &gt; 0.0 ) ;
+
+   </font><font class="kw1">double</font><font class="text"> result = F0-&gt;DDiF( c1, c2, c1_exp, c2_exp, i, eps ) ;
+   </font><font class="kw1">if</font><font class="text">( P != 0 ) 
+   {
+      result+= P-&gt;DDiF( c1, c2, c1_exp, c2_exp, i, eps ) ;
+   }
+
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">double
+</font><font class="text">CH_BulkChemicalPotential:: dj_DDiF( </font><font class="kw1">double</font><font class="text"> c1, </font><font class="kw1">double</font><font class="text"> c2,
+                                   </font><font class="kw1">double</font><font class="text"> c1_exp, </font><font class="kw1">double</font><font class="text"> c2_exp, 
+                                   </font><font class="kw2">size_t</font><font class="text"> i, </font><font class="kw2">size_t</font><font class="text"> j, </font><font class="kw1">double</font><font class="text"> eps ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;CH_BulkChemicalPotential:: dj_DDiF&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( i==1 || i==2 ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( j==1 || j==2 ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( eps &gt; 0.0 ) ;
+
+   </font><font class="kw1">double</font><font class="text"> result = F0-&gt;dj_DDiF( c1, c2, c1_exp, c2_exp, i, j, eps ) ;
+   </font><font class="kw1">if</font><font class="text">( P != 0 ) 
+   {
+      result+= P-&gt;dj_DDiF( c1, c2, c1_exp, c2_exp, i, j, eps ) ;
+   }
+
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+
+</font>
+</pre>
+</body>
+</html>

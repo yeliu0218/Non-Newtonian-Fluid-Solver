@@ -1,0 +1,149 @@
+MODULE PEL_ObjectTest#PDE_LocalFEboundAdjacencies_TEST
+   
+   MODULE PDE_LocalFEboundAdjacencies_TEST_3
+      
+     $DS_x = component( $DV_X, 0 )
+     $DS_y = component( $DV_X, 1 )
+            
+      MODULE PDE_SetOfDomains
+
+         verbose_level = 1
+         
+         MODULE list_of_PDE_DomainAndFields
+            
+            MODULE PDE_DomainAndFields#0
+               
+               verbose_level = 1
+               nb_space_dimensions = 2
+               type = "finite_element"
+               name = "subdomain0"
+               MODULE GE_Meshing                  
+                  concrete_name = "GE_BoxWithBoxes"                  
+                  vertices_coordinate_0 = regular_vector( 0.0, 3, 1.0 )
+                  vertices_coordinate_1 = regular_vector( 0.0, 1, 0.5 )
+                  mesh_polyhedron = < "GE_Segment" "GE_Rectangle" >
+               END MODULE GE_Meshing
+               
+               MODULE interior_fields
+                  
+                  MODULE disp_0
+                     name = "disp_0"
+                     nb_components = 2
+                     element_name = "PDE_2D_Q1_4nodes"
+                     storage_depth = 1
+                     MODULE DOFs_values
+                        type = "uniformly_defined"
+                        value = vector( $DS_y, -$DS_x )
+                     END MODULE DOFs_values
+                  END MODULE disp_0
+                  
+               END MODULE interior_fields
+               
+            END MODULE PDE_DomainAndFields#0
+            
+            MODULE PDE_DomainAndFields#1
+               
+               verbose_level = 1
+               nb_space_dimensions = 2
+               type = "finite_element"
+               name = "subdomain1"
+               
+               MODULE GE_Meshing                  
+                  concrete_name = "GE_BoxWithBoxes"                  
+                  vertices_coordinate_0 = regular_vector( 0.0, 3, 1.0 )
+                  vertices_coordinate_1 = regular_vector( 0.5, 1, 1.0 )
+                  mesh_polyhedron = < "GE_Segment" "GE_Rectangle" >
+               END MODULE GE_Meshing
+               
+               MODULE interior_fields
+                  
+                  MODULE uu_1
+                     name = "uu_1"
+                     nb_components = 1
+                     element_name = "PDE_2D_Q2_9nodes"
+                     storage_depth = 1
+                     MODULE DOFs_values
+                        type = "uniformly_defined"
+                        value = vector(    2.0*$DS_x*$DS_x
+                                        - 40.0*$DS_y*$DS_y
+                                        +      $DS_x*$DS_x*$DS_y*$DS_y )
+                     END MODULE DOFs_values
+                  END MODULE uu_1
+                  
+               END MODULE interior_fields
+               
+               MODULE boundary_fields
+                  
+                  MODULE uu_1_bd
+                     name = "uu_1_bd"
+                     nb_components = 1
+                     element_name = "PDE_1D_P1_2nodes"
+                     storage_depth = 1
+                     MODULE DOFs_values
+                        type = "uniformly_defined"
+                        value = vector( - $DS_x + 60.0*$DS_y + 10.0 )
+                     END MODULE DOFs_values
+                  END MODULE uu_1_bd
+                  
+               END MODULE boundary_fields
+               
+            END MODULE PDE_DomainAndFields#1
+            
+         END MODULE list_of_PDE_DomainAndFields
+         
+         MODULE list_of_conformal_adjacencies
+            
+            MODULE adjacency#0
+               
+               adjacent_domain_0 = "subdomain0"
+               adjacent_domain_1 = "subdomain1"
+               
+            END MODULE adjacency#0
+            
+         END MODULE list_of_conformal_adjacencies
+         
+      END MODULE PDE_SetOfDomains
+
+      dbl_epsilon = 1.e-8
+      dbl_minimum = 1.e-10
+      quadrature_rule_provider = "GE_QRprovider_5"
+      
+      MODULE list_of_checks
+         
+         MODULE check#1
+            domain_for_iteration = "subdomain0"
+            adjacent_domain = "subdomain1"
+            field_of_adjacent_domain = "uu_1"
+            color_of_bounds_with_adjacency = "top"
+            value = vector(    2.0*$DS_x*$DS_x
+                            - 40.0*$DS_y*$DS_y
+                            +      $DS_x*$DS_x*$DS_y*$DS_y )
+            jacobian = array( vector(   4.0*$DS_x + 2.0*$DS_x*$DS_y*$DS_y,
+                                      -80.0*$DS_y + 2.0*$DS_x*$DS_x*$DS_y ) )
+            hessian = array( array( vector( 4.0 + 2.0*$DS_y*$DS_y,
+                                             4.0*$DS_x*$DS_y ),
+                                    vector( 4.0*$DS_x*$DS_y,
+                                            -80.0 + 2.0*$DS_x*$DS_x) ) )
+         END MODULE check#1
+
+         MODULE check#2
+            domain_for_iteration = "subdomain0"
+            adjacent_domain = "subdomain1"
+            field_of_adjacent_domain = "uu_1_bd"
+            color_of_bounds_with_adjacency = "top"
+            value = vector( - $DS_x + 60.0*$DS_y + 10.0 )
+         END MODULE check#2
+
+      END MODULE list_of_checks
+
+      // si on déplace "subdomain0" sans déplacer "subdomain1", cela ne doit
+      // pas changer le resultat des calculs relatifs aux champs de
+      // "subdomain1"
+      MODULE grid_displacement
+            domain = "subdomain0"
+            field = "disp_0"
+      END MODULE grid_displacement
+         
+   END MODULE PDE_LocalFEboundAdjacencies_TEST_3
+   
+END MODULE PEL_ObjectTest#PDE_LocalFEboundAdjacencies_TEST

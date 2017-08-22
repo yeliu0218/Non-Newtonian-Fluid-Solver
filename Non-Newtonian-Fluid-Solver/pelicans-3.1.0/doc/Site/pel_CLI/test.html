@@ -1,0 +1,453 @@
+<?xml version="1.0" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>test - comparison between runs of a PELICANS-based application</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rev="made" href="mailto:root@localhost" />
+</head>
+
+<body style="background-color: white">
+
+<p><a name="__index__"></a></p>
+<!-- INDEX BEGIN -->
+
+<ul>
+
+	<li><a href="#name">NAME</a></li>
+	<li><a href="#synopsis">SYNOPSIS</a></li>
+	<li><a href="#description">DESCRIPTION</a></li>
+	<li><a href="#arguments">ARGUMENTS</a></li>
+	<li><a href="#options">OPTIONS</a></li>
+	<li><a href="#examples">EXAMPLES</a></li>
+</ul>
+<!-- INDEX END -->
+
+<hr />
+<p>
+</p>
+<h1><a name="name">NAME</a></h1>
+<p>test - comparison between runs of a PELICANS-based application (for regression testing)</p>
+<p>
+</p>
+<hr />
+<h1><a name="synopsis">SYNOPSIS</a></h1>
+<p>pel test [-help|-man]</p>
+<p>pel test [options...] <em>exe</em> <em>dirs</em></p>
+<p>pel test -build_pattern <em>filename</em> <em>exe</em> <em>dirs</em></p>
+<p>pel test -verify_pattern <em>filename</em> <em>exe</em> <em>dirs</em></p>
+<p>pel test -build_then_verify_pattern <em>filename</em> <em>exe</em> <em>dirs</em></p>
+<p>
+</p>
+<hr />
+<h1><a name="description">DESCRIPTION</a></h1>
+<p>Comparing in details two runs of an application is important for
+the sake of non regression or installation testing.</p>
+<p>Given a hierarchy of directories containing reference runs
+of a given application, <code>pel test</code> will perform the following actions:</p>
+<ol>
+<li>
+<p>create, in the
+working directory, a subdirectory
+in which that hierarchy is duplicated;</p>
+</li>
+<li>
+<p>in all subdirectories of the duplicate hierarchy, run the application
+with the associated reference data file (called <em>data.pel</em>);</p>
+</li>
+<li>
+<p>compare the results of this run with the reference results.</p>
+</li>
+</ol>
+<p>On completion, the conclusions of all these comparisons are recorded
+in a report file located in the current directory.</p>
+<p>The essentials of <code>pel test</code> tasks are forwarded to the PELICANS-based
+application ``peltest'' (contained in the executable specified by the
+<strong>-peltest_exe</strong> option if any, or by the argument <em>exe</em>).</p>
+<p>Further details are given below.</p>
+<dl>
+<dt><strong><a name="item__2e">.</a></strong>
+
+<dd>
+<p>If a test failure is pronounced, the character sequence
+``Test failed'' will appear in the report file.</p>
+</dd>
+</li>
+<dt><strong>.</strong>
+
+<dd>
+<p>Runs are performed with the commands like:</p>
+</dd>
+<dd>
+<p>sequential: <em>exe</em> <em>data.pel</em> -v [opts...] &gt; <em>resu</em></p>
+</dd>
+<dd>
+<p>parallel:   <em>mpirun</em> [mpi_opts...] <em>exe</em> <em>data.pel</em> -v -o <em>resu</em> [opts...]</p>
+</dd>
+<dd>
+<p>where the options <code>opts...</code> and <code>mpi_opts...</code> are determined
+for all runs by the calling options of <code>pel test</code> (see below)
+and for one specific run by a possible file <em>config.pel</em> in
+the reference directory of that run.</p>
+</dd>
+<dd>
+<p>A file <em>config.pel</em> containing:</p>
+</dd>
+<dd>
+<pre>
+  MODULE test_config
+    run_options = vector( &quot;...&quot;, &quot;...&quot; )
+  END MODULE test_config</pre>
+</dd>
+<dd>
+<p>leads to the addition in <code>opts...</code> of all items in the StringVector
+(only for the run associated to the directory
+containing the considered file <em>config.pel</em>).</p>
+</dd>
+<dd>
+<p>A file <em>config.pel</em> containing:</p>
+</dd>
+<dd>
+<pre>
+  MODULE test_config
+    mpi_options = vector( &quot;...&quot;, &quot;...&quot; )
+  END MODULE test_config</pre>
+</dd>
+<dd>
+<p>switches to parallel execution and leads to the addition in <code>mpi_opts...</code> of
+all items in the StringVector (only for the run associated to the directory
+containing the considered file <em>config.pel</em>).
+An additional optional StringVector data of keyword <code>mpi_machinefile</code>
+can be used to specify the list of possible machines to run on
+(this data is written on a temporary machine file transmitted to <em>mpirun</em>
+via the option <code>-machinefile</code>).</p>
+</dd>
+</li>
+<dt><strong>.</strong>
+
+<dd>
+<p>The exit code is tested. The test failure is pronounced
+if it is non zero, unless it exists a file <em>config.pel</em>, stored in
+the reference directory, containing:</p>
+</dd>
+<dd>
+<pre>
+  MODULE test_config
+    failure_expected = true
+  END MODULE test_config</pre>
+</dd>
+<dd>
+<p>in which case success might be pronounced if exit code is non zero and
+one or more produced files called <em>expected.err*</em> are identical
+(same name and same content) to those present in the reference directory.</p>
+</dd>
+</li>
+<dt><strong>.</strong>
+
+<dd>
+<p>The test failure is pronounced if the <em>resu</em> file has not been produced.</p>
+</dd>
+</li>
+<dt><strong>.</strong>
+
+<dd>
+<p>All files that have been produced during the run (other than <em>resu</em>) 
+are compared (as described below) with the reference ones (that must exist).
+This comparison might be avoided from some particular file of a particular
+run if the associated reference directory stores a file <em>config.pel</em>
+containing:</p>
+</dd>
+<dd>
+<pre>
+  MODULE test_config
+    files_to_ignore = vector( &quot;...&quot;, &quot;...&quot; )
+  END MODULE test_config</pre>
+</dd>
+<dd>
+<p>The items of the StringVector correspond to files produced during the run for
+which no comparison will be performed.</p>
+</dd>
+</li>
+<dt><strong>.</strong>
+
+<dd>
+<p>The comparison method between the reference and produced files
+depends on the format of these files.</p>
+</dd>
+<dd>
+<p>There are three ``native'' formats understood by PELICANS:
+the format called GENE, for <code>TIC</code> postprocessing; the
+format called PEL, for Hierarchical Data Structures with the PELICANS format;
+the format called CSV, for comma separated values.</p>
+</dd>
+<dd>
+<p>The files with format GENE, PEL or CSV are compared to the reference ones
+with the PELICANS-based application ``pelcmp'' (contained in the
+executable specified by the <strong>-peltest_exe</strong> option if any, or by the
+argument <em>exe</em>). If they are not identical, the comparison results
+are recorded in the report file (the test failure is not pronounced since
+differences may be acceptable, depending on the use case).</p>
+</dd>
+<dd>
+<p>The other files are compared line by line with the reference ones.
+If they are not the same, the test failure is pronounced.</p>
+</dd>
+</li>
+<dt><strong>.</strong>
+
+<dd>
+<p>The format of a file, say <em>save.zzz</em>, is determined as follows.
+It can be specified via a configuration file <em>config.pel</em> stored
+in the reference directory:</p>
+</dd>
+<dd>
+<pre>
+  MODULE test_config
+    MODULE PEL_Comparator
+      MODULE xxx               // xxx is a non significant name
+        filename = &quot;save.zzz&quot;
+        format = &quot;CSV&quot;         // either &quot;GENE&quot;, &quot;PEL&quot; of &quot;CSV&quot;
+      END MODULE xxx
+    END MODULE PEL_Comparator
+  END MODULE test_config</pre>
+</dd>
+<dd>
+<p>If such a specification is absent, the format is identified on the
+basis of a motif appearing in the file name: <em>.gene</em> gives the GENE
+format, <em>.pel</em> gives the PEL format, <em>.csv</em> gives the CSV format.</p>
+</dd>
+</li>
+<dt><strong>.</strong>
+
+<dd>
+<p>The files with format GENE or PEL contain data identified by keywords.
+The comparison might ignore some of these data if the associated
+reference directory stores a file <em>config.pel</em>
+containing:</p>
+</dd>
+<dd>
+<pre>
+  MODULE test_config
+    MODULE PEL_Comparator
+      MODULE xxx               // xxx is a non significant name
+        filename = &quot;save.zzz&quot;  // file with format GENE or PEL
+        ignore_data = vector( &quot;...&quot;, &quot;...&quot; )
+      END MODULE xxx
+    END MODULE PEL_Comparator
+  END MODULE test_config</pre>
+</dd>
+<dd>
+<p>The items of the StringVector correspond to keywords of data that
+should be ignored during the comparison.</p>
+</dd>
+</li>
+<dt><strong>.</strong>
+
+<dd>
+<p>The floating point values contained in the reference and produced files
+(with format GENE, PEL or CSV) are compared with PEL::double_equality.
+The last two arguments of
+this member function are respectively called a_dbl_eps (a
+kind of tolerance on relative errors) and a_dbl_min (a lower bound under which
+values are undistinguishable from zero).</p>
+</dd>
+<dd>
+<p>By default, a_dbl_eps and a_dbl_min are equal to zero (which means that
+comparisons without any tolerance are performed).
+They can be given other values either globally (for all runs)
+using the <code>-dbl_eps</code> and <code>-dbl_min</code> options, or for a specific
+run via a file <em>config.pel</em> in the reference directory of that
+run.</p>
+</dd>
+<dd>
+<p>For instance, a file <em>config.pel</em> containing:</p>
+</dd>
+<dd>
+<pre>
+  MODULE test_config
+     MODULE PEL_Comparator
+        MODULE xxx                       // xxx is a non significant name
+           filename = &quot;save.csv&quot;
+           MODULE double_comparison
+              dbl_min = 1.e-10
+              dbl_eps = 1.e-8
+           END MODULE double_comparison
+        END MODULE xxx
+     END MODULE PEL_Comparator
+  END MODULE test_config</pre>
+</dd>
+<dd>
+<p>will set a_dbl_min=1.e-10 and a_dbl_eps=1.e-8 for comparisons between
+the floating point values of the files <em>save.csv</em>.</p>
+</dd>
+<dd>
+<p>Note that the command line options <code>-dbl_eps</code> and <code>-dbl_min</code>
+always overread the options stated in the files <em>config.pel</em>.
+Moreover the line option <a href="#item__2dexact"><code>-exact</code></a> can be used to ignore any
+setting of a_dbl_min and a_dbl_max in the <em>config.pel</em> files.</p>
+</dd>
+</li>
+</dl>
+<p>When the <code>-verify_pattern</code> option is activated, the behavior
+of <code>pel test</code> is slightly different: the only test performed
+is the conformance of the reference data file <em>data.pel</em> with
+the given pattern file.</p>
+<p>
+</p>
+<hr />
+<h1><a name="arguments">ARGUMENTS</a></h1>
+<dl>
+<dt><strong><a name="item_exe"><strong>exe</strong></a></strong>
+
+<dd>
+<p>Name of the executable of the PELICANS-based application to run.</p>
+</dd>
+</li>
+<dt><strong><a name="item_dirs"><strong>dirs</strong></a></strong>
+
+<dd>
+<p>List of the directories defining the reference runs. Any subdirectory
+of an item of <em>dirs</em> containing a file <em>data.pel</em> is considered
+by <code>pel test</code> as a definition of a reference run whose data file
+is <em>data.pel</em>. This subdirectory must contain the reference
+version of all the files produced when calling <em>exe</em> with that
+data file. It might also contain (see above) a file called <em>config.pel</em>
+and, more rarely, files called <em>expected.err*</em>.</p>
+</dd>
+</li>
+</dl>
+<p>
+</p>
+<hr />
+<h1><a name="options">OPTIONS</a></h1>
+<dl>
+<dt><strong><a name="item__2dh_2c__2dhelp"><strong>-h, -help</strong></a></strong>
+
+<dd>
+<p>Print a brief help message and exit.</p>
+</dd>
+</li>
+<dt><strong><a name="item__2dm_2c__2dman"><strong>-m, -man</strong></a></strong>
+
+<dd>
+<p>Print the manual page and exit.</p>
+</dd>
+</li>
+<dt><strong><a name="item__2dv_2c__2dverbose"><strong>-v, -verbose</strong></a></strong>
+
+<dd>
+<p>Execute verbosely.</p>
+</dd>
+</li>
+<dt><strong><a name="item__2dcpost"><strong>-Cpost</strong></a></strong>
+
+<dd>
+<p>Call <code>pel run</code> with this option for all runs.</p>
+</dd>
+</li>
+<dt><strong><a name="item__2dcall"><strong>-Call</strong></a></strong>
+
+<dd>
+<p>Call <code>pel run</code> with this option for all runs.</p>
+</dd>
+</li>
+<dt><strong><a name="item__2dbuild_pattern_filename"><strong>-build_pattern</strong> <em>filename</em></a></strong>
+
+<dd>
+<p>Call <code>pel run</code> with this option for all runs.</p>
+</dd>
+</li>
+<dt><strong><a name="item__2dverify_pattern_filename"><strong>-verify_pattern</strong> <em>filename</em></a></strong>
+
+<dd>
+<p>Do not perform the runs, but instead use the PELICANS-based application
+``check'' (contained in the argument <em>exe</em>) to check the conformity
+of all reference data file <em>data.pel</em> with the pattern file <em>filename</em>.</p>
+</dd>
+</li>
+<dt><strong><a name="item__2dbuild_then_verify_pattern_filename"><strong>-build_then_verify_pattern</strong> <em>filename</em></a></strong>
+
+<dd>
+<p>Call <code>pel run</code> with the option <strong>-build_pattern</strong> <em>filename</em> 
+for all runs and then check the conformity
+of all reference data file <em>data.pel</em> with the created pattern file
+<em>filename</em> (equivalent to two calls of <code>pel test</code>
+with successively the <strong>-build_pattern</strong> and the <strong>-verify_pattern</strong> options).</p>
+</dd>
+</li>
+<dt><strong><a name="item__2dtest_directory_dirname"><strong>-test_directory</strong> <em>dirname</em></a></strong>
+
+<dd>
+<p>Duplicate the hierarchy of directories containing the reference runs
+in the subdirectory <em>dirname</em> of the working directory,
+and run the application in the subdirectories of <em>dirname</em> for further
+result comparison with the reference runs (default: <em>PELICANS_TEST</em>).</p>
+</dd>
+</li>
+<dt><strong><a name="item__2dpeltest_exe_texe"><strong>-peltest_exe</strong> <em>texe</em></a></strong>
+
+<dd>
+<p>Specify the executable containing the ``peltest'' and ``pelcmp'' applications.
+Default is the argument <em>exe</em> itself.</p>
+</dd>
+</li>
+<dt><strong><a name="item__2ddbl_eps_eps"><strong>-dbl_eps</strong> <em>eps</em></a></strong>
+
+<dd>
+<p>Specify the a_dbl_eps argument in calls to PEL::double_equality
+when comparing floating point values. This option is only
+significant for files with format PEL, CSV or GENE.</p>
+</dd>
+</li>
+<dt><strong><a name="item__2ddbl_min_min"><strong>-dbl_min</strong> <em>min</em></a></strong>
+
+<dd>
+<p>Specify the a_dbl_min argument in calls to PEL::double_equality
+when comparing floating point values. This option is only
+significant for files with format PEL, CSV or GENE.</p>
+</dd>
+</li>
+<dt><strong><a name="item__2dexact"><strong>-exact</strong></a></strong>
+
+<dd>
+<p>Always perform comparisons between floating point values
+without any tolerance, whatever settings of a_dbl_eps
+and a_dbl_eps in files <em>config.pel</em>.</p>
+</dd>
+</li>
+</dl>
+<p>
+</p>
+<hr />
+<h1><a name="examples">EXAMPLES</a></h1>
+<dl>
+<dt><strong><a name="item_pel_test__2e_2e_2fbin_2fexe__2e_2e_2fregressiontes"><code>pel test ../bin/exe ../RegressionTests</code></a></strong>
+
+<dd>
+<p>Run executable <em>exe</em> located in the directory <em>../bin</em>
+with all data files <em>data.pel</em> contained in the subdirectories
+of <em>../RegressionTests</em> and compare the results with the reference ones.
+Create a report file in the current directory recording the conclusions
+of all comparisons.</p>
+</dd>
+</li>
+<dt><strong><a name="item_pel_test__2dbuild_pattern_pat_2epel__2e_2e_2fbin_2"><code>pel test -build_pattern pat.pel ../bin/exe ../Tests</code></a></strong>
+
+<dd>
+<p>Same as before, with in addition the learning and storage of the requested
+structure of the data files in <em>pat.pel</em>.</p>
+</dd>
+</li>
+<dt><strong><a name="item_pel_test__2dverify_pattern_pat_2epel__2e_2e_2fbin_"><code>pel test -verify_pattern pat.pel ../bin/exe ../Appli</code></a></strong>
+
+<dd>
+<p>Check the conformance with <em>pat.pel</em> of all files <em>data.pel</em> contained 
+in a subdirectory of <em>../Appli</em>, and record the conclusions in a report 
+file in the current directory.</p>
+</dd>
+</li>
+</dl>
+
+</body>
+
+</html>

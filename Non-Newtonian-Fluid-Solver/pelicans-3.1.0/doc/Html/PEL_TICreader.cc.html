@@ -1,0 +1,602 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>PEL_TICreader.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="PEL_TICreader.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="PELpack-tree.html"><span>Tree</span></a>
+    <a href="PEL_TICreader.html"><span>Class</span></a>
+    <a href="PEL_TICreader.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="PELpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_TICreader</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_DataWithContext</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_DoubleArray2D</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_IntArray2D</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Int</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Module</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_String</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;PEL_TICio.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_assertions</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">intArray2D</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">intVector</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">doubleArray2D</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">doubleVector</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">stringVector</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;iostream&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;sstream&gt;
+
+</font><font class="kw3">PEL_TICreader</font><font class="text"> </font><font class="kw1">const</font><font class="text">* </font><font class="kw3">PEL_TICreader</font><font class="text">::PROTOTYPE = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_TICreader</font><font class="text">() ;
+
+</font><font class="kw1">struct</font><font class="text"> PEL_TICreader_ERROR
+{
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> n0( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; mesg ) ;
+} ;
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_TICreader</font><font class="text">:: </font><font class="kw3">PEL_TICreader</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_DataOnMeshingReader</font><font class="text">( </font><font class="string">&quot;PEL_TICreader&quot;</font><font class="text"> )
+   , MESHING_EXP( 0 )
+   , FIELDS_EXP( 0 )
+   , I_DOM_EXP( 0 )
+   , VAR_EXP( 0 )
+{
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_TICreader</font><font class="text">*
+</font><font class="kw3">PEL_TICreader</font><font class="text">:: create_replica( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_TICreader:: create_replica&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_PRE( a_owner, exp ) ) ;
+
+   </font><font class="kw3">PEL_TICreader</font><font class="text">* result = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_TICreader</font><font class="text">( a_owner, exp ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( create_replica_POST( result, a_owner, exp ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_TICreader</font><font class="text">:: </font><font class="kw3">PEL_TICreader</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                               </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_DataOnMeshingReader</font><font class="text">( a_owner )
+   , MESHING_EXP( 0 )
+   , FIELDS_EXP( 0 )
+   , I_DOM_EXP( 0 )
+   , VAR_EXP( 0 )
+{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_TICreader:: PEL_TICreader&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> i_cycle = exp-&gt;int_data( </font><font class="string">&quot;cycle&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> TIC_file = exp-&gt;string_data( </font><font class="string">&quot;files_basename&quot;</font><font class="text"> )+</font><font class="string">&quot;.gene&quot;</font><font class="text"> ;
+   </font><font class="kw3">PEL_Module</font><font class="text">* mod1 =
+             PEL_TICio::create_from_gene_file( 0, </font><font class="string">&quot;MAIN&quot;</font><font class="text">, TIC_file, 1 ) ;
+   </font><font class="kw3">PEL_Module</font><font class="text">* mod =
+       PEL_TICio::create_from_gene_file( 0, </font><font class="string">&quot;MAIN&quot;</font><font class="text">, TIC_file, i_cycle ) ;
+
+   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* m_exp = restore_cycle( mod, i_cycle ) ;
+   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* m_exp1 = restore_cycle( mod1, 1 ) ;
+   
+   </font><font class="comment">// Meshing :
+</font><font class="text">   {
+      </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* meshing_exp = 0 ;
+      </font><font class="kw1">if</font><font class="text">( m_exp-&gt;has_entry( </font><font class="string">&quot;XNOD&quot;</font><font class="text"> ) )
+      {
+         meshing_exp = m_exp ;
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( m_exp1-&gt;has_entry( </font><font class="string">&quot;XNOD&quot;</font><font class="text"> ) )
+      {
+         meshing_exp = m_exp1 ;
+      }
+      </font><font class="kw1">else
+</font><font class="text">      {
+         PEL_TICreader_ERROR::n0( </font><font class="string">&quot;no meshing found&quot;</font><font class="text"> ) ;
+      }
+      MESHING_EXP = create_meshing( meshing_exp ) ;
+   }
+
+   </font><font class="comment">// Fields :
+</font><font class="text">   {
+      </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> nb_vertices =
+         MESHING_EXP-&gt;doubleArray2D_data( </font><font class="string">&quot;vertices&quot;</font><font class="text"> ).index_bound(1) ;
+      </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> nb_meshes =
+         MESHING_EXP-&gt;intArray2D_data( </font><font class="string">&quot;cell2vertex&quot;</font><font class="text"> ).index_bound(1) ;
+      FIELDS_EXP = create_fields( m_exp, nb_vertices, nb_meshes )  ;
+   }
+
+   </font><font class="comment">// Integration domain :
+</font><font class="text">   {
+      </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* idom_exp = 0 ;
+      </font><font class="kw1">if</font><font class="text">( m_exp-&gt;has_entry( </font><font class="string">&quot;XFS&quot;</font><font class="text"> ) )
+      {
+         idom_exp = m_exp ;
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( m_exp1-&gt;has_entry( </font><font class="string">&quot;XFS&quot;</font><font class="text"> ) )
+      {
+         idom_exp = m_exp1 ;
+      }
+      </font><font class="kw1">if</font><font class="text">( idom_exp!=0 )
+      {
+         I_DOM_EXP = create_idom( idom_exp ) ;
+      }
+   }
+
+   </font><font class="comment">// Variables :
+</font><font class="text">   </font><font class="comment">// ...
+</font><font class="text">
+   mod-&gt;destroy() ; mod = 0 ;
+   mod1-&gt;destroy() ; mod1 = 0 ;
+      
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_TICreader</font><font class="text">:: ~</font><font class="kw3">PEL_TICreader</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_TICreader:: ~PEL_TICreader&quot;</font><font class="text"> ) ;
+   </font><font class="kw1">if</font><font class="text">( is_a_prototype() )
+   {
+      PROTOTYPE = 0 ;
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">*
+</font><font class="kw3">PEL_TICreader</font><font class="text">:: meshing( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_TICreader:: meshing&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   
+   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* result = MESHING_EXP ;
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( meshing_POST( result ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">*
+</font><font class="kw3">PEL_TICreader</font><font class="text">:: fields( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_TICreader:: fields&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   
+   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* result = FIELDS_EXP ;
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( fields_POST( result ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">*
+</font><font class="kw3">PEL_TICreader</font><font class="text">:: integration_domain( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_TICreader:: integration_domain&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   
+   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* result = I_DOM_EXP ;
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( integration_domain_POST( result ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">*
+</font><font class="kw3">PEL_TICreader</font><font class="text">:: variables( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_TICreader:: variables&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   
+   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* result = VAR_EXP ;
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( variables_POST( result ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">PEL_TICreader</font><font class="text">:: invariant( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( </font><font class="kw3">PEL_DataOnMeshingReader</font><font class="text">::invariant() ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">*
+</font><font class="kw3">PEL_TICreader</font><font class="text">:: restore_cycle( </font><font class="kw3">PEL_Module</font><font class="text">* m, </font><font class="kw2">size_t</font><font class="text"> i_cycle )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_TICreader:: restore_cycle&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( m!=0 ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* result = 0 ;
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> os ;
+   os &lt;&lt; </font><font class="string">&quot;cycle_&quot;</font><font class="text"> &lt;&lt; (</font><font class="kw1">int</font><font class="text">) i_cycle ;
+
+   </font><font class="kw1">if</font><font class="text">( m-&gt;has_module( os.str() ) )
+   {
+      result = </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">::create( m, m-&gt;module( os.str() ) ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> msg ;
+      msg &lt;&lt; </font><font class="string">&quot;Cycle &quot;</font><font class="text"> &lt;&lt; i_cycle &lt;&lt; </font><font class="string">&quot; not found&quot;</font><font class="text"> ;
+      PEL_TICreader_ERROR::n0( msg.str() ) ;
+   }
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result!=0 &amp;&amp; result-&gt;owner()==m ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">*
+</font><font class="kw3">PEL_TICreader</font><font class="text">:: create_meshing( </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* m_exp )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_TICreader:: create_meshing&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( m_exp!=0 ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw3">PEL_Module</font><font class="text">* m = </font><font class="kw3">PEL_Module</font><font class="text">::create( </font><font class="kw1">this</font><font class="text"> , </font><font class="string">&quot;meshing&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* result = </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, m ) ;
+
+   </font><font class="comment">// Number of space dimensions :
+</font><font class="text">   </font><font class="kw2">size_t</font><font class="text"> nb_sp_dims = </font><font class="kw3">PEL</font><font class="text">::bad_index() ;
+   </font><font class="kw1">if</font><font class="text">( m_exp-&gt;has_entry( </font><font class="string">&quot;YNOD&quot;</font><font class="text"> ) )
+   {
+      nb_sp_dims = 3 ;
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( m_exp-&gt;has_entry( </font><font class="string">&quot;ZNOD&quot;</font><font class="text"> ) )
+   {
+      nb_sp_dims = 2 ;
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( m_exp-&gt;has_entry( </font><font class="string">&quot;XNOD&quot;</font><font class="text"> ) )
+   {
+      nb_sp_dims = 1 ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      PEL_TICreader_ERROR::n0( </font><font class="string">&quot;\&quot;</font><font class="text">XNOD\</font><font class="string">&quot; not found&quot;</font><font class="text"> ) ;
+   }
+   m-&gt;add_entry( </font><font class="string">&quot;nb_sp_dims&quot;</font><font class="text">, </font><font class="kw3">PEL_Int</font><font class="text">::create( m, (</font><font class="kw1">int</font><font class="text">) nb_sp_dims ) ) ;
+
+   </font><font class="comment">// Vertices :
+</font><font class="text">   </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; x_nodes = m_exp-&gt;doubleVector_data( </font><font class="string">&quot;XNOD&quot;</font><font class="text"> ) ;
+   </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> nb_verts = x_nodes.size() ;
+   </font><font class="kw3">doubleArray2D</font><font class="text"> vertices( nb_sp_dims, nb_verts ) ;
+   vertices.set_section( 0, 0, x_nodes ) ;
+   </font><font class="kw1">if</font><font class="text">( nb_sp_dims&gt;=2 )
+   {
+      </font><font class="kw1">if</font><font class="text">( !m_exp-&gt;has_entry( </font><font class="string">&quot;ZNOD&quot;</font><font class="text"> ) )
+      {
+         PEL_TICreader_ERROR::n0( </font><font class="string">&quot;\&quot;</font><font class="text">ZNOD\</font><font class="string">&quot; not found&quot;</font><font class="text"> ) ;
+      }
+      </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; z_nodes = m_exp-&gt;doubleVector_data( </font><font class="string">&quot;ZNOD&quot;</font><font class="text"> ) ;
+      </font><font class="kw1">if</font><font class="text">( z_nodes.size()!=x_nodes.size() )
+      {
+         PEL_TICreader_ERROR::n0( </font><font class="string">&quot;\&quot;</font><font class="text">ZNOD\</font><font class="string">&quot; has bad dimension&quot;</font><font class="text"> ) ;
+      }
+      vertices.set_section( 0, 1, z_nodes ) ;
+   }
+   </font><font class="kw1">if</font><font class="text">( nb_sp_dims&gt;=3 )
+   {
+      </font><font class="kw1">if</font><font class="text">( !m_exp-&gt;has_entry( </font><font class="string">&quot;YNOD&quot;</font><font class="text"> ) )
+      {
+         PEL_TICreader_ERROR::n0( </font><font class="string">&quot;\&quot;</font><font class="text">YNOD\</font><font class="string">&quot; not found&quot;</font><font class="text"> ) ;
+      }
+      </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; y_nodes = m_exp-&gt;doubleVector_data( </font><font class="string">&quot;YNOD&quot;</font><font class="text"> ) ;
+      </font><font class="kw1">if</font><font class="text">( y_nodes.size()!=x_nodes.size() )
+      {
+         PEL_TICreader_ERROR::n0( </font><font class="string">&quot;\&quot;</font><font class="text">YNOD\</font><font class="string">&quot; has bad dimension&quot;</font><font class="text"> ) ;
+      }
+      vertices.set_section( 0, 2, y_nodes ) ;
+   }
+   m-&gt;add_entry( </font><font class="string">&quot;vertices&quot;</font><font class="text">, </font><font class="kw3">PEL_DoubleArray2D</font><font class="text">::create( m, vertices ) ) ;
+
+   </font><font class="comment">// Connectivity :
+</font><font class="text">   </font><font class="kw1">if</font><font class="text">( !m_exp-&gt;has_entry( </font><font class="string">&quot;NVER&quot;</font><font class="text"> ) )
+   {
+      PEL_TICreader_ERROR::n0( </font><font class="string">&quot;\&quot;</font><font class="text">NVER\</font><font class="string">&quot; not found&quot;</font><font class="text"> ) ;
+   }
+   </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> mesh_size = m_exp-&gt;int_data( </font><font class="string">&quot;NVER&quot;</font><font class="text"> ) ;
+   </font><font class="kw1">if</font><font class="text">( !m_exp-&gt;has_entry( </font><font class="string">&quot;NODE&quot;</font><font class="text"> ) )
+   {
+      PEL_TICreader_ERROR::n0( </font><font class="string">&quot;\&quot;</font><font class="text">NODE\</font><font class="string">&quot; not found&quot;</font><font class="text"> ) ;
+   }
+   </font><font class="kw3">intVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; nodes = m_exp-&gt;intVector_data( </font><font class="string">&quot;NODE&quot;</font><font class="text"> ) ;
+   </font><font class="kw2">size_t</font><font class="text"> nb_meshes = nodes.size()/mesh_size ;
+   </font><font class="kw3">intArray2D</font><font class="text"> connectivity( mesh_size, nb_meshes ) ;
+   </font><font class="kw2">size_t</font><font class="text"> i_vert=0 ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;nb_meshes ; i++ ) 
+   {
+      </font><font class="kw1">for</font><font class="text"> (</font><font class="kw2">size_t</font><font class="text"> j=0 ; j&lt;mesh_size ; j++ ) 
+      {
+	 connectivity( j, i ) = nodes( i_vert++ )-1 ;
+      }
+   }
+   m-&gt;add_entry( </font><font class="string">&quot;cell2vertex&quot;</font><font class="text">, </font><font class="kw3">PEL_IntArray2D</font><font class="text">::create( m, connectivity ) ) ;
+
+   </font><font class="comment">// Mesh type : mesh reference element
+</font><font class="text">   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> mesh_type = </font><font class="string">&quot;&quot;</font><font class="text"> ;
+   </font><font class="kw1">if</font><font class="text">( nb_sp_dims==1 )
+   {
+      </font><font class="kw1">if</font><font class="text">( mesh_size==2 )
+      {
+         mesh_type = </font><font class="string">&quot;GE_Segment&quot;</font><font class="text"> ;
+      }
+      </font><font class="kw1">else
+</font><font class="text">      {
+	 PEL_TICreader_ERROR::n0( </font><font class="string">&quot;\&quot;</font><font class="text">NVER\</font><font class="string">&quot; bad value&quot;</font><font class="text"> ) ;
+      }
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( nb_sp_dims==2 )
+   {
+      </font><font class="kw1">if</font><font class="text">( mesh_size==3 )
+      {
+         mesh_type = </font><font class="string">&quot;GE_ReferenceTriangle&quot;</font><font class="text"> ;
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( mesh_size==4 )
+      {
+         mesh_type = </font><font class="string">&quot;GE_ReferenceSquare&quot;</font><font class="text"> ;
+      }
+      </font><font class="kw1">else
+</font><font class="text">      {
+         PEL_TICreader_ERROR::n0( </font><font class="string">&quot;\&quot;</font><font class="text">NVER\</font><font class="string">&quot; bad value&quot;</font><font class="text"> ) ;
+      }
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( nb_sp_dims==3 )
+   {
+      </font><font class="kw1">if</font><font class="text">( mesh_size==4 )
+      {
+         mesh_type = </font><font class="string">&quot;GE_ReferenceTetrahedron&quot;</font><font class="text"> ;
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( mesh_size==8 )
+      {
+         mesh_type = </font><font class="string">&quot;GE_ReferenceCube&quot;</font><font class="text"> ;
+      }
+      </font><font class="kw1">else
+</font><font class="text">      {
+         PEL_TICreader_ERROR::n0( </font><font class="string">&quot;\&quot;</font><font class="text">NVER\</font><font class="string">&quot; bad value&quot;</font><font class="text"> ) ;
+      }
+   }
+   
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result!=0 &amp;&amp; result-&gt;owner()==</font><font class="kw1">this</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;name()==</font><font class="string">&quot;meshing&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;has_entry( </font><font class="string">&quot;nb_sp_dims&quot;</font><font class="text"> ) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;has_entry( </font><font class="string">&quot;vertices&quot;</font><font class="text"> ) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;has_entry( </font><font class="string">&quot;cell2vertex&quot;</font><font class="text"> ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">*
+</font><font class="kw3">PEL_TICreader</font><font class="text">:: create_idom( </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* m_exp )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_TICreader:: create_idom&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( m_exp!=0 ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw3">PEL_Module</font><font class="text">* m = </font><font class="kw3">PEL_Module</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, </font><font class="string">&quot;integration_domain&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* result = </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, m ) ;
+
+   </font><font class="comment">// Inner boundary :
+</font><font class="text">   </font><font class="kw1">if</font><font class="text">( !m_exp-&gt;has_entry( </font><font class="string">&quot;XFS&quot;</font><font class="text"> ) )
+   {
+      PEL_TICreader_ERROR::n0( </font><font class="string">&quot;\&quot;</font><font class="text">XFS\</font><font class="string">&quot; not found&quot;</font><font class="text"> ) ;
+   }
+   </font><font class="kw1">if</font><font class="text">( !m_exp-&gt;has_entry( </font><font class="string">&quot;ZFS&quot;</font><font class="text"> ) )
+   {
+      PEL_TICreader_ERROR::n0( </font><font class="string">&quot;\&quot;</font><font class="text">ZFS\</font><font class="string">&quot; not found&quot;</font><font class="text"> ) ;
+   }
+   </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; xFS = m_exp-&gt;doubleVector_data( </font><font class="string">&quot;XFS&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; zFS = m_exp-&gt;doubleVector_data( </font><font class="string">&quot;ZFS&quot;</font><font class="text"> ) ;
+   </font><font class="kw1">if</font><font class="text">( xFS.size()!=zFS.size() )
+   {
+      PEL_TICreader_ERROR::n0( </font><font class="string">&quot;\&quot;</font><font class="text">XFS\</font><font class="string">&quot; and \&quot;</font><font class="text">ZFS\</font><font class="string">&quot; invalid dimensions&quot;</font><font class="text"> ) ;
+   }
+   </font><font class="kw3">doubleArray2D</font><font class="text"> inner_boundary( (</font><font class="kw2">size_t</font><font class="text">) 2, xFS.size() ) ;
+   inner_boundary.set_section( 0, 0, xFS ) ;
+   inner_boundary.set_section( 0, 1, zFS ) ;
+   m-&gt;add_entry( </font><font class="string">&quot;inner_boundary&quot;</font><font class="text">,
+                 </font><font class="kw3">PEL_DoubleArray2D</font><font class="text">::create( m, inner_boundary ) ) ;
+
+   </font><font class="comment">// Polygon :
+</font><font class="text">   </font><font class="kw1">if</font><font class="text">( !m_exp-&gt;has_entry( </font><font class="string">&quot;XDOM&quot;</font><font class="text"> ) )
+   {
+      PEL_TICreader_ERROR::n0( </font><font class="string">&quot;\&quot;</font><font class="text">XDOM\</font><font class="string">&quot; not found&quot;</font><font class="text"> ) ;
+   }
+   </font><font class="kw1">if</font><font class="text">( !m_exp-&gt;has_entry( </font><font class="string">&quot;ZDOM&quot;</font><font class="text"> ) )
+   {
+      PEL_TICreader_ERROR::n0( </font><font class="string">&quot;\&quot;</font><font class="text">ZDOM\</font><font class="string">&quot; not found&quot;</font><font class="text"> ) ;
+   }
+   </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; xDOM = m_exp-&gt;doubleVector_data( </font><font class="string">&quot;XDOM&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; zDOM = m_exp-&gt;doubleVector_data( </font><font class="string">&quot;ZDOM&quot;</font><font class="text"> ) ;
+   </font><font class="kw1">if</font><font class="text">( xDOM.size()!=zDOM.size() )
+   {
+      PEL_TICreader_ERROR::n0( </font><font class="string">&quot;\&quot;</font><font class="text">XDOM\</font><font class="string">&quot; and \&quot;</font><font class="text">ZDOM\</font><font class="string">&quot; invalid dimensions&quot;</font><font class="text"> ) ;
+   }
+   </font><font class="kw3">doubleArray2D</font><font class="text"> polygon( (</font><font class="kw2">size_t</font><font class="text">) 2, xDOM.size() ) ;
+   polygon.set_section( 0, 0, xDOM ) ;
+   polygon.set_section( 0, 1, zDOM ) ;
+   m-&gt;add_entry( </font><font class="string">&quot;polygon&quot;</font><font class="text">, </font><font class="kw3">PEL_DoubleArray2D</font><font class="text">::create( m, polygon ) ) ;
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result!=0 &amp;&amp; result-&gt;owner()==</font><font class="kw1">this</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;name()==</font><font class="string">&quot;integration_domain&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;has_entry( </font><font class="string">&quot;inner_boundary&quot;</font><font class="text"> ) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;has_entry( </font><font class="string">&quot;polygon&quot;</font><font class="text"> ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">*
+</font><font class="kw3">PEL_TICreader</font><font class="text">:: create_fields( </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* m_exp,
+                               </font><font class="kw2">size_t</font><font class="text"> nb_vertices,
+                               </font><font class="kw2">size_t</font><font class="text"> nb_meshes )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_TICreader:: create_fields&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( m_exp!=0  ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( nb_vertices&gt;0 &amp;&amp; nb_meshes&gt;0 ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw3">PEL_Module</font><font class="text">* m = </font><font class="kw3">PEL_Module</font><font class="text">::create( </font><font class="kw1">this</font><font class="text"> , </font><font class="string">&quot;fields&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* result = </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, m ) ;
+   
+   </font><font class="kw1">for</font><font class="text">( m_exp-&gt;start_entry_iterator() ;
+        m_exp-&gt;is_valid_entry() ;
+        m_exp-&gt;go_next_entry() )
+   {
+      </font><font class="kw3">PEL_Data</font><font class="text"> </font><font class="kw1">const</font><font class="text">* data = m_exp-&gt;data( 0 ) ;
+      </font><font class="kw1">if</font><font class="text">( data-&gt;data_type()==</font><font class="kw3">PEL_Data</font><font class="text">::DoubleVector )
+      {
+         </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; v = data-&gt;to_double_vector() ;
+         </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; name = m_exp-&gt;keyword() ;
+
+         </font><font class="comment">// Location :
+</font><font class="text">         </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> location = </font><font class="string">&quot;not_a_field&quot;</font><font class="text"> ;
+         </font><font class="kw2">size_t</font><font class="text"> dim = </font><font class="kw3">PEL</font><font class="text">::bad_index() ;
+         </font><font class="kw1">if</font><font class="text">( (v.size()%nb_vertices)==0 )
+         {
+            location = </font><font class="string">&quot;at_vertices&quot;</font><font class="text"> ;
+            dim = nb_vertices ;
+         }
+         </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( (v.size()%nb_meshes)==0 )
+         {
+            location = </font><font class="string">&quot;at_cell_centers&quot;</font><font class="text"> ;
+            dim = nb_meshes ;
+         }
+
+         </font><font class="kw1">if</font><font class="text">( location!=</font><font class="string">&quot;not_a_field&quot;</font><font class="text"> )
+         {
+            </font><font class="kw3">PEL_Module</font><font class="text">* f = </font><font class="kw3">PEL_Module</font><font class="text">::create( m, name ) ;
+            m-&gt;add_module( f ) ;
+
+            </font><font class="comment">// Name :
+</font><font class="text">            f-&gt;add_entry( </font><font class="string">&quot;name&quot;</font><font class="text">, </font><font class="kw3">PEL_String</font><font class="text">::create( f, name ) ) ;
+            f-&gt;add_entry( </font><font class="string">&quot;type&quot;</font><font class="text">, </font><font class="kw3">PEL_String</font><font class="text">::create( f, </font><font class="string">&quot;field&quot;</font><font class="text"> ) ) ;
+
+            </font><font class="comment">// Location and value :
+</font><font class="text">            f-&gt;add_entry( </font><font class="string">&quot;location&quot;</font><font class="text">, </font><font class="kw3">PEL_String</font><font class="text">::create( f, location ) ) ;
+
+            </font><font class="comment">// Value
+</font><font class="text">            </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> nb_comps = v.size()/dim ;
+            </font><font class="kw3">doubleArray2D</font><font class="text"> value( nb_comps, dim ) ;
+            </font><font class="kw2">size_t</font><font class="text"> i=0 ;
+            </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i_dim=0 ; i_dim&lt;dim ; ++i_dim )
+            {
+               </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i_comp=0 ; i_comp&lt;nb_comps ; ++i_comp )
+               {
+                  value( i_comp, i_dim ) = v(i++) ;
+               }
+            }
+            f-&gt;add_entry( </font><font class="string">&quot;value&quot;</font><font class="text">, </font><font class="kw3">PEL_DoubleArray2D</font><font class="text">::create( f, value ) ) ;
+         }
+      }
+      data-&gt;destroy() ; data = 0 ;
+   }
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result!=0 &amp;&amp; result-&gt;owner()==</font><font class="kw1">this</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;name()==</font><font class="string">&quot;fields&quot;</font><font class="text"> ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="kw1">void</font><font class="text"> 
+PEL_TICreader_ERROR:: n0( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; mesg )
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> err ;
+   err &lt;&lt; </font><font class="string">&quot;*** &quot;</font><font class="text"> &lt;&lt; </font><font class="string">&quot;PEL_TICreader:: invalid result file&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   err &lt;&lt; </font><font class="string">&quot;*** &quot;</font><font class="text"> &lt;&lt; mesg &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( err.str() ) ;
+}
+
+</font>
+</pre>
+</body>
+</html>

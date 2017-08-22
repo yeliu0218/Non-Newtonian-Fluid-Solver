@@ -1,0 +1,136 @@
+MODULE PEL_ObjectTest#PDE_FieldComposition_TEST
+   
+   MODULE PDE_FieldComposition_TEST#1
+      
+      $IS_N = 4
+      nb_values = $IS_N*$IS_N
+      dbl_epsilon = 1.E-10
+      dbl_minimum = 1.E-10
+      
+      MODULE PDE_DomainAndFields
+         verbose_level = 0
+         nb_space_dimensions = 2
+         type = "finite_element"
+         
+         MODULE GE_Meshing
+            
+            concrete_name = "GE_BoxWithBoxes"
+            
+            vertices_coordinate_0 = regular_vector( 0.0, $IS_N, 1.0 )
+            vertices_coordinate_1 = regular_vector( 0.0, $IS_N, 1.0 )
+            mesh_polyhedron = < "GE_Segment" "GE_Rectangle" > 
+            
+         END MODULE GE_Meshing
+         
+         MODULE interior_fields
+            
+            MODULE coord
+               name = "coord"
+               nb_components = 2
+               storage_depth = 1
+               element_name = "PDE_2D_Q2_9nodes"
+               MODULE DOFs_values
+                  type = "uniformly_defined"
+                  value =  $DV_X
+               END MODULE DOFs_values
+            END MODULE coord
+            
+            MODULE result
+               name = "result"
+               nb_components = 1
+               storage_depth = 1
+               element_name = "PDE_2D_Q2_9nodes"
+               MODULE DOFs_values
+                  type = "uniformly_defined"
+                  value = <2.0>
+               END MODULE DOFs_values
+            END MODULE result
+            
+        END MODULE interior_fields
+
+        MODULE field_compositions
+           
+            result = vector( sqr( component( $DV_sincosx, 0 ) )
+                            +sqr( component( $DV_sincosx, 1 ) )
+                            +sqr( component( $DV_sincosy, 0 ) )
+                            +sqr( component( $DV_sincosy, 1 ) ) )
+            sincosx = vector( sin( component( $DV_coord, 0 ) ),
+                              cos( component( $DV_coord, 0 ) ) )
+            sincosy = vector( sin( component( $DV_coord, 1 ) ),
+                              cos( component( $DV_coord, 1 ) ) )
+            
+         END MODULE field_compositions
+         
+      END MODULE PDE_DomainAndFields
+
+   END MODULE PDE_FieldComposition_TEST#1
+   
+   MODULE PDE_FieldComposition_TEST#2
+      
+      $IS_N = 4
+      nb_values = $IS_N*$IS_N
+      dbl_epsilon = 1.E-10
+      dbl_minimum = 1.E-10
+
+      $DS_cp = 3.
+      $DS_temp = sin( component( $DV_X, 0 ) )*cos( component( $DV_X, 1 ) )
+      
+      MODULE PDE_DomainAndFields
+         
+         verbose_level = 0
+         nb_space_dimensions = 2
+         type = "finite_element"
+         
+         MODULE GE_Meshing
+            
+            concrete_name = "GE_BoxWithBoxes"
+            
+            vertices_coordinate_0 = regular_vector( 0.0, $IS_N, 1.0 )
+            vertices_coordinate_1 = regular_vector( 0.0, $IS_N, 1.0 )
+            mesh_polyhedron = < "GE_Segment" "GE_Rectangle" > 
+            
+         END MODULE GE_Meshing
+         
+         MODULE interior_fields
+            
+            MODULE temperature
+               name = "temperature"
+               nb_components = 1
+               storage_depth = 1
+               element_name = "PDE_2D_Q1_4nodes"
+               MODULE DOFs_values
+                  type = "uniformly_defined"
+                  value =  vector( $DS_temp )
+               END MODULE DOFs_values
+            END MODULE temperature
+            
+            MODULE result
+               name = "result"
+               nb_components = 1
+               storage_depth = 1
+               element_name = "PDE_2D_Q1_4nodes"
+               MODULE DOFs_values
+                  type = "uniformly_defined"
+                  value = vector( $DS_cp*$DS_temp )
+               END MODULE DOFs_values
+            END MODULE result
+            
+        END MODULE interior_fields
+
+        MODULE field_compositions
+
+           $DS_T = component( $DV_temperature, 0 )
+           $DS_SPEC = component( $DV_specific_heat, 0 )
+           specific_heat = vector( $DS_cp )
+           enthalpy = vector( $DS_SPEC*$DS_T )
+           result = $DV_enthalpy
+           
+         END MODULE field_compositions
+         
+      END MODULE PDE_DomainAndFields
+
+   END MODULE PDE_FieldComposition_TEST#2
+   
+END MODULE PEL_ObjectTest#PDE_FieldComposition_TEST
+
+

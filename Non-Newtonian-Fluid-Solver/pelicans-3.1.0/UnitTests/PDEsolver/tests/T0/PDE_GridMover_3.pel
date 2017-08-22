@@ -1,0 +1,67 @@
+   MODULE PDE_GridMover_3
+
+      // Simulation of a parallel grid
+
+      MODULE DATA
+         
+         verbose_level = 0
+         nb_space_dimensions = 2
+         type = "finite_element"
+      
+         MODULE GE_Meshing
+            concrete_name = "GE_SplitMeshing"
+            security_bandwidth = 1
+            nb_ranks = 2
+            rank = 0
+            MODULE splitting_strategy
+               concrete_name = "GE_CoordinateSplitting"
+               $DS_X = component( $DV_X, 0 )
+               coordinate_splitting_formula = ( $DS_X<0.75 ? 0 : 1 )
+            END MODULE splitting_strategy
+            MODULE GE_Meshing
+               concrete_name = "GE_BoxWithBoxes"
+               vertices_coordinate_0 = regular_vector( 0.0, 3, 1.0 )
+               vertices_coordinate_1 = regular_vector( 0.0, 3, 1.0 )
+               mesh_polyhedron = < "GE_Segment" "GE_Rectangle" >
+            END MODULE GE_Meshing
+         END MODULE GE_Meshing
+      
+         MODULE interior_fields
+            MODULE GridDeformation
+               name = "GridDeformation"
+               nb_components = 2
+               element_name = "PDE_2D_Q1_4nodes"
+               storage_depth = 1
+               MODULE DOFs_values
+                  type = "uniformly_defined"
+                  value = vector( 2.*component( $DV_X, 0 ),
+                                  3.*component( $DV_X, 1 ) )
+               END MODULE DOFs_values
+            END MODULE GridDeformation
+         END MODULE interior_fields
+
+      END MODULE DATA
+
+      MODULE RESULT
+         vertices_coordinates =
+         <
+              0.000000000e+00  0.000000000e+00
+              0.000000000e+00  1.333333333e+00
+              0.000000000e+00  2.666666667e+00
+              0.000000000e+00  4.000000000e+00
+              1.000000000e+00  0.000000000e+00
+              1.000000000e+00  1.333333333e+00
+              1.000000000e+00  2.666666667e+00
+              1.000000000e+00  4.000000000e+00
+              2.000000000e+00  0.000000000e+00
+              2.000000000e+00  1.333333333e+00
+              2.000000000e+00  2.666666667e+00
+              2.000000000e+00  4.000000000e+00
+              3.000000000e+00  0.000000000e+00
+              3.000000000e+00  1.333333333e+00
+              3.000000000e+00  2.666666667e+00
+              3.000000000e+00  4.000000000e+00
+         >
+      END MODULE RESULT
+      
+   END MODULE PDE_GridMover_3

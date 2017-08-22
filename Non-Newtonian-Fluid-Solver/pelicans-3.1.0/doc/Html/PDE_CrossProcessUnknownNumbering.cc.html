@@ -1,0 +1,504 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>PDE_CrossProcessUnknownNumbering.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="PDE_CrossProcessUnknownNumbering.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="PDEpack-tree.html"><span>Tree</span></a>
+    <a href="PDE_CrossProcessUnknownNumbering.html"><span>Class</span></a>
+    <a href="PDE_CrossProcessUnknownNumbering.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="PDEpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated
+ *  reusable components, whose purpose is to simplify the task of developing
+ *  softwares of numerical mathematics and scientific computing.
+ *
+ *  This software is governed by the CeCILL-C license under French law and
+ *  abiding by the rules of distribution of free software. You can use, modify
+ *  and/or redistribute the software under the terms of the CeCILL-C license
+ *  as circulated by CEA, CNRS and INRIA at the following URL
+ *  &quot;http://www.cecill.info&quot;.
+ *
+ *  As a counterpart to the access to the source code and rights to copy,
+ *  modify and redistribute granted by the license, users are provided only
+ *  with a limited warranty and the software's author, the holder of the
+ *  economic rights, and the successive licensors have only limited liability.
+ *
+ *  In this respect, the user's attention is drawn to the risks associated
+ *  with loading, using, modifying and/or developing or reproducing the
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also
+ *  therefore means that it is reserved for developers and experienced
+ *  professionals having in-depth computer knowledge. Users are therefore
+ *  encouraged to load and test the software's suitability as regards their
+ *  requirements in conditions enabling the security of their systems and/or
+ *  data to be ensured and, more generally, to use and operate it in the same
+ *  conditions as regards security.
+ *
+ *  The fact that you are presently reading this means that you have had
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_CrossProcessUnknownNumbering</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Communicator</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_assertions</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_CrossProcessNodeNumbering</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw2">string</font><font class="text">&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;sstream&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;iostream&gt;
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PDE_CrossProcessUnknownNumbering</font><font class="text">*
+</font><font class="kw3">PDE_CrossProcessUnknownNumbering</font><font class="text">:: create( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                           </font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text"> </font><font class="kw1">const</font><font class="text">* a_link )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_CrossProcessUnknownNumbering:: create&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( a_link-&gt;field()-&gt;is_distributed() ) ;
+
+   </font><font class="kw3">PDE_CrossProcessUnknownNumbering</font><font class="text">* result =
+                    </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PDE_CrossProcessUnknownNumbering</font><font class="text">( a_owner, a_link ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result!=0 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;owner()==a_owner ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PDE_CrossProcessUnknownNumbering</font><font class="text">:: </font><font class="kw3">PDE_CrossProcessUnknownNumbering</font><font class="text">(
+                                           </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                           </font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text"> </font><font class="kw1">const</font><font class="text">* a_link )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_Object</font><font class="text">( a_owner )
+   , LINK( a_link )
+   , GLOB_NODE( a_link-&gt;field()-&gt;cross_process_numbering() )
+   , COMM( 0 )
+   , NB_UNKNOWNS_ON_PROC( 0 )
+   , NB_UNKNOWNS( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+   , NB_HANDLED_UNK( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+   , LOC_2_GLOB( 0 )
+   , OWNER( 0 )
+{
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   COMM = GLOB_NODE-&gt;communicator() ;
+
+   set_ordering_option( a_link-&gt;DOFs_ordering_in_unknown() ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> nb_ranks = COMM-&gt;nb_ranks() ;
+   NB_UNKNOWNS_ON_PROC.re_initialize( nb_ranks , </font><font class="kw3">PEL</font><font class="text">::bad_int() ) ;
+   
+   reset() ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PDE_CrossProcessUnknownNumbering</font><font class="text">:: ~</font><font class="kw3">PDE_CrossProcessUnknownNumbering</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PDE_CrossProcessUnknownNumbering</font><font class="text">:: reset( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_CrossProcessUnknownNumbering:: reset&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> nbcs = LINK-&gt;components_table().size() ;
+   </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> nb_nodes = LINK-&gt;nb_field_nodes() ;
+
+   </font><font class="comment">// global_unknown(n,ic)= global index (cross-process) of the unknown
+</font><font class="text">   </font><font class="comment">// associated to the ic-th component of node of global number
+</font><font class="text">   </font><font class="comment">// (cross-process) n (PEL::bad_index() if not an unknown)
+</font><font class="text">   </font><font class="kw3">size_t_array2D</font><font class="text"> global_unknown( GLOB_NODE-&gt;nb_global_nodes(), nbcs ) ;
+   globalize( global_unknown ) ;
+
+   LOC_2_GLOB.re_initialize( LINK-&gt;unknown_vector_size() ) ;
+   OWNER.re_initialize( LINK-&gt;unknown_vector_size() ) ;
+   </font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; comp = LINK-&gt;components_table() ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> n=0 ; n&lt;nb_nodes ; n++ )
+   {
+      </font><font class="kw2">size_t</font><font class="text"> globn = GLOB_NODE-&gt;global_node_index( n ) ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> iic=0 ; iic&lt;comp.size() ; ++iic )
+      {
+         </font><font class="kw2">size_t</font><font class="text"> ic = comp(iic) ;
+         </font><font class="kw2">size_t</font><font class="text"> glob = global_unknown( globn, iic ) ;
+         </font><font class="kw1">if</font><font class="text">( LINK-&gt;DOF_is_unknown(n,ic) )
+         {
+            </font><font class="kw2">size_t</font><font class="text"> loc = LINK-&gt;unknown_linked_to_DOF( n, ic ) ;
+            </font><font class="kw3">PEL_CHECK</font><font class="text">( glob != </font><font class="kw3">PEL</font><font class="text">::bad_index() ) ;
+            </font><font class="kw3">PEL_CHECK</font><font class="text">( loc &lt; LINK-&gt;unknown_vector_size()  ) ;
+            LOC_2_GLOB( loc ) = glob ;
+            OWNER( loc ) = GLOB_NODE-&gt;rank_of_process_handling( n ) ;
+         }
+      }
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">PDE_CrossProcessUnknownNumbering</font><font class="text">:: link( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_CrossProcessUnknownNumbering:: link&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result = LINK ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result!=0 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;field()-&gt;is_distributed() ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_Communicator</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">PDE_CrossProcessUnknownNumbering</font><font class="text">:: communicator( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_CrossProcessUnknownNumbering:: communicator&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw3">PEL_Communicator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result = COMM ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result!=0 ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw2">size_t
+</font><font class="kw3">PDE_CrossProcessUnknownNumbering</font><font class="text">:: nb_unknowns_of_current_process( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_CrossProcessUnknownNumbering:: nb_unknowns_of_current_process&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> result = nb_unknowns_on_process( COMM-&gt;rank() ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result &lt;= nb_global_unknowns() ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw2">size_t
+</font><font class="kw3">PDE_CrossProcessUnknownNumbering</font><font class="text">:: nb_unknowns_on_process( </font><font class="kw2">size_t</font><font class="text"> rank ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_CrossProcessUnknownNumbering:: nb_unknowns_on_process&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> result = (</font><font class="kw1">int</font><font class="text">) NB_UNKNOWNS_ON_PROC( rank ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result &lt;= nb_global_unknowns() ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw2">size_t
+</font><font class="kw3">PDE_CrossProcessUnknownNumbering</font><font class="text">:: global_unknown_index( </font><font class="kw2">size_t</font><font class="text"> i ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_CrossProcessUnknownNumbering:: global_unknown_index&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( i &lt; link()-&gt;unknown_vector_size() ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> result = LOC_2_GLOB( i ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result &lt; nb_global_unknowns() ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw2">size_t
+</font><font class="kw3">PDE_CrossProcessUnknownNumbering</font><font class="text">:: rank_of_process_handling( </font><font class="kw2">size_t</font><font class="text"> i ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_CrossProcessUnknownNumbering:: rank_of_process_handling&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( i &lt; link()-&gt;unknown_vector_size() ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> result = OWNER( i ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result &lt; COMM-&gt;nb_ranks() ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw2">size_t
+</font><font class="kw3">PDE_CrossProcessUnknownNumbering</font><font class="text">:: nb_global_unknowns( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_CrossProcessUnknownNumbering:: nb_global_unknowns&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> result = NB_UNKNOWNS ;
+
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw2">size_t
+</font><font class="kw3">PDE_CrossProcessUnknownNumbering</font><font class="text">:: global_unknown_linked_to_DOF(
+                                                  </font><font class="kw2">size_t</font><font class="text"> n,
+                                                  </font><font class="kw2">size_t</font><font class="text"> ic ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_CrossProcessUnknownNumbering:: global_unknown_linked_to_DOF&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( n &lt; link()-&gt;nb_field_nodes() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( ic &lt; link()-&gt;field()-&gt;nb_components() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( link()-&gt;components_table().has( ic ) ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( link()-&gt;DOF_is_unknown( n, ic ) ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> loc = LINK-&gt;unknown_linked_to_DOF( n, ic ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> result = LOC_2_GLOB( loc ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result &lt; nb_global_unknowns() ||
+                   result == </font><font class="kw3">PEL</font><font class="text">::bad_index() ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PDE_CrossProcessUnknownNumbering</font><font class="text">:: print( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostream</font><font class="text">&amp; os,
+                                          </font><font class="kw2">size_t</font><font class="text"> indent_width ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_CrossProcessUnknownNumbering:: print&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> s( indent_width, </font><font class="string">' '</font><font class="text"> ) ;
+   os &lt;&lt; s
+      &lt;&lt; </font><font class="string">&quot;Local number of unknowns for &quot;</font><font class="text"> &lt;&lt; LINK-&gt;field()-&gt;name()
+      &lt;&lt; </font><font class="string">&quot; on P&quot;</font><font class="text"> &lt;&lt; COMM-&gt;rank() &lt;&lt; </font><font class="string">&quot; is &quot;
+</font><font class="text">      &lt;&lt; LINK-&gt;unknown_vector_size() &lt;&lt; </font><font class="string">&quot; / &quot;</font><font class="text"> &lt;&lt;  NB_UNKNOWNS &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PDE_CrossProcessUnknownNumbering</font><font class="text">:: globalize( </font><font class="kw3">size_t_array2D</font><font class="text">&amp; unknown )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_CrossProcessUnknownNumbering:: globalize&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( unknown.index_bound( 0 ) ==
+              link()-&gt;field()-&gt;cross_process_numbering()-&gt;nb_global_nodes() ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( unknown.index_bound( 1 ) == link()-&gt;components_table().size() ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> nb_ranks = COMM-&gt;nb_ranks() ;
+   </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> last = nb_ranks-1 ;
+   </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> rank = COMM-&gt;rank() ;
+   
+   </font><font class="kw1">int</font><font class="text"> nb_unk_on_current_proc = </font><font class="kw3">PEL</font><font class="text">::bad_int() ;
+   
+   </font><font class="kw1">if</font><font class="text">( rank&gt;0 )
+   {
+      COMM-&gt;receive( rank-1 , unknown ) ;
+      COMM-&gt;receive( rank-1 , NB_UNKNOWNS ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      NB_UNKNOWNS = 0 ;
+      unknown.</font><font class="kw2">set</font><font class="text">( </font><font class="kw3">PEL</font><font class="text">::bad_index() ) ;
+   }
+   </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> nbn = LINK-&gt;nb_field_nodes() ;
+   </font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; comp = LINK-&gt;components_table() ;
+   
+   </font><font class="kw2">size_t</font><font class="text"> nb_unk = NB_UNKNOWNS ;
+   
+   </font><font class="kw1">if</font><font class="text">( ORDERING == sequenceOfTheComponents )
+   {
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> il=0 ; il&lt;nbn ; ++il )
+      {
+         </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> ig = GLOB_NODE-&gt;global_node_index( il ) ;
+         </font><font class="kw1">if</font><font class="text">( GLOB_NODE-&gt;current_process_handles_node( il ) )
+         {
+            </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> iic=0 ; iic&lt;comp.size() ; ++iic )
+            {
+               </font><font class="kw3">PEL_CHECK</font><font class="text">( unknown( ig, iic ) == </font><font class="kw3">PEL</font><font class="text">::bad_index() ) ;
+               </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> ic = comp( iic ) ;
+               </font><font class="kw1">if</font><font class="text">( LINK-&gt;DOF_is_unknown( il, ic ) )
+               {
+                  unknown( ig, iic ) = NB_UNKNOWNS ;
+                  NB_UNKNOWNS++ ;
+               }
+            }
+         }
+      }
+   }
+
+   </font><font class="kw1">if</font><font class="text">( ORDERING == sequenceOfTheNodes )
+   {
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> iic=0 ; iic&lt;comp.size() ; ++iic )
+      {
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> il=0 ; il&lt;nbn ; ++il )
+         {
+            </font><font class="kw1">if</font><font class="text">( GLOB_NODE-&gt;current_process_handles_node( il ) )
+            {
+               </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> ig = GLOB_NODE-&gt;global_node_index( il ) ;
+               </font><font class="kw3">PEL_CHECK</font><font class="text">( unknown( ig, iic ) == </font><font class="kw3">PEL</font><font class="text">::bad_index() ) ;
+               </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> ic = comp( iic ) ;
+               </font><font class="kw1">if</font><font class="text">( LINK-&gt;DOF_is_unknown( il, ic ) )
+               {
+                  unknown( ig, iic ) = NB_UNKNOWNS ;
+                  NB_UNKNOWNS++ ;
+               }
+            }
+         }
+      }
+   }
+
+   nb_unk_on_current_proc = NB_UNKNOWNS - nb_unk ;
+   
+   </font><font class="kw1">if</font><font class="text">( rank!=last )
+   {
+      COMM-&gt;send( rank+1, unknown ) ;
+      COMM-&gt;send( rank+1, NB_UNKNOWNS ) ;
+
+      COMM-&gt;receive( last, unknown ) ;
+      COMM-&gt;receive( last, NB_UNKNOWNS ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;last ; i++ )
+      {
+         COMM-&gt;send( i, unknown ) ;
+         COMM-&gt;send( i, NB_UNKNOWNS ) ;
+      }
+   }
+   
+   COMM-&gt;all_gather( nb_unk_on_current_proc, NB_UNKNOWNS_ON_PROC ) ;
+
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> il=0 ; il&lt;nbn ; ++il )
+   {
+      </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> ig = GLOB_NODE-&gt;global_node_index( il ) ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> iic=0 ; iic&lt;comp.size() ; ++iic )
+      {
+         </font><font class="kw1">if</font><font class="text">( !LINK-&gt;DOF_is_unknown( il, comp(iic) ) &amp;&amp;
+             unknown( ig, iic )!= </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+         {
+            raise_globalize_error(
+               </font><font class="string">&quot;    DOF of field \&quot;&quot;+LINK-&gt;field()-&gt;name()+&quot;</font><font class="text">\</font><font class="string">&quot;\n&quot;
+</font><font class="text">               </font><font class="string">&quot;    seems not to be free for all processes&quot;</font><font class="text">,
+               unknown ) ;
+         }
+         </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( LINK-&gt;DOF_is_unknown( il, comp(iic) ) &amp;&amp;
+                  unknown( ig, iic ) == </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+         {
+            raise_globalize_error(
+               </font><font class="string">&quot;    DOF of field \&quot;&quot;+LINK-&gt;field()-&gt;name()+&quot;</font><font class="text">\</font><font class="string">&quot;\n&quot;
+</font><font class="text">               </font><font class="string">&quot;    seems not to be imposed for all processes&quot;</font><font class="text">,
+               unknown ) ;
+         }
+      }
+   }
+   
+  </font><font class="kw3">PEL_CHECK_POST</font><font class="text">(
+     </font><font class="kw3">FORALL</font><font class="text">(
+        ( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;link()-&gt;nb_field_nodes() ; i++ ),
+        </font><font class="kw3">FORALL</font><font class="text">(
+           ( </font><font class="kw2">size_t</font><font class="text"> ic=0 ; ic&lt;link()-&gt;components_table().size() ; ic++ ),
+           </font><font class="kw3">EQUIVALENT</font><font class="text">(
+              link()-&gt;DOF_is_unknown( i, link()-&gt;components_table()(ic) ),
+              unknown( GLOB_NODE-&gt;global_node_index(i), ic ) != </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+            ) ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PDE_CrossProcessUnknownNumbering</font><font class="text">:: raise_globalize_error(
+           </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; mes, </font><font class="kw3">size_t_array2D</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; unknown ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> os ;
+
+   </font><font class="kw2">size_t</font><font class="text"> nb_unks = unknown.index_bound(0) ;
+
+   </font><font class="kw1">if</font><font class="text">( nb_unks&lt;200 )
+   {
+      </font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; comp = LINK-&gt;components_table() ;
+      os &lt;&lt; </font><font class="string">&quot;Unknowns : &quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;nb_unks ; ++i )
+      {
+         os &lt;&lt; </font><font class="string">&quot;   Node global : &quot;</font><font class="text"> &lt;&lt; i ;
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> ic=0 ; ic&lt;comp.size() ; ++ic )
+         {
+            </font><font class="kw1">if</font><font class="text">( comp.size() != 1 )
+            {
+               os &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> &lt;&lt; </font><font class="string">&quot;      comp : &quot;</font><font class="text"> &lt;&lt; comp(ic) ;
+            }
+            </font><font class="kw1">if</font><font class="text">( unknown( i, ic ) == </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+            {
+               os &lt;&lt; </font><font class="string">&quot; =&gt; fixed&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+            }
+            </font><font class="kw1">else
+</font><font class="text">            {
+               os &lt;&lt; </font><font class="string">&quot; =&gt; global unk : &quot;</font><font class="text"> &lt;&lt; unknown( i, ic )
+                  &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+            }
+         }
+      }
+      os &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+      os &lt;&lt; </font><font class="string">&quot;Field : &quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+      LINK-&gt;field()-&gt;print( os, 3 ) ;
+      os &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   }
+   os &lt;&lt; </font><font class="string">&quot;*** PDE_CrossProcessUnknownNumbering error : &quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   os &lt;&lt; mes ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_internal( os.str() ) ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PDE_CrossProcessUnknownNumbering</font><font class="text">:: set_ordering_option(
+                                              </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; option )
+</font><font class="comment">//-----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_CrossProcessUnknownNumbering:: set_ordering_option&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">if</font><font class="text">( option == </font><font class="string">&quot;sequence_of_the_components&quot;</font><font class="text"> )
+   {
+      ORDERING = sequenceOfTheComponents ;
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( option == </font><font class="string">&quot;sequence_of_the_nodes&quot;</font><font class="text"> )
+   {
+      ORDERING = sequenceOfTheNodes ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( option + </font><font class="string">&quot;: bad value &quot;</font><font class="text"> ) ;
+   }
+}
+
+
+</font>
+</pre>
+</body>
+</html>

@@ -1,0 +1,83 @@
+// field initialization
+//   initialization for DOFs_values and DOFs_imposed_value
+//   Check the reliability of grid and field initialization
+//   from a ".gene" file
+
+MODULE PEL_ObjectTest#PDE_FieldInitialization_TEST
+   
+   MODULE PDE_FieldInitialization_5
+      
+      $DS_x = component( $DV_X, 0 )
+      $DS_y = component( $DV_X, 1 )
+      
+      MODULE PDE_DomainAndFields
+         
+         verbose_level = 0
+         nb_space_dimensions = 2
+         type = "finite_element"
+         
+         MODULE GE_Meshing
+            concrete_name = "GE_RefinedMeshing"
+            mesh_polyhedron = < "GE_Segment" "GE_Triangle" >
+            MODULE list_of_GE_ReferencePolyhedronRefiner
+               MODULE GE_ReferencePolyhedronRefiner#1
+                  concrete_name = "GE_ReferenceSquareWithTriangles"
+                  strategy = "X"
+               END MODULE GE_ReferencePolyhedronRefiner#1
+            END MODULE list_of_GE_ReferencePolyhedronRefiner
+            MODULE GE_Meshing
+               concrete_name = "GE_BoxWithBoxes"
+               vertices_coordinate_1 = regular_vector( 0., 2 , 1. )
+               vertices_coordinate_0 = regular_vector( 0., 1 , 10. )
+               mesh_polyhedron = < "GE_Segment" "GE_Rectangle" >
+            END MODULE GE_Meshing
+         END MODULE GE_Meshing
+         
+         MODULE interior_fields
+            MODULE vv
+               name = "uu_5"
+               nb_components = 2
+               element_name = "PDE_2D_P1_3nodes"
+               storage_depth = 1
+               MODULE DOFs_values
+                  type = "defined_by_PDE_ResultReader"
+               END MODULE DOFs_values
+            END MODULE vv
+         END MODULE interior_fields
+         
+         MODULE PDE_ResultReader
+            MODULE PEL_DataOnMeshingReader
+               concrete_name = "PEL_TICreader"
+               files_basename = this_file_dir() + "/save_FI_5"
+               cycle = 1
+            END MODULE PEL_DataOnMeshingReader
+            MODULE meshing_superimposition
+               tolerance_for_vertices = 1.E-08
+            END MODULE meshing_superimposition
+            MODULE fields
+               MODULE vv
+                  entry_name = "V"
+                  field = "uu_5"
+               END MODULE vv
+            END MODULE fields   
+         END MODULE PDE_ResultReader
+         
+      END MODULE PDE_DomainAndFields
+      
+      MODULE solution
+         
+         MODULE interior_fields
+            
+            MODULE uu
+               name = "uu_5"
+               value = vector( $DS_x, $DS_y )
+            END MODULE uu
+            
+         END MODULE interior_fields
+         
+      END MODULE solution
+      
+   END MODULE PDE_FieldInitialization_5
+   
+END MODULE PEL_ObjectTest#PDE_FieldInitialization_TEST
+

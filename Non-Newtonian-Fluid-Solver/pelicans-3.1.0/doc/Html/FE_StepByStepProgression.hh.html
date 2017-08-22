@@ -1,0 +1,254 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>FE_StepByStepProgression.hh</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="FE_StepByStepProgression.hh_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="FEpack-tree.html"><span>Tree</span></a>
+    <a href="FE_StepByStepProgression.html"><span>Class</span></a>
+    <span class=selected>Header</span>
+    <a href="FE_StepByStepProgression.cc.html"><span>Implementation</span></a>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="FEpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#ifndef</font><font class="text"> FE_STEP_BY_STEP_PROGRESSION_HH
+</font><font class="kw2">#define</font><font class="text"> FE_STEP_BY_STEP_PROGRESSION_HH
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Application</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">doubleVector</font><font class="text">.hh&gt;
+
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> ;
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">PEL_Timer</font><font class="text"> ;
+
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">PDE_DomainAndFields</font><font class="text"> ;
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">PDE_ResultSaver</font><font class="text"> ;
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">PDE_SetOfDomains</font><font class="text"> ;
+
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">FE_OneStepIteration</font><font class="text"> ;
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">FE_SetOfParameters</font><font class="text"> ;
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">FE_TimeIteratorAdapter</font><font class="text"> ;
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">FE_TimeIterator</font><font class="text"> ;
+
+
+</font><font class="comment">/*
+Applications involving a time marching procedure in which unknowns are
+computed at each step from their values at the previous steps.
+</font><font class="text">
+</font><font class="comment">Each instance is associated to
+   1. an instance of `FE_TimeIterator::' that monitors the various steps
+      of the time marching procedure ;
+   2. an instance of `FE_OneStepIteration::' (constructed from the above 
+      object) to which the progress of each step is delegated.
+</font><font class="text">
+</font><font class="comment">PUBLISHED 
+*/
+</font><font class="text">
+</font><font class="kw1">class</font><font class="text"> PEL_EXPORT </font><font class="kw3">FE_StepByStepProgression</font><font class="text"> : </font><font class="kw1">public</font><font class="text"> </font><font class="kw3">PEL_Application
+</font><font class="text">{
+    </font><font class="kw1">public</font><font class="text">: </font><font class="comment">//----------------------------------------------------------
+</font><font class="text">
+    </font><font class="comment">//-- Instance delivery and initialization
+</font><font class="text">
+      </font><font class="kw1">static</font><font class="text"> </font><font class="kw3">FE_StepByStepProgression</font><font class="text">* create( 
+                                         </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                         </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp ) ;
+
+    </font><font class="comment">//-- Instance characteristics
+</font><font class="text">
+      </font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* time_iterator( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw3">FE_SetOfParameters</font><font class="text"> </font><font class="kw1">const</font><font class="text">* set_of_parameters( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw3">PDE_DomainAndFields</font><font class="text">* domain_and_fields( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+
+    </font><font class="comment">//-- Program core execution
+</font><font class="text">
+      </font><font class="comment">/*
+      Perform a complete time marching procedure, according to the following
+      pseudo-code, where ONE_IT (resp. TIT) denotes the associated
+      `FE_OneStepIteration::' (resp. `FE_TimeIterator::') instance.
+</font><font class="text">
+</font><font class="comment">      1. Call `FE_OneStepIteration::do_before_time_stepping' :
+            ONE_IT-&gt;do_before_time_stepping()
+</font><font class="text">
+</font><font class="comment">      2. Perform the time loop, using `FE_TimeIterator::start',
+         `FE_TimeIterator::is_finished', `FE_TimeIterator::go_next_time' :
+ 
+         for( TIT-&gt;start() ; !TIT-&gt;is_finished() ; TIT-&gt;go_next_time() )
+         {
+            2.1 Call `FE_OneStepIteration::do_before_inner_iterations_stage':
+                    ONE_IT-&gt;do_before_inner_iterations_stage( TIT ) ;
+</font><font class="text">
+</font><font class="comment">            2.2 Perform a stage of inner iterations, using 
+                `FE_OneStepIteration::do_one_inner_iteration',
+                `FE_OneStepIteration::inner_iterations_are_completed' :
+</font><font class="text">
+</font><font class="comment">                do
+                   ONE_IT-&gt;do_one_inner_iteration( TIT ) ;
+                while( !ONE_IT-&gt;inner_iterations_are_completed( TIT ) ) ;
+      
+            2.3 Call `FE_OneStepIteration::do_after_inner_iterations_stage':
+                    ONE_IT-&gt;do_after_inner_iterations_stage( TIT ) ;
+</font><font class="text">
+</font><font class="comment">            2.4 If necessary and for subsequent postprocessing,
+                save the current time (given by `FE_TimeIterator::time') 
+                and the unknown fields, by calling
+                   `PDE_ResultSaver::save_variable'
+                   `PDE_ResultSaver::save_fields' 
+                on behalf of ONE_IT-&gt;result_saver(). Then call 
+                `FE_OneStepIteration::save_other_than_time_and_fields' :
+                   ONE_IT-&gt;save_other_than_time_and_fields( TIT, 
+                                                    ONE_IT-&gt;result_saver() ) ;
+</font><font class="text">
+</font><font class="comment">            2.5 Perform savings for persistence issues.
+         }
+</font><font class="text">
+</font><font class="comment">      3. Call `FE_OneStepIteration::do_after_time_stepping' :
+            ONE_IT-&gt;do_after_time_stepping()
+</font><font class="text">
+</font><font class="comment">      4. If necessary, perform final savings as in 2.4 .
+      */
+</font><font class="text">      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> run( </font><font class="kw1">void</font><font class="text"> ) ;
+
+   </font><font class="kw1">protected</font><font class="text">: </font><font class="comment">//--------------------------------------------------------
+</font><font class="text">
+   </font><font class="kw1">private</font><font class="text">: </font><font class="comment">//----------------------------------------------------------
+</font><font class="text">
+     ~</font><font class="kw3">FE_StepByStepProgression</font><font class="text">( </font><font class="kw1">void</font><font class="text"> ) ;
+      </font><font class="kw3">FE_StepByStepProgression</font><font class="text">( </font><font class="kw3">FE_StepByStepProgression</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; other ) ;
+      </font><font class="kw3">FE_StepByStepProgression</font><font class="text">&amp; </font><font class="kw1">operator</font><font class="text">=( 
+                                </font><font class="kw3">FE_StepByStepProgression</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; other ) ;
+
+      </font><font class="kw3">FE_StepByStepProgression</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+				</font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp ) ;
+
+   </font><font class="comment">//-- Plug in
+</font><font class="text">
+      </font><font class="kw3">FE_StepByStepProgression</font><font class="text">( </font><font class="kw1">void</font><font class="text"> ) ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw3">FE_StepByStepProgression</font><font class="text">* create_replica( 
+                                        </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+					</font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp ) </font><font class="kw1">const</font><font class="text"> ;
+
+   </font><font class="comment">//-- Internals
+</font><font class="text">
+      </font><font class="kw1">void</font><font class="text"> save_for_restart( </font><font class="kw1">void</font><font class="text"> ) ;
+
+      </font><font class="kw1">void</font><font class="text"> save_for_post_processing( </font><font class="kw1">bool</font><font class="text"> force ) ;
+      
+      </font><font class="kw1">void</font><font class="text"> display_timers( </font><font class="kw2">size_t</font><font class="text"> indent_width ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">void</font><font class="text"> do_save_for_post( </font><font class="kw3">PDE_ResultSaver</font><font class="text">* rs ) ;
+
+      </font><font class="kw1">void</font><font class="text"> check_times( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; list_name,
+                        </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; dates ) </font><font class="kw1">const</font><font class="text"> ;
+      
+      </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> display_memory_usage(
+                                  </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostream</font><font class="text">&amp; os, </font><font class="kw2">size_t</font><font class="text"> indent_width ) ;
+
+   </font><font class="comment">//-- Persistence
+</font><font class="text">      
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> add_storable_objects( </font><font class="kw3">PEL_ListIdentity</font><font class="text">* list ) ;
+
+   </font><font class="comment">//-- Preconditions, Postconditions, Invariant      
+</font><font class="text">
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> invariant( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+
+   </font><font class="comment">//-- Class attributes
+</font><font class="text">
+      </font><font class="kw1">static</font><font class="text"> </font><font class="kw3">FE_StepByStepProgression</font><font class="text"> </font><font class="kw1">const</font><font class="text">* PROTOTYPE ;
+
+      </font><font class="kw1">static</font><font class="text"> </font><font class="kw2">size_t</font><font class="text"> graphics_level ;
+
+   </font><font class="comment">//-- Attributes
+</font><font class="text">
+      </font><font class="kw3">FE_TimeIteratorAdapter</font><font class="text">* TIME_ADAPT ;
+      </font><font class="kw3">FE_TimeIterator</font><font class="text">* TIME_IT ;
+      
+      </font><font class="kw3">PDE_DomainAndFields</font><font class="text">* DOM ;
+      </font><font class="kw3">PDE_SetOfDomains</font><font class="text">* SDOMS ;
+      
+      </font><font class="kw3">FE_SetOfParameters</font><font class="text">* PRMS ;
+      
+      </font><font class="kw3">FE_OneStepIteration</font><font class="text">* ONE_IT ;
+
+      </font><font class="kw3">doubleVector</font><font class="text"> GRAPHICS_TIMES ;
+      </font><font class="kw1">double</font><font class="text"> GRAPHICS_NEXT_TIME ;
+
+      </font><font class="kw3">doubleVector</font><font class="text"> SAVER_TIMES ;
+      </font><font class="kw1">double</font><font class="text"> SAVER_NEXT_TIME ;
+
+      </font><font class="kw3">PEL_Timer</font><font class="text">* overall ;
+      </font><font class="kw3">PEL_Timer</font><font class="text">* POST_TIMER ;
+      </font><font class="kw3">PEL_Timer</font><font class="text">* SAVE_TIMER ;
+      </font><font class="kw1">bool</font><font class="text"> SAVEFG ;
+      </font><font class="kw2">size_t</font><font class="text"> LAST_MEM_IT ;
+
+      </font><font class="kw1">bool</font><font class="text"> VERBOSE ;
+} ;
+
+
+</font><font class="kw2">#endif
+</font><font class="text">
+
+</font>
+</pre>
+</body>
+</html>

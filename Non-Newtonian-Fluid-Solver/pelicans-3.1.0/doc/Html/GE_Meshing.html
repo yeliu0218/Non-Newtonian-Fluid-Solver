@@ -1,0 +1,1942 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>GE_Meshing</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="GE_Meshing_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="GEpack-tree.html"><span>Tree</span></a>
+    <span class=selected>Class</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="GEpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<br />
+<div class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></div>
+<br />
+
+
+<!-- ====== START OF CLASS DATA ======== -->
+<div id=classtitle>
+  <span class=classpath>Geometry / Meshing builder / </span><br />
+  <span class=classname>Class  GE_Meshing</span>
+</div>
+
+<br />
+
+<div id=hierarchy>
+<ul class=rootclass><li><a href="PEL_Object.html#" target="classFrame">PEL_Object</a></li>
+  <ul class=self><li>GE_Meshing</li>
+</ul>
+</div>
+
+<!-- ========== DERIVED CLASSES ========== -->
+<dl><dt><b>Direct Known Derived Classes:</b>
+<dd><a href="GE_BoxWithBoxes.html#" target="classFrame">GE_BoxWithBoxes</a>, <a href="GE_CachedMeshing.html#" target="classFrame">GE_CachedMeshing</a>, <a href="GE_ComposedMeshing.html#" target="classFrame">GE_ComposedMeshing</a>, <a href="GE_CurveWithSegments.html#" target="classFrame">GE_CurveWithSegments</a>, <a href="GE_EMC2Meshing.html#" target="classFrame">GE_EMC2Meshing</a>, <a href="GE_ExplicitMeshing.html#" target="classFrame">GE_ExplicitMeshing</a>, <a href="GE_ExtrudedMeshing.html#" target="classFrame">GE_ExtrudedMeshing</a>, <a href="GE_GambitMeshing.html#" target="classFrame">GE_GambitMeshing</a>, <a href="GE_GmshMeshing.html#" target="classFrame">GE_GmshMeshing</a>, <a href="GE_MefistoMeshing.html#" target="classFrame">GE_MefistoMeshing</a>, <a href="GE_PerforatedMeshing.html#" target="classFrame">GE_PerforatedMeshing</a>, <a href="GE_RefinedMeshing.html#" target="classFrame">GE_RefinedMeshing</a>, <a href="GE_SplitMeshing.html#" target="classFrame">GE_SplitMeshing</a>, <a href="GE_TransformedMeshing.html#" target="classFrame">GE_TransformedMeshing</a>, <a href="GE_TriangleMeshing.html#" target="classFrame">GE_TriangleMeshing</a></dd>
+</dl>
+<hr />
+<pre>
+Meshings of geometric domains.
+
+A Meshing is a collection of finitely many cells such that :
+   - the union of all cells is the closure of the domain ;
+   - each cell is a polyhedron that can represented by a
+     <a href="GE_Mpolyhedron.html#" target="classFrame">GE_Mpolyhedron</a> instance ;
+   - two distinct cells have disjoint interiors ;
+   - any face of any cell is either a face of another cell or a subset
+     of the domain boundary.
+
+Three sets of geometrical entities are involved in meshings :
+   - the set of cells ;
+   - the set of cell vertices ;
+   - the set of the cell faces.
+
+Each geometrical entity in these sets is identified with an intance
+of <a href="GE_Color.html#" target="classFrame">GE_Color</a> called its color.
+
+Each of these sets might be traversed by an iterator that visits every
+geometrical entity exactly once. The traversal order defines an implicit 
+numbering of the geometrical entities within their sets, numbering
+used in the representation of the connections betwenn cells and vertices
+and between cells and faces.
+
+FRAMEWORK INSTANTIATION :
+   1. Derive a concrete subclass, say <span class="uid1">MyMeshing</span> (derivation of abstract
+      subclasses is improbable although posible).
+   2. Choose a name for <span class="uid1">MyMeshing</span>, say "MyMeshing".
+   3. Implement a private destructor.
+   4. Declare all constructors private.
+   5. Define the prototype to be registered :
+      5.1 Implement a default constructor that initializes the
+          <a href="GE_Meshing.html#" target="classFrame">GE_Meshing</a> subobject by calling
+               <a href="GE_Meshing.html#GE_Meshing" target="classFrame">GE_Meshing( std::string const& )</a>
+          with "MyMeshing" as argument.
+      5.2 Define and initialize a static instance by calling the default
+          constructor.
+             declaration :
+                <span class="uid1">static MyMeshing const* prototype ;</span>
+             definition :
+                <span class="uid1">prototype = new MyMeshing</span>
+   6. Implement the <a href="GE_Meshing.html#create_replica" target="classFrame">create_replica</a> methods, that call a constructor.
+   7. Implemenent the constructor called by <a href="GE_Meshing.html#create_replica" target="classFrame">create_replica</a>. The <span class="uid1">MyMeshing</span>
+      subobject is initialized by calling
+      <a href="GE_Meshing.html#GE_Meshing" target="classFrame">GE_Meshing( PEL_Object*, PEL_ModuleExplorer const*, size_t )</a>
+      with "MyMeshing" as a second argument.
+   8. Implement all pure virtual methods.
+</pre>
+<hr />
+<a name="method_summary"></a>
+
+<!-- ========== NEW CATEGORY ========== -->
+<table class=category cellpadding=2 cellspacing=0 rules=rows>
+  <tr class=heading><th class=name>Instance delivery and initialization</th><th class=protection>public</th></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#create" target="classFrame">static GE_Meshing* create( PEL_Object* a_owner, PEL_ModuleExplorer const* exp, size_t dim_space )</a></td></tr>
+</table>
+
+<!-- ========== NEW CATEGORY ========== -->
+<table class=category cellpadding=2 cellspacing=0 rules=rows>
+  <tr class=heading><th class=name>Measurement</th><th class=protection>public</th></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#nb_space_dimensions" target="classFrame">size_t nb_space_dimensions( void ) const</a></td></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#nb_vertices" target="classFrame">virtual size_t nb_vertices( void ) const = 0</a></td></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#nb_cells" target="classFrame">virtual size_t nb_cells( void ) const = 0</a></td></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#nb_faces" target="classFrame">virtual size_t nb_faces( void ) const = 0</a></td></tr>
+</table>
+
+<!-- ========== NEW CATEGORY ========== -->
+<table class=category cellpadding=2 cellspacing=0 rules=rows>
+  <tr class=heading><th class=name>Vertex-iterator movement</th><th class=protection>public</th></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#start_vertex_iterator" target="classFrame">virtual void start_vertex_iterator( void ) = 0</a></td></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#valid_vertex" target="classFrame">virtual bool valid_vertex( void ) const = 0</a></td></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#go_next_vertex" target="classFrame">virtual void go_next_vertex( void ) = 0</a></td></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#vertex_coordinates" target="classFrame">virtual doubleVector const& vertex_coordinates( void ) const = 0</a></td></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#vertex_color" target="classFrame">GE_Color const* vertex_color( void ) const</a></td></tr>
+</table>
+
+<!-- ========== NEW CATEGORY ========== -->
+<table class=category cellpadding=2 cellspacing=0 rules=rows>
+  <tr class=heading><th class=name>Cell-iterator movement</th><th class=protection>public</th></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#start_cell_iterator" target="classFrame">virtual void start_cell_iterator( void ) = 0</a></td></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#valid_cell" target="classFrame">virtual bool valid_cell( void ) const = 0</a></td></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#go_next_cell" target="classFrame">virtual void go_next_cell( void ) = 0</a></td></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#cell_polyhedron_name" target="classFrame">virtual std::string const& cell_polyhedron_name( void ) const = 0</a></td></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#cell_reference_polyhedron" target="classFrame">virtual GE_ReferencePolyhedron const* cell_reference_polyhedron( void ) const</a></td></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#cell_color" target="classFrame">GE_Color const* cell_color( void ) const</a></td></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#cell_vertices" target="classFrame">virtual size_t_vector const& cell_vertices( void ) const = 0</a></td></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#cell_faces" target="classFrame">virtual size_t_vector const& cell_faces( void ) const = 0</a></td></tr>
+</table>
+
+<!-- ========== NEW CATEGORY ========== -->
+<table class=category cellpadding=2 cellspacing=0 rules=rows>
+  <tr class=heading><th class=name>Face-iterator movement</th><th class=protection>public</th></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#start_face_iterator" target="classFrame">virtual void start_face_iterator( void ) = 0</a></td></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#valid_face" target="classFrame">virtual bool valid_face( void ) const = 0</a></td></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#go_next_face" target="classFrame">virtual void go_next_face( void ) = 0</a></td></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#face_polyhedron_name" target="classFrame">virtual std::string const& face_polyhedron_name( void ) const = 0</a></td></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#face_reference_polyhedron" target="classFrame">virtual GE_ReferencePolyhedron const* face_reference_polyhedron( void ) const</a></td></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#face_color" target="classFrame">GE_Color const* face_color( void ) const</a></td></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#face_vertices" target="classFrame">virtual size_t_vector const& face_vertices( void ) const = 0</a></td></tr>
+</table>
+
+<!-- ========== NEW CATEGORY ========== -->
+<table class=category cellpadding=2 cellspacing=0 rules=rows>
+  <tr class=heading><th class=name>Input - Output</th><th class=protection>public</th></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#print" target="classFrame">virtual void print( std::ostream& os, size_t indent_width ) const</a></td></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#display" target="classFrame">virtual void display( std::ostream& os, size_t indent_width )</a></td></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#print_as_an_explicit_meshing" target="classFrame">void print_as_an_explicit_meshing( std::ostream& os )</a></td></tr>
+</table>
+
+<!-- ========== NEW CATEGORY ========== -->
+<table class=category cellpadding=2 cellspacing=0 rules=rows>
+  <tr class=heading><th class=name>Miscellaneous</th><th class=protection>protected</th></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#~GE_Meshing" target="classFrame">virtual  ~GE_Meshing( void )</a></td></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#GE_Meshing" target="classFrame"> GE_Meshing( std::string const& name )</a></td></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#GE_Meshing_" target="classFrame"> GE_Meshing( PEL_Object* a_owner, PEL_ModuleExplorer const* exp, size_t dim_space )</a></td></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#is_a_prototype" target="classFrame">bool is_a_prototype( void ) const</a></td></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#create_replica" target="classFrame">virtual GE_Meshing* create_replica( PEL_Object* a_owner, PEL_ModuleExplorer const* exp, size_t dim_space ) const = 0</a></td></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#default_vertex_color" target="classFrame">virtual GE_Color const* default_vertex_color( void ) const = 0</a></td></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#default_cell_color" target="classFrame">virtual GE_Color const* default_cell_color( void ) const = 0</a></td></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#default_face_color" target="classFrame">virtual GE_Color const* default_face_color( void ) const = 0</a></td></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#read_mesh_polyhedron" target="classFrame">void read_mesh_polyhedron( PEL_ModuleExplorer const* exp, size_t dim_space, std::string& face_poly_name, std::string& cell_poly_name ) const</a></td></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#check_mesh_polyhedron" target="classFrame">virtual void check_mesh_polyhedron( size_t dim_space, std::string const& face_poly_name, std::string const& cell_poly_name ) const</a></td></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#raise_invalid_nb_space_dimensions" target="classFrame">void raise_invalid_nb_space_dimensions( size_t dim, std::string allowed_dims ) const</a></td></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#raise_invalid_cell_polyhedron" target="classFrame">void raise_invalid_cell_polyhedron( std::string const& poly_name, std::string const& error = "" ) const</a></td></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#raise_invalid_face_polyhedron" target="classFrame">void raise_invalid_face_polyhedron( std::string const& poly_name, std::string const& error = "" ) const</a></td></tr>
+</table>
+
+<!-- ========== NEW CATEGORY ========== -->
+<table class=category cellpadding=2 cellspacing=0 rules=rows>
+  <tr class=heading><th class=name>Roundoff strategy</th><th class=protection>protected</th></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#initialize_rounding_strategy" target="classFrame">void initialize_rounding_strategy( PEL_ModuleExplorer const* exp )</a></td></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#roundoff" target="classFrame">double roundoff( double x ) const</a></td></tr>
+</table>
+
+<!-- ========== NEW CATEGORY ========== -->
+<table class=category cellpadding=2 cellspacing=0 rules=rows>
+  <tr class=heading><th class=name>Preconditions, Postconditions, Invariant</th><th class=protection>protected</th></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#go_next_vertex_PRE" target="classFrame">bool go_next_vertex_PRE( void ) const</a></td></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#vertex_coordinates_PRE" target="classFrame">bool vertex_coordinates_PRE( void ) const</a></td></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#vertex_coordinates_POST" target="classFrame">bool vertex_coordinates_POST( doubleVector const& result ) const</a></td></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#default_vertex_color_PRE" target="classFrame">bool default_vertex_color_PRE( void ) const</a></td></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#default_vertex_color_POST" target="classFrame">bool default_vertex_color_POST( GE_Color const* result ) const</a></td></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#start_cell_iterator_PRE" target="classFrame">bool start_cell_iterator_PRE( void ) const</a></td></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#start_cell_iterator_POST" target="classFrame">bool start_cell_iterator_POST( void ) const</a></td></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#go_next_cell_PRE" target="classFrame">bool go_next_cell_PRE( void ) const</a></td></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#valid_cell_POST" target="classFrame">bool valid_cell_POST( bool result ) const</a></td></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#cell_polyhedron_name_PRE" target="classFrame">bool cell_polyhedron_name_PRE( void ) const</a></td></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#cell_polyhedron_name_POST" target="classFrame">bool cell_polyhedron_name_POST( std::string const& result ) const</a></td></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#cell_reference_polyhedron_PRE" target="classFrame">bool cell_reference_polyhedron_PRE( void ) const</a></td></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#cell_reference_polyhedron_POST" target="classFrame">bool cell_reference_polyhedron_POST( GE_ReferencePolyhedron const* result ) const</a></td></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#default_cell_color_PRE" target="classFrame">bool default_cell_color_PRE( void ) const</a></td></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#default_cell_color_POST" target="classFrame">bool default_cell_color_POST( GE_Color const* result ) const</a></td></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#cell_vertices_PRE" target="classFrame">bool cell_vertices_PRE( void ) const</a></td></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#cell_vertices_POST" target="classFrame">bool cell_vertices_POST( size_t_vector const& result ) const</a></td></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#cell_faces_PRE" target="classFrame">bool cell_faces_PRE( void ) const</a></td></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#cell_faces_POST" target="classFrame">bool cell_faces_POST( size_t_vector const& result ) const</a></td></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#start_face_iterator_PRE" target="classFrame">bool start_face_iterator_PRE( void ) const</a></td></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#start_face_iterator_POST" target="classFrame">bool start_face_iterator_POST( void ) const</a></td></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#go_next_face_PRE" target="classFrame">bool go_next_face_PRE( void ) const</a></td></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#valid_face_POST" target="classFrame">bool valid_face_POST( bool result ) const</a></td></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#face_polyhedron_name_PRE" target="classFrame">bool face_polyhedron_name_PRE( void ) const</a></td></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#face_polyhedron_name_POST" target="classFrame">bool face_polyhedron_name_POST( std::string const& result ) const</a></td></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#face_reference_polyhedron_PRE" target="classFrame">bool face_reference_polyhedron_PRE( void ) const</a></td></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#face_reference_polyhedron_POST" target="classFrame">bool face_reference_polyhedron_POST( GE_ReferencePolyhedron const* result ) const</a></td></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#default_face_color_PRE" target="classFrame">bool default_face_color_PRE( void ) const</a></td></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#default_face_color_POST" target="classFrame">bool default_face_color_POST( GE_Color const* result ) const</a></td></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#face_vertices_PRE" target="classFrame">bool face_vertices_PRE( void ) const</a></td></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#face_vertices_POST" target="classFrame">bool face_vertices_POST( size_t_vector const& result ) const</a></td></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#check_mesh_polyhedron_PRE" target="classFrame">bool check_mesh_polyhedron_PRE( size_t dim_space, std::string const& face_poly_name, std::string const& cell_poly_name ) const</a></td></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#create_replica_PRE" target="classFrame">virtual bool create_replica_PRE( PEL_Object* a_owner, PEL_ModuleExplorer const* exp, size_t dim_space ) const</a></td></tr>
+  <tr><td colspan="2"><a href="GE_Meshing.html#create_replica_POST" target="classFrame">virtual bool create_replica_POST( GE_Meshing const* result, PEL_Object* a_owner, size_t dim_space ) const</a></td></tr>
+</table>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="create"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>static <a href="GE_Meshing.html#" target="classFrame">GE_Meshing</a>* create(</code></td><td><code><a href="PEL_Object.html#PEL_Object" target="classFrame">PEL_Object*</a> <span class="uid1">a_owner</span>,</tr>
+  <tr><td /><td><code> <a href="PEL_ModuleExplorer.html#" target="classFrame">PEL_ModuleExplorer</a> const* <span class="uid1">exp</span>,</tr>
+  <tr><td /><td><code> size_t <span class="uid1">dim_space</span> ) </code></td></tr>
+</table>
+<pre>Considering the module hierarchy associated to <span class="uid1">exp</span>, create and
+return an instance of a derived class whose name is the data
+associated to the keyword "concrete_name" in <span class="uid1">exp</span>->module()</pre>
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">exp</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">dim_space</span></span> == 1 || <span class="uid1"><span class="uid1">dim_space</span></span> == 2 || <span class="uid1"><span class="uid1">dim_space</span></span> == 3</code></li>
+  </ul>
+<br />
+  <span class=postcondition>Postcondition</span>
+  <ul>
+    <li><code>result != 0</code></li>
+    <li><code>result-><a href="PEL_Object.html#owner" target="classFrame">owner</a>() == <span class="uid1"><span class="uid1">a_owner</span></span></code></li>
+    <li><code>result-><a href="GE_Meshing.html#nb_space_dimensions" target="classFrame">nb_space_dimensions</a>() == <span class="uid1"><span class="uid1">dim_space</span></span></code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="nb_space_dimensions"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>size_t nb_space_dimensions(</code></td><td><code>void ) const</code></td></tr>
+</table>
+<pre>number of space dimension of the geometric domain</pre>
+<br />
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="nb_vertices"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual size_t nb_vertices(</code></td><td><code>void ) const = 0</code></td></tr>
+</table>
+<pre>size of the set of cell vertices</pre>
+<br />
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="nb_cells"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual size_t nb_cells(</code></td><td><code>void ) const = 0</code></td></tr>
+</table>
+<pre>number of polyhedron subdividing the geometric domain</pre>
+<br />
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="nb_faces"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual size_t nb_faces(</code></td><td><code>void ) const = 0</code></td></tr>
+</table>
+<pre>size of the set of cell faces</pre>
+<br />
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="start_vertex_iterator"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual void start_vertex_iterator(</code></td><td><code>void )= 0</code></td></tr>
+</table>
+<pre>Move vertex-iterator to first position.</pre>
+<br />
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="valid_vertex"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual bool valid_vertex(</code></td><td><code>void ) const = 0</code></td></tr>
+</table>
+<pre>Is vertex-iterator position valid ?</pre>
+<br />
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="go_next_vertex"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual void go_next_vertex(</code></td><td><code>void )= 0</code></td></tr>
+</table>
+<pre>Move vertex-iterator one position.</pre>
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><a href="GE_Meshing.html#valid_vertex" target="classFrame">valid_vertex</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="vertex_coordinates"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual <a href="doubleVector.html#" target="classFrame">doubleVector</a> const& vertex_coordinates(</code></td><td><code>void ) const = 0</code></td></tr>
+</table>
+<pre>coordinates of the current vertex</pre>
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><a href="GE_Meshing.html#valid_vertex" target="classFrame">valid_vertex</a>()</code></li>
+  </ul>
+<br />
+  <span class=postcondition>Postcondition</span>
+  <ul>
+    <li><code>result.size() == <a href="GE_Meshing.html#nb_space_dimensions" target="classFrame">nb_space_dimensions</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="vertex_color"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code><a href="GE_Color.html#" target="classFrame">GE_Color</a> const* vertex_color(</code></td><td><code>void ) const</code></td></tr>
+</table>
+<pre>color of the current vertex, given by <a href="GE_Colorist.html#vertex_color" target="classFrame">GE_Colorist::vertex_color</a> if
+a <a href="GE_Colorist.html#" target="classFrame">GE_Colorist</a> object has been associated to self (in the
+<a href="GE_Meshing.html#create" target="classFrame">create</a> method), or by <a href="GE_Meshing.html#default_vertex_color" target="classFrame">default_vertex_color</a> otherwise</pre>
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><a href="GE_Meshing.html#valid_vertex" target="classFrame">valid_vertex</a>()</code></li>
+  </ul>
+<br />
+  <span class=postcondition>Postcondition</span>
+  <ul>
+    <li><code>result != 0</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="start_cell_iterator"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual void start_cell_iterator(</code></td><td><code>void )= 0</code></td></tr>
+</table>
+<pre>Move cell-iterator to first position.</pre>
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code>!<a href="GE_Meshing.html#valid_face" target="classFrame">valid_face</a>()</code></li>
+  </ul>
+<br />
+  <span class=postcondition>Postcondition</span>
+  <ul>
+    <li><code><a href="GE_Meshing.html#valid_cell" target="classFrame">valid_cell</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="valid_cell"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual bool valid_cell(</code></td><td><code>void ) const = 0</code></td></tr>
+</table>
+<pre>Is cell-iterator position valid ?</pre>
+<br />
+<div class=conditions>
+  <span class=postcondition>Postcondition</span>
+  <ul>
+    <li><code>result == true ==&gt; <a href="GE_Meshing.html#valid_face" target="classFrame">valid_face</a>() == false</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="go_next_cell"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual void go_next_cell(</code></td><td><code>void )= 0</code></td></tr>
+</table>
+<pre>Move cell-iterator one position.</pre>
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><a href="GE_Meshing.html#valid_cell" target="classFrame">valid_cell</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="cell_polyhedron_name"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual std::string const& cell_polyhedron_name(</code></td><td><code>void ) const = 0</code></td></tr>
+</table>
+<pre>polyhedron name of the current cell</pre>
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><a href="GE_Meshing.html#valid_cell" target="classFrame">valid_cell</a>()</code></li>
+  </ul>
+<br />
+  <span class=postcondition>Postcondition</span>
+  <ul>
+    <li><code><a href="GE_Mpolyhedron.html#reference_polyhedron" target="classFrame">GE_Mpolyhedron::reference_polyhedron</a>( result )->dimension() <= <a href="GE_Meshing.html#nb_space_dimensions" target="classFrame">nb_space_dimensions</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="cell_reference_polyhedron"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual <a href="GE_ReferencePolyhedron.html#" target="classFrame">GE_ReferencePolyhedron</a> const* cell_reference_polyhedron(</code></td><td><code>void ) const</code></td></tr>
+</table>
+<pre>reference polyhedron associated to the current cell</pre>
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><a href="GE_Meshing.html#valid_cell" target="classFrame">valid_cell</a>()</code></li>
+  </ul>
+<br />
+  <span class=postcondition>Postcondition</span>
+  <ul>
+    <li><code>result == <a href="GE_Mpolyhedron.html#reference_polyhedron" target="classFrame">GE_Mpolyhedron::reference_polyhedron</a>( <a href="GE_Meshing.html#cell_polyhedron_name" target="classFrame">cell_polyhedron_name</a>() )</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="cell_color"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code><a href="GE_Color.html#" target="classFrame">GE_Color</a> const* cell_color(</code></td><td><code>void ) const</code></td></tr>
+</table>
+<pre>color of the current cell, given by <a href="GE_Colorist.html#cell_color" target="classFrame">GE_Colorist::cell_color</a> if
+a <a href="GE_Colorist.html#" target="classFrame">GE_Colorist</a> object has been associated to self (in the
+<a href="GE_Meshing.html#create" target="classFrame">create</a> method), or by <a href="GE_Meshing.html#default_cell_color" target="classFrame">default_cell_color</a> otherwise</pre>
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><a href="GE_Meshing.html#valid_cell" target="classFrame">valid_cell</a>()</code></li>
+  </ul>
+<br />
+  <span class=postcondition>Postcondition</span>
+  <ul>
+    <li><code>result != 0</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="cell_vertices"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual <a href="size_t_vector.html#" target="classFrame">size_t_vector</a> const& cell_vertices(</code></td><td><code>void ) const = 0</code></td></tr>
+</table>
+<pre>indices of the current cell vertices, using the implicit numbering
+defined by the traversal order of the vertex-iterator</pre>
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><a href="GE_Meshing.html#valid_cell" target="classFrame">valid_cell</a>()</code></li>
+  </ul>
+<br />
+  <span class=postcondition>Postcondition</span>
+  <ul>
+    <li><code>result.size() == <a href="GE_Mpolyhedron.html#reference_polyhedron" target="classFrame">GE_Mpolyhedron::reference_polyhedron</a>( <a href="GE_Meshing.html#cell_polyhedron_name" target="classFrame">cell_polyhedron_name</a>() )-><a href="GE_Meshing.html#nb_vertices" target="classFrame">nb_vertices</a>()</code></li>
+    <li><code>FORALL( i = 0, i < result.size(), ++i )<br />
+&nbsp;result( i ) < <a href="GE_Meshing.html#nb_vertices" target="classFrame">nb_vertices</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="cell_faces"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual <a href="size_t_vector.html#" target="classFrame">size_t_vector</a> const& cell_faces(</code></td><td><code>void ) const = 0</code></td></tr>
+</table>
+<pre>indices of the current cell faces, using the implicit numbering
+defined by the traversal order of the face-iterator</pre>
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><a href="GE_Meshing.html#valid_cell" target="classFrame">valid_cell</a>()</code></li>
+  </ul>
+<br />
+  <span class=postcondition>Postcondition</span>
+  <ul>
+    <li><code>result.size() == <a href="GE_Mpolyhedron.html#reference_polyhedron" target="classFrame">GE_Mpolyhedron::reference_polyhedron</a>( <a href="GE_Meshing.html#cell_polyhedron_name" target="classFrame">cell_polyhedron_name</a>() )-><a href="GE_Meshing.html#nb_faces" target="classFrame">nb_faces</a>()</code></li>
+    <li><code>FORALL( i = 0, i < result.size(), ++i )<br />
+&nbsp;result( i ) < <a href="GE_Meshing.html#nb_faces" target="classFrame">nb_faces</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="start_face_iterator"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual void start_face_iterator(</code></td><td><code>void )= 0</code></td></tr>
+</table>
+<pre>Move face-iterator to first position.</pre>
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code>!<a href="GE_Meshing.html#valid_cell" target="classFrame">valid_cell</a>()</code></li>
+  </ul>
+<br />
+  <span class=postcondition>Postcondition</span>
+  <ul>
+    <li><code><a href="GE_Meshing.html#valid_face" target="classFrame">valid_face</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="valid_face"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual bool valid_face(</code></td><td><code>void ) const = 0</code></td></tr>
+</table>
+<pre>Is face-iterator position valid ?</pre>
+<br />
+<div class=conditions>
+  <span class=postcondition>Postcondition</span>
+  <ul>
+    <li><code>result == true ==&gt; <a href="GE_Meshing.html#valid_cell" target="classFrame">valid_cell</a>() == false</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="go_next_face"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual void go_next_face(</code></td><td><code>void )= 0</code></td></tr>
+</table>
+<pre>Move face-iterator one position.</pre>
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><a href="GE_Meshing.html#valid_face" target="classFrame">valid_face</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="face_polyhedron_name"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual std::string const& face_polyhedron_name(</code></td><td><code>void ) const = 0</code></td></tr>
+</table>
+<pre>polyhedron name of the current face</pre>
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><a href="GE_Meshing.html#valid_face" target="classFrame">valid_face</a>()</code></li>
+  </ul>
+<br />
+  <span class=postcondition>Postcondition</span>
+  <ul>
+    <li><code><a href="GE_Mpolyhedron.html#reference_polyhedron" target="classFrame">GE_Mpolyhedron::reference_polyhedron</a>( result )->dimension() <= <a href="GE_Meshing.html#nb_space_dimensions" target="classFrame">nb_space_dimensions</a>() - 1</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="face_reference_polyhedron"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual <a href="GE_ReferencePolyhedron.html#" target="classFrame">GE_ReferencePolyhedron</a> const* face_reference_polyhedron(</code></td><td><code>void ) const</code></td></tr>
+</table>
+<pre>reference polyhedron associated to the current face</pre>
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><a href="GE_Meshing.html#valid_face" target="classFrame">valid_face</a>()</code></li>
+  </ul>
+<br />
+  <span class=postcondition>Postcondition</span>
+  <ul>
+    <li><code>result == <a href="GE_Mpolyhedron.html#reference_polyhedron" target="classFrame">GE_Mpolyhedron::reference_polyhedron</a>( <a href="GE_Meshing.html#face_polyhedron_name" target="classFrame">face_polyhedron_name</a>() )</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="face_color"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code><a href="GE_Color.html#" target="classFrame">GE_Color</a> const* face_color(</code></td><td><code>void ) const</code></td></tr>
+</table>
+<pre>color of the current face, given by <a href="GE_Colorist.html#face_color" target="classFrame">GE_Colorist::face_color</a> if
+a <a href="GE_Colorist.html#" target="classFrame">GE_Colorist</a> object has been associated to self (in the
+<a href="GE_Meshing.html#create" target="classFrame">create</a> method), or by <a href="GE_Meshing.html#default_face_color" target="classFrame">default_face_color</a> otherwise</pre>
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><a href="GE_Meshing.html#valid_face" target="classFrame">valid_face</a>()</code></li>
+  </ul>
+<br />
+  <span class=postcondition>Postcondition</span>
+  <ul>
+    <li><code>result != 0</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="face_vertices"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual <a href="size_t_vector.html#" target="classFrame">size_t_vector</a> const& face_vertices(</code></td><td><code>void ) const = 0</code></td></tr>
+</table>
+<pre>indices of the current face vertices, using the implicit numbering
+defined by the traversal order of the vertex-iterator</pre>
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><a href="GE_Meshing.html#valid_face" target="classFrame">valid_face</a>()</code></li>
+  </ul>
+<br />
+  <span class=postcondition>Postcondition</span>
+  <ul>
+    <li><code>result.size() == <a href="GE_Mpolyhedron.html#reference_polyhedron" target="classFrame">GE_Mpolyhedron::reference_polyhedron</a>( <a href="GE_Meshing.html#face_polyhedron_name" target="classFrame">face_polyhedron_name</a>() )-><a href="GE_Meshing.html#nb_vertices" target="classFrame">nb_vertices</a>()</code></li>
+    <li><code>FORALL( i = 0, i < result.size(), ++i )<br />
+&nbsp;result( i ) < <a href="GE_Meshing.html#nb_vertices" target="classFrame">nb_vertices</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="print"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual void print(</code></td><td><code>std::ostream& <span class="uid1">os</span>,</tr>
+  <tr><td /><td><code>size_t <span class="uid1">indent_width</span> ) const</code></td></tr>
+</table>
+<pre>Write text to <span class="uid1">os</span> with <span class="uid1">indent_width</span> indentation.
+
+</pre>
+<br />
+<table class=footer>
+<tr>
+  <td class=overrides> Overridden from <a href="PEL_Object.html#" target="classFrame">PEL_Object</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="display"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual void display(</code></td><td><code>std::ostream& <span class="uid1">os</span>,</tr>
+  <tr><td /><td><code>size_t <span class="uid1">indent_width</span> ) </code></td></tr>
+</table>
+<pre>Write a textual representation of <span class="uid1">self</span> to <span class="uid1">os</span> with
+<span class="uid1">indent_width</span> indentation.</pre>
+<br />
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="print_as_an_explicit_meshing"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>void print_as_an_explicit_meshing(</code></td><td><code>std::ostream& <span class="uid1">os</span> ) </code></td></tr>
+</table>
+<pre>Write <span class="uid1">self</span> so as to be an entry for <a href="GE_ExplicitMeshing.html#" target="classFrame">GE_ExplicitMeshing</a>.
+Bounds are not described.</pre>
+<br />
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="~GE_Meshing"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual~GE_Meshing(</code></td><td><code>void ) </code></td></tr>
+</table>
+<br />
+<br />
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="GE_Meshing"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code> GE_Meshing(</code></td><td><code>std::string const& <span class="uid1">name</span> ) </code></td></tr>
+</table>
+<pre>for prototype registration only</pre>
+<br />
+<div class=conditions>
+  <span class=postcondition>Postcondition</span>
+  <ul>
+    <li><code><a href="GE_Meshing.html#is_a_prototype" target="classFrame">is_a_prototype</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="GE_Meshing_"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code> GE_Meshing(</code></td><td><code><a href="PEL_Object.html#PEL_Object" target="classFrame">PEL_Object*</a> <span class="uid1">a_owner</span>,</tr>
+  <tr><td /><td><code> <a href="PEL_ModuleExplorer.html#" target="classFrame">PEL_ModuleExplorer</a> const* <span class="uid1">exp</span>,</tr>
+  <tr><td /><td><code> size_t <span class="uid1">dim_space</span> ) </code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+  <span class=postcondition>Postcondition</span>
+  <ul>
+    <li><code>!<a href="GE_Meshing.html#is_a_prototype" target="classFrame">is_a_prototype</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="is_a_prototype"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>bool is_a_prototype(</code></td><td><code>void ) const</code></td></tr>
+</table>
+<pre>Is <span class="uid1">self</span> a prototype ?</pre>
+<br />
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="create_replica"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual <a href="GE_Meshing.html#" target="classFrame">GE_Meshing</a>* create_replica(</code></td><td><code><a href="PEL_Object.html#PEL_Object" target="classFrame">PEL_Object*</a> <span class="uid1">a_owner</span>,</tr>
+  <tr><td /><td><code><a href="PEL_ModuleExplorer.html#" target="classFrame">PEL_ModuleExplorer</a> const* <span class="uid1">exp</span>,</tr>
+  <tr><td /><td><code>size_t <span class="uid1">dim_space</span> ) const = 0</code></td></tr>
+</table>
+<pre>Create and return a replica of <span class="uid1">self</span> on the basis of <span class="uid1">exp</span>.</pre>
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">exp</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">dim_space</span></span> == 1 || <span class="uid1"><span class="uid1">dim_space</span></span> == 2 || <span class="uid1"><span class="uid1">dim_space</span></span> == 3</code></li>
+  </ul>
+<br />
+  <span class=postcondition>Postcondition</span>
+  <ul>
+    <li><code>result != 0</code></li>
+    <li><code>result-><a href="PEL_Object.html#owner" target="classFrame">owner</a>() == <span class="uid1"><span class="uid1">a_owner</span></span></code></li>
+    <li><code>result-><a href="GE_Meshing.html#nb_space_dimensions" target="classFrame">nb_space_dimensions</a>() == <span class="uid1"><span class="uid1">dim_space</span></span></code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="default_vertex_color"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual <a href="GE_Color.html#" target="classFrame">GE_Color</a> const* default_vertex_color(</code></td><td><code>void ) const = 0</code></td></tr>
+</table>
+<pre>current vertex color if <span class="uid1">self</span> has not been associated to a
+<a href="GE_Colorist.html#" target="classFrame">GE_Colorist</a> object in the <a href="GE_Meshing.html#create" target="classFrame">create</a> method</pre>
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code>!<a href="GE_Meshing.html#is_a_prototype" target="classFrame">is_a_prototype</a>()</code></li>
+    <li><code><a href="GE_Meshing.html#valid_vertex" target="classFrame">valid_vertex</a>()</code></li>
+  </ul>
+<br />
+  <span class=postcondition>Postcondition</span>
+  <ul>
+    <li><code>result != 0</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="default_cell_color"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual <a href="GE_Color.html#" target="classFrame">GE_Color</a> const* default_cell_color(</code></td><td><code>void ) const = 0</code></td></tr>
+</table>
+<pre>current cell color if <span class="uid1">self</span> has not been associated to a
+<a href="GE_Colorist.html#" target="classFrame">GE_Colorist</a> object in the <a href="GE_Meshing.html#create" target="classFrame">create</a> method</pre>
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code>!<a href="GE_Meshing.html#is_a_prototype" target="classFrame">is_a_prototype</a>()</code></li>
+    <li><code><a href="GE_Meshing.html#valid_cell" target="classFrame">valid_cell</a>()</code></li>
+  </ul>
+<br />
+  <span class=postcondition>Postcondition</span>
+  <ul>
+    <li><code>result != 0</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="default_face_color"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual <a href="GE_Color.html#" target="classFrame">GE_Color</a> const* default_face_color(</code></td><td><code>void ) const = 0</code></td></tr>
+</table>
+<pre>current face color if <span class="uid1">self</span> has not been associated to a
+<a href="GE_Colorist.html#" target="classFrame">GE_Colorist</a> object in the <a href="GE_Meshing.html#create" target="classFrame">create</a> method</pre>
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code>!<a href="GE_Meshing.html#is_a_prototype" target="classFrame">is_a_prototype</a>()</code></li>
+    <li><code><a href="GE_Meshing.html#valid_face" target="classFrame">valid_face</a>()</code></li>
+  </ul>
+<br />
+  <span class=postcondition>Postcondition</span>
+  <ul>
+    <li><code>result != 0</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="read_mesh_polyhedron"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>void read_mesh_polyhedron(</code></td><td><code><a href="PEL_ModuleExplorer.html#" target="classFrame">PEL_ModuleExplorer</a> const* <span class="uid1">exp</span>,</tr>
+  <tr><td /><td><code> size_t <span class="uid1">dim_space</span>,</tr>
+  <tr><td /><td><code> std::string& <span class="uid1">face_poly_name</span>,</tr>
+  <tr><td /><td><code> std::string& <span class="uid1">cell_poly_name</span> ) const</code></td></tr>
+</table>
+<pre>Read the argument of the entry whose keyword is mesh_polyhedron
+in the module associated to <span class="uid1">exp</span> and raise a fatal error if the
+dimensions are not consistent with <span class="uid1">dim_space</span> space dimensions.</pre>
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">exp</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">dim_space</span></span> == 1 || <span class="uid1"><span class="uid1">dim_space</span></span> == 2 || <span class="uid1"><span class="uid1">dim_space</span></span> == 3</code></li>
+  </ul>
+<br />
+  <span class=postcondition>Postcondition</span>
+  <ul>
+    <li><code>!face_poly_name.empty()</code></li>
+    <li><code>!cell_poly_name.empty()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="check_mesh_polyhedron"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual void check_mesh_polyhedron(</code></td><td><code>size_t <span class="uid1">dim_space</span>,</tr>
+  <tr><td /><td><code>std::string const& <span class="uid1">face_poly_name</span>,</tr>
+  <tr><td /><td><code>std::string const& <span class="uid1">cell_poly_name</span> ) const</code></td></tr>
+</table>
+<pre>Check if the meshes of names <span class="uid1">cell_poly_name</span> and <span class="uid1">face_poly_name</span> are
+consistent with the meshing to be built.
+IMPLEMENTATION: do nothing.</pre>
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">dim_space</span></span> == 1 || <span class="uid1"><span class="uid1">dim_space</span></span> == 2 || <span class="uid1"><span class="uid1">dim_space</span></span> == 3</code></li>
+    <li><code>!face_poly_name.empty()</code></li>
+    <li><code>!cell_poly_name.empty()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="raise_invalid_nb_space_dimensions"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>void raise_invalid_nb_space_dimensions(</code></td><td><code>size_t <span class="uid1">dim</span>,</tr>
+  <tr><td /><td><code>std::string <span class="uid1">allowed_dims</span> ) const</code></td></tr>
+</table>
+<pre>Raise an fatal error with a message saying that <span class="uid1">dim</span> does not
+belong to <span class="uid1">allowed_dims</span>.</pre>
+<br />
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="raise_invalid_cell_polyhedron"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>void raise_invalid_cell_polyhedron(</code></td><td><code>std::string const& <span class="uid1">poly_name</span>,</tr>
+  <tr><td /><td><code>std::string const& <span class="uid1">error = ""</span> ) const</code></td></tr>
+</table>
+<pre>Raise an fatal error with a message saying that <span class="uid1">poly_name</span> does not
+represent a valid cell polyhedron.</pre>
+<br />
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="raise_invalid_face_polyhedron"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>void raise_invalid_face_polyhedron(</code></td><td><code>std::string const& <span class="uid1">poly_name</span>,</tr>
+  <tr><td /><td><code>std::string const& <span class="uid1">error = ""</span> ) const</code></td></tr>
+</table>
+<pre>Raise an fatal error with a message saying that <span class="uid1">poly_name</span> does not
+represent a valid face polyhedron.</pre>
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code>!poly_name.empty()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="initialize_rounding_strategy"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>void initialize_rounding_strategy(</code></td><td><code><a href="PEL_ModuleExplorer.html#" target="classFrame">PEL_ModuleExplorer</a> const* <span class="uid1">exp</span> ) </code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">exp</span></span> != 0</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="roundoff"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>double roundoff(</code></td><td><code>double <span class="uid1">x</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="go_next_vertex_PRE"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>bool go_next_vertex_PRE(</code></td><td><code>void ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the precondition of method <a href="GE_Meshing.html#go_next_vertex" target="classFrame">go_next_vertex</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code><a href="GE_Meshing.html#valid_vertex" target="classFrame">valid_vertex</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="vertex_coordinates_PRE"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>bool vertex_coordinates_PRE(</code></td><td><code>void ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the precondition of method <a href="GE_Meshing.html#vertex_coordinates" target="classFrame">vertex_coordinates</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code><a href="GE_Meshing.html#valid_vertex" target="classFrame">valid_vertex</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="vertex_coordinates_POST"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>bool vertex_coordinates_POST(</code></td><td><code><a href="doubleVector.html#" target="classFrame">doubleVector</a> const& <span class="uid1">result</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the postcondition of method <a href="GE_Meshing.html#vertex_coordinates" target="classFrame">vertex_coordinates</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code>result.size() == <a href="GE_Meshing.html#nb_space_dimensions" target="classFrame">nb_space_dimensions</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="default_vertex_color_PRE"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>bool default_vertex_color_PRE(</code></td><td><code>void ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the precondition of method <a href="GE_Meshing.html#default_vertex_color" target="classFrame">default_vertex_color</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code>!<a href="GE_Meshing.html#is_a_prototype" target="classFrame">is_a_prototype</a>()</code></li>
+    <li><code><a href="GE_Meshing.html#valid_vertex" target="classFrame">valid_vertex</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="default_vertex_color_POST"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>bool default_vertex_color_POST(</code></td><td><code><a href="GE_Color.html#" target="classFrame">GE_Color</a> const* <span class="uid1">result</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the postcondition of method <a href="GE_Meshing.html#default_vertex_color" target="classFrame">default_vertex_color</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">result</span></span> != 0</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="start_cell_iterator_PRE"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>bool start_cell_iterator_PRE(</code></td><td><code>void ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the precondition of method <a href="GE_Meshing.html#start_cell_iterator" target="classFrame">start_cell_iterator</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code>!<a href="GE_Meshing.html#valid_face" target="classFrame">valid_face</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="start_cell_iterator_POST"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>bool start_cell_iterator_POST(</code></td><td><code>void ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the postcondition of method <a href="GE_Meshing.html#start_cell_iterator" target="classFrame">start_cell_iterator</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code><a href="GE_Meshing.html#valid_cell" target="classFrame">valid_cell</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="go_next_cell_PRE"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>bool go_next_cell_PRE(</code></td><td><code>void ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the precondition of method <a href="GE_Meshing.html#go_next_cell" target="classFrame">go_next_cell</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code><a href="GE_Meshing.html#valid_cell" target="classFrame">valid_cell</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="valid_cell_POST"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>bool valid_cell_POST(</code></td><td><code>bool <span class="uid1">result</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the postcondition of method <a href="GE_Meshing.html#valid_cell" target="classFrame">valid_cell</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">result</span></span> == true ==&gt; <a href="GE_Meshing.html#valid_face" target="classFrame">valid_face</a>() == false</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="cell_polyhedron_name_PRE"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>bool cell_polyhedron_name_PRE(</code></td><td><code>void ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the precondition of method <a href="GE_Meshing.html#cell_polyhedron_name" target="classFrame">cell_polyhedron_name</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code><a href="GE_Meshing.html#valid_cell" target="classFrame">valid_cell</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="cell_polyhedron_name_POST"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>bool cell_polyhedron_name_POST(</code></td><td><code>std::string const& <span class="uid1">result</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the postcondition of method <a href="GE_Meshing.html#cell_polyhedron_name" target="classFrame">cell_polyhedron_name</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code><a href="GE_Mpolyhedron.html#reference_polyhedron" target="classFrame">GE_Mpolyhedron::reference_polyhedron</a>( <span class="uid1"><span class="uid1">result</span></span> )->dimension() <= <a href="GE_Meshing.html#nb_space_dimensions" target="classFrame">nb_space_dimensions</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="cell_reference_polyhedron_PRE"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>bool cell_reference_polyhedron_PRE(</code></td><td><code>void ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the precondition of method <a href="GE_Meshing.html#cell_reference_polyhedron" target="classFrame">cell_reference_polyhedron</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code><a href="GE_Meshing.html#valid_cell" target="classFrame">valid_cell</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="cell_reference_polyhedron_POST"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>bool cell_reference_polyhedron_POST(</code></td><td><code><a href="GE_ReferencePolyhedron.html#" target="classFrame">GE_ReferencePolyhedron</a> const* <span class="uid1">result</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the postcondition of method <a href="GE_Meshing.html#cell_reference_polyhedron" target="classFrame">cell_reference_polyhedron</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">result</span></span> == <a href="GE_Mpolyhedron.html#reference_polyhedron" target="classFrame">GE_Mpolyhedron::reference_polyhedron</a>( <a href="GE_Meshing.html#cell_polyhedron_name" target="classFrame">cell_polyhedron_name</a>() )</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="default_cell_color_PRE"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>bool default_cell_color_PRE(</code></td><td><code>void ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the precondition of method <a href="GE_Meshing.html#default_cell_color" target="classFrame">default_cell_color</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code>!<a href="GE_Meshing.html#is_a_prototype" target="classFrame">is_a_prototype</a>()</code></li>
+    <li><code><a href="GE_Meshing.html#valid_cell" target="classFrame">valid_cell</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="default_cell_color_POST"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>bool default_cell_color_POST(</code></td><td><code><a href="GE_Color.html#" target="classFrame">GE_Color</a> const* <span class="uid1">result</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the postcondition of method <a href="GE_Meshing.html#default_cell_color" target="classFrame">default_cell_color</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">result</span></span> != 0</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="cell_vertices_PRE"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>bool cell_vertices_PRE(</code></td><td><code>void ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the precondition of method <a href="GE_Meshing.html#cell_vertices" target="classFrame">cell_vertices</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code><a href="GE_Meshing.html#valid_cell" target="classFrame">valid_cell</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="cell_vertices_POST"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>bool cell_vertices_POST(</code></td><td><code><a href="size_t_vector.html#" target="classFrame">size_t_vector</a> const& <span class="uid1">result</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the postcondition of method <a href="GE_Meshing.html#cell_vertices" target="classFrame">cell_vertices</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code>result.size() == <a href="GE_Mpolyhedron.html#reference_polyhedron" target="classFrame">GE_Mpolyhedron::reference_polyhedron</a>( <a href="GE_Meshing.html#cell_polyhedron_name" target="classFrame">cell_polyhedron_name</a>() )-><a href="GE_Meshing.html#nb_vertices" target="classFrame">nb_vertices</a>()</code></li>
+    <li><code>FORALL( i = 0, i < result.size(), ++i )<br />
+&nbsp;<span class="uid1"><span class="uid1">result</span></span>( i ) < <a href="GE_Meshing.html#nb_vertices" target="classFrame">nb_vertices</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="cell_faces_PRE"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>bool cell_faces_PRE(</code></td><td><code>void ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the precondition of method <a href="GE_Meshing.html#cell_faces" target="classFrame">cell_faces</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code><a href="GE_Meshing.html#valid_cell" target="classFrame">valid_cell</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="cell_faces_POST"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>bool cell_faces_POST(</code></td><td><code><a href="size_t_vector.html#" target="classFrame">size_t_vector</a> const& <span class="uid1">result</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the postcondition of method <a href="GE_Meshing.html#cell_faces" target="classFrame">cell_faces</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code>result.size() == <a href="GE_Mpolyhedron.html#reference_polyhedron" target="classFrame">GE_Mpolyhedron::reference_polyhedron</a>( <a href="GE_Meshing.html#cell_polyhedron_name" target="classFrame">cell_polyhedron_name</a>() )-><a href="GE_Meshing.html#nb_faces" target="classFrame">nb_faces</a>()</code></li>
+    <li><code>FORALL( i = 0, i < result.size(), ++i )<br />
+&nbsp;<span class="uid1"><span class="uid1">result</span></span>( i ) < <a href="GE_Meshing.html#nb_faces" target="classFrame">nb_faces</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="start_face_iterator_PRE"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>bool start_face_iterator_PRE(</code></td><td><code>void ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the precondition of method <a href="GE_Meshing.html#start_face_iterator" target="classFrame">start_face_iterator</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code>!<a href="GE_Meshing.html#valid_cell" target="classFrame">valid_cell</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="start_face_iterator_POST"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>bool start_face_iterator_POST(</code></td><td><code>void ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the postcondition of method <a href="GE_Meshing.html#start_face_iterator" target="classFrame">start_face_iterator</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code><a href="GE_Meshing.html#valid_face" target="classFrame">valid_face</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="go_next_face_PRE"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>bool go_next_face_PRE(</code></td><td><code>void ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the precondition of method <a href="GE_Meshing.html#go_next_face" target="classFrame">go_next_face</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code><a href="GE_Meshing.html#valid_face" target="classFrame">valid_face</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="valid_face_POST"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>bool valid_face_POST(</code></td><td><code>bool <span class="uid1">result</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the postcondition of method <a href="GE_Meshing.html#valid_face" target="classFrame">valid_face</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">result</span></span> == true ==&gt; <a href="GE_Meshing.html#valid_cell" target="classFrame">valid_cell</a>() == false</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="face_polyhedron_name_PRE"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>bool face_polyhedron_name_PRE(</code></td><td><code>void ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the precondition of method <a href="GE_Meshing.html#face_polyhedron_name" target="classFrame">face_polyhedron_name</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code><a href="GE_Meshing.html#valid_face" target="classFrame">valid_face</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="face_polyhedron_name_POST"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>bool face_polyhedron_name_POST(</code></td><td><code>std::string const& <span class="uid1">result</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the postcondition of method <a href="GE_Meshing.html#face_polyhedron_name" target="classFrame">face_polyhedron_name</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code><a href="GE_Mpolyhedron.html#reference_polyhedron" target="classFrame">GE_Mpolyhedron::reference_polyhedron</a>( <span class="uid1"><span class="uid1">result</span></span> )->dimension() <= <a href="GE_Meshing.html#nb_space_dimensions" target="classFrame">nb_space_dimensions</a>() - 1</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="face_reference_polyhedron_PRE"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>bool face_reference_polyhedron_PRE(</code></td><td><code>void ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the precondition of method <a href="GE_Meshing.html#face_reference_polyhedron" target="classFrame">face_reference_polyhedron</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code><a href="GE_Meshing.html#valid_face" target="classFrame">valid_face</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="face_reference_polyhedron_POST"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>bool face_reference_polyhedron_POST(</code></td><td><code><a href="GE_ReferencePolyhedron.html#" target="classFrame">GE_ReferencePolyhedron</a> const* <span class="uid1">result</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the postcondition of method <a href="GE_Meshing.html#face_reference_polyhedron" target="classFrame">face_reference_polyhedron</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">result</span></span> == <a href="GE_Mpolyhedron.html#reference_polyhedron" target="classFrame">GE_Mpolyhedron::reference_polyhedron</a>( <a href="GE_Meshing.html#face_polyhedron_name" target="classFrame">face_polyhedron_name</a>() )</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="default_face_color_PRE"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>bool default_face_color_PRE(</code></td><td><code>void ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the precondition of method <a href="GE_Meshing.html#default_face_color" target="classFrame">default_face_color</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code>!<a href="GE_Meshing.html#is_a_prototype" target="classFrame">is_a_prototype</a>()</code></li>
+    <li><code><a href="GE_Meshing.html#valid_face" target="classFrame">valid_face</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="default_face_color_POST"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>bool default_face_color_POST(</code></td><td><code><a href="GE_Color.html#" target="classFrame">GE_Color</a> const* <span class="uid1">result</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the postcondition of method <a href="GE_Meshing.html#default_face_color" target="classFrame">default_face_color</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">result</span></span> != 0</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="face_vertices_PRE"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>bool face_vertices_PRE(</code></td><td><code>void ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the precondition of method <a href="GE_Meshing.html#face_vertices" target="classFrame">face_vertices</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code><a href="GE_Meshing.html#valid_face" target="classFrame">valid_face</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="face_vertices_POST"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>bool face_vertices_POST(</code></td><td><code><a href="size_t_vector.html#" target="classFrame">size_t_vector</a> const& <span class="uid1">result</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the postcondition of method <a href="GE_Meshing.html#face_vertices" target="classFrame">face_vertices</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code>result.size() == <a href="GE_Mpolyhedron.html#reference_polyhedron" target="classFrame">GE_Mpolyhedron::reference_polyhedron</a>( <a href="GE_Meshing.html#face_polyhedron_name" target="classFrame">face_polyhedron_name</a>() )-><a href="GE_Meshing.html#nb_vertices" target="classFrame">nb_vertices</a>()</code></li>
+    <li><code>FORALL( i = 0, i < result.size(), ++i )<br />
+&nbsp;<span class="uid1"><span class="uid1">result</span></span>( i ) < <a href="GE_Meshing.html#nb_vertices" target="classFrame">nb_vertices</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="check_mesh_polyhedron_PRE"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>bool check_mesh_polyhedron_PRE(</code></td><td><code>size_t <span class="uid1">dim_space</span>,</tr>
+  <tr><td /><td><code>std::string const& <span class="uid1">face_poly_name</span>,</tr>
+  <tr><td /><td><code>std::string const& <span class="uid1">cell_poly_name</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the precondition of method <a href="GE_Meshing.html#check_mesh_polyhedron" target="classFrame">check_mesh_polyhedron</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">dim_space</span></span> == 1 || <span class="uid1"><span class="uid1">dim_space</span></span> == 2 || <span class="uid1"><span class="uid1">dim_space</span></span> == 3</code></li>
+    <li><code>!face_poly_name.empty()</code></li>
+    <li><code>!cell_poly_name.empty()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="create_replica_PRE"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual bool create_replica_PRE(</code></td><td><code><a href="PEL_Object.html#PEL_Object" target="classFrame">PEL_Object*</a> <span class="uid1">a_owner</span>,</tr>
+  <tr><td /><td><code> <a href="PEL_ModuleExplorer.html#" target="classFrame">PEL_ModuleExplorer</a> const* <span class="uid1">exp</span>,</tr>
+  <tr><td /><td><code> size_t <span class="uid1">dim_space</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the precondition of method <a href="GE_Meshing.html#create_replica" target="classFrame">create_replica</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">exp</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">dim_space</span></span> == 1 || <span class="uid1"><span class="uid1">dim_space</span></span> == 2 || <span class="uid1"><span class="uid1">dim_space</span></span> == 3</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="create_replica_POST"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual bool create_replica_POST(</code></td><td><code><a href="GE_Meshing.html#GE_Meshing" target="classFrame">GE_Meshing const*</a> <span class="uid1">result</span>,</tr>
+  <tr><td /><td><code><a href="PEL_Object.html#PEL_Object" target="classFrame">PEL_Object*</a> <span class="uid1">a_owner</span>,</tr>
+  <tr><td /><td><code>size_t <span class="uid1">dim_space</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+<pre>Is the postcondition of method <a href="GE_Meshing.html#create_replica" target="classFrame">create_replica</a> fulfilled ? True if :</pre>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">result</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">result</span></span>-><a href="PEL_Object.html#owner" target="classFrame">owner</a>() == <span class="uid1"><span class="uid1">a_owner</span></span></code></li>
+    <li><code><span class="uid1"><span class="uid1">result</span></span>-><a href="GE_Meshing.html#nb_space_dimensions" target="classFrame">nb_space_dimensions</a>() == <span class="uid1"><span class="uid1">dim_space</span></span></code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,506 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>PEL_ExtractionExp.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="PEL_ExtractionExp.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="PELpack-tree.html"><span>Tree</span></a>
+    <a href="PEL_ExtractionExp.html"><span>Class</span></a>
+    <a href="PEL_ExtractionExp.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="PELpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ExtractionExp</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_assertions</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Bool</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Communicator</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Context</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_DataWithContext</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Exec</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_List</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Module</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Sequence</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_String</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_System</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Variable</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">stringVector</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;fstream&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;iostream&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;sstream&gt;
+
+</font><font class="kw3">PEL_Module</font><font class="text"> </font><font class="kw1">const</font><font class="text">* </font><font class="kw3">PEL_ExtractionExp</font><font class="text">::DB_MOD = 0 ;
+</font><font class="kw3">PEL_ExtractionExp</font><font class="text">* </font><font class="kw3">PEL_ExtractionExp</font><font class="text">::PROTO_HAS_DATA =
+   </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_ExtractionExp</font><font class="text">( </font><font class="string">&quot;has_data&quot;</font><font class="text">, </font><font class="kw3">PEL_ExtractionExp</font><font class="text">::has_data ) ;
+</font><font class="kw3">PEL_ExtractionExp</font><font class="text">* </font><font class="kw3">PEL_ExtractionExp</font><font class="text">::PROTO_DATA =
+   </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_ExtractionExp</font><font class="text">( </font><font class="string">&quot;extracted_data&quot;</font><font class="text">, </font><font class="kw3">PEL_ExtractionExp</font><font class="text">::ext_data ) ;
+</font><font class="kw3">PEL_ExtractionExp</font><font class="text">* </font><font class="kw3">PEL_ExtractionExp</font><font class="text">::PROTO_HAS_MOD =
+   </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_ExtractionExp</font><font class="text">( </font><font class="string">&quot;has_module&quot;</font><font class="text">, </font><font class="kw3">PEL_ExtractionExp</font><font class="text">::has_mod ) ;
+</font><font class="kw3">PEL_ExtractionExp</font><font class="text">* </font><font class="kw3">PEL_ExtractionExp</font><font class="text">::PROTO_EXTRACTED_MODULE =
+   </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_ExtractionExp</font><font class="text">( </font><font class="string">&quot;extracted_module&quot;</font><font class="text">, </font><font class="kw3">PEL_ExtractionExp</font><font class="text">::ext_mod ) ;
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_ExtractionExp</font><font class="text">:: </font><font class="kw3">PEL_ExtractionExp</font><font class="text">( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_name,
+                                       ExtractionExp op ) 
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_TransferExp</font><font class="text">( a_name )
+   , OP( op )
+   , TEMP_FILE_NAME( </font><font class="string">&quot;&quot;</font><font class="text"> )
+   , SRC( 0 )
+{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_ExtractionExp:: PEL_ExtractionExp&quot;</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_ExtractionExp</font><font class="text">:: </font><font class="kw3">PEL_ExtractionExp</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                       ExtractionExp op,
+                                       </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_name,
+                                       </font><font class="kw3">PEL_Sequence</font><font class="text"> </font><font class="kw1">const</font><font class="text">* argument_list ) 
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_TransferExp</font><font class="text">( a_owner, a_name, argument_list )
+   , OP( op )
+   , TEMP_FILE_NAME( </font><font class="string">&quot;&quot;</font><font class="text"> )
+   , SRC( 0 )
+{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_ExtractionExp:: PEL_ExtractionExp&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( is_initialized() ) ;
+   
+   </font><font class="comment">// Data name:
+</font><font class="text">   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; n = data_name( name(), arg(0) ) ;
+
+   </font><font class="kw1">if</font><font class="text">( OP == ext_data )
+   {
+      </font><font class="kw3">PEL_ASSERT</font><font class="text">( name() == </font><font class="string">&quot;extracted_data&quot;</font><font class="text"> ) ;
+      </font><font class="kw1">if</font><font class="text">( DB_MOD-&gt;has_entry( n ) )
+      {
+         </font><font class="kw3">PEL_Data</font><font class="text"> </font><font class="kw1">const</font><font class="text">* a_data = DB_MOD-&gt;data_of_entry( n ) ;
+         </font><font class="kw3">PEL_List</font><font class="text">* l = </font><font class="kw3">PEL_List</font><font class="text">::create( 0 ) ;
+         a_data-&gt;declare( l ) ;
+         </font><font class="kw1">if</font><font class="text">( l-&gt;count() == 0 )
+         {
+            SRC = a_data ;
+         }
+         </font><font class="kw1">else
+</font><font class="text">         {
+            </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; dirname = </font><font class="kw3">PEL_Module</font><font class="text">::dirname( n )  ;
+            </font><font class="kw3">PEL_Module</font><font class="text"> </font><font class="kw1">const</font><font class="text">* m =
+               ( dirname.empty() ? DB_MOD : DB_MOD-&gt;module( dirname ) ) ;
+            </font><font class="kw3">PEL_Data</font><font class="text">* d =
+                 </font><font class="kw3">PEL_DataWithContext</font><font class="text">::create( 0, a_data, m-&gt;context() ) ;
+            SRC = d-&gt;create_simplification( </font><font class="kw1">this</font><font class="text"> ) ;
+            d-&gt;destroy() ; d = 0 ;
+         }
+         l-&gt;destroy() ; l = 0 ;
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( argument_list-&gt;count() == 2 )
+      {
+         SRC = arg(1) ;
+      }
+      </font><font class="kw1">else
+</font><font class="text">      {
+         raise_error( </font><font class="string">&quot;    missing entry: &quot;</font><font class="text">+n ) ;
+      }
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( OP == has_data ) 
+   {
+      </font><font class="kw3">PEL_ASSERT</font><font class="text">( name() == </font><font class="string">&quot;has_data&quot;</font><font class="text"> ) ;
+      SRC = </font><font class="kw3">PEL_Bool</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, DB_MOD-&gt;has_entry( n ) ) ;
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( OP == has_mod ) 
+   {
+      </font><font class="kw3">PEL_ASSERT</font><font class="text">( name() == </font><font class="string">&quot;has_module&quot;</font><font class="text"> ) ;
+      SRC = </font><font class="kw3">PEL_Bool</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, DB_MOD-&gt;has_module( n ) ) ;
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( OP == ext_mod ) 
+   {
+      </font><font class="kw3">PEL_ASSERT</font><font class="text">( name() == </font><font class="string">&quot;extracted_module&quot;</font><font class="text"> ) ;
+      </font><font class="kw1">if</font><font class="text">( DB_MOD-&gt;has_module( n ) )
+      {
+         TEMP_FILE_NAME = temporary_file() ;
+         extract_module( TEMP_FILE_NAME, n, data_name( name(), arg(1) ) ) ;
+         SRC = </font><font class="kw3">PEL_String</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, TEMP_FILE_NAME ) ;
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( argument_list-&gt;count() == 3 )
+      {
+         SRC = arg(2) ;
+      }
+      </font><font class="kw1">else
+</font><font class="text">      {
+         raise_error( </font><font class="string">&quot;    missing module: &quot;</font><font class="text">+n ) ;
+      }
+   }
+   
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_ExtractionExp</font><font class="text">:: ~</font><font class="kw3">PEL_ExtractionExp</font><font class="text">( </font><font class="kw1">void</font><font class="text"> ) 
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_ExtractionExp:: ~PEL_ExtractionExp&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   
+   </font><font class="kw1">if</font><font class="text">( OP == ext_mod )
+   {
+      </font><font class="kw3">PEL_System</font><font class="text">::erase( TEMP_FILE_NAME ) ;
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_ExtractionExp</font><font class="text">:: initialize( </font><font class="kw3">PEL_Module</font><font class="text"> </font><font class="kw1">const</font><font class="text">* mod )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_ExtractionExp:: initialize&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( mod != 0 ) ;
+   
+   DB_MOD = mod ;
+   
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( is_initialized() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( data_base() == mod ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_ExtractionExp</font><font class="text">:: reset( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_ExtractionExp:: reset&quot;</font><font class="text"> ) ;
+   
+   DB_MOD = 0 ;
+   
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( !is_initialized() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">PEL_ExtractionExp</font><font class="text">:: is_initialized( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">return</font><font class="text">( DB_MOD != 0 ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_Module</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">PEL_ExtractionExp</font><font class="text">:: data_base( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_ExtractionExp:: data_base&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( is_initialized() ) ;
+   </font><font class="kw3">PEL_Module</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result = DB_MOD ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result != 0 ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_ExtractionExp</font><font class="text">*
+</font><font class="kw3">PEL_ExtractionExp</font><font class="text">:: create_replica( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner, 
+                                    </font><font class="kw3">PEL_Sequence</font><font class="text"> </font><font class="kw1">const</font><font class="text">* argument_list ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_ExtractionExp:: create_replica&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_PRE( a_owner, argument_list ) ) ;
+   
+   </font><font class="kw1">if</font><font class="text">( !is_initialized() )
+   {
+      raise_error(
+         </font><font class="string">&quot;*** PEL_ExtractionExp: error\n&quot;
+</font><font class="text">         </font><font class="string">&quot;    Can't evaluate expression before initialize self&quot;</font><font class="text"> ) ;
+   }
+   
+   </font><font class="kw3">PEL_ExtractionExp</font><font class="text">* result =
+           </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_ExtractionExp</font><font class="text">( a_owner, OP, name(), argument_list ) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_POST( result, a_owner, argument_list ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_ExtractionExp</font><font class="text">:: declare( </font><font class="kw3">PEL_List</font><font class="text">* lst ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_ExtractionExp:: declare&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( declare_PRE( lst ) ) ;
+   
+   SRC-&gt;declare( lst ) ;
+   
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( declare_POST( lst ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">PEL_ExtractionExp</font><font class="text">:: context_has_required_variables(
+                                           </font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ct ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_ExtractionExp:: context_has_required_variables&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( context_has_required_variables_PRE( ct ) ) ;
+   
+   </font><font class="kw1">return</font><font class="text">( SRC-&gt;context_has_required_variables( ct ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">stringVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp;
+</font><font class="kw3">PEL_ExtractionExp</font><font class="text">:: undefined_variables( </font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ct ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_ExtractionExp:: undefined_variables&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw1">return</font><font class="text">( SRC-&gt;undefined_variables( ct ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">PEL_ExtractionExp</font><font class="text">:: value_can_be_evaluated( </font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ct ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_ExtractionExp:: value_can_be_evaluated&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw1">return</font><font class="text">( SRC-&gt;value_can_be_evaluated( ct ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_Data</font><font class="text">::Type
+</font><font class="kw3">PEL_ExtractionExp</font><font class="text">:: data_type( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_ExtractionExp:: data_type&quot;</font><font class="text"> ) ;
+   </font><font class="kw1">return</font><font class="text">( SRC-&gt;data_type() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">PEL_ExtractionExp</font><font class="text">:: valid_arguments( </font><font class="kw3">PEL_Sequence</font><font class="text"> </font><font class="kw1">const</font><font class="text">* some_arguments ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_ExtractionExp:: valid_arguments&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( valid_arguments_PRE( some_arguments ) ) ;
+
+   </font><font class="kw1">bool</font><font class="text"> result = </font><font class="kw1">true</font><font class="text"> ;
+   </font><font class="kw1">if</font><font class="text">( OP == has_data || OP == has_mod )
+   {
+      result = some_arguments-&gt;count()==1 &amp;&amp;
+               extract_arg( some_arguments, 0 )-&gt;data_type() == String ;
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( OP == ext_mod )
+   {
+      result = ( some_arguments-&gt;count()==2 || some_arguments-&gt;count()==3 ) &amp;&amp;
+               extract_arg( some_arguments, 0 )-&gt;data_type() == String &amp;&amp;
+               extract_arg( some_arguments, 1 )-&gt;data_type() == String ;
+      </font><font class="kw1">if</font><font class="text">( result &amp;&amp; some_arguments-&gt;count()==3  )
+      {
+         result = ( extract_arg( some_arguments, 2 )-&gt;data_type() == String ) ;
+      }
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      result = ( some_arguments-&gt;count()==1 || some_arguments-&gt;count()==2 ) &amp;&amp;
+               extract_arg( some_arguments, 0 )-&gt;data_type() == String ;
+   }
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp;
+</font><font class="kw3">PEL_ExtractionExp</font><font class="text">:: usage( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_ExtractionExp:: usage&quot;</font><font class="text"> ) ;
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> result ;
+   </font><font class="kw1">if</font><font class="text">( OP == has_data )
+   {
+      result = name() + </font><font class="string">&quot;(SS)&quot;</font><font class="text"> ;
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( OP == has_mod )
+   {
+      result = name() + </font><font class="string">&quot;(SS)&quot;</font><font class="text"> ;
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( OP == ext_mod )
+   {
+      result = name() + </font><font class="string">&quot;(SS,SS,[,SS])&quot;</font><font class="text"> ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      result = name() + </font><font class="string">&quot;(SS[,SS])&quot;</font><font class="text"> ;
+   }
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_ExtractionExp</font><font class="text">:: print( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostream</font><font class="text">&amp; os, </font><font class="kw2">size_t</font><font class="text"> indent_width ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_ExtractionExp:: print&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">if</font><font class="text">( !is_a_prototype() )
+   {
+      SRC-&gt;print( os, indent_width ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      </font><font class="kw3">PEL_Expression</font><font class="text">::print( os, indent_width ) ;
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_Data</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">PEL_ExtractionExp</font><font class="text">:: data( </font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ct ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_ExtractionExp:: data&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( data_PRE( ct ) ) ;
+
+   </font><font class="kw3">PEL_Data</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result = SRC ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( data_POST( result, ct ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp;
+</font><font class="kw3">PEL_ExtractionExp</font><font class="text">:: temporary_file( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_ExtractionExp:: temporary_file&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw3">PEL_Communicator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* com = </font><font class="kw3">PEL_Exec</font><font class="text">::communicator() ;
+   
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">int</font><font class="text"> EXTRACTED_IDX = 0 ;
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> ss ;
+   ss &lt;&lt; </font><font class="kw3">PEL_System</font><font class="text">::working_directory()
+      &lt;&lt; </font><font class="kw3">PEL_System</font><font class="text">::path_name_separator()
+      &lt;&lt; </font><font class="string">&quot;temporary_&quot;</font><font class="text"> &lt;&lt; EXTRACTED_IDX++ ;
+   </font><font class="kw1">if</font><font class="text">( com-&gt;nb_ranks() &gt; 1 )
+   {
+      ss &lt;&lt; </font><font class="string">&quot;#&quot;</font><font class="text"> &lt;&lt; com-&gt;rank() ;
+   }
+   ss &lt;&lt; </font><font class="string">&quot;.pel&quot;</font><font class="text"> ;
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> result = </font><font class="string">&quot;&quot;</font><font class="text"> ;
+   result = ss.str() ;
+   
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp;
+</font><font class="kw3">PEL_ExtractionExp</font><font class="text">:: data_name( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; exp_name,
+                               </font><font class="kw3">PEL_Data</font><font class="text"> </font><font class="kw1">const</font><font class="text">* d )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_ExtractionExp:: data_name&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( !exp_name.empty() ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( d != 0 ) ;
+   
+   </font><font class="kw1">if</font><font class="text">( ! d-&gt;value_can_be_evaluated( 0 ) )
+   {
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> msg ;
+      msg &lt;&lt; </font><font class="string">&quot;*** &quot;</font><font class="text"> &lt;&lt; exp_name &lt;&lt; </font><font class="string">&quot; expression error:&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl
+</font><font class="text">          &lt;&lt; </font><font class="string">&quot;    the entry name cannot be defined from variables &quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+      </font><font class="kw3">stringVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; undef_vars = d-&gt;undefined_variables( 0 ) ;
+      </font><font class="kw1">if</font><font class="text">( undef_vars.size() &gt; 0 )
+      {
+         msg &lt;&lt; </font><font class="string">&quot;    unexpected variable(s): &quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;undef_vars.size() ; ++i )
+         {
+            msg &lt;&lt; </font><font class="string">&quot;        - \&quot;&quot; &lt;&lt; undef_vars(i) &lt;&lt; &quot;</font><font class="text">\</font><font class="string">&quot;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+         }
+      }
+      </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( msg.str() ) ;
+   }   
+   </font><font class="kw1">return</font><font class="text">( d-&gt;to_string() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_ExtractionExp</font><font class="text">:: extract_module( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; file_name,
+                                    </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; d_name,
+                                    </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; m_name ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_ExtractionExp:: extract_module&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( OP == ext_mod ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( ! file_name.empty() ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( ! d_name.empty() ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( ! m_name.empty() ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( DB_MOD != 0 ) ;
+   
+   </font><font class="kw2">std</font><font class="text">::ofstream out( file_name.c_str(),
+                      </font><font class="kw2">std</font><font class="text">::ios::out | </font><font class="kw2">std</font><font class="text">::ios::trunc ) ;
+   </font><font class="kw1">if</font><font class="text">( !out )
+   {
+     raise_error( </font><font class="string">&quot;   unable to create temporary file \&quot;&quot;+file_name+&quot;</font><font class="text">\</font><font class="string">&quot;&quot;</font><font class="text"> ) ;
+   }
+   </font><font class="kw3">PEL_Module</font><font class="text">* mod = DB_MOD-&gt;module( d_name ) ;
+   </font><font class="kw3">PEL_Module</font><font class="text">* dup = mod-&gt;create_clone(0) ;
+   dup-&gt;modify_module_name( m_name ) ;
+   dup-&gt;print( out, 0 ) ;
+   out.close() ;
+   dup-&gt;destroy() ; dup = 0 ;
+}
+
+</font>
+</pre>
+</body>
+</html>

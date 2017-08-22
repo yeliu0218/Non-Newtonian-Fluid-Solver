@@ -1,0 +1,357 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>PEL_ObjectTest.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="PEL_ObjectTest.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="PELpack-tree.html"><span>Tree</span></a>
+    <a href="PEL_ObjectTest.html"><span>Class</span></a>
+    <a href="PEL_ObjectTest.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="PELpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ObjectTest</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Communicator</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Exec</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ObjectRegister</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Root</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Timer</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_assertions</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;iomanip&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;ios&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;iostream&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;sstream&gt;
+
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ios_base</font><font class="text"> ;
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">setprecision</font><font class="text"> ; </font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">setw</font><font class="text"> ;
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> ;
+
+</font><font class="kw1">bool</font><font class="text"> </font><font class="kw3">PEL_ObjectTest</font><font class="text">::FAILURE = </font><font class="kw1">false</font><font class="text"> ;
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw3">PEL_ObjectTest</font><font class="text">*
+</font><font class="kw3">PEL_ObjectTest</font><font class="text">:: object( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_name )
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_ObjectTest:: object&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( !a_name.empty() ) ;
+
+   </font><font class="kw3">PEL_ObjectTest</font><font class="text">* result =
+      </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">PEL_ObjectTest</font><font class="text">*&gt;( plugins_map()-&gt;item( a_name ) ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;is_under_ownership_of( </font><font class="kw3">PEL_Root</font><font class="text">::object() ) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;registration_name() == a_name ) ; 
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( !result-&gt;has_data_deck_explorer() ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw3">PEL_ObjectTest</font><font class="text">:: ~</font><font class="kw3">PEL_ObjectTest</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw3">PEL_ObjectTest</font><font class="text">:: </font><font class="kw3">PEL_ObjectTest</font><font class="text">( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; tested_class_name,
+                                 </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; my_name )
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_Object</font><font class="text">( plugins_map() )
+   , NAME( my_name )
+   , TESTED_CLASS( tested_class_name )
+   , EXP( 0 )
+   , NB_ELEMENTARY_TESTS( 0 )
+   , NB_ELEMENTARY_TESTS_OK( 0 )
+{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_ObjectTest:: PEL_ObjectTest&quot;</font><font class="text"> ) ;
+   
+   plugins_map()-&gt;register_item( my_name, </font><font class="kw1">this</font><font class="text"> ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( owner() == </font><font class="kw3">PEL_Root</font><font class="text">::object() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( registration_name() == my_name ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( !has_data_deck_explorer() ) ;
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp;
+</font><font class="kw3">PEL_ObjectTest</font><font class="text">:: registration_name( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">return</font><font class="text">( NAME ) ;
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_ObjectTest</font><font class="text">:: set_data_deck_explorer( </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp )
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_ObjectTest:: set_data_deck_explorer&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( !has_data_deck_explorer() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( exp != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( exp-&gt;string_data(</font><font class="string">&quot;concrete_name&quot;</font><font class="text">) == registration_name() ) ;
+
+   EXP = exp-&gt;create_clone( </font><font class="kw1">this</font><font class="text"> ) ;
+   
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( has_data_deck_explorer() ) ;
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">PEL_ObjectTest</font><font class="text">:: has_data_deck_explorer( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">return</font><font class="text">( EXP!=0 ) ;
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">PEL_ObjectTest</font><font class="text">:: data_deck_explorer( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_ObjectTest:: data_deck_explorer&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( has_data_deck_explorer() ) ;
+
+   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result = EXP ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;owner() == </font><font class="kw1">this</font><font class="text"> ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_ObjectTest</font><font class="text">:: run_all_tests( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_ObjectTest:: run_all_tests&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw3">PEL_Timer</font><font class="text">* timer = </font><font class="kw3">PEL_Timer</font><font class="text">::create( 0 ) ;
+
+   out() &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   out() &lt;&lt; </font><font class="string">&quot;----------------------------------------------------&quot;</font><font class="text">    &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   out() &lt;&lt; </font><font class="string">&quot;|  Unit tests performed on class &quot;</font><font class="text"> &lt;&lt; TESTED_CLASS &lt;&lt; </font><font class="string">&quot; :&quot;
+</font><font class="text">         &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   out() &lt;&lt; </font><font class="string">&quot;====================================================&quot;</font><font class="text">    &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      
+   reset_all_tests() ;
+      
+   timer-&gt;reset() ;
+   timer-&gt;start() ;
+
+   process_all_tests() ;
+
+   timer-&gt;stop() ;
+   out() &lt;&lt; </font><font class="string">&quot;====================================================&quot;</font><font class="text">    &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+
+   </font><font class="kw1">if</font><font class="text">( NB_ELEMENTARY_TESTS != NB_ELEMENTARY_TESTS_OK )
+   {
+      out() &lt;&lt; </font><font class="string">&quot;|  Class test FAILED !!!!!!!!!!!!!&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   }
+   out() &lt;&lt; </font><font class="string">&quot;|  End of &quot;</font><font class="text"> &lt;&lt; NB_ELEMENTARY_TESTS &lt;&lt; </font><font class="string">&quot; test&quot;</font><font class="text"> ;
+   </font><font class="kw1">if</font><font class="text">( NB_ELEMENTARY_TESTS&gt; 1 )
+   {
+      out() &lt;&lt; </font><font class="string">&quot;s&quot;</font><font class="text"> ;
+   }
+   out() &lt;&lt; </font><font class="string">&quot; of class &quot;</font><font class="text"> &lt;&lt;  TESTED_CLASS 
+         &lt;&lt; </font><font class="string">&quot; in &quot;</font><font class="text"> &lt;&lt; timer-&gt;time() &lt;&lt; </font><font class="string">&quot; s &quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   out() &lt;&lt; </font><font class="string">&quot;----------------------------------------------------&quot;</font><font class="text">    &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+
+   timer-&gt;destroy() ;
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">PEL_ObjectTest</font><font class="text">:: tests_of_all_instances_are_successful( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">return</font><font class="text">( !FAILURE ) ;
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_ObjectTest</font><font class="text">:: reset_all_tests( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_ObjectTest</font><font class="text">:: process_all_tests( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_ObjectTest:: process_all_tests&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">if</font><font class="text">( EXP == 0 )
+   {
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> m ;
+      m &lt;&lt; registration_name() &lt;&lt; </font><font class="kw2">endl</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      m &lt;&lt; </font><font class="string">&quot;   The default implementation of \&quot;</font><font class="text">process_all_tests\</font><font class="string">&quot;&quot;</font><font class="text">  &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      m &lt;&lt; </font><font class="string">&quot;   provided by \&quot;</font><font class="kw3">PEL_ObjectTest</font><font class="text">\</font><font class="string">&quot; assumes that there is&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      m &lt;&lt; </font><font class="string">&quot;   a specific data deck for \&quot;&quot; &lt;&lt; registration_name() &lt;&lt; &quot;</font><font class="text">\</font><font class="string">&quot;.&quot;
+</font><font class="text">	&lt;&lt; </font><font class="kw2">endl</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      m &lt;&lt; </font><font class="string">&quot;   If not, the member function \&quot;</font><font class="text">process_all_tests\</font><font class="string">&quot;&quot;</font><font class="text">    &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      m &lt;&lt; </font><font class="string">&quot;   should be overridden.&quot;</font><font class="text"> ;
+      </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( m.str() ) ;
+   }
+   
+   EXP-&gt;start_module_iterator() ;
+   </font><font class="kw1">for</font><font class="text">( ; EXP-&gt;is_valid_module() ; EXP-&gt;go_next_module() )
+   {
+      </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* ee = EXP-&gt;create_subexplorer( 0 ) ;
+      process_one_test( ee ) ;
+      ee-&gt;destroy() ;
+   }
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_ObjectTest</font><font class="text">:: process_one_test( </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp )
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_ObjectTest:: process_one_test&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> m ;
+   m &lt;&lt; registration_name() &lt;&lt; </font><font class="kw2">endl</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   m &lt;&lt; </font><font class="string">&quot;   member function \&quot;</font><font class="text">process_one_test\</font><font class="string">&quot; is not implemented&quot;</font><font class="text">  &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( m.str() ) ;
+   
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_ObjectTest</font><font class="text">:: notify_one_test_result( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; displayed_name, 
+                                         </font><font class="kw1">bool</font><font class="text"> success )
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_ObjectTest:: notify_one_test_result&quot;</font><font class="text"> ) ;
+   PEL_CHECK_COLLECTIVE( </font><font class="kw1">true</font><font class="text"> ) ;
+   
+   success = </font><font class="kw3">PEL_Exec</font><font class="text">::communicator()-&gt;boolean_and(success) ;
+   
+   out() &lt;&lt; </font><font class="string">&quot;| ... &quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">setw</font><font class="text">(40) &lt;&lt; displayed_name &lt;&lt; </font><font class="string">&quot; :&quot;</font><font class="text"> ;
+   </font><font class="kw1">if</font><font class="text">( success )
+   {
+      out() &lt;&lt; </font><font class="string">&quot;  OK&quot;</font><font class="text"> ;
+      NB_ELEMENTARY_TESTS_OK++ ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      out() &lt;&lt; </font><font class="string">&quot; FAIL&quot;</font><font class="text"> ;
+      FAILURE = </font><font class="kw1">true</font><font class="text"> ;
+   }
+   out()  &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   NB_ELEMENTARY_TESTS++ ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_ObjectTest</font><font class="text">:: print_time_result( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; name, 
+                                    </font><font class="kw1">double</font><font class="text"> tt ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">ios_base</font><font class="text">::</font><font class="kw2">fmtflags</font><font class="text"> original_flags = </font><font class="kw3">PEL</font><font class="text">::out().</font><font class="kw2">flags</font><font class="text">() ;
+   </font><font class="kw3">PEL</font><font class="text">::out().setf( </font><font class="kw2">ios_base</font><font class="text">::</font><font class="kw2">uppercase</font><font class="text"> | </font><font class="kw2">ios_base</font><font class="text">::</font><font class="kw2">scientific</font><font class="text"> ) ;
+
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="string">&quot;| ... &quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">setw</font><font class="text">( 50 ) &lt;&lt; name &lt;&lt; </font><font class="string">&quot; CPU &quot;
+</font><font class="text">              &lt;&lt; </font><font class="kw2">setprecision</font><font class="text">( 6 ) &lt;&lt; </font><font class="kw2">setw</font><font class="text">( 15 ) &lt;&lt; tt &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+
+   </font><font class="kw3">PEL</font><font class="text">::out().</font><font class="kw2">flags</font><font class="text">( original_flags ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_ObjectTest</font><font class="text">:: print_memory_result( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; name, 
+                                      </font><font class="kw2">size_t</font><font class="text"> memory_size ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="string">&quot;| ... &quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">setw</font><font class="text">( 50 ) &lt;&lt; name &lt;&lt; </font><font class="string">&quot; MEM &quot;
+</font><font class="text">              &lt;&lt; </font><font class="kw2">setw</font><font class="text">( 15 ) &lt;&lt; memory_size &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostream</font><font class="text"> &amp;
+</font><font class="kw3">PEL_ObjectTest</font><font class="text">:: out( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw3">PEL</font><font class="text">::out() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_ObjectRegister</font><font class="text">*
+</font><font class="kw3">PEL_ObjectTest</font><font class="text">:: plugins_map( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw3">PEL_ObjectRegister</font><font class="text">* result =
+                </font><font class="kw3">PEL_ObjectRegister</font><font class="text">::create( </font><font class="kw3">PEL_Root</font><font class="text">::object(),
+                                            </font><font class="string">&quot;PEL_ObjectTest descendant&quot;</font><font class="text"> ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+
+</font>
+</pre>
+</body>
+</html>

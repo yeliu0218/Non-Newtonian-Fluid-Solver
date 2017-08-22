@@ -1,0 +1,355 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>LA_SOR_PC.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="LA_SOR_PC.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="LApack-tree.html"><span>Tree</span></a>
+    <a href="LA_SOR_PC.html"><span>Class</span></a>
+    <a href="LA_SOR_PC.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="LApack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_SOR_PC</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_MatrixIterator</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_SeqImplementation</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_SeqMatrix</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_SeqVector</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_assertions</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">stringVector</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;sstream&gt;
+
+</font><font class="kw1">struct</font><font class="text"> LA_SOR_PC_ERROR
+{
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> n0( </font><font class="kw1">int</font><font class="text"> i ) ;
+} ;
+
+</font><font class="kw3">LA_SOR_PC</font><font class="text"> </font><font class="kw1">const</font><font class="text">* </font><font class="kw3">LA_SOR_PC</font><font class="text">::PROTOTYPE = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">LA_SOR_PC</font><font class="text">() ;
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_SOR_PC</font><font class="text">:: </font><font class="kw3">LA_SOR_PC</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">LA_Preconditioner</font><font class="text">( </font><font class="string">&quot;LA_SOR_PC&quot;</font><font class="text"> )
+   , MIN_DIAG( -</font><font class="kw3">PEL</font><font class="text">::max_double() )
+   , OMEGA( -</font><font class="kw3">PEL</font><font class="text">::max_double() )
+   , FORWARD( </font><font class="kw1">false</font><font class="text"> )
+   , BACKWARD( </font><font class="kw1">false</font><font class="text"> )
+   , NB_ITERS( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+   , OMEGA_INV_DIAG( 0 )
+   , MAT( 0 )
+   , SOLVE_OK( </font><font class="kw1">false</font><font class="text"> )
+{
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_SOR_PC</font><font class="text">*
+</font><font class="kw3">LA_SOR_PC</font><font class="text">:: create_replica( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                             </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_SOR_PC:: create_replica&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_PRE( a_owner, exp ) ) ;
+
+   </font><font class="kw1">double</font><font class="text"> </font><font class="kw1">const</font><font class="text"> smallest_inverted_item =
+                         exp-&gt;double_data( </font><font class="string">&quot;smallest_inverted_item&quot;</font><font class="text"> ) ;
+   exp-&gt;test_data( </font><font class="string">&quot;smallest_inverted_item&quot;</font><font class="text">, </font><font class="string">&quot;smallest_inverted_item&gt;0.&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw1">double</font><font class="text"> </font><font class="kw1">const</font><font class="text"> omega = exp-&gt;double_data( </font><font class="string">&quot;omega&quot;</font><font class="text"> ) ;
+   exp-&gt;test_data( </font><font class="string">&quot;omega&quot;</font><font class="text">, </font><font class="string">&quot;omega&gt;0. &amp;&amp; omega&lt;2.&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> nb_iters = (</font><font class="kw2">size_t</font><font class="text">) exp-&gt;int_data( </font><font class="string">&quot;nb_inner_iterations&quot;</font><font class="text"> ) ;
+   exp-&gt;test_data( </font><font class="string">&quot;nb_inner_iterations&quot;</font><font class="text">, </font><font class="string">&quot;nb_inner_iterations&gt;0&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; sweep = exp-&gt;string_data( </font><font class="string">&quot;sweep&quot;</font><font class="text"> ) ;
+   exp-&gt;test_data_in( </font><font class="string">&quot;sweep&quot;</font><font class="text">, </font><font class="string">&quot;symmetric,forward,backward&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw3">LA_SOR_PC</font><font class="text">* result =
+      </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">LA_SOR_PC</font><font class="text">( a_owner,
+                     smallest_inverted_item,
+                     omega,
+                     ( sweep == </font><font class="string">&quot;forward&quot;</font><font class="text"> || sweep == </font><font class="string">&quot;symmetric&quot;</font><font class="text"> ),
+                     ( sweep == </font><font class="string">&quot;backward&quot;</font><font class="text"> || sweep == </font><font class="string">&quot;symmetric&quot;</font><font class="text"> ),
+                     nb_iters ) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_POST( result, a_owner, exp ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_SOR_PC</font><font class="text">*
+</font><font class="kw3">LA_SOR_PC</font><font class="text">:: create( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                    </font><font class="kw1">double</font><font class="text"> omega,
+                    </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; sweep,
+                    </font><font class="kw2">size_t</font><font class="text"> nb_iters,
+                    </font><font class="kw1">double</font><font class="text"> smallest_inverted_item )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_SOR_PC:: create&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( omega&gt;0 &amp;&amp; omega&lt;2 ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( sweep == </font><font class="string">&quot;forward&quot;</font><font class="text"> ||
+                  sweep == </font><font class="string">&quot;backward&quot;</font><font class="text"> ||
+                  sweep == </font><font class="string">&quot;symmetric&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( nb_iters&gt;0 ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( smallest_inverted_item &gt; 0 ) ;
+
+   </font><font class="kw3">LA_SOR_PC</font><font class="text">* result =
+      </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">LA_SOR_PC</font><font class="text">( a_owner,
+                     smallest_inverted_item,
+                     omega,
+                     ( sweep == </font><font class="string">&quot;forward&quot;</font><font class="text"> || sweep == </font><font class="string">&quot;symmetric&quot;</font><font class="text"> ),
+                     ( sweep == </font><font class="string">&quot;backward&quot;</font><font class="text"> || sweep == </font><font class="string">&quot;symmetric&quot;</font><font class="text"> ),
+                     nb_iters ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;owner() == a_owner ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( !result-&gt;is_valid() ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_SOR_PC</font><font class="text">:: </font><font class="kw3">LA_SOR_PC</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                       </font><font class="kw1">double</font><font class="text"> smallest_inverted_item,
+                       </font><font class="kw1">double</font><font class="text"> omega,
+                       </font><font class="kw1">bool</font><font class="text"> forward,
+                 </font><font class="kw1">bool</font><font class="text"> backward,
+                       </font><font class="kw2">size_t</font><font class="text"> nb_iters )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">LA_Preconditioner</font><font class="text">( a_owner )
+   , MIN_DIAG( smallest_inverted_item )
+   , OMEGA( omega )
+   , FORWARD( forward )
+   , BACKWARD( backward )
+   , NB_ITERS( nb_iters )
+   , OMEGA_INV_DIAG( </font><font class="kw3">LA_SeqVector</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, 0 ) )
+   , MAT( 0 )
+   , SOLVE_OK( </font><font class="kw1">false</font><font class="text"> )
+{
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_SOR_PC</font><font class="text">:: ~</font><font class="kw3">LA_SOR_PC</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_SOR_PC</font><font class="text">*
+</font><font class="kw3">LA_SOR_PC</font><font class="text">:: create_clone( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_SOR_PC:: create_clone&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw3">LA_SOR_PC</font><font class="text">* result = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">LA_SOR_PC</font><font class="text">(
+               a_owner, MIN_DIAG, OMEGA, FORWARD, BACKWARD, NB_ITERS ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( create_clone_POST( result, a_owner ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_SOR_PC</font><font class="text">:: is_valid( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">return</font><font class="text">( MAT != 0 ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw2">size_t
+</font><font class="kw3">LA_SOR_PC</font><font class="text">:: dimension( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_SOR_PC:: dimension&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( dimension_PRE() ) ;
+
+   </font><font class="kw1">return</font><font class="text">( MAT-&gt;nb_rows() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_SOR_PC</font><font class="text">:: build( </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* mat )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_SOR_PC:: build&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( build_PRE( mat ) ) ;
+   
+   MAT = </font><font class="kw1">dynamic_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;(mat) ;
+   </font><font class="kw1">if</font><font class="text">( MAT == 0 )
+   {
+      </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_internal(
+         </font><font class="string">&quot;*** LA_SOR_PC error:\n&quot;
+</font><font class="text">         </font><font class="string">&quot;    a matrix of type \&quot;</font><font class="kw3">LA_SeqMatrix</font><font class="text">\</font><font class="string">&quot; is expected&quot;</font><font class="text"> ) ;
+   }
+
+   </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> n = MAT-&gt;nb_rows() ;
+
+   </font><font class="kw1">if</font><font class="text">( OMEGA_INV_DIAG-&gt;nb_rows() != n )
+   {
+      OMEGA_INV_DIAG-&gt;re_initialize( n ) ;
+   }
+   MAT-&gt;extract_diag( OMEGA_INV_DIAG ) ;
+   </font><font class="kw1">double</font><font class="text">* ptr_omega_inv_diag = OMEGA_INV_DIAG-&gt;data() ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;n ; ++i )
+   {
+      </font><font class="kw1">double</font><font class="text"> d = ptr_omega_inv_diag[i] ;
+      </font><font class="kw1">if</font><font class="text">( </font><font class="kw3">PEL</font><font class="text">::abs(d) &lt;= MIN_DIAG )
+      {
+         d = 1. ;
+         LA_SOR_PC_ERROR::n0( i ) ;
+      }
+      ptr_omega_inv_diag[i] = OMEGA/d ;
+   }
+   
+   SOLVE_OK = </font><font class="kw1">false</font><font class="text"> ;
+   
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( build_POST( mat ) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( is_valid() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_SOR_PC</font><font class="text">:: unbuild( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{   
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_SOR_PC:: unbuild&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( unbuild_PRE() ) ;
+
+   MAT = 0 ;
+   
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( unbuild_POST() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_SOR_PC</font><font class="text">:: solve( </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* rhs, </font><font class="kw3">LA_Vector</font><font class="text">* sol )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_SOR_PC:: solve&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( solve_PRE( rhs, sol ) ) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( </font><font class="kw1">dynamic_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;( rhs ) != 0 ) ;
+   </font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* seq_rhs = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;( rhs ) ;
+   
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( </font><font class="kw1">dynamic_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqVector</font><font class="text">*&gt;( sol ) != 0 ) ;
+   </font><font class="kw3">LA_SeqVector</font><font class="text">* seq_sol = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqVector</font><font class="text">*&gt;( sol ) ;
+
+   </font><font class="kw3">LA_SeqMatrix</font><font class="text">::relaxation_mode </font><font class="kw1">const</font><font class="text"> m =
+      ( FORWARD &amp;&amp; BACKWARD ? </font><font class="kw3">LA_SeqMatrix</font><font class="text">::symmetric
+                            : ( FORWARD ? </font><font class="kw3">LA_SeqMatrix</font><font class="text">::forward
+                                        : </font><font class="kw3">LA_SeqMatrix</font><font class="text">::backward ) ) ;
+   
+   seq_sol-&gt;nullify() ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> iter=0 ; iter&lt;NB_ITERS ; ++iter )
+   {
+      MAT-&gt;relax( OMEGA, m, OMEGA_INV_DIAG, seq_rhs, seq_sol ) ;
+   }
+   
+   SOLVE_OK = </font><font class="kw1">true</font><font class="text"> ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( solve_POST( rhs, sol ) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( successful_solve() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_SOR_PC</font><font class="text">:: successful_solve( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">return</font><font class="text">( SOLVE_OK ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_SOR_PC</font><font class="text">:: print_more( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostream</font><font class="text">&amp; os, </font><font class="kw2">size_t</font><font class="text"> indent_width ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> s( indent_width, </font><font class="string">' '</font><font class="text">) ;
+
+   os &lt;&lt; s &lt;&lt; </font><font class="string">&quot;omega: &quot;</font><font class="text"> &lt;&lt; OMEGA &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   os &lt;&lt; s &lt;&lt; </font><font class="string">&quot;smallest_inverted_item: &quot;</font><font class="text"> &lt;&lt; MIN_DIAG &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   os &lt;&lt; s &lt;&lt; </font><font class="string">&quot;nb_inner_iterations: &quot;</font><font class="text"> &lt;&lt; NB_ITERS &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   os &lt;&lt; s &lt;&lt; </font><font class="string">&quot;sweed: &quot;
+</font><font class="text">      &lt;&lt; ( FORWARD &amp;&amp; BACKWARD ? </font><font class="string">&quot;\&quot;</font><font class="text">symmetric\</font><font class="string">&quot;&quot;
+</font><font class="text">                               : ( FORWARD ? </font><font class="string">&quot;\&quot;</font><font class="text">forward\</font><font class="string">&quot;&quot;</font><font class="text"> : </font><font class="string">&quot;\&quot;</font><font class="text">backward\</font><font class="string">&quot;&quot;</font><font class="text"> ) )
+      &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+}
+
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="kw1">void</font><font class="text"> 
+LA_SOR_PC_ERROR:: n0( </font><font class="kw1">int</font><font class="text"> i )
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> mesg ;
+   mesg &lt;&lt; </font><font class="string">&quot;*** SOR preconditioner :&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;***   vanishing diagonal term at line &quot;</font><font class="text"> &lt;&lt; i &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;display_info( mesg.str() ) ;
+}
+
+</font>
+</pre>
+</body>
+</html>

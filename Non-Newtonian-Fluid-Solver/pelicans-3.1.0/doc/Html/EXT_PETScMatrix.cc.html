@@ -1,0 +1,1132 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>EXT_PETScMatrix.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="EXT_PETScMatrix.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="LApack-tree.html"><span>Tree</span></a>
+    <a href="EXT_PETScMatrix.html"><span>Class</span></a>
+    <a href="EXT_PETScMatrix.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="LApack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated
+ *  reusable components, whose purpose is to simplify the task of developing
+ *  softwares of numerical mathematics and scientific computing.
+ *
+ *  This software is governed by the CeCILL-C license under French law and
+ *  abiding by the rules of distribution of free software. You can use, modify
+ *  and/or redistribute the software under the terms of the CeCILL-C license
+ *  as circulated by CEA, CNRS and INRIA at the following URL
+ *  &quot;http://www.cecill.info&quot;.
+ *
+ *  As a counterpart to the access to the source code and rights to copy,
+ *  modify and redistribute granted by the license, users are provided only
+ *  with a limited warranty and the software's author, the holder of the
+ *  economic rights, and the successive licensors have only limited liability.
+ *
+ *  In this respect, the user's attention is drawn to the risks associated
+ *  with loading, using, modifying and/or developing or reproducing the
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also
+ *  therefore means that it is reserved for developers and experienced
+ *  professionals having in-depth computer knowledge. Users are therefore
+ *  encouraged to load and test the software's suitability as regards their
+ *  requirements in conditions enabling the security of their systems and/or
+ *  data to be ensured and, more generally, to use and operate it in the same
+ *  conditions as regards security.
+ *
+ *  The fact that you are presently reading this means that you have had
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_assertions</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Communicator</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_DistributedPartition</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Exec</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_MatrixIterator</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_SeqMatrix</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_PelMatrix</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">EXT_PETScMatrix</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">EXT_PETScAPI</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">EXT_PETScImplementation</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;iomanip&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;iostream&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;fstream&gt;
+
+</font><font class="comment">//                                      sequential  symmetric   block
+</font><font class="kw3">EXT_PETScMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">EXT_PETScMatrix</font><font class="text">:: PROTOTYPE_MPIAIJ =
+   </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">EXT_PETScMatrix</font><font class="text">(</font><font class="string">&quot;PETSc_MPIAIJ&quot;</font><font class="text">,      </font><font class="kw1">false</font><font class="text">,     </font><font class="kw1">false</font><font class="text">,   </font><font class="kw1">false</font><font class="text"> ) ;
+
+</font><font class="kw3">EXT_PETScMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">EXT_PETScMatrix</font><font class="text">:: PROTOTYPE_MPISBAIJ =
+   </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">EXT_PETScMatrix</font><font class="text">(</font><font class="string">&quot;PETSc_MPISBAIJ&quot;</font><font class="text">,    </font><font class="kw1">false</font><font class="text">,      </font><font class="kw1">true</font><font class="text">,    </font><font class="kw1">true</font><font class="text"> ) ;
+
+</font><font class="kw3">EXT_PETScMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">EXT_PETScMatrix</font><font class="text">:: PROTOTYPE_MPIBAIJ =
+   </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">EXT_PETScMatrix</font><font class="text">(</font><font class="string">&quot;PETSc_MPIBAIJ&quot;</font><font class="text">,     </font><font class="kw1">false</font><font class="text">,     </font><font class="kw1">false</font><font class="text">,    </font><font class="kw1">true</font><font class="text"> ) ;
+
+</font><font class="kw3">EXT_PETScMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">EXT_PETScMatrix</font><font class="text">:: PROTOTYPE_SeqSBAIJ =
+   </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">EXT_PETScMatrix</font><font class="text">(</font><font class="string">&quot;PETSc_SeqSBAIJ&quot;</font><font class="text">,     </font><font class="kw1">true</font><font class="text">,      </font><font class="kw1">true</font><font class="text">,    </font><font class="kw1">true</font><font class="text"> ) ;
+
+</font><font class="kw3">EXT_PETScMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">EXT_PETScMatrix</font><font class="text">:: PROTOTYPE_SeqAIJ =
+   </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">EXT_PETScMatrix</font><font class="text">(</font><font class="string">&quot;PETSc_SeqAIJ&quot;</font><font class="text">,       </font><font class="kw1">true</font><font class="text">,     </font><font class="kw1">false</font><font class="text">,   </font><font class="kw1">false</font><font class="text"> ) ;
+
+</font><font class="kw3">EXT_PETScMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">EXT_PETScMatrix</font><font class="text">:: PROTOTYPE_AIJ =
+   </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">EXT_PETScMatrix</font><font class="text">(</font><font class="string">&quot;PETSc_AIJ&quot;</font><font class="text">,          </font><font class="kw1">true</font><font class="text">,     </font><font class="kw1">false</font><font class="text">,   </font><font class="kw1">false</font><font class="text"> ) ;
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">EXT_PETScMatrix</font><font class="text">:: </font><font class="kw3">EXT_PETScMatrix</font><font class="text">( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_name,
+                                   </font><font class="kw1">bool</font><font class="text"> sequential,
+                                   </font><font class="kw1">bool</font><font class="text"> symmetric,
+                                   </font><font class="kw1">bool</font><font class="text"> block )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">LA_Matrix</font><font class="text">( a_name )
+   , EXP( 0 )
+   , DESTROY_ON_EXIT( </font><font class="kw1">true</font><font class="text"> )
+   , SYMMETRIC( symmetric )
+   , SEQ( sequential )
+   , BLOCK( block )
+   , HAS_OPT( </font><font class="kw1">false</font><font class="text"> )
+   , VERB( </font><font class="kw1">false</font><font class="text"> )
+   , MATRIX( 0 )
+   , NB_ROWS( 0 )
+   , NB_COLS( 0 )
+   , ROW_DIST( 0 )
+   , COL_DIST( 0 )
+   , UPPER( </font><font class="kw1">false</font><font class="text"> )
+{
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( distribution_strategy() == </font><font class="kw3">LA</font><font class="text">::InvalidDistribution ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">EXT_PETScMatrix</font><font class="text">*
+</font><font class="kw3">EXT_PETScMatrix</font><font class="text">:: create_replica( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                  </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;EXT_PETScMatrix:: create_replica&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( create_replica_PRE( a_owner, exp ) ) ;
+
+   </font><font class="kw3">EXT_PETScMatrix</font><font class="text">* result = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">EXT_PETScMatrix</font><font class="text">( a_owner, exp, </font><font class="kw1">this</font><font class="text"> ) ;
+
+   </font><font class="kw1">if</font><font class="text">( </font><font class="kw1">this</font><font class="text">==PROTOTYPE_AIJ )
+   {
+      </font><font class="kw1">if</font><font class="text">( </font><font class="kw3">PEL_Exec</font><font class="text">::communicator()-&gt;nb_ranks() &gt; 1 )
+      {
+         result-&gt;SEQ = </font><font class="kw1">false</font><font class="text"> ;
+      }
+   }
+
+   </font><font class="kw1">if</font><font class="text">( SEQ )
+   {
+      </font><font class="kw3">PEL_ASSERT</font><font class="text">( result-&gt;distribution_strategy() == </font><font class="kw3">LA</font><font class="text">::NoDistribution ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      </font><font class="kw3">PEL_ASSERT</font><font class="text">( result-&gt;distribution_strategy() == </font><font class="kw3">LA</font><font class="text">::FromGlobalSize ) ;
+      </font><font class="comment">//la strategie LA::FromLocalSize est disponible dans PETSc
+</font><font class="text">      </font><font class="comment">//mais pas implemente ici
+</font><font class="text">   }
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( create_replica_POST( result, a_owner, exp ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">EXT_PETScMatrix</font><font class="text">:: </font><font class="kw3">EXT_PETScMatrix</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp,
+                                   </font><font class="kw3">EXT_PETScMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* other  )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">LA_Matrix</font><font class="text">( a_owner, other-&gt;name(),
+                other-&gt;SEQ ? </font><font class="kw3">LA</font><font class="text">::NoDistribution : </font><font class="kw3">LA</font><font class="text">::FromGlobalSize )
+                </font><font class="comment">// the stategy LA::FromLocalSize is available in PETSc
+</font><font class="text">                </font><font class="comment">// but not implemented here
+</font><font class="text">   , EXP( exp-&gt;create_clone( </font><font class="kw1">this</font><font class="text"> ) )
+   , DESTROY_ON_EXIT(
+      exp-&gt;has_entry( </font><font class="string">&quot;destroy&quot;</font><font class="text">) ?  exp-&gt;bool_data( </font><font class="string">&quot;destroy&quot;</font><font class="text"> ) : </font><font class="kw1">true</font><font class="text"> )
+   , SYMMETRIC( other-&gt;SYMMETRIC )
+   , SEQ( other-&gt;SEQ )
+   , BLOCK( other-&gt;BLOCK )
+   , HAS_OPT( </font><font class="kw1">false</font><font class="text"> )
+   , VERB( exp-&gt;has_entry( </font><font class="string">&quot;verbose&quot;</font><font class="text"> ) ? exp-&gt;bool_data( </font><font class="string">&quot;verbose&quot;</font><font class="text"> ) : </font><font class="kw1">false</font><font class="text"> )
+   , MATRIX( 0 )
+   , NB_ROWS( 0 )
+   , NB_COLS( 0 )
+   , ROW_DIST( </font><font class="kw3">PEL_DistributedPartition</font><font class="text">::create( </font><font class="kw1">this</font><font class="text"> ) )
+   , COL_DIST( </font><font class="kw3">PEL_DistributedPartition</font><font class="text">::create( </font><font class="kw1">this</font><font class="text"> ) )
+   , UPPER( </font><font class="kw1">false</font><font class="text"> )
+{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;EXT_PETScMatrix:: EXT_PETScMatrix&quot;</font><font class="text"> ) ;
+
+   HAS_OPT = </font><font class="kw3">EXT_PETScAPI</font><font class="text">::parse_options( exp, VERB ) ;
+   ROW_DIST-&gt;set_local_number( 0 ) ;
+   COL_DIST-&gt;set_local_number( 0 ) ;
+   set_unsynchronized_state( </font><font class="kw3">LA</font><font class="text">::NotSync_undef ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( state() == </font><font class="kw3">LA</font><font class="text">::NotSync_undef ) ;
+</font><font class="comment">//   PEL_CHECK_POST( distribution_strategy() == LA::InvalidDistribution ) ;
+</font><font class="text">}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">EXT_PETScMatrix</font><font class="text">*
+</font><font class="kw3">EXT_PETScMatrix</font><font class="text">:: create_matrix( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;EXT_PETScMatrix:: create_matrix&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( create_matrix_PRE( a_owner ) ) ;
+
+   </font><font class="kw3">EXT_PETScMatrix</font><font class="text">* result = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">EXT_PETScMatrix</font><font class="text">( a_owner, </font><font class="kw1">this</font><font class="text"> ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( create_matrix_POST( result, a_owner ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">EXT_PETScMatrix</font><font class="text">:: </font><font class="kw3">EXT_PETScMatrix</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                   </font><font class="kw3">EXT_PETScMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* other )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">LA_Matrix</font><font class="text">( a_owner, other-&gt;name(), other-&gt;distribution_strategy() )
+   , EXP( other-&gt;EXP-&gt;create_clone( </font><font class="kw1">this</font><font class="text"> ) )
+   , DESTROY_ON_EXIT( other-&gt;DESTROY_ON_EXIT )
+   , SYMMETRIC( other-&gt;SYMMETRIC )
+   , SEQ( other-&gt;SEQ )
+   , BLOCK( other-&gt;BLOCK )
+   , HAS_OPT( other-&gt;HAS_OPT )
+   , VERB( other-&gt;VERB )
+   , MATRIX( 0 )
+   , NB_ROWS( 0 )
+   , NB_COLS( 0 )
+   , ROW_DIST( </font><font class="kw3">PEL_DistributedPartition</font><font class="text">::create( </font><font class="kw1">this</font><font class="text"> ) )
+   , COL_DIST( </font><font class="kw3">PEL_DistributedPartition</font><font class="text">::create( </font><font class="kw1">this</font><font class="text"> ) )
+   , UPPER( </font><font class="kw1">false</font><font class="text"> )
+{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;EXT_PETScMatrix:: EXT_PETScMatrix&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( !other-&gt;is_a_prototype() ) ;
+
+   re_initialize( other-&gt;nb_rows(), other-&gt;nb_cols() ) ;
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( state() == </font><font class="kw3">LA</font><font class="text">::NotSync_undef ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( distribution_strategy() == other-&gt;distribution_strategy() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">EXT_PETScMatrix</font><font class="text">:: ~</font><font class="kw3">EXT_PETScMatrix</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;EXT_PETScMatrix:: ~EXT_PETScMatrix&quot;</font><font class="text"> ) ;
+   destroy_matrix() ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">EXT_PETScVector</font><font class="text">*
+</font><font class="kw3">EXT_PETScMatrix</font><font class="text">:: create_vector( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;EXT_PETScMatrix:: create_vector&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( create_vector_PRE( a_owner ) ) ;
+
+   </font><font class="kw3">EXT_PETScVector</font><font class="text">* result =
+                     </font><font class="kw3">EXT_PETScVector</font><font class="text">::create( a_owner, SEQ, NB_ROWS ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( create_vector_POST( result, a_owner ) ) ;
+   </font><font class="kw1">return</font><font class="text"> result ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">EXT_PETScMatrix</font><font class="text">:: re_initialize( </font><font class="kw2">size_t</font><font class="text"> a_nb_rows, </font><font class="kw2">size_t</font><font class="text"> a_nb_cols,
+                                   </font><font class="kw2">size_t</font><font class="text"> a_nb_local_rows,
+                                   </font><font class="kw2">size_t</font><font class="text"> a_nb_local_cols )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;EXT_PETScMatrix:: re_initialize&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( re_initialize_PRE( a_nb_rows, a_nb_cols,
+                                     a_nb_local_rows, a_nb_local_cols ) ) ;
+
+   NB_ROWS = a_nb_rows ;
+   NB_COLS = a_nb_cols ;
+   build( </font><font class="kw3">intVector</font><font class="text">( 0 ) ) ;
+   set_unsynchronized_state( </font><font class="kw3">LA</font><font class="text">::NotSync_undef ) ;
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( re_initialize_POST( a_nb_rows, a_nb_cols,
+                                       a_nb_local_rows, a_nb_local_cols ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_Implementation</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">EXT_PETScMatrix</font><font class="text">:: implementation( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;EXT_PETScMatrix:: implementation&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw3">LA_Implementation</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result = </font><font class="kw3">EXT_PETScImplementation</font><font class="text">::object() ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( implementation_POST( result ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">EXT_PETScMatrix</font><font class="text">:: is_symmetric( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;EXT_PETScMatrix:: is_symmetric&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">bool</font><font class="text"> result = SYMMETRIC ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( is_symmetric_POST( result ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">EXT_PETScMatrix</font><font class="text">:: is_desynchronizable( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;EXT_PETScMatrix:: is_desynchronizable&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">bool</font><font class="text"> result = </font><font class="kw1">true</font><font class="text"> ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result == </font><font class="kw1">true</font><font class="text"> ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">EXT_PETScMatrix</font><font class="text">:: start_local_modifs( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;EXT_PETScMatrix:: start_local_modifs&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( start_local_modifs_PRE() ) ;
+
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> mesg ;
+   mesg += </font><font class="string">&quot;*** EXT_PETScMatrix:: start_local_modifs&quot;</font><font class="text"> </font><font class="string">&quot;\n&quot;</font><font class="text"> ;
+   mesg += </font><font class="string">&quot;    PETSc does not allow this functionality.&quot;</font><font class="text"> ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_internal( mesg ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( start_local_modifs_POST() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">EXT_PETScMatrix</font><font class="text">:: stop_local_modifs( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;EXT_PETScMatrix:: stop_local_modifs&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( stop_local_modifs_PRE() ) ;
+
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> mesg ;
+   mesg += </font><font class="string">&quot;*** EXT_PETScMatrix:: stop_local_modifs&quot;</font><font class="text"> </font><font class="string">&quot;\n&quot;</font><font class="text"> ;
+   mesg += </font><font class="string">&quot;    PETSc does not allow this functionality.&quot;</font><font class="text"> ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_internal( mesg ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( stop_local_modifs_POST() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">EXT_PETScMatrix</font><font class="text">:: synchronize( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;EXT_PETScMatrix:: synchronize&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( synchronize_PRE() ) ;
+
+   PETSc_do( MatAssemblyBegin( matrix(), MAT_FINAL_ASSEMBLY ) ) ;
+   PETSc_do( MatAssemblyEnd( matrix(), MAT_FINAL_ASSEMBLY ) ) ;
+   </font><font class="kw3">LA_Matrix</font><font class="text">::synchronize() ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( is_assembled() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( synchronize_POST() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_DistributedPartition</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">EXT_PETScMatrix</font><font class="text">:: row_distribution( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;EXT_PETScMatrix:: row_distribution&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( row_distribution_PRE() ) ;
+
+   </font><font class="kw3">PEL_DistributedPartition</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result = ROW_DIST ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( row_distribution_POST( result ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_DistributedPartition</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">EXT_PETScMatrix</font><font class="text">:: col_distribution( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;EXT_PETScMatrix:: col_distribution&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( col_distribution_PRE() ) ;
+
+   </font><font class="kw3">PEL_DistributedPartition</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result = COL_DIST ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( col_distribution_POST( result ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_SeqMatrix</font><font class="text">*
+</font><font class="kw3">EXT_PETScMatrix</font><font class="text">:: create_local_matrix( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;EXT_PETScMatrix:: create_local_matrix&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( create_local_matrix_PRE(a_owner) ) ;
+
+   </font><font class="kw3">LA_PelMatrix</font><font class="text">* result = </font><font class="kw3">LA_PelMatrix</font><font class="text">::create( a_owner, NB_ROWS, NB_COLS ) ;
+
+   PetscInt i0, i1 ;
+   PETSc_do( MatGetOwnershipRange( matrix(), &amp;i0, &amp;i1 ) ) ;
+
+   PetscInt nbcols = 0 ;
+   </font><font class="kw1">const</font><font class="text"> PetscInt* cols = 0 ;
+   </font><font class="kw1">const</font><font class="text"> PetscScalar* values = 0 ;
+   </font><font class="kw1">if</font><font class="text">( UPPER ) PETSc_do( MatGetRowUpperTriangular( matrix() ) ) ;
+   </font><font class="kw1">for</font><font class="text">( PetscInt i=i0 ; i&lt;i1 ; ++i )
+   {
+      PETSc_do( MatGetRow( matrix(), i, &amp;nbcols, &amp;cols, &amp;values ) ) ;
+      </font><font class="kw1">for</font><font class="text">( PetscInt j=0 ; j&lt;nbcols ; ++j )
+      {
+         result-&gt;add_to_item( (</font><font class="kw2">size_t</font><font class="text">) i, (</font><font class="kw2">size_t</font><font class="text">) cols[j],
+                              (</font><font class="kw1">double</font><font class="text">) values[j] ) ;
+      }
+      PETSc_do( MatRestoreRow( matrix(), i, &amp;nbcols, &amp;cols, &amp;values ) ) ;
+   }
+   </font><font class="kw1">if</font><font class="text">( UPPER ) PETSc_do( MatRestoreRowUpperTriangular( matrix() ) ) ;
+
+   result-&gt;synchronize() ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( create_local_matrix_POST(result, a_owner)  ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw2">size_t
+</font><font class="kw3">EXT_PETScMatrix</font><font class="text">:: nb_stored_items( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">(</font><font class="string">&quot;EXT_PETScMatrix:: nb_stored_items&quot;</font><font class="text">) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( nb_stored_items_PRE() ) ;
+
+   MatInfo info ;
+   PETSc_do( MatGetInfo(matrix(),MAT_LOCAL,&amp;info) ) ;
+
+   </font><font class="kw1">return</font><font class="text">( (</font><font class="kw2">size_t</font><font class="text">)info.nz_allocated ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw2">size_t
+</font><font class="kw3">EXT_PETScMatrix</font><font class="text">:: nb_rows( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">return</font><font class="text">( NB_ROWS ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw2">size_t
+</font><font class="kw3">EXT_PETScMatrix</font><font class="text">:: nb_cols( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">return</font><font class="text">( NB_COLS ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">EXT_PETScMatrix</font><font class="text">:: extract_diag( </font><font class="kw3">LA_Vector</font><font class="text">* diag ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;EXT_PETScMatrix:: extract_diag&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( extract_diag_PRE( diag ) ) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( </font><font class="kw1">dynamic_cast</font><font class="text">&lt;</font><font class="kw3">EXT_PETScVector</font><font class="text">* &gt;( diag ) != 0 ) ;
+   </font><font class="kw3">EXT_PETScVector</font><font class="text">* pvec = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">EXT_PETScVector</font><font class="text">* &gt;( diag ) ;
+   PETSc_do( MatGetDiagonal( matrix(), pvec-&gt;</font><font class="kw2">vector</font><font class="text">() ) ) ;
+   diag-&gt;synchronize() ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( extract_diag_POST( diag )  ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">EXT_PETScMatrix</font><font class="text">:: multiply_vec_then_add( </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* x, </font><font class="kw3">LA_Vector</font><font class="text">* y,
+                                         </font><font class="kw1">double</font><font class="text"> alpha, </font><font class="kw1">double</font><font class="text"> beta ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;EXT_PETScMatrix:: multiply_vec_then_add&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( multiply_vec_then_add_PRE( x, y, alpha, beta ) ) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( </font><font class="kw1">dynamic_cast</font><font class="text">&lt;</font><font class="kw3">EXT_PETScVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* &gt;( x ) != 0 ) ;
+   </font><font class="kw3">EXT_PETScVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* px = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">EXT_PETScVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* &gt;( x ) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( </font><font class="kw1">dynamic_cast</font><font class="text">&lt;</font><font class="kw3">EXT_PETScVector</font><font class="text">* &gt;( y ) != 0 ) ;
+   </font><font class="kw3">EXT_PETScVector</font><font class="text">* py = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">EXT_PETScVector</font><font class="text">* &gt;( y ) ;
+
+   </font><font class="kw1">if</font><font class="text">( beta==0.0 )
+   {
+      py-&gt;synchronize() ;</font><font class="comment">//??
+</font><font class="text">      PETSc_do( MatMult( matrix(), px-&gt;</font><font class="kw2">vector</font><font class="text">(), py-&gt;</font><font class="kw2">vector</font><font class="text">() ) ) ;
+      py-&gt;scale( alpha ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      py-&gt;scale( beta/alpha ) ;
+      PETSc_do( MatMultAdd( matrix(), px-&gt;</font><font class="kw2">vector</font><font class="text">(), py-&gt;</font><font class="kw2">vector</font><font class="text">(),
+                            py-&gt;</font><font class="kw2">vector</font><font class="text">() ) ) ;
+      py-&gt;scale( alpha ) ;
+   }
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( multiply_vec_then_add_POST( y ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">EXT_PETScMatrix</font><font class="text">:: tr_multiply_vec_then_add( </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* x, </font><font class="kw3">LA_Vector</font><font class="text">* y,
+                                            </font><font class="kw1">double</font><font class="text"> alpha, </font><font class="kw1">double</font><font class="text"> beta ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;EXT_PETScMatrix:: tr_multiply_vec_then_add&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( tr_multiply_vec_then_add_PRE( x, y, alpha, beta ) ) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( </font><font class="kw1">dynamic_cast</font><font class="text">&lt;</font><font class="kw3">EXT_PETScVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* &gt;( x ) != 0 ) ;
+   </font><font class="kw3">EXT_PETScVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* px = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">EXT_PETScVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* &gt;( x ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( </font><font class="kw1">dynamic_cast</font><font class="text">&lt;</font><font class="kw3">EXT_PETScVector</font><font class="text">* &gt;( y ) != 0 ) ;
+   </font><font class="kw3">EXT_PETScVector</font><font class="text">* py = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">EXT_PETScVector</font><font class="text">* &gt;( y ) ;
+
+   </font><font class="kw1">if</font><font class="text">( beta==0.0 )
+   {
+      py-&gt;synchronize() ;</font><font class="comment">//???
+</font><font class="text">      PETSc_do( MatMultTranspose( matrix(), px-&gt;</font><font class="kw2">vector</font><font class="text">(), py-&gt;</font><font class="kw2">vector</font><font class="text">() ) ) ;
+      py-&gt;scale( alpha ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      py-&gt;scale( beta/alpha ) ;
+      PETSc_do( MatMultTransposeAdd( matrix(), px-&gt;</font><font class="kw2">vector</font><font class="text">(), py-&gt;</font><font class="kw2">vector</font><font class="text">(),
+                                     py-&gt;</font><font class="kw2">vector</font><font class="text">() ) ) ;
+      py-&gt;scale( alpha ) ;
+   }
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( tr_multiply_vec_then_add_POST( y ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">EXT_PETScMatrix</font><font class="text">:: scale_as_diag_mat_mat( </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* lvec )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;EXT_PETScMatrix:: scale_as_diag_mat_mat LA_Vector&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( scale_as_diag_mat_mat_PRE( lvec ) ) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( </font><font class="kw1">dynamic_cast</font><font class="text">&lt;</font><font class="kw3">EXT_PETScVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* &gt;( lvec ) != 0 ) ;
+   </font><font class="kw3">EXT_PETScVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* plvec =
+                       </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">EXT_PETScVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* &gt;( lvec ) ;
+
+   PETSc_do( MatDiagonalScale( matrix(), plvec-&gt;</font><font class="kw2">vector</font><font class="text">(), PETSC_NULL ) ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( scale_as_diag_mat_mat_POST() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">EXT_PETScMatrix</font><font class="text">:: scale_as_mat_diag_mat( </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* rvec )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;EXT_PETScMatrix:: scale_as_mat_diag_mat &quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( scale_as_mat_diag_mat_PRE( rvec ) ) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( </font><font class="kw1">dynamic_cast</font><font class="text">&lt;</font><font class="kw3">EXT_PETScVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* &gt;( rvec ) != 0 ) ;
+   </font><font class="kw3">EXT_PETScVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* prvec =
+                       </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">EXT_PETScVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* &gt;( rvec ) ;
+
+   PETSc_do( MatDiagonalScale( matrix(), PETSC_NULL, prvec-&gt;</font><font class="kw2">vector</font><font class="text">() ) ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( scale_as_mat_diag_mat_POST() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">EXT_PETScMatrix</font><font class="text">:: add_to_diag( </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* vec )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;EXT_PETScMatrix:: add_to_diag LA_Vector&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( add_to_diag_PRE( vec ) ) ;
+   </font><font class="kw3">PEL_SAVEOLD</font><font class="text">( </font><font class="kw3">LA</font><font class="text">::SyncState, state, state() ) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( </font><font class="kw1">dynamic_cast</font><font class="text">&lt;</font><font class="kw3">EXT_PETScVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* &gt;( vec ) != 0 ) ;
+   </font><font class="kw3">EXT_PETScVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* pvec = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">EXT_PETScVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* &gt;( vec ) ;
+
+   PETSc_do( MatDiagonalSet( matrix(), pvec-&gt;</font><font class="kw2">vector</font><font class="text">(), ADD_VALUES ) ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( add_to_diag_POST( </font><font class="kw3">OLD</font><font class="text">( state ) ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">EXT_PETScMatrix</font><font class="text">:: </font><font class="kw2">set</font><font class="text">( </font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* A )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;EXT_PETScMatrix:: set LA_SeqMatrix&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( A != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   NB_ROWS = (</font><font class="kw1">int</font><font class="text">) A-&gt;nb_rows() ;
+   NB_COLS = (</font><font class="kw1">int</font><font class="text">) A-&gt;nb_cols() ;
+
+   </font><font class="comment">// Number of no-zero values par line :
+</font><font class="text">   </font><font class="kw3">LA_MatrixIterator</font><font class="text">* it = A-&gt;create_stored_item_iterator(0) ;
+   </font><font class="kw3">intVector</font><font class="text"> nnz( nb_rows() ) ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;nb_rows() ; i++ )
+   {
+      </font><font class="kw1">int</font><font class="text"> nb = 0 ;
+      </font><font class="kw1">for</font><font class="text">( it-&gt;start_row_items(i) ; it-&gt;is_valid() ; it-&gt;go_next() )
+      {
+         </font><font class="kw1">if</font><font class="text">( !SYMMETRIC || it-&gt;col()&gt;= (</font><font class="kw2">size_t</font><font class="text">) i ) nb++ ;
+      }
+      nnz( i ) = nb ;
+   }
+
+   build( nnz ) ;
+   set_unsynchronized_state( </font><font class="kw3">LA</font><font class="text">::NotSync_undef ) ;
+
+   </font><font class="comment">// Copy A into the new PETSc matrix
+</font><font class="text">   </font><font class="kw1">int</font><font class="text"> first = (</font><font class="kw1">int</font><font class="text">) row_distribution()-&gt;first_local_index() ;
+   </font><font class="kw1">int</font><font class="text"> last = (</font><font class="kw1">int</font><font class="text">) row_distribution()-&gt;local_index_limit() ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw1">int</font><font class="text"> i=first ; i&lt;last ; ++i)
+   {
+      </font><font class="kw1">int</font><font class="text"> nb = nnz( i ) ;
+      </font><font class="kw1">double</font><font class="text">* val = </font><font class="kw1">new</font><font class="text"> </font><font class="kw1">double</font><font class="text"> [nb] ;
+      </font><font class="kw1">int</font><font class="text">* col = </font><font class="kw1">new</font><font class="text"> </font><font class="kw1">int</font><font class="text"> [nb] ;
+      nb=0 ;
+      </font><font class="kw1">for</font><font class="text">( it-&gt;start_row_items( i ) ; it-&gt;is_valid() ; it-&gt;go_next() )
+      {
+         </font><font class="kw1">if</font><font class="text">( !SYMMETRIC || it-&gt;col() &gt;= (</font><font class="kw2">size_t</font><font class="text">) i )
+         {
+            val[nb] = it-&gt;item() ;
+            col[nb] = it-&gt;col() ;
+            nb++ ;
+         }
+      }
+      </font><font class="kw3">PEL_CHECK</font><font class="text">( nb == nnz( i ) ) ;
+      MatSetValues( matrix(), 1, &amp;i, nb, col, val, INSERT_VALUES ) ;
+      </font><font class="kw1">delete</font><font class="text"> [] val ;
+      </font><font class="kw1">delete</font><font class="text"> [] col ;
+   }
+   PETSc_do( MatAssemblyBegin( matrix(), MAT_FINAL_ASSEMBLY ) ) ;
+   PETSc_do( MatAssemblyEnd( matrix(), MAT_FINAL_ASSEMBLY ) ) ;
+   it-&gt;destroy() ; it = 0 ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( set_POST( A ) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( nb_rows()==A-&gt;nb_rows() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( nb_cols()==A-&gt;nb_cols() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">EXT_PETScMatrix</font><font class="text">:: </font><font class="kw2">set</font><font class="text">( </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* A, </font><font class="kw1">bool</font><font class="text"> same_pattern )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;EXT_PETScMatrix:: set&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( set_PRE( A, same_pattern ) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( </font><font class="kw1">dynamic_cast</font><font class="text">&lt;</font><font class="kw3">EXT_PETScMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* &gt;( A ) != 0 ) ;
+   </font><font class="kw3">EXT_PETScMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* pA = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">EXT_PETScMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* &gt;( A ) ;
+
+   </font><font class="kw1">if</font><font class="text">( same_pattern &amp;&amp; ( ! BLOCK ) )
+   {
+      PETSc_do( MatCopy( pA-&gt;matrix(), matrix(),
+                         SAME_NONZERO_PATTERN ) ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      PETSc_do( MatCopy( pA-&gt;matrix(), matrix(),
+                         DIFFERENT_NONZERO_PATTERN ) ) ;
+   }
+   PETSc_do( MatAssemblyBegin( matrix(), MAT_FINAL_ASSEMBLY ) ) ;
+   PETSc_do( MatAssemblyEnd( matrix(), MAT_FINAL_ASSEMBLY ) ) ;
+   set_unsynchronized_state( </font><font class="kw3">LA</font><font class="text">::NotSync_undef ) ;
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( set_POST( A ) ) ;
+
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">EXT_PETScMatrix</font><font class="text">:: add_Mat( </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* A,
+                           </font><font class="kw1">double</font><font class="text"> alpha,
+                           </font><font class="kw1">bool</font><font class="text"> same_pattern )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;EXT_PETScMatrix:: add_Mat&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_SAVEOLD</font><font class="text">( </font><font class="kw3">LA</font><font class="text">::SyncState, state, state() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( add_Mat_PRE( A, alpha, same_pattern ) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( </font><font class="kw1">dynamic_cast</font><font class="text">&lt;</font><font class="kw3">EXT_PETScMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* &gt;( A ) != 0 ) ;
+   </font><font class="kw3">EXT_PETScMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* pA = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">EXT_PETScMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* &gt;( A ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( pA-&gt;is_assembled() ) ;
+
+   add_Mat_IMP( pA-&gt;matrix(), alpha, same_pattern ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( add_Mat_POST( </font><font class="kw3">OLD</font><font class="text">( state ) ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">EXT_PETScMatrix</font><font class="text">:: add_tMat( </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* A, </font><font class="kw1">double</font><font class="text"> alpha )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;EXT_PETScMatrix:: add_tMat&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_SAVEOLD</font><font class="text">( </font><font class="kw3">LA</font><font class="text">::SyncState, state, state() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( add_tMat_PRE( A, alpha ) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( </font><font class="kw1">dynamic_cast</font><font class="text">&lt;</font><font class="kw3">EXT_PETScMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* &gt;( A ) != 0 ) ;
+   </font><font class="kw3">EXT_PETScMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* pA = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">EXT_PETScMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* &gt;( A ) ;
+
+   Mat tmp ;
+   PETSc_do( MatTranspose( pA-&gt;matrix(), &amp;tmp ) ) ;
+
+   add_Mat_IMP( tmp, alpha, </font><font class="kw1">false</font><font class="text"> ) ;
+
+   PETSc_do( MatDestroy( tmp ) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( add_Mat_POST( </font><font class="kw3">OLD</font><font class="text">( state ) ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">EXT_PETScMatrix</font><font class="text">:: add_Mat_Mat( </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* A, </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* B,
+                               </font><font class="kw1">double</font><font class="text"> alpha )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;EXT_PETScMatrix:: add_Mat_Mat&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_SAVEOLD</font><font class="text">( </font><font class="kw3">LA</font><font class="text">::SyncState, state, state() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( add_Mat_Mat_PRE( A, B, alpha ) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( </font><font class="kw1">dynamic_cast</font><font class="text">&lt;</font><font class="kw3">EXT_PETScMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* &gt;( A ) != 0 ) ;
+   </font><font class="kw3">EXT_PETScMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* pA = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">EXT_PETScMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* &gt;( A ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( </font><font class="kw1">dynamic_cast</font><font class="text">&lt;</font><font class="kw3">EXT_PETScMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* &gt;( B ) != 0 ) ;
+   </font><font class="kw3">EXT_PETScMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* pB = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">EXT_PETScMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* &gt;( B ) ;
+
+   </font><font class="comment">// Initialement fill = 2.0 : pourquoi ?
+</font><font class="text">   Mat tmp ;
+   PETSc_do( MatMatMult( pA-&gt;matrix(), pB-&gt;matrix(),
+                         MAT_INITIAL_MATRIX, PETSC_DEFAULT, &amp;tmp ) ) ;
+
+   add_Mat_IMP( tmp, alpha, </font><font class="kw1">false</font><font class="text"> ) ;
+   PETSc_do( MatDestroy( tmp ) ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( add_Mat_Mat_POST( </font><font class="kw3">OLD</font><font class="text">( state ) ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">EXT_PETScMatrix</font><font class="text">:: set_item( </font><font class="kw2">size_t</font><font class="text"> i, </font><font class="kw2">size_t</font><font class="text"> j, </font><font class="kw1">double</font><font class="text"> x )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;EXT_PETScMatrix:: set_item&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( set_item_PRE( i, j ) ) ;
+   </font><font class="kw3">PEL_SAVEOLD</font><font class="text">( </font><font class="kw3">LA</font><font class="text">::SyncState, state, state() ) ;
+
+   </font><font class="kw1">if</font><font class="text">( !only_local_modifs() &amp;&amp; is_desynchronizable() )
+   {
+      set_unsynchronized_state( </font><font class="kw3">LA</font><font class="text">::NotSync_set ) ;
+   }
+
+   MatSetValue( matrix(), i, j, x, INSERT_VALUES ) ;
+
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( set_item_POST( i, j, </font><font class="kw3">OLD</font><font class="text">( state ) ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">EXT_PETScMatrix</font><font class="text">:: add_to_item( </font><font class="kw2">size_t</font><font class="text"> i, </font><font class="kw2">size_t</font><font class="text"> j, </font><font class="kw1">double</font><font class="text"> x )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;EXT_PETScMatrix:: add_to_item&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( add_to_item_PRE( i, j ) ) ;
+   </font><font class="kw3">PEL_SAVEOLD</font><font class="text">( </font><font class="kw3">LA</font><font class="text">::SyncState, state, state() ) ;
+
+   </font><font class="kw1">if</font><font class="text">( !only_local_modifs() &amp;&amp; is_desynchronizable() )
+   {
+      set_unsynchronized_state( </font><font class="kw3">LA</font><font class="text">::NotSync_add ) ;
+   }
+   MatSetValue( matrix(), i, j, x, ADD_VALUES ) ;
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( add_to_item_POST( i, j, </font><font class="kw3">OLD</font><font class="text">( state ) ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">EXT_PETScMatrix</font><font class="text">:: nullify( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;EXT_PETScMatrix:: nullify&quot;</font><font class="text"> ) ;
+
+   set_unsynchronized_state( </font><font class="kw3">LA</font><font class="text">::NotSync_undef ) ;
+   PETSc_do( MatZeroEntries( matrix() ) ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( nullify_POST() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">EXT_PETScMatrix</font><font class="text">:: scale( </font><font class="kw1">double</font><font class="text"> alpha )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;EXT_PETScMatrix:: scale&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( scale_PRE( alpha ) ) ;
+
+   PETSc_do( MatScale( matrix(), alpha ) ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( scale_POST( alpha ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">EXT_PETScMatrix</font><font class="text">:: readMM( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; file )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;EXT_PETScMatrix:: readMM&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( readMM_PRE( file ) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="comment">// Avoid unefficient call to insert function:
+</font><font class="text">   </font><font class="kw3">LA_PelMatrix</font><font class="text">* m = </font><font class="kw3">LA_PelMatrix</font><font class="text">::create( 0, 0, 0 ) ;
+   m-&gt;readMM( file ) ;
+   </font><font class="kw2">set</font><font class="text">( m ) ;
+   m-&gt;destroy() ; m = 0 ;
+   synchronize() ;
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( readMM_POST() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">EXT_PETScMatrix</font><font class="text">:: print( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostream</font><font class="text">&amp; os, </font><font class="kw2">size_t</font><font class="text"> indent_width ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;EXT_PETScMatrix:: print&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw3">LA_Matrix</font><font class="text">::print( os, indent_width ) ;
+
+   </font><font class="kw1">if</font><font class="text">( EXP != 0 )
+   {
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; mat_type = name() ;
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> s( indent_width, </font><font class="string">' '</font><font class="text"> ) ;
+      </font><font class="kw1">if</font><font class="text">( SEQ )
+      {
+         </font><font class="kw1">if</font><font class="text">( EXP-&gt;has_entry( </font><font class="string">&quot;nz&quot;</font><font class="text"> ) )
+         {
+            os &lt;&lt; s &lt;&lt; </font><font class="string">&quot;   nz : &quot;</font><font class="text"> &lt;&lt; EXP-&gt;int_data( </font><font class="string">&quot;nz&quot;</font><font class="text"> ) &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+         }
+         </font><font class="kw1">if</font><font class="text">( mat_type == </font><font class="string">&quot;PETSc_SeqSBAIJ&quot;</font><font class="text"> )
+         {
+            os &lt;&lt; s &lt;&lt; </font><font class="string">&quot;   block_size : &quot;
+</font><font class="text">               &lt;&lt; EXP-&gt;int_data( </font><font class="string">&quot;block_size&quot;</font><font class="text"> ) &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+         }
+      }
+      </font><font class="kw1">else
+</font><font class="text">      {
+         os &lt;&lt; s &lt;&lt; </font><font class="string">&quot;   d_nz : &quot;</font><font class="text"> &lt;&lt; EXP-&gt;int_data( </font><font class="string">&quot;d_nz&quot;</font><font class="text"> ) &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+         os &lt;&lt; s &lt;&lt; </font><font class="string">&quot;   o_nz : &quot;</font><font class="text"> &lt;&lt; EXP-&gt;int_data( </font><font class="string">&quot;o_nz&quot;</font><font class="text"> ) &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+         </font><font class="kw1">if</font><font class="text">( mat_type == </font><font class="string">&quot;PETSc_MPISBAIJ&quot;</font><font class="text"> || mat_type == </font><font class="string">&quot;PETSc_MPIBAIJ&quot;</font><font class="text"> )
+         {
+            os &lt;&lt; s &lt;&lt; </font><font class="string">&quot;   block_size : &quot;
+</font><font class="text">               &lt;&lt; EXP-&gt;int_data( </font><font class="string">&quot;block_size&quot;</font><font class="text"> ) &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+         }
+      }
+      </font><font class="kw1">if</font><font class="text">( EXP-&gt;has_entry( </font><font class="string">&quot;subtype&quot;</font><font class="text"> ) )
+      {
+         os &lt;&lt; s &lt;&lt; </font><font class="string">&quot;  subtype : \&quot;&quot;
+            &lt;&lt; EXP-&gt;string_data( &quot;</font><font class="text">subtype</font><font class="string">&quot; ) &lt;&lt; &quot;</font><font class="text">\</font><font class="string">&quot;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+      }
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">Mat </font><font class="kw1">const</font><font class="text">&amp;
+</font><font class="kw3">EXT_PETScMatrix</font><font class="text">:: matrix( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;EXT_PETScMatrix:: matrix&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( MATRIX !=0 ) ;
+   </font><font class="kw1">return</font><font class="text">( MATRIX ) ;
+}
+
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">EXT_PETScMatrix</font><font class="text">:: is_assembled( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;EXT_PETScMatrix:: is_assembled&quot;</font><font class="text"> ) ;
+
+   PetscTruth assembled ;
+   PETSc_do( MatAssembled( matrix(), &amp;assembled ) ) ;
+   </font><font class="kw1">bool</font><font class="text"> result = assembled==PETSC_TRUE ;
+
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">EXT_PETScMatrix</font><font class="text">:: build( </font><font class="kw3">intVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; nnz )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;EXT_PETScMatrix:: build_sequential_matrix&quot;</font><font class="text"> ) ;
+
+   destroy_matrix() ;
+
+   UPPER = SYMMETRIC ;
+
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; mat_type = name()  ;
+
+   </font><font class="kw1">if</font><font class="text">( SYMMETRIC &amp;&amp; NB_ROWS!=NB_COLS )
+   {
+      </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain(
+         </font><font class="string">&quot;*** EXT_PETScMatrix error:\n&quot;
+</font><font class="text">         </font><font class="string">&quot;    Unable to create a PETSc symmetric matrix with\n&quot;
+</font><font class="text">         </font><font class="string">&quot;    a no square matrix&quot;</font><font class="text"> ) ;
+   }
+
+
+   </font><font class="kw1">if</font><font class="text">( SEQ )
+   {
+      </font><font class="kw1">int</font><font class="text"> </font><font class="kw1">const</font><font class="text">*  nnzptr = ( nnz.size()==NB_ROWS ? nnz.data() : PETSC_NULL ) ;
+      </font><font class="kw1">int</font><font class="text"> nz = ( EXP-&gt;has_entry( </font><font class="string">&quot;nz&quot;</font><font class="text"> ) &amp;&amp; nnzptr == PETSC_NULL ?
+                                     EXP-&gt;int_data( </font><font class="string">&quot;nz&quot;</font><font class="text"> ) : PETSC_DEFAULT ) ;
+      </font><font class="kw1">if</font><font class="text">( mat_type == </font><font class="string">&quot;PETSc_SeqSBAIJ&quot;</font><font class="text"> )
+      {
+         </font><font class="kw1">int</font><font class="text"> block_size = EXP-&gt;int_data( </font><font class="string">&quot;block_size&quot;</font><font class="text"> ) ;
+         PETSc_do(
+            MatCreateSeqSBAIJ(
+               PETSC_COMM_WORLD,
+               block_size, NB_ROWS, NB_COLS,
+               nz, nnzptr,
+               &amp;MATRIX ) );
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( mat_type == </font><font class="string">&quot;PETSc_SeqAIJ&quot;</font><font class="text"> || mat_type == </font><font class="string">&quot;PETSc_AIJ&quot;</font><font class="text"> )
+      {
+         PETSc_do(
+            MatCreateSeqAIJ(
+               PETSC_COMM_WORLD,
+               NB_ROWS, NB_COLS,
+               nz, nnzptr,
+               &amp;MATRIX ) );
+      }
+      </font><font class="kw1">else
+</font><font class="text">      {
+         </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_bad_data_value(
+            EXP, </font><font class="string">&quot;type&quot;</font><font class="text">,
+            </font><font class="string">&quot;  - \&quot;</font><font class="text">PETSc_AIJ\</font><font class="string">&quot;\n&quot;
+</font><font class="text">            </font><font class="string">&quot;  - \&quot;</font><font class="text">PETSc_SeqSBAIJ\</font><font class="string">&quot;\n&quot;
+</font><font class="text">            </font><font class="string">&quot;  - \&quot;</font><font class="text">PETSc_SeqAIJ\</font><font class="string">&quot;&quot;</font><font class="text"> ) ;
+      }
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      </font><font class="kw1">int</font><font class="text"> d_nz = EXP-&gt;int_data( </font><font class="string">&quot;d_nz&quot;</font><font class="text"> ) ;
+      </font><font class="kw1">int</font><font class="text"> o_nz = EXP-&gt;int_data( </font><font class="string">&quot;o_nz&quot;</font><font class="text"> ) ;
+      </font><font class="kw1">int</font><font class="text">* d_nnz = PETSC_NULL ;
+      </font><font class="kw1">int</font><font class="text">* o_nnz = PETSC_NULL ;
+
+      </font><font class="kw1">if</font><font class="text">( mat_type == </font><font class="string">&quot;PETSc_MPIAIJ&quot;</font><font class="text"> || mat_type == </font><font class="string">&quot;PETSc_AIJ&quot;</font><font class="text"> )
+      {
+         PETSc_do(
+            MatCreateMPIAIJ(
+               PETSC_COMM_WORLD, PETSC_DECIDE, PETSC_DECIDE,
+               NB_ROWS, NB_COLS,
+               d_nz, d_nnz, o_nz, o_nnz,
+               &amp;MATRIX ) ) ;
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( mat_type == </font><font class="string">&quot;PETSc_MPISBAIJ&quot;</font><font class="text"> )
+      {
+         </font><font class="kw1">int</font><font class="text"> block_size = EXP-&gt;int_data( </font><font class="string">&quot;block_size&quot;</font><font class="text"> ) ;
+         PETSc_do(
+            MatCreateMPISBAIJ(
+               PETSC_COMM_WORLD, block_size, PETSC_DECIDE, PETSC_DECIDE,
+               NB_ROWS, NB_COLS,
+               d_nz, d_nnz, o_nz, o_nnz,
+               &amp;MATRIX ) ) ;
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( mat_type == </font><font class="string">&quot;PETSc_MPIBAIJ&quot;</font><font class="text"> )
+      {
+         </font><font class="kw1">int</font><font class="text"> block_size = EXP-&gt;int_data( </font><font class="string">&quot;block_size&quot;</font><font class="text"> ) ;
+         PETSc_do(
+            MatCreateMPIBAIJ(
+               PETSC_COMM_WORLD, block_size, PETSC_DECIDE, PETSC_DECIDE,
+               NB_ROWS, NB_COLS,
+               d_nz, d_nnz, o_nz, o_nnz,
+               &amp;MATRIX ) ) ;
+      }
+      </font><font class="kw1">else
+</font><font class="text">      {
+         </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_bad_data_value(
+            EXP, </font><font class="string">&quot;type&quot;</font><font class="text">,
+            </font><font class="string">&quot;   - \&quot;</font><font class="text">PETSc_MPIAIJ\</font><font class="string">&quot;\n&quot;
+</font><font class="text">            </font><font class="string">&quot;   - \&quot;</font><font class="text">PETSc_MPISBAIJ\</font><font class="string">&quot;\n&quot;
+</font><font class="text">            </font><font class="string">&quot;   - \&quot;</font><font class="text">PETSc_MPIBAIJ\</font><font class="string">&quot;\n&quot;</font><font class="text"> ) ;
+      }
+
+   }
+
+   </font><font class="kw1">if</font><font class="text">( EXP-&gt;has_entry( </font><font class="string">&quot;subtype&quot;</font><font class="text"> ) )
+   {
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; subtype = EXP-&gt;string_data( </font><font class="string">&quot;subtype&quot;</font><font class="text"> ) ;
+      </font><font class="kw1">if</font><font class="text">( subtype!=MATSUPERLU_DIST &amp;&amp; subtype!=MATUMFPACK &amp;&amp; subtype!=MATAIJSPOOLES )
+      {
+         </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_bad_data_value(
+            EXP, </font><font class="string">&quot;subtype&quot;</font><font class="text">,
+            </font><font class="string">&quot;   - \&quot;&quot; MATSUPERLU_DIST &quot;</font><font class="text">\</font><font class="string">&quot;\n&quot;
+</font><font class="text">            </font><font class="string">&quot;   - \&quot;&quot; MATUMFPACK &quot;</font><font class="text">\</font><font class="string">&quot;\n&quot;
+</font><font class="text">            </font><font class="string">&quot;   - \&quot;&quot; MATAIJSPOOLES &quot;</font><font class="text">\</font><font class="string">&quot;&quot;</font><font class="text"> ) ;
+      }
+      PETSc_do( MatSetType( matrix(), subtype.c_str() ) ) ;
+   }
+</font><font class="comment">//    if( EXP-&gt;has_entry( &quot;symmetric&quot; ) &amp;&amp; EXP-&gt;bool_data( &quot;symmetric&quot; ) )
+//    {
+//       PETSc_do( MatSetOption( matrix(), MAT_SYMMETRIC ) ) ;
+//    }
+</font><font class="text">
+   </font><font class="kw1">if</font><font class="text">( HAS_OPT ) PETSc_do( MatSetFromOptions( matrix() ) ) ;
+
+   PetscInt m, n ;
+   PETSc_do( MatGetLocalSize( matrix(), &amp;m, &amp;n ) ) ;
+   ROW_DIST-&gt;set_local_number( m ) ;
+   COL_DIST-&gt;set_local_number( n ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">EXT_PETScMatrix</font><font class="text">:: destroy_matrix( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;EXT_PETScMatrix:: destroy_matrix&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">if</font><font class="text">( MATRIX!=0 )
+   {
+      </font><font class="kw1">if</font><font class="text">( DESTROY_ON_EXIT ) PETSc_do( MatDestroy( MATRIX ) ) ;
+      MATRIX = 0 ;
+   }
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( MATRIX == 0 ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">EXT_PETScMatrix</font><font class="text">:: add_Mat_IMP( Mat A, </font><font class="kw1">double</font><font class="text"> alpha, </font><font class="kw1">bool</font><font class="text"> same_pattern )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;EXT_PETScMatrix:: add_Mat_IMP&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( state() != </font><font class="kw3">LA</font><font class="text">::NotSync_set ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( A != 0 ) ;
+
+   MatInfo info ;
+   PETSc_do( MatGetInfo( MATRIX, MAT_GLOBAL_SUM, &amp;info ) ) ;
+   </font><font class="kw1">double</font><font class="text"> nb_MATRIX = info.nz_used ;
+
+   PETSc_do( MatGetInfo( A, MAT_GLOBAL_SUM, &amp;info ) ) ;
+   </font><font class="kw1">double</font><font class="text"> nb_source = info.nz_used ;
+
+   PetscScalar ps = alpha ;
+
+   </font><font class="kw1">if</font><font class="text">( nb_MATRIX == nb_source &amp;&amp; same_pattern &amp;&amp; ( !BLOCK ) )
+   {
+      PETSc_do( MatAXPY( MATRIX, ps, A, SAME_NONZERO_PATTERN ) ) ;
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( nb_MATRIX &gt;= nb_source )
+   {
+      PETSc_do( MatAXPY( MATRIX, ps, A, DIFFERENT_NONZERO_PATTERN ) ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      </font><font class="kw3">LA</font><font class="text">::SyncState old_state = state() ;
+      </font><font class="kw1">if</font><font class="text">( !is_synchronized() )
+      {
+         synchronize() ;
+      }
+      Mat tmp ;
+      PETSc_do( MatDuplicate( A, MAT_COPY_VALUES, &amp;tmp ) ) ;
+      PETSc_do( MatAYPX( tmp, ps, MATRIX, DIFFERENT_NONZERO_PATTERN ) ) ;
+      PETSc_do( MatDestroy( MATRIX ) ) ;
+      MATRIX = tmp ;
+      </font><font class="kw1">if</font><font class="text">( old_state != </font><font class="kw3">LA</font><font class="text">::Sync ) set_unsynchronized_state( old_state ) ;
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">EXT_PETScMatrix</font><font class="text">:: invariant( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( </font><font class="kw3">LA_Matrix</font><font class="text">::invariant() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( !only_local_modifs() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( </font><font class="kw3">IMPLIES</font><font class="text">( MATRIX==0,  ( NB_ROWS == 0 &amp;&amp; NB_COLS == 0 ) ) ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">EXT_PETScMatrix</font><font class="text">:: implementation_POST(
+                                 </font><font class="kw3">LA_Implementation</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( </font><font class="kw3">LA_Matrix</font><font class="text">::implementation_POST( result ) ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( result == </font><font class="kw3">EXT_PETScImplementation</font><font class="text">::object() ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font>
+</pre>
+</body>
+</html>

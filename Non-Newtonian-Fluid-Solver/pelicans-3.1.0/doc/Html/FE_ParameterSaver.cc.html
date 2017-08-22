@@ -1,0 +1,312 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>FE_ParameterSaver.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="FE_ParameterSaver.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="FEpack-tree.html"><span>Tree</span></a>
+    <a href="FE_ParameterSaver.html"><span>Class</span></a>
+    <a href="FE_ParameterSaver.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="FEpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE_ParameterSaver</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE_Parameter</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE_SetOfParameters</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">GE_Color</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">GE_Mpolyhedron</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_DomainAndFields</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_LocalFEcell</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_ResultSaver</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_SetOfFieldCompositions</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Vector</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">doubleArray2D</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;iostream&gt;
+
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> ;
+
+</font><font class="kw3">FE_ParameterSaver</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">FE_ParameterSaver</font><font class="text">::PROTOTYPE = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">FE_ParameterSaver</font><font class="text">() ;
+
+</font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> CELL_VALUES = 0 ;
+</font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> AT_CELL_CENTERS = 1 ;
+</font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> AT_VERTICES = 2 ;
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw3">FE_ParameterSaver</font><font class="text">:: </font><font class="kw3">FE_ParameterSaver</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">FE_OneStepIteration</font><font class="text">( </font><font class="string">&quot;FE_ParameterSaver&quot;</font><font class="text">)
+   , PARAMS( 0 )
+   , NAMES( 0 )
+   , TYPES( 0 )
+   , cFE( 0 )
+   , EPS_DBL( </font><font class="kw3">PEL</font><font class="text">::bad_double() )
+   , MIN_DBL( </font><font class="kw3">PEL</font><font class="text">::bad_double() )
+{
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw3">FE_OneStepIteration</font><font class="text">*
+</font><font class="kw3">FE_ParameterSaver</font><font class="text">:: create_replica( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                     </font><font class="kw3">PDE_DomainAndFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dom,
+                                     </font><font class="kw3">FE_SetOfParameters</font><font class="text"> </font><font class="kw1">const</font><font class="text">* prms,
+                                     </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* exp ) </font><font class="kw1">const
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_ParameterSaver:: create_replica&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_PRE( a_owner, dom, prms, exp ) ) ;
+
+   </font><font class="kw3">FE_ParameterSaver</font><font class="text">* result =
+                       </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">FE_ParameterSaver</font><font class="text">( a_owner, dom, prms, exp ) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_POST( result, a_owner, dom, prms, exp ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw3">FE_ParameterSaver</font><font class="text">:: </font><font class="kw3">FE_ParameterSaver</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                       </font><font class="kw3">PDE_DomainAndFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dom,
+                                       </font><font class="kw3">FE_SetOfParameters</font><font class="text"> </font><font class="kw1">const</font><font class="text">* prms,
+                                       </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">FE_OneStepIteration</font><font class="text">( a_owner, dom, exp )
+   , PARAMS( </font><font class="kw3">PEL_Vector</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, 0 ) )
+   , NAMES( 0 )
+   , TYPES( 0 )
+   , cFE( dom-&gt;create_LocalFEcell( </font><font class="kw1">this</font><font class="text"> ) )
+   , EPS_DBL( exp-&gt;has_entry( </font><font class="string">&quot;dbl_epsilon&quot;</font><font class="text"> ) ?
+                 exp-&gt;double_data( </font><font class="string">&quot;dbl_epsilon&quot;</font><font class="text"> ) : 1.E-4 )
+   , MIN_DBL( exp-&gt;has_entry( </font><font class="string">&quot;dbl_minimum&quot;</font><font class="text"> ) ?
+                 exp-&gt;double_data( </font><font class="string">&quot;dbl_minimum&quot;</font><font class="text"> ) : 1.E-8 )
+{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_ParameterSaver:: FE_ParameterSaver&quot;</font><font class="text"> ) ;
+
+   cFE-&gt;include_color( </font><font class="kw3">GE_Color</font><font class="text">::halo_color() ) ;
+
+   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* pexp = exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;parameters&quot;</font><font class="text"> ) ;
+   pexp-&gt;start_module_iterator() ;
+   </font><font class="kw1">for</font><font class="text">( ; pexp-&gt;is_valid_module() ; pexp-&gt;go_next_module() )
+   {
+      </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* ee = pexp-&gt;create_subexplorer( 0 ) ;
+      
+      </font><font class="kw3">FE_Parameter</font><font class="text">* param =
+                      prms-&gt;item( ee-&gt;string_data( </font><font class="string">&quot;parameter_name&quot;</font><font class="text"> ) ) ;
+      param-&gt;transfer_cell_calculation_requirements( cFE, </font><font class="kw3">FE_Parameter</font><font class="text">::Val ) ;
+      PARAMS-&gt;append( param ) ;
+
+      NAMES.append( ee-&gt;string_data( </font><font class="string">&quot;entry_name&quot;</font><font class="text"> ) ) ;
+
+      </font><font class="kw2">size_t</font><font class="text"> type = CELL_VALUES ;
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; t = ee-&gt;string_data( </font><font class="string">&quot;type&quot;</font><font class="text"> ) ;
+      </font><font class="kw1">if</font><font class="text">( t == </font><font class="string">&quot;cell_values&quot;</font><font class="text"> )
+      {
+         type = CELL_VALUES ;
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( t == </font><font class="string">&quot;at_cell_centers&quot;</font><font class="text"> )
+      {
+         type = AT_CELL_CENTERS ;
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( t == </font><font class="string">&quot;at_vertices&quot;</font><font class="text"> )
+      {
+         type = AT_VERTICES ;
+      }
+     
+      </font><font class="kw1">else
+</font><font class="text">      {
+         </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_bad_data_value(
+            ee, </font><font class="string">&quot;type&quot;</font><font class="text">,
+            </font><font class="string">&quot;   - \&quot;</font><font class="text">cell_values\</font><font class="string">&quot;\n&quot;
+</font><font class="text">            </font><font class="string">&quot;   - \&quot;</font><font class="text">at_cell_centers\</font><font class="string">&quot;\n&quot;
+</font><font class="text">            </font><font class="string">&quot;   - \&quot;</font><font class="text">at_vertices\</font><font class="string">&quot;&quot;</font><font class="text"> ) ;
+      }
+      TYPES.append( type ) ;
+      
+      ee-&gt;destroy() ; ee = 0 ;
+   }
+   pexp-&gt;destroy() ; pexp = 0 ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw3">FE_ParameterSaver</font><font class="text">:: ~</font><font class="kw3">FE_ParameterSaver</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">if</font><font class="text">( is_a_prototype() )
+   {
+      PROTOTYPE = 0 ;
+   }
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_ParameterSaver</font><font class="text">:: do_one_inner_iteration( </font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* t_it )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_ParameterSaver:: do_one_inner_iteration&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( do_one_inner_iteration_PRE( t_it ) ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_ParameterSaver</font><font class="text">:: save_other_than_time_and_fields(
+                           </font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* t_it, </font><font class="kw3">PDE_ResultSaver</font><font class="text">* rs )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_ParameterSaver:: save_other_than_time_and_fields&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( save_other_than_time_and_fields_PRE( t_it, rs ) ) ;
+
+   </font><font class="comment">// Field savings should have been desactivated...
+</font><font class="text">   </font><font class="kw1">if</font><font class="text">( rs-&gt;grid_is_saved() )
+   {
+      </font><font class="kw3">doubleArray2D</font><font class="text"> values( 0, 0 ) ;
+      </font><font class="kw3">doubleVector</font><font class="text"> default_values( 0 ) ;
+   
+      </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> nb_cells = cFE-&gt;nb_meshes() ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;PARAMS-&gt;index_limit() ; ++i )
+      {
+         </font><font class="kw3">FE_Parameter</font><font class="text">* param = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">FE_Parameter</font><font class="text">*&gt;( PARAMS-&gt;at(i) ) ;
+         </font><font class="kw2">size_t</font><font class="text"> nbcs = param-&gt;nb_components() ;
+         </font><font class="kw2">size_t</font><font class="text"> type = TYPES(i) ;
+         </font><font class="kw3">PDE_ResultSaver</font><font class="text">::SavingLocation location = 
+               ( type == AT_VERTICES ? </font><font class="kw3">PDE_ResultSaver</font><font class="text">::AtVertices :
+                 </font><font class="kw3">PDE_ResultSaver</font><font class="text">::AtCellCenters ) ;
+         </font><font class="kw2">string</font><font class="text"> mesg =
+                </font><font class="string">&quot;*** FE_ParameterSaver : error saving \&quot;&quot;+param-&gt;name()+&quot;</font><font class="text">\</font><font class="string">&quot;&quot;</font><font class="text"> ;
+         rs-&gt;prepare_for_field_saving( location, NAMES(i), nbcs, 
+                                       values, default_values ) ;
+         </font><font class="kw2">size_t</font><font class="text"> im = 0 ;
+         </font><font class="kw1">for</font><font class="text">( cFE-&gt;start() ; cFE-&gt;is_valid() ; cFE-&gt;go_next(), ++im )
+         {
+            </font><font class="kw3">PEL_CHECK</font><font class="text">( im &lt; nb_cells ) ;
+            </font><font class="kw1">if</font><font class="text">( type == CELL_VALUES )
+            {
+               </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> ic=0 ; ic&lt;nbcs ; ++ic )
+               {
+                  values( ic, im ) = param-&gt;cell_value( t_it, cFE, ic ) ;
+               }
+            }
+            </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( type == AT_CELL_CENTERS )
+            {
+               cFE-&gt;set_calculation_point( cFE-&gt;polyhedron()-&gt;center() ) ;
+               </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> ic=0 ; ic&lt;nbcs ; ++ic )
+               {
+                  values( ic, im ) = param-&gt;cell_value_at_pt( t_it, cFE, ic ) ;
+               }
+            }
+            </font><font class="kw1">else
+</font><font class="text">            {
+               </font><font class="kw3">GE_Mpolyhedron</font><font class="text"> </font><font class="kw1">const</font><font class="text">* poly = cFE-&gt;polyhedron() ;
+               </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> v=0 ; v&lt;poly-&gt;nb_vertices() ; ++v )
+               {
+                  </font><font class="kw3">GE_Point</font><font class="text"> </font><font class="kw1">const</font><font class="text">* pt = poly-&gt;vertex( v ) ;
+                  </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> iv = rs-&gt;vertex_index( pt ) ;
+                  cFE-&gt;set_calculation_point( pt ) ;
+                  </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> ic=0 ; ic&lt;nbcs ; ++ic )
+                  {
+                     </font><font class="kw1">double</font><font class="text"> val = param-&gt;cell_value_at_pt( t_it, cFE, ic ) ;
+                  
+                     </font><font class="comment">// the value at a vertex obtained from different cells
+</font><font class="text">                     </font><font class="comment">// should be the same
+</font><font class="text">                     </font><font class="kw3">PDE_ResultSaver</font><font class="text">::check_value_consistency_at_vertex(
+                         mesg, pt, values( ic, iv ), val, EPS_DBL, MIN_DBL ) ;
+                     
+                     </font><font class="kw1">if</font><font class="text">( ( default_values( ic ) == 
+                                   </font><font class="kw3">PDE_ResultSaver</font><font class="text">::undefined_value() ) ||
+                         ( val &gt; default_values( ic ) ) )
+                     {
+                        default_values( ic ) = val ;
+                     }
+                     
+                     values( ic, iv ) = val ;
+                  }
+               }
+            }
+         }
+         rs-&gt;save_field( values, default_values ) ;
+      }
+   }
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_ParameterSaver</font><font class="text">:: print( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostream</font><font class="text">&amp; os, </font><font class="kw2">size_t</font><font class="text"> indent_width ) </font><font class="kw1">const
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_ParameterSaver:::: print&quot;</font><font class="text"> ) ;   
+
+   </font><font class="kw3">FE_OneStepIteration</font><font class="text">::print( os, indent_width ) ;
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text"> s( indent_width+3, </font><font class="string">' '</font><font class="text"> ) ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;PARAMS-&gt;index_limit() ; ++i )
+   {
+      </font><font class="kw3">FE_Parameter</font><font class="text"> </font><font class="kw1">const</font><font class="text">* param =
+                     </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">FE_Parameter</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;( PARAMS-&gt;at(i) ) ;
+      os &lt;&lt; s &lt;&lt; </font><font class="string">&quot;saving \&quot;&quot; &lt;&lt; param-&gt;name()
+         &lt;&lt;&quot;</font><font class="text">\</font><font class="string">&quot; (postprocessing entry: \&quot;&quot; &lt;&lt; NAMES(i) &lt;&lt; &quot;</font><font class="text">\</font><font class="string">&quot;)&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   }
+}
+
+</font>
+</pre>
+</body>
+</html>

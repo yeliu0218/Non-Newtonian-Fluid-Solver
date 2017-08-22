@@ -1,0 +1,199 @@
+MODULE PEL_Application
+
+   concrete_name = "FE_StepByStepProgression"
+
+   $BS_refine = false
+
+   $DS_x = component( $DV_X, 0 )
+   $DS_y = component( $DV_X, 1 )
+
+   $DV_Center = < 0.5 0.5 >
+   $DS_Delta   = 0.2
+   $DS_epsilon = 0.2
+
+   $DS_u = 10.0*$DS_x*(1.0-$DS_x)*$DS_y*(1.0-$DS_y)
+   $DS_delta_u = -20.0*$DS_x*(1.0-$DS_x)-20.0*$DS_y*(1.0-$DS_y)
+   $DV_solution = vector( $DS_u )
+   $DV_rhs = vector( $DS_u - $DS_delta_u )
+   
+   MODULE FE_TimeIterator
+      time_initial = 0.0
+      time_end = 0.01
+      time_step = 1.
+   END MODULE FE_TimeIterator
+
+   graphics_output_times = regular_vector( 0.0, 1, 0.01 )
+   
+   MODULE PDE_DomainAndFields
+      
+      verbose_level = 1
+      nb_space_dimensions = 2
+      type = "finite_element"
+      
+      MODULE GE_Meshing
+         
+         concrete_name = "GE_BoxWithBoxes"
+         
+         vertices_coordinate_0 = regular_vector( 0.0, $IS_NB_MESHES, 1.0 )
+         vertices_coordinate_1 = regular_vector( 0.0, $IS_NB_MESHES, 1.0 )
+         mesh_polyhedron = < "GE_Segment" "GE_Rectangle" >
+         
+      END MODULE GE_Meshing
+
+      MODULE macro_colors
+         vertical = < "left" "right" >
+         horizontal = < "bottom" "top" >
+      END MODULE macro_colors
+
+      MODULE interior_fields
+         
+         MODULE uu
+            name = "uu"
+            nb_components = 1
+            element_name = "PDE_2D_Q0_1node"
+            storage_depth = 1
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = < 0.0 >
+            END MODULE DOFs_values
+         END MODULE uu
+
+         MODULE uu_explicit
+            name = "uu_explicit"
+            nb_components = 1
+            element_name = "PDE_2D_Q0_1node"
+            storage_depth = 1
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = < 0.0 >
+            END MODULE DOFs_values
+         END MODULE uu_explicit
+         
+      END MODULE interior_fields
+
+      MODULE boundary_conditions
+         
+         MODULE vertical
+            field = "uu"
+            type  = "Dirichlet"
+            imposed_value = < 0.0 >
+         END MODULE vertical
+         
+      END MODULE boundary_conditions
+
+      MODULE PDE_ResultSaver
+         writers = < "PEL_TICwriter" >
+         writing_mode = "text"
+         files_basename = "save"
+         MODULE uu
+            where_to_save = "at_cell_centers"
+            entry_name = "U"
+            field = "uu"
+         END MODULE uu
+      END MODULE PDE_ResultSaver
+
+      if( $BS_refine )
+      MODULE PDE_AdapterCHARMS
+         verbose_level = 0
+         type = "quasi_hierarchical_basis"
+         MODULE PDE_AdaptationIndicator
+            concrete_name = "PDE_GeometricIndicator"
+            $IS_NB_STEPS = 1
+            refinement_indicator =
+               ( $IS_ITER = 0 ?
+                    in_box( $DV_X, < 0.3 0.3 >, < 0.7 0.7 > ) : false )
+            nb_steps = $IS_NB_STEPS
+         END MODULE PDE_AdaptationIndicator
+      END MODULE PDE_AdapterCHARMS
+
+      if( ! $BS_refine )
+      MODULE PDE_AdapterCHARMS
+         verbose_level = 0
+         type = "quasi_hierarchical_basis"
+         MODULE PDE_AdaptationIndicator
+            concrete_name = "PDE_GeometricIndicator"
+            refinement_indicator = false
+            nb_steps = 0
+         END MODULE PDE_AdaptationIndicator
+      END MODULE PDE_AdapterCHARMS
+   
+   END MODULE PDE_DomainAndFields
+
+   MODULE FE_SetOfParameters
+
+      MODULE FE_Parameter#rhs
+         concrete_name = "FE_SpaceTimeParameter"      
+         name = "force_rhs"
+         nb_components = 1
+         value = $DV_rhs
+      END MODULE FE_Parameter#rhs
+      
+   END MODULE FE_SetOfParameters
+
+   MODULE FE_OneStepIteration
+      
+      concrete_name = "FE_SplitSystem"
+            
+      MODULE list_of_FE_OneStepIteration
+
+         MODULE FE_OneStepIteration#build_grid
+            concrete_name = "FE_AdaptationStepCHARMS"
+            nb_iterations_max_before_time_stepping = 10
+            nb_iterations_max_during_time_stepping = 10
+         END MODULE FE_OneStepIteration#build_grid
+
+         MODULE FE_OneStepIteration#edp
+            
+            concrete_name = "FE_RefinementFICdiffusion"
+            
+            tolerance = 1.e-6 
+            
+            unknown_field = "uu"
+            level_to_update = 0
+            
+            coef_unsteady = 1.0
+            coef_diffusion = 1.0
+            param_source = "force_rhs"
+            
+            quadrature_rule_provider_for_source = "GE_QRprovider_5"
+            
+            MODULE LA_Matrix
+               concrete_name = "LA_PelMatrix"
+            END MODULE LA_Matrix
+                  
+            MODULE LA_Solver
+               concrete_name = "LA_PreconditionedSolver"
+               MODULE LA_Preconditioner
+                  concrete_name = "LA_Jacobi_PC"
+                  smallest_inverted_item = 1.0e-20
+               END MODULE LA_Preconditioner
+               MODULE LA_IterativeSolver
+                  concrete_name = "LA_CG_IS"
+                  verbose = false
+                  nb_iterations_max = 2000
+                  MODULE LA_ConvergenceTest
+                     concrete_name = "LA_DefaultConvergenceTest"
+                     relative_tolerance = 1.0e-12
+                     absolute_tolerance = 1.0e-50
+                  END MODULE LA_ConvergenceTest
+               END MODULE LA_IterativeSolver
+            END MODULE LA_Solver
+
+         END MODULE FE_OneStepIteration#edp
+
+         MODULE FE_OneStepIteration#ca
+            concrete_name = "FE_ComparatorWithAnalytic"
+            field = "uu"
+            level = 0
+            norms = vector( "L2_error_norm",
+                            "L2_error_D_norm", "H1_Dirichlet_D_error_D_norm" )
+            norm_saving_names = vector( "XLD", "XLDD", "XHUD" )
+            solution = $DV_solution
+            quadrature_rule_provider = "GE_QRprovider_5"
+         END MODULE FE_OneStepIteration#ca
+
+      END MODULE list_of_FE_OneStepIteration
+
+   END MODULE FE_OneStepIteration
+
+END MODULE PEL_Application

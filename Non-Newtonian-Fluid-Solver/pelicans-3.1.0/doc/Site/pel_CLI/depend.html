@@ -1,0 +1,353 @@
+<?xml version="1.0" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>depend - generation of makefiles for PELICANS-based applications</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rev="made" href="mailto:root@localhost" />
+</head>
+
+<body style="background-color: white">
+
+<p><a name="__index__"></a></p>
+<!-- INDEX BEGIN -->
+
+<ul>
+
+	<li><a href="#name">NAME</a></li>
+	<li><a href="#synopsis">SYNOPSIS</a></li>
+	<li><a href="#description">DESCRIPTION</a></li>
+	<li><a href="#options">OPTIONS</a></li>
+	<li><a href="#arguments">ARGUMENTS</a></li>
+	<li><a href="#examples">EXAMPLES</a></li>
+	<li><a href="#environment">ENVIRONMENT</a></li>
+</ul>
+<!-- INDEX END -->
+
+<hr />
+<p>
+</p>
+<h1><a name="name">NAME</a></h1>
+<p>depend - generation of makefiles for PELICANS-based applications</p>
+<p>
+</p>
+<hr />
+<h1><a name="synopsis">SYNOPSIS</a></h1>
+<p>pel depend [-help|-man]</p>
+<p>pel depend [options...] arguments...</p>
+<p>pel depend [-l lib|dir] opt <em>bindir</em> <em>sources</em> [-precomp directory]</p>
+<p>pel depend -vcproj &lt;project.vcproj&gt; <em>sources</em> [-precomp directory]</p>
+<p>
+</p>
+<hr />
+<h1><a name="description">DESCRIPTION</a></h1>
+<p>The task of compiling a PELICANS-based application is highly
+simplified by using the GNU <code>make</code> utility. The aim
+of <code>pel depend</code> is to write a suitable makefile
+that describes the relationships among
+files in the considered application and provides
+commands for compiling each file and linking with the appropriate
+PELICANS library. Once this makefile exists, <code>pel build</code>
+can be used to build the desired executable file.</p>
+<p><code>pel depend</code> has been specially designed to handle
+sources located in multiple directories, and to handle
+multiple compilers on the same file system. Moreover
+the generated makefile includes special targets and commands
+to determine or re-determine the dependencies between the files if necessary.</p>
+<p>The object oriented methodology of PELICANS strongly relies on
+built-in assertions : preconditions, postconditions, invariants and
+checks which are implemented using respectively the four
+macros : <code>PEL_CHECK_PRE</code>, <code>PEL_CHECK_POST</code>, <code>PEL_CHECK_INV</code>
+and <code>PEL_CHECK</code>.
+These assertions can be enabled/desabled at translation time and by
+using command-line switches. Some options and
+arguments of <code>pel depend</code> and <code>pel run</code> are specially devoted to
+this task.</p>
+<p>
+</p>
+<hr />
+<h1><a name="options">OPTIONS</a></h1>
+<dl>
+<dt><strong><a name="item__2dh_2c__2dhelp"><strong>-h, -help</strong></a></strong>
+
+<dd>
+<p>Print a brief help message and exit.</p>
+</dd>
+</li>
+<dt><strong><a name="item__2dm_2c__2dman"><strong>-m, -man</strong></a></strong>
+
+<dd>
+<p>Print the manual page and exit.</p>
+</dd>
+</li>
+<dt><strong><a name="item__2dv_2c__2dverbose"><strong>-v, -verbose</strong></a></strong>
+
+<dd>
+<p>Execute verbosely.</p>
+</dd>
+</li>
+<dt><strong><a name="item__2dd_name"><strong>-D</strong> name</a></strong>
+
+<dd>
+<p>In the generated makefile, predefine <code>name</code> as a macro,
+with definition 1.
+This option may be used any number of times.</p>
+</dd>
+</li>
+<dt><strong><a name="item__2dd_name_3dvalue"><strong>-D</strong> name=value</a></strong>
+
+<dd>
+<p>In the generated makefile, predefine <code>name</code> as a macro,
+with definition <code>value</code>.
+This option may be used any number of times.</p>
+</dd>
+</li>
+<dt><strong><a name="item__2dcompiler_comp"><strong>-compiler</strong> comp</a></strong>
+
+<dd>
+<p>In the generated makefile, use the
+the compiler denoted by <code>comp</code> for all
+tasks of preprocessing, compilation, assembly
+and linking. Default is: <code>gcc</code>.</p>
+</dd>
+</li>
+<dt><strong><a name="item__2dmakefile_makefile"><strong>-makefile</strong> makefile</a></strong>
+
+<dd>
+<p>Set the name of generated makefile used for all
+tasks of compilation, assembly and linking.
+Default is: <em>bindir</em>/Makefile.</p>
+</dd>
+</li>
+<dt><strong><a name="item__2dl_lib_7cdir"><strong>-l</strong> <em>lib|dir</em></a></strong>
+
+<dd>
+<p>Add archive file <em>lib</em> to the list of files to link.
+The commands of the generated makefile will invoke
+the linker with ``-l<em>lib</em>'' on the command line.</p>
+</dd>
+<dd>
+<p>When the argument is a directory, add all objects files found in the <em>dir</em> directory
+to the list of files to link.</p>
+</dd>
+<dd>
+<p>This option may be used any number of times.</p>
+</dd>
+</li>
+<dt><strong><a name="item__2dprecomp_dir"><strong>-precomp</strong> <em>dir</em></a></strong>
+
+<dd>
+<p>Examine directory to use precompiled objects if any.</p>
+</dd>
+</li>
+<dt><strong><a name="item__2dpath_searchdir"><strong>-path</strong> <em>searchdir</em></a></strong>
+
+<dd>
+<p>Add directory <em>searchdir</em> to the list of paths that the linker
+will search for archive libraries when invoked by the 
+commands of the generated makefile. 
+This option may be used any number of times.</p>
+</dd>
+</li>
+<dt><strong><a name="item__2di_searchdir"><strong>-I</strong> <em>searchdir</em></a></strong>
+
+<dd>
+<p>Add directory <em>searchdir</em> to the list of paths that the compiler will search
+for header files when invoked by the commands of the generated
+makefile. Note that any subdirectory of &lt;sources&gt; that contains a header
+file is automatically added to that list of paths.
+This option may be used any number of times.</p>
+</dd>
+</li>
+<dt><strong><a name="item__2dprofile"><strong>-profile</strong></a></strong>
+
+<dd>
+<p>In the generated makefile, activate the profiling option
+when invoking the compiler and linker.
+This allows the profiling analysis of the application 
+with tools such as gprof.</p>
+</dd>
+</li>
+<dt><strong><a name="item__2dcoverage"><strong>-coverage</strong></a></strong>
+
+<dd>
+<p>In the generated makefile, activate the basic block coverage analysis option
+when invoking the compiler and linker.
+This allows the structural analysis of the application 
+with tools such as tcov.</p>
+</dd>
+</li>
+<dt><strong><a name="item__2dinline__7c__2dinclude"><strong>-inline | -include</strong></a></strong>
+
+<dd>
+<p>Decide how external makefiles (eg <em>extra-Linux.mak</em>) taken from the PELICANS
+repository are accounted for in the generated makefile.
+If <code>-inline</code>, they are copied line by line  (default
+behaviour). If <code>-include</code>, the <code>include</code> directive of gmake is used.</p>
+</dd>
+</li>
+<dt><strong><a name="item__2dmstd"><strong>-mSTD</strong></a></strong>
+
+<dd>
+<p>Add the directories of the PELICANS library ``ExamplesOfApplication''
+to the list of paths to be searched for sources.</p>
+</dd>
+</li>
+<dt><strong><a name="item__2dmpelicans"><strong>-mPELICANS</strong></a></strong>
+
+<dd>
+<p>Add the directories of the PELICANS repository (except
+those of the library ``ExamplesOfApplication'') to the list
+of paths to be searched for sources. This option is
+reserved to the internal administration of PELICANS.</p>
+</dd>
+</li>
+<dt><strong><a name="item__2dvcproj_project_2evcproj"><strong>-vcproj project.vcproj</strong></a></strong>
+
+<dd>
+<p>Update Visual C++ project by updating list of include directories
+and list of files.</p>
+</dd>
+</li>
+</dl>
+<p>
+</p>
+<hr />
+<h1><a name="arguments">ARGUMENTS</a></h1>
+<dl>
+<dt><strong><a name="item_opt"><strong>opt</strong></a></strong>
+
+<dd>
+<p>Decide the compilation level that will be set in the
+generated makefile. This option influences on the one
+hand the optimization used by the compiler when generating
+the binary code and on the other hand the assertions that
+will be evaluated. Allowed values for <a href="#item_opt"><code>opt</code></a>
+are: <a href="#item_dbg"><code>dbg</code></a>, <code>opt2</code>, <a href="#item_opt1"><code>opt1</code></a>, <a href="#item_opt0"><code>opt0</code></a>, <a href="#item_optpg"><code>optpg</code></a> or <a href="#item_optcov"><code>optcov</code></a>.</p>
+</dd>
+<dl>
+<dt><strong><a name="item_dbg"><strong>dbg</strong></a></strong>
+
+<dd>
+<p>The commands of the generated makefile will ask the compiling system
+to generate a binary code prepared for debugging.</p>
+</dd>
+</li>
+<dt><strong><a name="item_opt2_2copt1_2copt0"><strong>opt2</strong>,<strong>opt1</strong>,<strong>opt0</strong></a></strong>
+
+<dd>
+<p>The commands of the generated makefile will ask the compiling system
+to use an extensive set of optimization techniques
+when generating the binary code.</p>
+</dd>
+</li>
+<dt><strong><a name="item_dbg_2copt2"><strong>dbg</strong>,<strong>opt2</strong></a></strong>
+
+<dd>
+<p>In the generated makefile, the commands invoking the compiler
+will define the preprocessor name <code>LEVEL</code> as <code>2</code>. Thus,
+when running the application,
+the preconditions will be evaluated, and the postconditions, invariants
+and checks will be possibly evaluated (depending on command-line switches,
+see <code>pel run</code>).</p>
+</dd>
+</li>
+<dt><strong><a name="item_opt1"><strong>opt1</strong></a></strong>
+
+<dd>
+<p>In the generated makefile, the commands invoking the compiler
+will define the preprocessor name <code>LEVEL</code> as <code>1</code>. Thus
+the preconditions will be evaluated when running the application,
+but the statement associated to
+postconditions, invariants and checks will be removed during
+preprocessing stage.</p>
+</dd>
+</li>
+<dt><strong><a name="item_opt0"><strong>opt0</strong></a></strong>
+
+<dd>
+<p>In the generated makefile, the commands invoking the compiler
+will define the preprocessor name <code>LEVEL</code> as <code>0</code>. Thus
+any statement associated to a precondition, a postcondition, an
+invariant or a check will be removed during the
+preprocessing stage.</p>
+</dd>
+</li>
+<dt><strong><a name="item_optpg"><strong>optpg</strong></a></strong>
+
+<dd>
+<p>Same as <strong>opt0</strong> combined with <strong>-profile</strong>. Sets the most agressive optimisation level and sets the profiling option.</p>
+</dd>
+</li>
+<dt><strong><a name="item_optcov"><strong>optcov</strong></a></strong>
+
+<dd>
+<p>Same as <strong>-coverage</strong>. Neither optimisation options nor debug information are generated by the compiling system.</p>
+</dd>
+</li>
+</dl>
+<dt><strong><a name="item__bindir"><strong> <em>bindir</em> </strong></a></strong>
+
+<dd>
+<p>Any file produced (objects, libraries, executables, dependency files ...)
+will be located in <em>bindir</em>. By default, the generated makefile,
+called <em>Makefile</em>, is created in the directory <em>bindir</em>.</p>
+</dd>
+</li>
+<dt><strong><a name="item__sources"><strong> <em>sources</em> </strong></a></strong>
+
+<dd>
+<p>A list of directories and source files.
+<code>pel depend</code> will add the given source files and will add the source files found in the given directories.
+Any header file or source file found in
+a subdirectory of <em>sources</em> is considered to be part of the application.
+Header files are those having a <em>.h</em> or <em>.hh</em> extension whereas source
+files are those having a <em>.cpp</em>, <em>.cc</em>, <em>.c</em>, <em>.F</em> or <em>.f</em> extension.</p>
+</dd>
+</li>
+</dl>
+<p>
+</p>
+<hr />
+<h1><a name="examples">EXAMPLES</a></h1>
+<dl>
+<dt><strong><a name="item_pel_depend__2dl_pel1_dbg_lib__2e"><code>pel depend -l pel1 dbg lib .</code></a></strong>
+
+<dd>
+<p>The current application is made of all the header and source files
+located in any subdirectory of the working directory. 
+The generated <em>Makefile</em> will be created
+in the directory <em>lib</em>. Further compilations will be performed with the
+<em>dbg</em> compilation level, and linking will be performed with the library
+<em>libpel1.so</em>.</p>
+</dd>
+</li>
+<dt><strong><a name="item_pel_depend__2dl_pel0__2di_hea__2dcompiler_gcc_opt1"><code>pel depend -l pel0 -I hea -compiler gcc opt1 bin src</code></a></strong>
+
+<dd>
+<p>The current application is made of all the header and source files
+located in any subdirectory of <em>src</em> . The generated <em>Makefile</em> will be
+created in the directory <em>bin</em>. Further compilations will be performed
+by <code>gcc</code> with the <a href="#item_opt1"><code>opt1</code></a> compilation level, and linking will be performed
+with the library <em>libpel0.so</em>. The current application probably uses header
+files that are not in the directory <em>src</em> and that are not PELICANS header
+files since the options <code>-I hea</code> is used.</p>
+</dd>
+</li>
+<dt><strong><a name="item_pel_depend_opt1_bin_src_pelsrc__2fhome_2fusers_2fa"><code>pel depend opt1 bin src pelsrc /home/users/algo.cc -precomp lib</code></a></strong>
+
+<dd>
+<p>Compile the single source file /home/users/algo.cc and the source directories src and pelsrc using precompiled objects in lib.</p>
+</dd>
+</li>
+</dl>
+<p>
+</p>
+<hr />
+<h1><a name="environment">ENVIRONMENT</a></h1>
+<p>It is possible to store arguments and options, overwritable by the command
+line arguments, in the environment variable PELDEPEND.</p>
+
+</body>
+
+</html>

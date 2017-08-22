@@ -1,0 +1,284 @@
+MODULE PEL_ObjectTest#PDE_DomainIteration_TEST
+   
+   MODULE PDE_DomainIteration_10
+
+      MODULE calculations_consistency
+         dbl_epsilon = 1.e-10
+         dbl_minimum = 1.e-12
+         quadrature_rule_provider = "GE_QRprovider_3"
+         do_print_IPs = true
+         do_print_values_at_IPs = true
+      END MODULE calculations_consistency
+
+      MODULE iterations_trace
+         output_file = "dom_10.trace"
+      END MODULE iterations_trace
+            
+      MODULE PDE_DomainAndFields
+        MODULE GE_Meshing
+           concrete_name = "GE_RefinedMeshing"
+           mesh_polyhedron = < "GE_Segment" "GE_Triangle" >
+           MODULE list_of_GE_ReferencePolyhedronRefiner
+              MODULE GE_ReferencePolyhedronRefiner#1
+                 concrete_name = "GE_ReferenceSquareWithTriangles"
+                 strategy = "X"
+              END MODULE GE_ReferencePolyhedronRefiner#1
+           END MODULE list_of_GE_ReferencePolyhedronRefiner
+          MODULE GE_Meshing
+            concrete_name = "GE_BoxWithBoxes"
+            vertices_coordinate_0 = < 0.000000e+00 1.000000e-01  > 
+            vertices_coordinate_1 = < 0.000000e+00 1.000000e-01  > 
+            mesh_polyhedron = < "GE_Segment" "GE_Rectangle"  >
+          END MODULE GE_Meshing
+        END MODULE GE_Meshing
+        MODULE macro_colors
+          wall = < "left" "right" "bottom"  >
+        END MODULE macro_colors
+        
+        MODULE interior_fields
+           
+          MODULE corium_mass_fraction
+            MODULE DOFs_values
+              type = "uniformly_defined"
+              value = < 1.000000e+00  > 
+              mode = "set_by_value_at_node_location"
+            END MODULE DOFs_values
+            name = "corium_mass_fraction"
+            nb_components = 1
+            storage_depth = 2
+            element_name = "PDE_2D_P1_3nodes"
+          END MODULE corium_mass_fraction
+          
+          MODULE basemat_mass_fraction
+            MODULE DOFs_values
+              type = "uniformly_defined"
+              value = < 0.000000e+00  > 
+              mode = "set_by_value_at_node_location"
+            END MODULE DOFs_values
+            name = "basemat_mass_fraction"
+            nb_components = 1
+            storage_depth = 2
+            element_name = "PDE_2D_P1_3nodes"
+          END MODULE basemat_mass_fraction
+          
+          MODULE temperature
+            MODULE DOFs_values
+              type = "uniformly_defined"
+              value = vector( 2.500000e+03)
+              mode = "set_by_value_at_node_location"
+            END MODULE DOFs_values
+            MODULE DOFs_imposed_value
+              MODULE DBC_#1
+                MODULE value
+                  default = vector(1.500000e+03)
+                END MODULE value
+                location = "on_bounds"
+                type = "vertex_defined"
+                component = 0
+                color = "wall"
+              END MODULE DBC_#1
+            END MODULE DOFs_imposed_value
+            name = "temperature"
+            nb_components = 1
+            storage_depth = 2
+            element_name = "PDE_2D_P1_3nodes"
+          END MODULE temperature
+          
+          MODULE grid_deformation
+            MODULE DOFs_values
+              type = "uniformly_defined"
+              value = < 0.000000e+00 0.000000e+00  > 
+              mode = "set_by_value_at_node_location"
+            END MODULE DOFs_values
+            name = "grid_deformation"
+            nb_components = 2
+            storage_depth = 1
+            element_name = "PDE_2D_P1_3nodes"
+          END MODULE grid_deformation
+          
+          MODULE advective_velocity
+            MODULE DOFs_values
+              type = "uniformly_defined"
+              value = < 0.000000e+00 0.000000e+00  > 
+              mode = "set_by_value_at_node_location"
+            END MODULE DOFs_values
+            name = "advective_velocity"
+            nb_components = 2
+            storage_depth = 2
+            element_name = "PDE_2D_P1_3nodes"
+          END MODULE advective_velocity
+          
+          MODULE velocity
+            MODULE DOFs_values
+              type = "uniformly_defined"
+              value = $DV_X 
+              mode = "set_by_value_at_node_location"
+            END MODULE DOFs_values
+//            MODULE DOFs_imposed_value
+//              MODULE DBC_#1
+//                MODULE value
+//                  default = < 0.000000e+00 0.000000e+00  > 
+//                END MODULE value
+//                location = "on_bounds"
+//                type = "vertex_defined"
+//              END MODULE DBC_#1
+//            END MODULE DOFs_imposed_value
+            name = "velocity"
+            nb_components = 2
+            storage_depth = 2
+            element_name = "PDE_2D_P1bubble_4nodes"
+          END MODULE velocity
+          
+          MODULE pressure
+            MODULE DOFs_values
+              type = "uniformly_defined"
+              value = < 0.000000e+00  > 
+              mode = "set_by_value_at_node_location"
+            END MODULE DOFs_values
+            name = "pressure"
+            nb_components = 1
+            storage_depth = 2
+            element_name = "PDE_2D_P1_3nodes"
+          END MODULE pressure
+          
+          MODULE turbulent_viscosity
+            MODULE DOFs_values
+              type = "uniformly_defined"
+              value = < 0.000000e+00  > 
+              mode = "set_by_value_at_node_location"
+            END MODULE DOFs_values
+            name = "turbulent_viscosity"
+            nb_components = 1
+            storage_depth = 2
+            element_name = "PDE_2D_P1_3nodes"
+          END MODULE turbulent_viscosity
+          
+          MODULE turbulent_conductivity
+            MODULE DOFs_values
+              type = "uniformly_defined"
+              value = < 0.000000e+00  > 
+              mode = "set_by_value_at_node_location"
+            END MODULE DOFs_values
+            name = "turbulent_conductivity"
+            nb_components = 1
+            storage_depth = 2
+            element_name = "PDE_2D_P1_3nodes"
+          END MODULE turbulent_conductivity
+          
+          MODULE turbulent_species_diffusivity
+            MODULE DOFs_values
+              type = "uniformly_defined"
+              value = < 0.000000e+00  > 
+              mode = "set_by_value_at_node_location"
+            END MODULE DOFs_values
+            name = "turbulent_species_diffusivity"
+            nb_components = 1
+            storage_depth = 2
+            element_name = "PDE_2D_P1_3nodes"
+          END MODULE turbulent_species_diffusivity
+
+        END MODULE interior_fields
+        
+//        MODULE boundary_conditions
+//          MODULE BC_corium_mass_fraction#1
+//            type = "basemat_ablation"
+//            field = "corium_mass_fraction"
+//            color = "wall"
+//            Y_inf = 0.000000e+00
+//          END MODULE BC_corium_mass_fraction#1
+//          MODULE BC_temperature#1
+//            type = "DBC"
+//            field = "temperature"
+//            color = "wall"
+//          END MODULE BC_temperature#1
+//          MODULE BC_temperature#2
+//            type = "given_flux"
+//            field = "temperature"
+//            color = "top"
+//            given_flux = 1.000000e+08
+//          END MODULE BC_temperature#2
+//          MODULE BC_grid_deformation#1
+//            type = "phase_change_interface"
+//            component = 0
+//            field = "grid_deformation"
+//            color = "wall"
+//          END MODULE BC_grid_deformation#1
+//          MODULE BC_grid_deformation#2
+//            type = "phase_change_interface"
+//            component = 1
+//            field = "grid_deformation"
+//            color = "wall"
+//          END MODULE BC_grid_deformation#2
+//          MODULE BC_velocity#1
+//            type = "DBC"
+//            component = 0
+//            field = "velocity"
+//          END MODULE BC_velocity#1
+//          MODULE BC_velocity#2
+//            type = "DBC"
+//            component = 1
+//            field = "velocity"
+//          END MODULE BC_velocity#2
+//        END MODULE boundary_conditions
+//
+//        MODULE PDE_ResultSaver
+//           
+//          MODULE corium_mass_fraction
+//            field = "corium_mass_fraction"
+//            entry_name = "XFLU"
+//            where_to_save = "at_vertices"
+//          END MODULE corium_mass_fraction
+//          MODULE temperature
+//            field = "temperature"
+//            entry_name = "T"
+//            where_to_save = "at_vertices"
+//          END MODULE temperature
+//          MODULE grid_deformation
+//            field = "grid_deformation"
+//            entry_name = "DGRI"
+//            where_to_save = "at_vertices"
+//          END MODULE grid_deformation
+//          MODULE advective_velocity
+//            field = "advective_velocity"
+//            entry_name = "VAD"
+//            where_to_save = "at_vertices"
+//          END MODULE advective_velocity
+//          MODULE velocity
+//            field = "velocity"
+//            entry_name = "V"
+//            where_to_save = "at_vertices"
+//          END MODULE velocity
+//          MODULE pressure
+//            field = "pressure"
+//            entry_name = "P"
+//            where_to_save = "at_vertices"
+//          END MODULE pressure
+//          MODULE turbulent_viscosity
+//            field = "turbulent_viscosity"
+//            entry_name = "VIST"
+//            where_to_save = "at_vertices"
+//          END MODULE turbulent_viscosity
+//          MODULE turbulent_conductivity
+//            field = "turbulent_conductivity"
+//            entry_name = "CNDT"
+//            where_to_save = "at_vertices"
+//          END MODULE turbulent_conductivity
+//          MODULE turbulent_species_diffusivity
+//            field = "turbulent_species_diffusivity"
+//            entry_name = "DIFFT"
+//            where_to_save = "at_vertices"
+//          END MODULE turbulent_species_diffusivity
+//          writers = < "PEL_TICwriter"  >
+//          files_basename = "save"
+//          writing_mode = "binary"
+//          dbl_minimum = 1.000000e-06
+//          dbl_epsilon = 1.000000e-06
+//        END MODULE PDE_ResultSaver
+        nb_space_dimensions = 2
+        type = "finite_element"
+        verbose_level = 1
+      END MODULE PDE_DomainAndFields
+
+   END MODULE PDE_DomainIteration_10
+   
+END MODULE PEL_ObjectTest#PDE_DomainIteration_TEST

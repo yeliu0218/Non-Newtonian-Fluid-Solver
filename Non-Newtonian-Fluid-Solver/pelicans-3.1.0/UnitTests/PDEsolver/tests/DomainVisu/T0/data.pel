@@ -1,0 +1,77 @@
+MODULE PEL_Application
+   
+   concrete_name = "PDE_DomainVisu"
+
+   $DS_x = component( $DV_X, 0 )
+   $DS_y = component( $DV_X, 1 )
+   
+   check_meshing_connexity = true
+   build_GMV_files = true
+
+   MODULE PDE_DomainAndFields
+      
+      verbose_level = 2
+      nb_space_dimensions = 2
+      type = "finite_element"
+
+      MODULE GE_Meshing
+         concrete_name = "GE_GambitMeshing"
+         mesh_polyhedron = < "GE_Segment" "GE_Quadrilateral" >
+         filename = join( this_file_dir(), "cook.neu" )
+         MODULE GE_Colorist
+            MODULE cells
+               east_cell = ( $DS_x > 0.042 )
+               west_cell = ( $DS_x < 0.006 ) 
+            END MODULE cells
+         END MODULE GE_Colorist
+      END MODULE GE_Meshing
+
+      MODULE macro_colors
+         vert_face = < "east_face" "west_face" >
+         vert_cell = < "east_cell" "west_cell" >
+      END MODULE macro_colors
+      
+      MODULE interior_fields
+         MODULE uu
+            name = "uu"
+            nb_components = 2
+            element_name = "PDE_2D_Q2_8nodes"
+            storage_depth = 1
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = vector( exp($DS_x+3.*$DS_y), $DS_x*$DS_y*$DS_y )
+            END MODULE DOFs_values
+         END MODULE uu
+         MODULE vv
+            name = "vv"
+            nb_components = 1
+            element_name = "PDE_2D_Q1_4nodes"
+            storage_depth = 1
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = vector( exp($DS_x+3.*$DS_y) )
+            END MODULE DOFs_values
+         END MODULE vv
+      END MODULE interior_fields
+
+      MODULE PDE_ResultSaver
+         writers = < "PEL_GMVwriter" "PEL_PelWriter"
+                     "PEL_OpenDXwriter" "PEL_TICwriter" >
+         
+         writing_mode = "text"
+         files_basename = "save"
+         MODULE uu
+            where_to_save = "at_cell_centers"
+            entry_name = "UU"
+            field = "uu"
+         END MODULE uu
+         MODULE vv
+            where_to_save = "at_vertices"
+            entry_name = "VV"
+            field = "vv"
+         END MODULE vv
+      END MODULE PDE_ResultSaver
+      
+   END MODULE PDE_DomainAndFields
+   
+END MODULE PEL_Application

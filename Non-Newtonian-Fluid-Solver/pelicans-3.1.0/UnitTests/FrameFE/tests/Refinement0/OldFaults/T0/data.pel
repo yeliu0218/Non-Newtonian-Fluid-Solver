@@ -1,0 +1,130 @@
+MODULE PEL_Application
+
+   concrete_name = "FE_StepByStepProgression"
+
+   $DS_x = component( $DV_X, 0 )
+   $DS_y = component( $DV_X, 1 )
+
+   $DS_sol = 2.0*pi()*pi() * sin( pi()*$DS_x ) * sin( pi()*$DS_y )
+   
+   $DS_TIME_END = 1.
+   MODULE FE_TimeIterator
+      time_initial = 0.0
+      time_step    = 1.
+      time_end     = $DS_TIME_END
+   END MODULE FE_TimeIterator
+
+   graphics_output_times = regular_vector( 0., 50, $DS_TIME_END )
+
+   MODULE PDE_DomainAndFields
+      
+      verbose_level = 1
+      nb_space_dimensions = 2
+      type = "finite_element"
+      
+      MODULE GE_Meshing
+         
+         concrete_name = "GE_BoxWithBoxes"
+         
+         vertices_coordinate_0 = regular_vector( 0.0, 1, 1.0 )
+         vertices_coordinate_1 = regular_vector( 0.0, 1, 1.0 )
+         mesh_polyhedron = < "GE_Segment" "GE_Rectangle" >
+         
+      END MODULE GE_Meshing
+
+      MODULE interior_fields
+         
+         MODULE uu
+            name = "uu"
+            nb_components = 1
+            element_name = "PDE_2D_Q1_4nodes"
+            storage_depth = 1
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = vector( 0.0 )
+            END MODULE DOFs_values
+         END MODULE uu
+
+         MODULE ue
+            name = "ue"
+            nb_components = 1
+            element_name = "PDE_2D_Q1_4nodes"
+            storage_depth = 1
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = vector( $DS_sol )
+            END MODULE DOFs_values
+         END MODULE ue
+         
+      END MODULE interior_fields
+
+      MODULE PDE_ResultSaver
+         writers = < "PEL_TICwriter" >
+         writing_mode = "text"
+         files_basename = "save"
+         MODULE uu
+            where_to_save = "at_vertices"
+            entry_name = "U"
+            field = "uu"
+         END MODULE uu
+      END MODULE PDE_ResultSaver
+
+      MODULE PDE_AdapterCHARMS
+         verbose_level = 0
+         type = "quasi_hierarchical_basis"
+         MODULE PDE_AdaptationIndicator
+            concrete_name = "PDE_GeometricIndicator"
+            unrefinement_indicator = ( $IS_ITER >= 2 ?
+                         in_box( $DV_X, < -1.0 -1.0 >, < 2.0 2.0 > )
+                         :
+                         false )
+            refinement_indicator = ( $IS_ITER <= 1 ?
+                         in_box( $DV_X, < -1.0 -1.0 >, < 2.0 2.0 > )
+                         :
+                         false )
+            nb_steps = 2
+         END MODULE PDE_AdaptationIndicator
+      END MODULE PDE_AdapterCHARMS
+ 
+   END MODULE PDE_DomainAndFields
+
+   MODULE FE_SetOfParameters
+      no_force = < 0.0 >
+   END MODULE FE_SetOfParameters
+   
+   MODULE FE_OneStepIteration
+      
+      concrete_name = "FE_SplitSystem"
+      
+      MODULE list_of_FE_OneStepIteration
+         
+         MODULE FE_OneStepIteration#adapt
+            concrete_name = "FE_AdaptationStepCHARMS"
+            build_initial_refinement = false
+            nb_iterations_max_before_time_stepping = 0
+            nb_iterations_max_during_time_stepping = 10
+            stop_after_nb_iterations_max = true
+            check_faces_consistency = true
+            check_covering_of_cells_boundary = true
+            MODULE list_of_PDE_DiscreteField
+               MODULE uu
+                  current = "uu"
+                  explicit = "ue"
+               END MODULE uu
+            END MODULE list_of_PDE_DiscreteField
+         END MODULE FE_OneStepIteration#adapt
+         
+         MODULE FE_OneStepIteration#test
+            concrete_name = "FE_AdaptationStepCHARMStest"
+            MODULE list_of_PDE_DiscreteField
+               MODULE uu
+                  current = "uu"
+               END MODULE uu
+            END MODULE list_of_PDE_DiscreteField
+         END MODULE FE_OneStepIteration#test
+            
+      END MODULE list_of_FE_OneStepIteration
+
+   END MODULE FE_OneStepIteration
+
+END MODULE PEL_Application

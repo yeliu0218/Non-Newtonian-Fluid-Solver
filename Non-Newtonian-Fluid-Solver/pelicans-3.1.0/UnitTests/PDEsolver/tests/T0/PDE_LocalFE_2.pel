@@ -1,0 +1,50 @@
+   MODULE PEL_ObjectTest#PDE_LocalFE_TEST
+      
+      MODULE PDE_LocalFE_TEST_2
+         
+         verbose_level = 0
+         nb_space_dimensions = 2
+         type = "finite_element"
+         
+         MODULE GE_Meshing
+            concrete_name = "GE_EMC2Meshing"
+            format = "ftq"
+            filename = join( this_file_dir(), "meshing_2.ftq" )
+         END MODULE GE_Meshing
+         
+         MODULE interior_fields
+            
+            MODULE uu
+               name = "uu"
+               nb_components = 1
+               element_name = "PDE_2D_P1_3nodes"
+               storage_depth = 1
+               MODULE DOFs_values
+                  type = "uniformly_defined"
+                  value = vector( component( $DV_X, 1 ) )
+               END MODULE DOFs_values
+            END MODULE uu
+            
+         END MODULE interior_fields
+         
+         MODULE solution
+            
+            MODULE interface
+               inward_colors = < "r3" "r4" >
+               outward_colors = < "r4" "r5" >
+            END MODULE interface
+            
+            MODULE uu
+               jacobian = array( < 0.0 1.0 > )
+               hessian  = array( array( < 0.0 0.0 > , < 0.0 0.0 > ) )
+            END MODULE uu
+            
+         END MODULE solution
+         
+      dbl_epsilon = 1.e-12
+      dbl_minimum = 1.e-15
+      
+      END MODULE PDE_LocalFE_TEST_2
+      
+   END MODULE PEL_ObjectTest#PDE_LocalFE_TEST
+   

@@ -1,0 +1,162 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>FE_StreamFunction.hh</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="FE_StreamFunction.hh_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="FEpack-tree.html"><span>Tree</span></a>
+    <a href="FE_StreamFunction.html"><span>Class</span></a>
+    <span class=selected>Header</span>
+    <a href="FE_StreamFunction.cc.html"><span>Implementation</span></a>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="FEpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#ifndef</font><font class="text"> FE_STREAM_FUNCTION_HH
+</font><font class="kw2">#define</font><font class="text"> FE_STREAM_FUNCTION_HH
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE_OneStepIteration</font><font class="text">.hh&gt;
+
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">GE_QRprovider</font><font class="text"> ;
+
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">LA_Matrix</font><font class="text"> ;
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">LA_SeqVector</font><font class="text"> ;
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">LA_Solver</font><font class="text"> ;
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">LA_Vector</font><font class="text"> ;
+
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">PDE_DomainAndFields</font><font class="text"> ;
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">PDE_DiscreteField</font><font class="text"> ;
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">PDE_LocalEquation</font><font class="text"> ;
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">PDE_LocalFEcell</font><font class="text"> ;
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">PDE_LocalFEbound</font><font class="text"> ;
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">PDE_SystemNumbering</font><font class="text"> ;
+
+</font><font class="comment">/*
+PUBLISHED
+*/
+</font><font class="text">
+</font><font class="kw1">class</font><font class="text"> PEL_EXPORT </font><font class="kw3">FE_StreamFunction</font><font class="text"> : </font><font class="kw1">public</font><font class="text"> </font><font class="kw3">FE_OneStepIteration
+</font><font class="text">{
+   </font><font class="kw1">public</font><font class="text">: </font><font class="comment">//-----------------------------------------------------------
+</font><font class="text">
+   </font><font class="comment">//-- Substeps of the step by step progression
+</font><font class="text">
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> do_one_inner_iteration( </font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* t_it ) ;
+
+   </font><font class="comment">//-- Savings for post-processing
+</font><font class="text">
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> save_other_than_time_and_fields( 
+                                                  </font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* t_it,
+                                                  </font><font class="kw3">PDE_ResultSaver</font><font class="text">* rs ) ;
+
+   </font><font class="kw1">protected</font><font class="text">: </font><font class="comment">//--------------------------------------------------------
+</font><font class="text">
+   </font><font class="kw1">private</font><font class="text">: </font><font class="comment">//----------------------------------------------------------
+</font><font class="text">
+     ~</font><font class="kw3">FE_StreamFunction</font><font class="text">( </font><font class="kw1">void</font><font class="text"> ) ;
+      </font><font class="kw3">FE_StreamFunction</font><font class="text">( </font><font class="kw3">FE_StreamFunction</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; other ) ;
+      </font><font class="kw3">FE_StreamFunction</font><font class="text">&amp; </font><font class="kw1">operator</font><font class="text">=( </font><font class="kw3">FE_StreamFunction</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; other ) ;
+
+      </font><font class="kw3">FE_StreamFunction</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                         </font><font class="kw3">PDE_DomainAndFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dom,
+                         </font><font class="kw3">FE_SetOfParameters</font><font class="text"> </font><font class="kw1">const</font><font class="text">* prms,
+                         </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp ) ;
+
+   </font><font class="comment">//-- Plug in
+</font><font class="text">
+      </font><font class="kw3">FE_StreamFunction</font><font class="text">( </font><font class="kw1">void</font><font class="text"> ) ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw3">FE_StreamFunction</font><font class="text">* create_replica(
+                                        </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                        </font><font class="kw3">PDE_DomainAndFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dom,
+                                        </font><font class="kw3">FE_SetOfParameters</font><font class="text"> </font><font class="kw1">const</font><font class="text">* prms,
+                                        </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* exp ) </font><font class="kw1">const</font><font class="text"> ;
+
+   </font><font class="comment">//-- Class attributes
+</font><font class="text">
+      </font><font class="kw1">static</font><font class="text"> </font><font class="kw3">FE_StreamFunction</font><font class="text"> </font><font class="kw1">const</font><font class="text">* PROTOTYPE ;
+
+   </font><font class="comment">//-- Attributes
+</font><font class="text">
+      </font><font class="kw3">PDE_DiscreteField</font><font class="text">* SF ;
+      </font><font class="kw2">size_t</font><font class="text"> L_UPDATE ;
+
+      </font><font class="kw3">PDE_DiscreteField</font><font class="text">* VV ;
+      </font><font class="kw2">size_t</font><font class="text"> L_VV ;
+
+      </font><font class="kw3">PDE_LocalEquation</font><font class="text">* ELEMENT_EQ ;
+      </font><font class="kw3">GE_QRprovider</font><font class="text"> </font><font class="kw1">const</font><font class="text">* QRP ;
+      </font><font class="kw3">PDE_LocalFEcell</font><font class="text">* cFE ;
+      </font><font class="kw3">PDE_LocalFEbound</font><font class="text">* bFE ;
+
+      </font><font class="kw3">PDE_SystemNumbering</font><font class="text">* NMB ;
+      
+      </font><font class="kw3">LA_Matrix</font><font class="text">* A ;
+      </font><font class="kw3">LA_Vector</font><font class="text">* F ;
+      </font><font class="kw3">LA_Vector</font><font class="text">* U ;
+      </font><font class="kw3">LA_SeqVector</font><font class="text">* U_LOC ;
+
+      </font><font class="kw3">LA_Solver</font><font class="text">* SOLVER ;
+} ;
+
+</font><font class="kw2">#endif
+</font><font class="text">
+</font>
+</pre>
+</body>
+</html>

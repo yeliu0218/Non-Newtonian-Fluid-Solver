@@ -1,0 +1,633 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>PDE_FieldComposition.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="PDE_FieldComposition.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="PDEpack-tree.html"><span>Tree</span></a>
+    <a href="PDE_FieldComposition.html"><span>Class</span></a>
+    <a href="PDE_FieldComposition.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="PDEpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_FieldComposition</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_DiscreteField</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_SetOfDiscreteFields</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_SetOfFieldCompositions</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Iterator</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ObjectRegister</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Root</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Vector</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;iostream&gt;
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw3">PDE_FieldComposition</font><font class="text">*
+</font><font class="kw3">PDE_FieldComposition</font><font class="text">:: make( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                             </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp,
+                             </font><font class="kw2">size_t</font><font class="text"> nb_sp_dimensions,
+                             </font><font class="kw3">PDE_SetOfDiscreteFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dfs )
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_FieldComposition:: make&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( exp != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( nb_sp_dimensions == 0 || nb_sp_dimensions == 1 ||
+                  nb_sp_dimensions == 2 || nb_sp_dimensions == 3 ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( dfs != 0 ) ;
+
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; n = exp-&gt;string_data( </font><font class="string">&quot;concrete_name&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PDE_FieldComposition</font><font class="text"> </font><font class="kw1">const</font><font class="text">* proto =
+      </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">PDE_FieldComposition</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;(
+                                    plugins_map()-&gt;item( n ) ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( proto-&gt;is_a_prototype() ) ;
+      
+   </font><font class="kw3">PDE_FieldComposition</font><font class="text">* result =
+            proto-&gt;create_replica( a_owner, exp, nb_sp_dimensions, dfs ) ;
+   
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;owner() == a_owner ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PDE_FieldComposition</font><font class="text">:: </font><font class="kw3">PDE_FieldComposition</font><font class="text">(
+                                    </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_concrete_name )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">  : </font><font class="kw3">PEL_Object</font><font class="text">( plugins_map() )
+  , NAME( a_concrete_name )
+  , PROTO( </font><font class="kw1">true</font><font class="text"> )
+  , VARS( 0 )
+  , NB_VARS( 0 )
+  , VAR_IDX( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+  , GLOB_2_iVAR( 0 )
+  , VAR_VALUES( 0, 0 )
+  , LAWS( 0 )
+  , COMPUTED( </font><font class="kw1">false</font><font class="text"> )
+  , VALUES_PROVIDER( 0 )
+{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_FieldComposition:: PDE_FieldComposition(a_concrete_name)&quot;</font><font class="text"> ) ;
+   
+   plugins_map()-&gt;register_item( a_concrete_name, </font><font class="kw1">this</font><font class="text"> ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( nb_variables() == 0 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( name() == a_concrete_name ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( is_a_prototype() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PDE_FieldComposition</font><font class="text">:: </font><font class="kw3">PDE_FieldComposition</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                             </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_name )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">  : </font><font class="kw3">PEL_Object</font><font class="text">( a_owner )
+  , NAME( a_name )
+  , PROTO( </font><font class="kw1">false</font><font class="text"> )
+  , VARS( </font><font class="kw3">PEL_Vector</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, 0 ) )
+  , NB_VARS( 0 )
+  , VAR_IDX( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+  , GLOB_2_iVAR( 0 )
+  , VAR_VALUES( 0, 0 )
+  , LAWS( </font><font class="kw3">PEL_Vector</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, 0 ) )
+  , COMPUTED( </font><font class="kw1">false</font><font class="text"> )
+  , VALUES_PROVIDER( </font><font class="kw1">this</font><font class="text"> )
+{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_FieldComposition:: PDE_FieldComposition(a_owner,a_name)&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( nb_variables() == 0 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( name() == a_name ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( owner() == a_owner ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( !is_a_prototype() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PDE_FieldComposition</font><font class="text">:: ~</font><font class="kw3">PDE_FieldComposition</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_FieldComposition:: ~PDE_FieldComposition&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PDE_FieldComposition</font><font class="text">:: do_the_links( </font><font class="kw3">PDE_SetOfFieldCompositions</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fcs )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_FieldComposition:: do_the_links&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( do_the_links_PRE( fcs ) ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( do_the_links_POST( fcs ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool</font><font class="text"> 
+</font><font class="kw3">PDE_FieldComposition</font><font class="text">:: has_consistent_internal_dependencies( 
+                                </font><font class="kw3">PDE_FieldComposition</font><font class="text"> </font><font class="kw1">const</font><font class="text">* other ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_FieldComposition:: has_consistent_internal_dependencies&quot;</font><font class="text"> ) ;
+   </font><font class="kw1">bool</font><font class="text"> result = </font><font class="kw1">true</font><font class="text"> ;
+
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;NB_VARS ; i++ )
+   {
+      </font><font class="kw3">PDE_DiscreteField</font><font class="text"> </font><font class="kw1">const</font><font class="text">* f = 
+                      </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">PDE_DiscreteField</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;( VARS-&gt;at( i ) ) ;
+      result = result &amp;&amp; other-&gt;is_a_variable( f ) ;
+   }
+   
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;LAWS-&gt;count() ; ++i )
+   {
+      </font><font class="kw3">PDE_FieldComposition</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fc = 
+                     </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">PDE_FieldComposition</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;( LAWS-&gt;at(i) ) ;
+      result = result &amp;&amp; fc-&gt;has_consistent_internal_dependencies( other ) ;
+   }
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void</font><font class="text"> 
+</font><font class="kw3">PDE_FieldComposition</font><font class="text">:: complete_internal_dependencies( </font><font class="kw1">void</font><font class="text"> ) 
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_FieldComposition:: complete_internal_dependencies&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;LAWS-&gt;count() ; ++i )
+   {
+      </font><font class="kw3">PDE_FieldComposition</font><font class="text">* fc = 
+                          </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">PDE_FieldComposition</font><font class="text">*&gt;( LAWS-&gt;at(i) ) ;
+      
+      fc-&gt;complete_internal_dependencies() ;
+      fc-&gt;start_variable_iterator() ;      
+      </font><font class="kw1">for</font><font class="text">( ; fc-&gt;valid_variable() ; fc-&gt;go_next_variable() )
+      {
+         </font><font class="kw3">PDE_DiscreteField</font><font class="text"> </font><font class="kw1">const</font><font class="text">* f = fc-&gt;variable() ;
+         </font><font class="kw1">if</font><font class="text">( !is_a_variable( f ) )
+         {
+            add_one_variable( f ) ;
+         }
+      }
+   }
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( has_consistent_internal_dependencies( </font><font class="kw1">this</font><font class="text"> ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp;
+</font><font class="kw3">PDE_FieldComposition</font><font class="text">:: name( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_FieldComposition:: name&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw1">return</font><font class="text">( NAME ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">PDE_FieldComposition</font><font class="text">:: is_constant( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_FieldComposition:: is_constant&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw1">bool</font><font class="text"> result = ( nb_variables() == 0 ) ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; result &amp;&amp; i&lt;LAWS-&gt;index_limit() ; ++i )
+   {
+      </font><font class="kw3">PDE_FieldComposition</font><font class="text"> </font><font class="kw1">const</font><font class="text">* c =
+         </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">PDE_FieldComposition</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;( LAWS-&gt;at(i) ) ;
+      result &amp;= c-&gt;is_constant() ;
+   }
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw2">size_t
+</font><font class="kw3">PDE_FieldComposition</font><font class="text">:: nb_variables( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_FieldComposition:: nb_variables&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw1">return</font><font class="text">( NB_VARS ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool</font><font class="text"> 
+</font><font class="kw3">PDE_FieldComposition</font><font class="text">:: is_a_variable( </font><font class="kw3">PDE_DiscreteField</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ff ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_FieldComposition:: is_a_variable&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( ff != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw1">bool</font><font class="text"> result = ( VARS-&gt;item( ff ) != 0 ) ;
+   </font><font class="kw1">return</font><font class="text">( result );
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PDE_FieldComposition</font><font class="text">:: start_variable_iterator( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_FieldComposition:: start_variable_iterator&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   VAR_IDX = 0 ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PDE_FieldComposition</font><font class="text">:: go_next_variable( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_FieldComposition:: go_next_variable&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( valid_variable() ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   ++VAR_IDX ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">PDE_FieldComposition</font><font class="text">:: valid_variable( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_FieldComposition:: valid_variable&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw1">return</font><font class="text">( VAR_IDX &lt; NB_VARS ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PDE_DiscreteField</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">PDE_FieldComposition</font><font class="text">:: variable( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_FieldComposition:: variable&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( valid_variable() ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw3">PDE_DiscreteField</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result =
+               </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">PDE_DiscreteField</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;( VARS-&gt;at( VAR_IDX ) ) ;
+   
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result!=0 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( is_a_variable( result ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">PDE_FieldComposition</font><font class="text">:: variable_value_is_set( </font><font class="kw3">PDE_DiscreteField</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ff,
+                                              </font><font class="kw2">size_t</font><font class="text"> ic ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_FieldComposition:: variable_value_is_set&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( is_a_variable( ff ) ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( ic &lt; ff-&gt;nb_components() ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   
+   </font><font class="kw2">size_t</font><font class="text"> idx = VALUES_PROVIDER-&gt;GLOB_2_iVAR( ff-&gt;id_number() ) ;
+   </font><font class="kw1">bool</font><font class="text"> result = VALUES_PROVIDER-&gt;VAR_VALUES( idx, ic ) != </font><font class="kw3">PEL</font><font class="text">::bad_double() ;
+   
+   </font><font class="kw1">return</font><font class="text"> result ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PDE_FieldComposition</font><font class="text">:: set_variable_value( </font><font class="kw3">PDE_DiscreteField</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ff,
+                                           </font><font class="kw2">size_t</font><font class="text"> ic,
+                                           </font><font class="kw1">double</font><font class="text"> x )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_FieldComposition:: set_variable_value&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( is_a_variable( ff ) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   
+   </font><font class="kw2">size_t</font><font class="text"> idx = GLOB_2_iVAR( ff-&gt;id_number() ) ;
+   VAR_VALUES( idx, ic ) = x ;
+   COMPUTED = </font><font class="kw1">false</font><font class="text"> ;
+   
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( !is_computed() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( variable_value_is_set( ff, ic ) ) ;  
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">double
+</font><font class="kw3">PDE_FieldComposition</font><font class="text">:: variable_value( </font><font class="kw3">PDE_DiscreteField</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ff,
+                                       </font><font class="kw2">size_t</font><font class="text"> ic ) </font><font class="kw1">const</font><font class="text"> 
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_FieldComposition:: variable_value&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( ff!=0 ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( is_a_variable( ff ) ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( variable_value_is_set( ff, ic ) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( VALUES_PROVIDER!=0 ) ;
+   
+   </font><font class="kw2">size_t</font><font class="text"> idx = VALUES_PROVIDER-&gt;GLOB_2_iVAR( ff-&gt;id_number() ) ;
+   </font><font class="kw1">double</font><font class="text"> result = VALUES_PROVIDER-&gt;VAR_VALUES( idx , ic ) ;
+   
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void</font><font class="text"> 
+</font><font class="kw3">PDE_FieldComposition</font><font class="text">:: compute( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_FieldComposition:: compute&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( has_consistent_internal_dependencies( </font><font class="kw1">this</font><font class="text"> ) ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( 
+ </font><font class="kw3">FORALL</font><font class="text">( ( start_variable_iterator() ; valid_variable() ; go_next_variable() ),
+    </font><font class="kw3">FORALL</font><font class="text">( ( </font><font class="kw2">size_t</font><font class="text"> ic=0 ; ic&lt;variable()-&gt;nb_components() ; ic++ ),
+       variable_value_is_set( variable(), ic ) ) ) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   compute_from_provider( </font><font class="kw1">this</font><font class="text"> ) ;
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( is_computed() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void</font><font class="text"> 
+</font><font class="kw3">PDE_FieldComposition</font><font class="text">:: compute_from_provider( 
+                                     </font><font class="kw3">PDE_FieldComposition</font><font class="text"> </font><font class="kw1">const</font><font class="text">* provider )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_FieldComposition:: compute_from_provider&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   
+   VALUES_PROVIDER = provider ;
+   
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;LAWS-&gt;count() ; ++i )
+   {
+      </font><font class="kw3">PDE_FieldComposition</font><font class="text">* fc =
+                  </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">PDE_FieldComposition</font><font class="text">*&gt;( LAWS-&gt;at(i) ) ;
+      </font><font class="kw3">PEL_CHECK</font><font class="text">( </font><font class="kw1">dynamic_cast</font><font class="text">&lt;</font><font class="kw3">PDE_FieldComposition</font><font class="text">*&gt;( LAWS-&gt;at(i) ) !=0 ) ;
+      
+      fc-&gt;compute_from_provider( VALUES_PROVIDER ) ;
+   }
+   compute_self() ;
+   COMPUTED = </font><font class="kw1">true</font><font class="text"> ;
+   
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( is_computed() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool</font><font class="text"> 
+</font><font class="kw3">PDE_FieldComposition</font><font class="text">:: is_computed( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+    </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_FieldComposition:: is_computed&quot;</font><font class="text"> ) ;
+
+    </font><font class="kw1">return</font><font class="text"> COMPUTED ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void</font><font class="text"> 
+</font><font class="kw3">PDE_FieldComposition</font><font class="text">:: add_one_composition( </font><font class="kw3">PDE_FieldComposition</font><font class="text">* fc ) 
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_FieldComposition:: add_one_composition&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( fc != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   
+   </font><font class="kw1">if</font><font class="text">( fc-&gt;depends_on( </font><font class="kw1">this</font><font class="text"> ) )
+   {
+      </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain(
+         </font><font class="string">&quot;*** \&quot;&quot;+NAME+&quot;</font><font class="text">\</font><font class="string">&quot; field composition error:\n&quot;
+</font><font class="text">         </font><font class="string">&quot;    circular definition (recursive calls)&quot;</font><font class="text"> ) ;
+   }
+   LAWS-&gt;append( fc ) ;
+   fc-&gt;start_variable_iterator() ;
+   </font><font class="kw1">for</font><font class="text">( ; fc-&gt;valid_variable() ; fc-&gt;go_next_variable() )
+   {
+      </font><font class="kw3">PDE_DiscreteField</font><font class="text"> </font><font class="kw1">const</font><font class="text">* f = fc-&gt;variable() ;
+      </font><font class="kw1">if</font><font class="text">( !is_a_variable( f ) )
+      {
+         add_one_variable( f ) ;
+      }
+   }
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( depends_on( fc ) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( 
+      </font><font class="kw3">FORALL</font><font class="text">( ( fc-&gt;start_variable_iterator() ; fc-&gt;valid_variable() ;
+                fc-&gt;go_next_variable() ),
+              is_a_variable( fc-&gt;variable() ) ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">PDE_FieldComposition</font><font class="text">:: depends_on( </font><font class="kw3">PDE_FieldComposition</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fc ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_FieldComposition:: depends_on&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( fc != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw1">bool</font><font class="text"> result = ( fc == </font><font class="kw1">this</font><font class="text"> ) ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; !result &amp;&amp; i&lt;LAWS-&gt;count() ; ++i )
+   {
+      </font><font class="kw3">PDE_FieldComposition</font><font class="text"> </font><font class="kw1">const</font><font class="text">* other = 
+                     </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">PDE_FieldComposition</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;( LAWS-&gt;at(i) ) ;
+      result = other-&gt;depends_on( fc ) ;
+   }
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PDE_FieldComposition</font><font class="text">:: add_one_variable( </font><font class="kw3">PDE_DiscreteField</font><font class="text"> </font><font class="kw1">const</font><font class="text">* df )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_FieldComposition:: add_one_variable&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( df != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw1">if</font><font class="text">( !is_a_variable( df ) )
+   {
+      VARS-&gt;append( </font><font class="kw1">const_cast</font><font class="text">&lt;</font><font class="kw3">PDE_DiscreteField</font><font class="text">*&gt;( df ) ) ;
+      </font><font class="kw2">size_t</font><font class="text"> glob = df-&gt;id_number() ;
+      </font><font class="kw2">size_t</font><font class="text"> idx = VARS-&gt;index_of( df ) ;
+      </font><font class="kw1">if</font><font class="text">( GLOB_2_iVAR.size()&lt;=glob )
+      {
+         GLOB_2_iVAR.resize( glob+1 ) ;
+      }
+      GLOB_2_iVAR( glob ) = idx ;
+      
+      </font><font class="kw2">size_t</font><font class="text"> nb_comp = </font><font class="kw3">PEL</font><font class="text">::max( df-&gt;nb_components(), VAR_VALUES.index_bound(1) ) ;
+      VAR_VALUES.re_initialize( idx+1, nb_comp ) ;
+      VAR_VALUES.</font><font class="kw2">set</font><font class="text">( </font><font class="kw3">PEL</font><font class="text">::bad_double() ) ;
+      NB_VARS = VARS-&gt;count() ;
+   }
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( is_a_variable( df ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">PDE_FieldComposition</font><font class="text">:: is_a_prototype( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">return</font><font class="text">( PROTO ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">PDE_FieldComposition</font><font class="text">:: do_the_links_PRE(
+                           </font><font class="kw3">PDE_SetOfFieldCompositions</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fcs ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( fcs != 0 ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">PDE_FieldComposition</font><font class="text">:: do_the_links_POST(
+                           </font><font class="kw3">PDE_SetOfFieldCompositions</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fcs ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">PDE_FieldComposition</font><font class="text">:: value_PRE( </font><font class="kw2">size_t</font><font class="text"> ic ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( ic&lt;nb_components() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( is_computed() ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">PDE_FieldComposition</font><font class="text">:: create_replica_PRE(
+                             </font><font class="kw3">PEL_Object</font><font class="text"> </font><font class="kw1">const</font><font class="text">* a_owner,
+                             </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp,
+                             </font><font class="kw2">size_t</font><font class="text"> nb_sp_dims,
+                             </font><font class="kw3">PDE_SetOfDiscreteFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dfs ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( exp != 0 ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( nb_sp_dims == 0 || nb_sp_dims == 1 ||
+               nb_sp_dims == 2 || nb_sp_dims == 3 ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( dfs != 0 ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( is_a_prototype() ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">PDE_FieldComposition</font><font class="text">:: create_replica_POST(
+                             </font><font class="kw3">PDE_FieldComposition</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result,
+                             </font><font class="kw3">PEL_Object</font><font class="text"> </font><font class="kw1">const</font><font class="text">* a_owner,
+                             </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp,
+                             </font><font class="kw2">size_t</font><font class="text"> nb_sp_dims,
+                             </font><font class="kw3">PDE_SetOfDiscreteFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dfs ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( result != 0 ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( result-&gt;owner() == a_owner ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( !result-&gt;is_a_prototype() ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">PDE_FieldComposition</font><font class="text">:: invariant( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">::invariant() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( </font><font class="kw3">EQUIVALENT</font><font class="text">( !is_a_prototype(),
+                           VARS!=0 &amp;&amp; LAWS!=0 ) ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( </font><font class="kw3">IMPLIES</font><font class="text">( !is_a_prototype(),
+                        VARS-&gt;count() == NB_VARS ) ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( </font><font class="kw3">IMPLIES</font><font class="text">( !is_a_prototype(),
+                        NB_VARS == VAR_VALUES.index_bound(0) ) ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( </font><font class="kw3">IMPLIES</font><font class="text">( !is_a_prototype(),
+                        NB_VARS == VARS-&gt;index_limit() ) ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( </font><font class="kw3">IMPLIES</font><font class="text">( !is_a_prototype(),
+                        LAWS-&gt;count() == LAWS-&gt;index_limit() ) ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_ObjectRegister</font><font class="text">*
+</font><font class="kw3">PDE_FieldComposition</font><font class="text">:: plugins_map( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw3">PEL_ObjectRegister</font><font class="text">* result =
+      </font><font class="kw3">PEL_ObjectRegister</font><font class="text">::create( </font><font class="kw3">PEL_Root</font><font class="text">::object(),
+                                  </font><font class="string">&quot;PDE_FieldComposition descendant&quot;</font><font class="text"> ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font>
+</pre>
+</body>
+</html>

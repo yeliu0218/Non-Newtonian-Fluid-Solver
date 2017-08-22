@@ -1,0 +1,393 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>FE_Launcher.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="FE_Launcher.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="FEpack-tree.html"><span>Tree</span></a>
+    <a href="FE_Launcher.html"><span>Class</span></a>
+    <a href="FE_Launcher.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="FEpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE_Launcher</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Bool</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Communicator</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Double</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Exec</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Int</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Module</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Root</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_String</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_System</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Variable</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">doubleArray2D</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">doubleVector</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;fstream&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;iostream&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;sstream&gt;
+
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">cout</font><font class="text"> ;
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> ; </font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> ; </font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::ifstream ;
+
+</font><font class="kw1">struct</font><font class="text"> FE_Launcher_ERROR {
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> n0( </font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; filename ) ;
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> n1( </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp, </font><font class="kw2">size_t</font><font class="text"> nbv ) ;
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> n2( </font><font class="kw1">void</font><font class="text"> ) ;
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> n3( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; name,
+                   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; type ) ;
+} ;
+
+</font><font class="kw3">FE_Launcher</font><font class="text"> </font><font class="kw1">const</font><font class="text">* </font><font class="kw3">FE_Launcher</font><font class="text">::PROTOTYPE = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">FE_Launcher</font><font class="text">( </font><font class="string">&quot;FE_Launcher&quot;</font><font class="text"> ) ;
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw3">FE_Launcher</font><font class="text">:: </font><font class="kw3">FE_Launcher</font><font class="text">( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; name )
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_Application</font><font class="text">( name )
+   , PATTERN( </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">::ignore )
+   , CONTROLER_FILE()
+   , DATA_FILE()
+   , NB_CALC( 0 )
+{
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw3">FE_Launcher</font><font class="text">*
+</font><font class="kw3">FE_Launcher</font><font class="text">:: create_replica( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner, 
+                              </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_Launcher:: create_replica&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_PRE( a_owner, exp ) ) ;
+
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> controler_file = </font><font class="string">&quot;&quot;</font><font class="text"> ;
+   </font><font class="kw1">if</font><font class="text">( exp-&gt;has_entry( </font><font class="string">&quot;controler_file&quot;</font><font class="text"> ) )
+   {
+      controler_file = exp-&gt;string_data( </font><font class="string">&quot;controler_file&quot;</font><font class="text"> ) ;
+      exp-&gt;test_file( </font><font class="string">&quot;controler_file&quot;</font><font class="text">, </font><font class="string">&quot;read&quot;</font><font class="text"> ) ;
+      </font><font class="kw1">if</font><font class="text">( exp-&gt;pattern_status() != </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">::ignore )
+      {
+         controler_file = </font><font class="string">&quot;&quot;</font><font class="text"> ;
+      }
+   }
+   
+   </font><font class="kw3">FE_Launcher</font><font class="text">* result = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">FE_Launcher</font><font class="text">( a_owner, exp, controler_file ) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_POST( result, a_owner, exp ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw3">FE_Launcher</font><font class="text">:: </font><font class="kw3">FE_Launcher</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                           </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp,
+                           </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; controler_file  )
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_Application</font><font class="text">( a_owner, exp )
+   , PATTERN( exp-&gt;pattern_status() )
+   , CONTROLER_FILE( controler_file )
+   , DATA_FILE( exp-&gt;string_data( </font><font class="string">&quot;data_file&quot;</font><font class="text"> ) )
+   , NB_CALC( exp-&gt;int_data( </font><font class="string">&quot;nb_calculations&quot;</font><font class="text"> ) )
+{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_Launcher:: FE_Launcher&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">(
+      </font><font class="kw3">IMPLIES</font><font class="text">( exp-&gt;pattern_status() != </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">::ignore,
+               controler_file.empty() ) ) ;
+
+   ifstream ff( DATA_FILE.c_str(), </font><font class="kw2">std</font><font class="text">::ios::in  ) ;
+   </font><font class="kw1">if</font><font class="text">( !ff ) FE_Launcher_ERROR::n0( DATA_FILE ) ;
+   ff.close() ;
+
+   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* ee = exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;variables&quot;</font><font class="text"> ) ;
+   </font><font class="kw2">size_t</font><font class="text"> iv = 0 ;
+   ee-&gt;start_module_iterator() ;
+   </font><font class="kw1">for</font><font class="text">( ; ee-&gt;is_valid_module() ; ee-&gt;go_next_module() )
+   {
+      ++iv ;
+   }
+ 
+   TYPE.resize( iv, </font><font class="kw3">PEL_Data</font><font class="text">::Undefined ) ;
+   BOOL_VALUES.resize( iv, 
+                       </font><font class="kw3">boolVector</font><font class="text">( exp-&gt;int_data( </font><font class="string">&quot;nb_calculations&quot;</font><font class="text"> ) ) ) ;
+   BOOL_DATA.resize( iv, (</font><font class="kw3">PEL_Bool</font><font class="text">*)0 ) ;
+   INT_VALUES.resize( iv, 
+                      </font><font class="kw3">intVector</font><font class="text">( exp-&gt;int_data( </font><font class="string">&quot;nb_calculations&quot;</font><font class="text"> ) ) ) ;
+   INT_DATA.resize( iv, (</font><font class="kw3">PEL_Int</font><font class="text">*)0 ) ;
+   DBL_VALUES.resize( iv, 
+                      </font><font class="kw3">doubleVector</font><font class="text">( exp-&gt;int_data( </font><font class="string">&quot;nb_calculations&quot;</font><font class="text"> ) ) ) ;
+   DBL_DATA.resize( iv, (</font><font class="kw3">PEL_Double</font><font class="text">*)0 ) ;
+   STRING_VALUES.resize( iv, 
+                         </font><font class="kw3">stringVector</font><font class="text">( exp-&gt;int_data( </font><font class="string">&quot;nb_calculations&quot;</font><font class="text"> ) ) ) ;
+   STRING_DATA.resize( iv, (</font><font class="kw3">PEL_String</font><font class="text">*)0 ) ;
+
+   iv = 0 ;
+   ee-&gt;start_module_iterator() ;
+   </font><font class="kw1">for</font><font class="text">( ; ee-&gt;is_valid_module() ; ee-&gt;go_next_module() )
+   {
+      </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* se = ee-&gt;create_subexplorer( 0 ) ;
+      </font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; name = se-&gt;string_data( </font><font class="string">&quot;name&quot;</font><font class="text"> ) ;
+      </font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; type = se-&gt;string_data( </font><font class="string">&quot;type&quot;</font><font class="text"> ) ;
+      </font><font class="kw1">if</font><font class="text">( name.substr(0,2) == </font><font class="string">&quot;BS&quot;</font><font class="text"> )
+      {
+         </font><font class="kw1">if</font><font class="text">( type != </font><font class="string">&quot;Bool&quot;</font><font class="text"> ) 
+            FE_Launcher_ERROR::n3( name, </font><font class="string">&quot;Bool&quot;</font><font class="text"> ) ;
+         TYPE[iv]= </font><font class="kw3">PEL_Data</font><font class="text">::Bool ;
+         </font><font class="kw3">boolVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; values = se-&gt;boolVector_data( </font><font class="string">&quot;values&quot;</font><font class="text"> ) ;
+         </font><font class="kw1">if</font><font class="text">( values.size() != NB_CALC ) FE_Launcher_ERROR::n1( se, NB_CALC ) ; 
+         BOOL_VALUES[iv]= values ;
+         </font><font class="kw3">PEL_Bool</font><font class="text">* data = </font><font class="kw3">PEL_Bool</font><font class="text">::create( 0, </font><font class="kw1">false</font><font class="text"> ) ;
+         BOOL_DATA[iv]= data ;
+         </font><font class="kw3">PEL_Exec</font><font class="text">::add_variable_to_execution_context( 
+                            </font><font class="kw3">PEL_Variable</font><font class="text">::object( name ), data ) ;
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( name.substr(0,2) == </font><font class="string">&quot;IS&quot;</font><font class="text"> )
+      {
+         </font><font class="kw1">if</font><font class="text">( type != </font><font class="string">&quot;Int&quot;</font><font class="text"> ) 
+            FE_Launcher_ERROR::n3( name, </font><font class="string">&quot;Int&quot;</font><font class="text"> ) ;
+         TYPE[iv]= </font><font class="kw3">PEL_Data</font><font class="text">::Int ;
+         </font><font class="kw3">intVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; values = se-&gt;intVector_data( </font><font class="string">&quot;values&quot;</font><font class="text"> ) ;
+         </font><font class="kw1">if</font><font class="text">( values.size() != NB_CALC ) FE_Launcher_ERROR::n1( se, NB_CALC ) ; 
+         INT_VALUES[iv]= values ;
+         </font><font class="kw3">PEL_Int</font><font class="text">* data = </font><font class="kw3">PEL_Int</font><font class="text">::create( 0, 0 ) ;
+         INT_DATA[iv]= data ;
+         </font><font class="kw3">PEL_Exec</font><font class="text">::add_variable_to_execution_context( 
+                            </font><font class="kw3">PEL_Variable</font><font class="text">::object( name ), data ) ;
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( name.substr(0,2) == </font><font class="string">&quot;DS&quot;</font><font class="text"> )
+      {
+         </font><font class="kw1">if</font><font class="text">( type != </font><font class="string">&quot;Double&quot;</font><font class="text"> ) 
+            FE_Launcher_ERROR::n3( name, </font><font class="string">&quot;Double&quot;</font><font class="text"> ) ;
+         TYPE[iv]= </font><font class="kw3">PEL_Data</font><font class="text">::Double ;
+         </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; values = se-&gt;doubleVector_data( </font><font class="string">&quot;values&quot;</font><font class="text"> ) ;
+         </font><font class="kw1">if</font><font class="text">( values.size() != NB_CALC ) FE_Launcher_ERROR::n1( se, NB_CALC ) ; 
+         DBL_VALUES[iv]= values ;
+         </font><font class="kw3">PEL_Double</font><font class="text">* data = </font><font class="kw3">PEL_Double</font><font class="text">::create( 0, 0.0 ) ;
+         DBL_DATA[iv]= data ;
+         </font><font class="kw3">PEL_Exec</font><font class="text">::add_variable_to_execution_context( 
+                            </font><font class="kw3">PEL_Variable</font><font class="text">::object( name ), data ) ;
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( name.substr(0,2) == </font><font class="string">&quot;SS&quot;</font><font class="text"> )
+      {
+         </font><font class="kw1">if</font><font class="text">( type != </font><font class="string">&quot;String&quot;</font><font class="text"> ) 
+            FE_Launcher_ERROR::n3( name, </font><font class="string">&quot;String&quot;</font><font class="text"> ) ;
+         TYPE[iv]= </font><font class="kw3">PEL_Data</font><font class="text">::String ;
+         </font><font class="kw3">stringVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; values = se-&gt;stringVector_data( </font><font class="string">&quot;values&quot;</font><font class="text"> ) ;
+         </font><font class="kw1">if</font><font class="text">( values.size() != NB_CALC ) FE_Launcher_ERROR::n1( se, NB_CALC ) ; 
+         STRING_VALUES[iv]= values ;
+         </font><font class="kw3">PEL_String</font><font class="text">* data = </font><font class="kw3">PEL_String</font><font class="text">::create( 0, </font><font class="string">&quot;&quot;</font><font class="text"> ) ;
+         STRING_DATA[iv]= data ;
+         </font><font class="kw3">PEL_Exec</font><font class="text">::add_variable_to_execution_context( 
+                            </font><font class="kw3">PEL_Variable</font><font class="text">::object( name ), data ) ;
+      }
+      </font><font class="kw1">else</font><font class="text"> FE_Launcher_ERROR::n2() ;
+
+      se-&gt;destroy() ; se=0 ;
+      ++iv ;
+   }
+   ee-&gt;destroy() ;
+
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw3">FE_Launcher</font><font class="text">:: ~</font><font class="kw3">FE_Launcher</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_Launcher</font><font class="text">:: run( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_Launcher:: run&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;NB_CALC ; ++i )
+   {
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> iv=0 ; iv&lt;TYPE.size() ; ++iv )
+      {
+         </font><font class="kw1">if</font><font class="text">( TYPE[iv] == </font><font class="kw3">PEL_Data</font><font class="text">::Bool )
+         {
+            BOOL_DATA[iv]-&gt;</font><font class="kw2">set</font><font class="text">( BOOL_VALUES[iv](i) ) ;
+         } 
+         </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( TYPE[iv] == </font><font class="kw3">PEL_Data</font><font class="text">::Int )
+         {
+            INT_DATA[iv]-&gt;</font><font class="kw2">set</font><font class="text">( INT_VALUES[iv](i) ) ;
+         } 
+         </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( TYPE[iv] == </font><font class="kw3">PEL_Data</font><font class="text">::Double )
+         {
+            DBL_DATA[iv]-&gt;</font><font class="kw2">set</font><font class="text">( DBL_VALUES[iv](i) ) ;
+         }
+         </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( TYPE[iv] == </font><font class="kw3">PEL_Data</font><font class="text">::String )
+         {
+            STRING_DATA[iv]-&gt;</font><font class="kw2">set</font><font class="text">( STRING_VALUES[iv](i) ) ;
+         }
+      }
+
+      </font><font class="kw3">PEL_Module</font><font class="text">* m = </font><font class="kw3">PEL_Module</font><font class="text">::create( </font><font class="kw3">PEL_Root</font><font class="text">::object(),
+                                          </font><font class="string">&quot;TOP&quot;</font><font class="text">,
+                                          DATA_FILE,
+                                          </font><font class="kw3">PEL_Exec</font><font class="text">::execution_context() ) ;
+      
+      </font><font class="kw3">PEL_Module</font><font class="text">* m_appli = m-&gt;module( </font><font class="string">&quot;PEL_Application&quot;</font><font class="text"> ) ;
+
+      </font><font class="comment">// Particular case of the saving files:
+</font><font class="text">      </font><font class="kw3">PEL_Module</font><font class="text">* m_saver = 
+                  m_appli-&gt;module( </font><font class="string">&quot;PDE_DomainAndFields/PDE_ResultSaver&quot;</font><font class="text"> ) ;
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> ini_nn = 
+                   m_saver-&gt;data_of_entry( </font><font class="string">&quot;files_basename&quot;</font><font class="text"> )-&gt;to_string() ;
+      </font><font class="kw2">ostringstream</font><font class="text"> nn ;
+      nn &lt;&lt; ini_nn &lt;&lt; </font><font class="string">&quot;_&quot;</font><font class="text"> &lt;&lt; i ;
+      m_saver-&gt;replace_data_of_entry(
+               </font><font class="string">&quot;files_basename&quot;</font><font class="text">, </font><font class="kw3">PEL_String</font><font class="text">::create( m_saver, nn.str() ) ) ;
+      
+      </font><font class="kw1">if</font><font class="text">( !CONTROLER_FILE.empty() &amp;&amp; PATTERN != </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">::build )
+      {
+         </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> tmp ;
+         tmp &lt;&lt; </font><font class="string">&quot;temp_file.pel&quot;</font><font class="text"> ;
+         </font><font class="kw1">if</font><font class="text">( </font><font class="kw3">PEL_Exec</font><font class="text">::communicator()-&gt;nb_ranks()&gt;1 )
+         {
+            tmp &lt;&lt; </font><font class="string">&quot;.&quot;</font><font class="text"> &lt;&lt; </font><font class="kw3">PEL_Exec</font><font class="text">::communicator()-&gt;rank() ;
+         }
+         </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text"> tmp_file = tmp.str() ;
+         </font><font class="kw2">std</font><font class="text">::ofstream out( tmp_file.c_str() ) ;
+         </font><font class="kw1">if</font><font class="text">( !out ) FE_Launcher_ERROR:: n0( tmp_file ) ;
+         out.close() ;    
+         m_appli-&gt;write( tmp_file, </font><font class="string">&quot;text&quot;</font><font class="text"> ) ;
+         </font><font class="kw3">stringVector</font><font class="text"> args(0) ;
+         args.append( </font><font class="string">&quot;-A&quot;</font><font class="text"> ) ;
+         args.append( </font><font class="string">&quot;check&quot;</font><font class="text"> ) ;
+         args.append( CONTROLER_FILE ) ;
+         args.append( tmp_file ) ;
+         </font><font class="kw3">PEL_Application</font><font class="text">* controler = </font><font class="kw3">PEL_Application</font><font class="text">::make( 0, args ) ;
+         controler-&gt;run() ;
+         controler-&gt;destroy() ; controler = 0 ;
+         </font><font class="kw3">PEL_System</font><font class="text">::erase( tmp_file ) ;
+         </font><font class="kw1">if</font><font class="text">( </font><font class="kw3">PEL_Exec</font><font class="text">:: exit_code() != 0 )
+         {
+            </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( </font><font class="string">&quot;Launcher generated data deck checking failed&quot;</font><font class="text"> ) ;
+         }
+         </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+      }
+      </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ee =
+                           </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">::create( 0, m_appli, PATTERN ) ;
+      </font><font class="kw3">PEL_Application</font><font class="text">* aa = </font><font class="kw3">PEL_Application</font><font class="text">::make( 0, ee ) ;
+      aa-&gt;run() ;
+      aa-&gt;destroy() ;
+      ee-&gt;destroy() ;
+   }
+}
+
+</font><font class="comment">//internal-------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">FE_Launcher_ERROR:: n0( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; filename )
+</font><font class="comment">//internal-------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">ostringstream</font><font class="text"> mesg ;
+   mesg &lt;&lt; </font><font class="string">&quot;FE_Launcher :&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;   unable to open file : \&quot;&quot; &lt;&lt; filename &lt;&lt; &quot;</font><font class="text">\</font><font class="string">&quot;&quot;</font><font class="text"> ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( mesg.str() ) ;
+}
+
+</font><font class="comment">//internal-------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">FE_Launcher_ERROR:: n1( </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp, </font><font class="kw2">size_t</font><font class="text"> nbv )
+</font><font class="comment">//internal-------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">ostringstream</font><font class="text"> mesg ;
+   mesg &lt;&lt; </font><font class="string">&quot;MODULE &quot;</font><font class="text"> &lt;&lt; exp-&gt;name() &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;   the data of keyword \&quot;</font><font class="text">values\</font><font class="string">&quot; should be&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;   a vector of length &quot;</font><font class="text"> &lt;&lt; nbv ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( mesg.str() ) ;
+}
+
+</font><font class="comment">//internal-------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">FE_Launcher_ERROR:: n2( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//internal-------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">ostringstream</font><font class="text"> mesg ;
+   mesg &lt;&lt; </font><font class="string">&quot;FE_Launcher :&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;   the only recognized variables are of type&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;      - PEL_Data::Bool   (name starting with \&quot;</font><font class="text">BS\</font><font class="string">&quot;)&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;      - PEL_Data::Int    (name starting with \&quot;</font><font class="text">IS\</font><font class="string">&quot;)&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;      - PEL_Data::Double (name starting with \&quot;</font><font class="text">DS\</font><font class="string">&quot;)&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;      - PEL_Data::String (name starting with \&quot;</font><font class="text">SS\</font><font class="string">&quot;)&quot;</font><font class="text"> ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( mesg.str() ) ;
+}
+
+</font><font class="comment">//internal-------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">FE_Launcher_ERROR:: n3( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; name, </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; type )
+</font><font class="comment">//internal-------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">ostringstream</font><font class="text"> mesg ;
+   mesg &lt;&lt; </font><font class="string">&quot;FE_Launcher :&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;   a variable of name : \&quot;&quot; &lt;&lt; name &lt;&lt; &quot;</font><font class="text">\</font><font class="string">&quot;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;   should be of type  : &quot;</font><font class="text"> &lt;&lt; type ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( mesg.str() ) ;
+}
+
+</font>
+</pre>
+</body>
+</html>

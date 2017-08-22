@@ -1,0 +1,165 @@
+<html>
+<head>
+<title>Code1.cc</title>
+<link rel=stylesheet type="text/css" href="stylesheet.css">
+</head>
+<body>
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;Code1.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_CoupledApplications</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Double</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Exec</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Module</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ModulePattern</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_System</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_assertions</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;fstream&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;iostream&gt;
+
+Code1 </font><font class="kw1">const</font><font class="text">* Code1::PROTOTYPE = </font><font class="kw1">new</font><font class="text"> Code1() ;
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">Code1:: Code1( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_Application</font><font class="text">( </font><font class="string">&quot;code1&quot;</font><font class="text"> )
+{
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">Code1* 
+Code1:: create_replica( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                             </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;Code1:: create_replica&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_PRE( a_owner, exp ) ) ;
+
+   Code1* result = </font><font class="kw1">new</font><font class="text"> Code1( a_owner, exp ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( create_replica_POST( result, a_owner, exp ) ) ;
+   </font><font class="kw1">return</font><font class="text"> result ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">Code1:: Code1( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+               </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_Application</font><font class="text">( a_owner, exp )
+   , ERROR( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;Code1:: Code1&quot;</font><font class="text"> ) ;
+   </font><font class="kw1">if</font><font class="text">( exp-&gt;has_entry( </font><font class="string">&quot;fail_at_step&quot;</font><font class="text"> ) ) 
+   {
+      ERROR = exp-&gt;int_data( </font><font class="string">&quot;fail_at_step&quot;</font><font class="text"> ) ;
+   }
+
+   </font><font class="kw1">if</font><font class="text">( ! </font><font class="kw3">PEL_CoupledApplications</font><font class="text">::has_coupled_applications() )
+   {
+      </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain(
+         </font><font class="string">&quot;*** Code1 error:\n&quot;
+</font><font class="text">         </font><font class="string">&quot;    PEL_CoupledApplication is disabled.&quot;</font><font class="text"> ) ;
+   }
+   </font><font class="kw1">if</font><font class="text">( ! </font><font class="kw3">PEL_CoupledApplications</font><font class="text">::has_application( </font><font class="string">&quot;code1&quot;</font><font class="text"> ) )
+   {
+      </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain(
+         </font><font class="string">&quot;*** Code1 error:\n&quot;
+</font><font class="text">         </font><font class="string">&quot;    \&quot;</font><font class="text">code1\</font><font class="string">&quot; is not defined in PEL_CoupledApplication.&quot;</font><font class="text"> ) ;
+   }
+   </font><font class="kw1">if</font><font class="text">( ! </font><font class="kw3">PEL_CoupledApplications</font><font class="text">::has_application( </font><font class="string">&quot;code2&quot;</font><font class="text"> ) )
+   {
+      </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain(
+         </font><font class="string">&quot;*** Code1 error:\n&quot;
+</font><font class="text">         </font><font class="string">&quot;    \&quot;</font><font class="text">code2\</font><font class="string">&quot; is not defined in PEL_CoupledApplication.&quot;</font><font class="text"> ) ;
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">Code1:: ~Code1( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">if</font><font class="text">( is_a_prototype() )
+   {
+      PROTOTYPE = 0 ;  
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">Code1:: run( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;Code1:: run&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="string">&quot;code 1 &quot;</font><font class="text"> &lt;&lt; </font><font class="string">&quot;( pid : &quot;</font><font class="text"> 
+              &lt;&lt; </font><font class="kw3">PEL_System</font><font class="text">::process_id() &lt;&lt; </font><font class="string">&quot; ) &quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;10 ; i++ ) 
+   {
+      </font><font class="comment">// Retreive T value
+</font><font class="text">      </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp =
+                  </font><font class="kw3">PEL_CoupledApplications</font><font class="text">::receive( 0, </font><font class="string">&quot;code1&quot;</font><font class="text">, </font><font class="string">&quot;code2&quot;</font><font class="text"> ) ;
+
+      </font><font class="kw1">double</font><font class="text"> T = exp-&gt;double_data( </font><font class="string">&quot;T&quot;</font><font class="text"> ) ;
+
+      </font><font class="comment">// Compute P
+</font><font class="text">      </font><font class="kw1">double</font><font class="text"> P = 1.0/T ;
+
+      </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="string">&quot;Step &quot;</font><font class="text"> &lt;&lt; i &lt;&lt; </font><font class="string">&quot; T= &quot;</font><font class="text"> &lt;&lt; T &lt;&lt; </font><font class="string">&quot; P= &quot;</font><font class="text"> &lt;&lt; P &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+      
+      </font><font class="comment">// Send P value
+</font><font class="text">      </font><font class="kw3">PEL_Module</font><font class="text">* mod = </font><font class="kw3">PEL_Module</font><font class="text">::create( 0, </font><font class="string">&quot;SentByCode1&quot;</font><font class="text"> ) ;
+      mod-&gt;add_entry( </font><font class="string">&quot;P&quot;</font><font class="text">, </font><font class="kw3">PEL_Double</font><font class="text">::create( mod, P ) ) ;
+      </font><font class="kw3">PEL_CoupledApplications</font><font class="text">::send(  mod, </font><font class="string">&quot;code1&quot;</font><font class="text">, </font><font class="string">&quot;code2&quot;</font><font class="text"> ) ;
+
+      </font><font class="kw1">if</font><font class="text">( ERROR == i ) 
+      {
+         </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_internal( </font><font class="string">&quot;I was said to crash now !&quot;</font><font class="text"> ) ;
+      }
+      
+      mod-&gt;destroy() ;
+      exp-&gt;destroy() ;
+   }
+}
+
+</font>
+</pre>
+</body>
+</html>

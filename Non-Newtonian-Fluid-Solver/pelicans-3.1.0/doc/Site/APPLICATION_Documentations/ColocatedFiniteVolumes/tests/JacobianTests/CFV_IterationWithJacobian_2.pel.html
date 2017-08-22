@@ -1,0 +1,186 @@
+<html>
+<head>
+<title>CFV_IterationWithJacobian_2.pel</title>
+<link rel=stylesheet type="text/css" href="stylesheet.css">
+</head>
+<body>
+<pre>
+<font class="kw1">MODULE</font><font class="text"> PEL_ObjectTest#CFV_IterationWithJacobian_TEST
+   
+   </font><font class="kw1">MODULE</font><font class="text"> CFV_IterationWithJacobian_2
+
+      $DS_x = </font><font class="kw1">component</font><font class="text">( $DV_X, 0 )
+      $DS_y = </font><font class="kw1">component</font><font class="text">( $DV_X, 1 )
+
+      $DS_rho = 100.0
+      $DS_mu = 1.0
+      $DS_lambda = 100.0
+
+      </font><font class="kw1">MODULE</font><font class="text"> FE_TimeIterator
+         time_initial = 0.0
+         time_end = 1.99
+         time_step = 0.5
+      </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> FE_TimeIterator
+            
+      </font><font class="kw1">MODULE</font><font class="text"> PDE_DomainAndFields
+         
+         verbose_level = 2
+         nb_space_dimensions = 2
+         type = </font><font class="string">&quot;finite_element&quot;
+</font><font class="text">         
+         </font><font class="kw1">MODULE</font><font class="text"> </font><font class="kw3">GE_Meshing
+</font><font class="text">            </font><font class="kw1">concrete_name</font><font class="text"> = </font><font class="string">&quot;GE_RefinedMeshing&quot;
+</font><font class="text">            mesh_polyhedron = &lt; </font><font class="string">&quot;GE_Segment&quot;</font><font class="text"> </font><font class="string">&quot;GE_Triangle&quot;</font><font class="text"> &gt;
+            </font><font class="kw1">MODULE</font><font class="text"> list_of_GE_ReferencePolyhedronRefiner
+               </font><font class="kw1">MODULE</font><font class="text"> GE_ReferencePolyhedronRefiner#1
+                  </font><font class="kw1">concrete_name</font><font class="text"> = </font><font class="string">&quot;GE_ReferenceTriangleWithTriangles&quot;
+</font><font class="text">                  nb_subintervals_per_edge = 2
+               </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> GE_ReferencePolyhedronRefiner#1
+            </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> list_of_GE_ReferencePolyhedronRefiner
+            </font><font class="kw1">MODULE</font><font class="text"> </font><font class="kw3">GE_Meshing
+</font><font class="text">               </font><font class="kw1">concrete_name</font><font class="text"> = </font><font class="string">&quot;GE_RefinedMeshing&quot;
+</font><font class="text">               mesh_polyhedron = &lt; </font><font class="string">&quot;GE_Segment&quot;</font><font class="text"> </font><font class="string">&quot;GE_Triangle&quot;</font><font class="text"> &gt;
+               </font><font class="kw1">MODULE</font><font class="text"> list_of_GE_ReferencePolyhedronRefiner
+                  </font><font class="kw1">MODULE</font><font class="text"> GE_ReferencePolyhedronRefiner#1
+                     </font><font class="kw1">concrete_name</font><font class="text"> = </font><font class="string">&quot;GE_ReferenceSquareWithTriangles&quot;
+</font><font class="text">                     strategy = </font><font class="string">&quot;26_acute_triangles&quot;
+</font><font class="text">                  </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> GE_ReferencePolyhedronRefiner#1
+               </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> list_of_GE_ReferencePolyhedronRefiner
+               </font><font class="kw1">MODULE</font><font class="text"> </font><font class="kw3">GE_Meshing
+</font><font class="text">                  </font><font class="kw1">concrete_name</font><font class="text"> = </font><font class="string">&quot;GE_BoxWithBoxes&quot;
+</font><font class="text">                  vertices_coordinate_1 = </font><font class="kw2">regular_vector</font><font class="text">( 0.0, 1, 1.0 )
+                  vertices_coordinate_0 = </font><font class="kw2">regular_vector</font><font class="text">( 0.0, 1, 1.0 )
+                  mesh_polyhedron = &lt; </font><font class="string">&quot;GE_Segment&quot;</font><font class="text"> </font><font class="string">&quot;GE_Rectangle&quot;</font><font class="text"> &gt;
+               </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> </font><font class="kw3">GE_Meshing
+</font><font class="text">               </font><font class="kw1">MODULE</font><font class="text"> GE_Colorist
+                  </font><font class="kw1">MODULE</font><font class="text"> faces
+                     cluster_boundary = </font><font class="kw1">true
+</font><font class="text">                  </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> faces
+               </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> GE_Colorist
+            </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> </font><font class="kw3">GE_Meshing
+</font><font class="text">         </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> </font><font class="kw3">GE_Meshing
+</font><font class="text">         
+         </font><font class="kw1">MODULE</font><font class="text"> interior_fields
+            
+            </font><font class="kw1">MODULE</font><font class="text"> velocity
+               name = </font><font class="string">&quot;velocity&quot;
+</font><font class="text">               nb_components = 2
+               element_name = </font><font class="string">&quot;PDE_2D_P0_1node&quot;
+</font><font class="text">               storage_depth = 1
+               </font><font class="kw1">MODULE</font><font class="text"> DOFs_values
+                  type = </font><font class="string">&quot;uniformly_defined&quot;
+</font><font class="text">                  value = NavierStokes1_velocity( $DV_X, $DS_rho, $DS_mu )
+               </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> DOFs_values
+            </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> velocity
+            
+            </font><font class="kw1">MODULE</font><font class="text"> pressure
+               name = </font><font class="string">&quot;pressure&quot;
+</font><font class="text">               nb_components = 1
+               element_name = </font><font class="string">&quot;PDE_2D_P0_1node&quot;
+</font><font class="text">               storage_depth = 1
+               </font><font class="kw1">MODULE</font><font class="text"> DOFs_values
+                  type = </font><font class="string">&quot;uniformly_defined&quot;
+</font><font class="text">                  value = NavierStokes1_pressure( $DV_X, $DS_rho, $DS_mu )
+               </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> DOFs_values
+            </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> pressure
+            
+         </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> interior_fields
+         
+         </font><font class="kw1">MODULE</font><font class="text"> boundary_conditions
+            </font><font class="kw1">MODULE</font><font class="text"> xxx
+               field = </font><font class="string">&quot;velocity&quot;
+</font><font class="text">               type = </font><font class="string">&quot;Dirichlet&quot;
+</font><font class="text">               imposed_value = &lt; 0.0 0.0 &gt;
+            </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> xxx
+         </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> boundary_conditions
+         
+      </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> PDE_DomainAndFields
+      
+      </font><font class="kw1">MODULE</font><font class="text"> FE_SetOfParameters
+         </font><font class="kw1">MODULE</font><font class="text"> FE_Parameter#source
+            </font><font class="kw1">concrete_name</font><font class="text"> = </font><font class="string">&quot;FE_SpaceTimeParameter&quot;
+</font><font class="text">            name = </font><font class="string">&quot;rhs&quot;
+</font><font class="text">            nb_components = 2
+            value = NavierStokes1_force( $DV_X, $DS_rho, $DS_mu )
+         </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> FE_Parameter#source
+      </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> FE_SetOfParameters
+      
+      </font><font class="kw1">MODULE</font><font class="text"> FE_OneStepIteration
+         
+         </font><font class="kw1">concrete_name</font><font class="text"> = </font><font class="string">&quot;FE_SplitSystem&quot;
+</font><font class="text">         
+         </font><font class="kw1">MODULE</font><font class="text"> list_of_FE_OneStepIteration
+            
+            </font><font class="kw1">MODULE</font><font class="text"> FE_OneStepIteration#test
+               
+               </font><font class="kw1">concrete_name</font><font class="text"> = </font><font class="string">&quot;AP_NavierStokes2CFV&quot;
+</font><font class="text">               
+               name = </font><font class="string">&quot;ns&quot;
+</font><font class="text">               
+               verbose_level = 1
+               
+               velocity = </font><font class="string">&quot;velocity&quot;
+</font><font class="text">               velocity_level_to_update = 0
+               
+               pressure = </font><font class="string">&quot;pressure&quot;
+</font><font class="text">               pressure_level_to_update = 0
+               
+               coef_vgrad_v = $DS_rho
+               coef_viscous = $DS_mu
+               param_source = </font><font class="string">&quot;rhs&quot;
+</font><font class="text">               
+               lambda_in_pressure_stabilization = $DS_lambda
+               h_exponent_in_infsup_stabilization = 1.0
+               color_of_cluster_boundaries = </font><font class="string">&quot;cluster_boundary&quot;
+</font><font class="text">               
+               quadrature_rule_provider_for_source = </font><font class="string">&quot;GE_QRprovider_5&quot;
+</font><font class="text">               
+               nb_iterations_max = 1000
+               relaxation_coefficient = 1.0
+               newton_tolerance = 1.e-8
+               
+               </font><font class="kw1">MODULE</font><font class="text"> LA_Matrix
+                  </font><font class="kw1">concrete_name</font><font class="text"> = </font><font class="string">&quot;LA_PelMatrix&quot;
+</font><font class="text">               </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> LA_Matrix
+
+               </font><font class="kw1">MODULE</font><font class="text"> LA_Solver
+                  </font><font class="kw1">concrete_name</font><font class="text"> = </font><font class="string">&quot;LA_PreconditionedSolver&quot;
+</font><font class="text">                  </font><font class="kw1">MODULE</font><font class="text"> LA_IterativeSolver
+                     </font><font class="kw1">concrete_name</font><font class="text"> = </font><font class="string">&quot;LA_GMRES_IS&quot;
+</font><font class="text">                     nb_iterations_max = 2000
+                     </font><font class="kw1">MODULE</font><font class="text"> LA_ConvergenceTest
+                        </font><font class="kw1">concrete_name</font><font class="text"> = </font><font class="string">&quot;LA_DefaultConvergenceTest&quot;
+</font><font class="text">                        relative_tolerance = 1.e-8
+                        absolute_tolerance = 1.e-30
+                     </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> LA_ConvergenceTest
+                     restart = 50 
+                     verbose = </font><font class="kw1">false
+</font><font class="text">                  </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> LA_IterativeSolver
+                  </font><font class="kw1">MODULE</font><font class="text"> LA_Preconditioner
+                     </font><font class="kw1">concrete_name</font><font class="text"> = </font><font class="string">&quot;LA_Jacobi_PC&quot;
+</font><font class="text">                     smallest_inverted_item = 1.e-30
+                  </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> LA_Preconditioner
+               </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> LA_Solver
+            </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> FE_OneStepIteration#test
+            
+         </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> list_of_FE_OneStepIteration
+         
+      </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> FE_OneStepIteration
+
+      </font><font class="kw1">MODULE</font><font class="text"> jacobian_test         
+         hh = 1.e-6
+         dbl_epsilon = 1.e-3
+         dbl_minimum = 5.e-5
+         one_step_iteration_with_jacobian = </font><font class="string">&quot;ns&quot;
+</font><font class="text">      </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> jacobian_test
+      
+   </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> CFV_IterationWithJacobian_2
+   
+</font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> PEL_ObjectTest#CFV_IterationWithJacobian_TEST
+            
+            
+
+</font>
+</pre>
+</body>
+</html>

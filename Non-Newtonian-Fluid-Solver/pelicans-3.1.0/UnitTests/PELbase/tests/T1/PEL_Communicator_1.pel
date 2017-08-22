@@ -1,0 +1,64 @@
+MODULE PEL_ObjectTest#PEL_Communicator_TEST
+   
+   MODULE PEL_Communicator_TEST_1
+      
+      MODULE merge
+         MODULE merge#1
+            coord = array( < 0.0 2.0 2.0 >,
+                           < 1.0 3.0 2.0 > )
+            merge = array( < 0.0 2.0 2.0 >,
+                           < 1.0 2.0 3.0 > )
+         END MODULE merge#1
+         MODULE merge#2
+            coord = ( rank() = 0 ?
+                         array( < 0.0 2.0 2.0 >,
+                                < 1.0 3.0 2.0 > )
+                    : array( < 0.5 2.5 -2.0 >,
+                             < 1.0 3.0  2.0 > ) )
+            merge = ( nb_ranks() = 1 ?
+                         array( < 0.0 2.0 2.0 >,
+                                < 1.0 2.0 3.0 > )
+                    : array( < -2.0 0.0 0.5 2.0 2.0 2.5 >,
+                             <  2.0 1.0 1.0 2.0 3.0 3.0 > ) )
+         END MODULE merge#2
+         MODULE merge#3
+            coord = ( rank() = 0 ?
+                         array( < 0.0   2.0 2.0 >,
+                                < 100.0 3.0 2.0 > )
+                    :  array( < 0.5 2.5 2.0 >,
+                              < 1.0 3.0 2.0 > ) )
+            merge = ( nb_ranks() = 1 ?
+                         array( < 0.0   2.0 2.0 >,
+                                < 100.0 2.0 3.0 > )
+                    : array( < 0.0   0.5 2.0 2.0 2.5 >,
+                             < 100.0 1.0 2.0 3.0 3.0 > ) )
+         END MODULE merge#3
+         MODULE merge#4
+            coord = ( rank() = 0 ?
+                         array( < 0.0   2.0 2.0 >,
+                                < 100.0 3.0 2.0 > )
+                    : array( < -10.0  100.0 >,
+                             <  10.0 -100.0 > ) )
+            merge = ( nb_ranks() = 1 ?
+                         array( < 0.0   2.0 2.0 >,
+                                < 100.0 2.0 3.0 > )
+                    : array( < -10.0 0.0   2.0 2.0  100.0 >,
+                             <  10.0 100.0 2.0 3.0 -100.0 > ) )
+         END MODULE merge#4
+         MODULE merge#5
+            coord = ( rank() = 0 ?
+                         array( < 0.0   1.0 1.0 >,
+                                < 100.0 6.0 6.0 > )
+                    : array( <  100.0 -10.0 >,
+                             < -100.0  10.0 > ) )
+            merge = ( nb_ranks() = 1 ?
+                         array( < 0.0   1.0 >,
+                                < 100.0 6.0 > )
+                    : array( < -10.0 0.0   1.0  100.0 >,
+                             <  10.0 100.0 6.0 -100.0 > ) )
+         END MODULE merge#5
+      END MODULE merge
+      
+   END MODULE PEL_Communicator_TEST_1
+   
+END MODULE PEL_ObjectTest#PEL_Communicator_TEST

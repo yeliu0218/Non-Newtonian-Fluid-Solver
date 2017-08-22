@@ -1,0 +1,178 @@
+MODULE PEL_Application
+   
+   concrete_name = "LA_RunSolver"
+   
+   $IS_N = 2000
+   $IS_R = 200
+   $BS_V = true
+   $BS_V2 = false
+   $DS_TOLER_AZTEC = 1.0e-7
+   $DS_TOLER_PETSC = 1.0e-7
+   $DS_TOLER_PEL = 1.0e-7
+   
+   lhs_matrix = join( getenv("PELICANSHOME"), "UnitTests", "LinearAlgebra",
+   "tests", "Data", "bcsstk03.mtx" )
+   //b = "rhs0.mtx"
+   
+   MODULE LA_Matrix
+      concrete_name = "LA_PelMatrix"
+   END MODULE LA_Matrix
+   
+   MODULE list_of_LA_Solvers
+      
+      MODULE LA_Solver#gmres_non_prec
+         concrete_name = "LA_PreconditionedSolver"
+         MODULE LA_IterativeSolver
+            concrete_name = "LA_GMRES_IS"
+            restart = $IS_R
+            verbose = $BS_V2
+            nb_iterations_max = $IS_N
+            MODULE LA_ConvergenceTest
+               concrete_name = "LA_DefaultConvergenceTest"
+               relative_tolerance = $DS_TOLER_PEL
+               absolute_tolerance = 1.0e-30
+            END MODULE LA_ConvergenceTest
+         END MODULE LA_IterativeSolver
+         MODULE LA_Preconditioner
+            concrete_name = "LA_Identity_PC"
+         END MODULE LA_Preconditioner
+      END MODULE LA_Solver#gmres_non_prec
+      
+      MODULE LA_Solver#gmres_ilu0
+         concrete_name = "LA_PreconditionedSolver"
+         MODULE LA_IterativeSolver
+            concrete_name = "LA_GMRES_IS"
+            restart = $IS_R
+            verbose = $BS_V2
+            nb_iterations_max = $IS_N
+            MODULE LA_ConvergenceTest
+               concrete_name = "LA_DefaultConvergenceTest"
+               relative_tolerance = $DS_TOLER_PEL
+               absolute_tolerance = 1.0e-30
+            END MODULE LA_ConvergenceTest
+         END MODULE LA_IterativeSolver
+         MODULE LA_Preconditioner
+            concrete_name = "LA_ILU0_PC"
+            diagonal_compensation = false
+            smallest_nonzero_pivot = 1.0e-10
+         END MODULE LA_Preconditioner
+      END MODULE LA_Solver#gmres_ilu0
+      
+      MODULE LA_Solver#gmres_sor
+         concrete_name = "LA_PreconditionedSolver"
+         MODULE LA_IterativeSolver
+            concrete_name = "LA_GMRES_IS"
+            restart = $IS_R
+            verbose = $BS_V2
+            nb_iterations_max = $IS_N
+            MODULE LA_ConvergenceTest
+               concrete_name = "LA_DefaultConvergenceTest"
+               relative_tolerance = $DS_TOLER_PEL
+               absolute_tolerance = 1.0e-30
+            END MODULE LA_ConvergenceTest
+         END MODULE LA_IterativeSolver
+         MODULE LA_Preconditioner
+            concrete_name = "LA_SOR_PC"
+            omega = 1.
+            sweep = "forward"
+            smallest_inverted_item = 1.e-10
+            nb_inner_iterations = 2
+         END MODULE LA_Preconditioner
+      END MODULE LA_Solver#gmres_sor
+      
+      MODULE LA_Solver#cg_jacobi
+         concrete_name = "LA_PreconditionedSolver"
+         MODULE LA_IterativeSolver
+            concrete_name = "LA_CG_IS"
+            verbose = $BS_V2
+            nb_iterations_max = $IS_N
+            MODULE LA_ConvergenceTest
+               concrete_name = "LA_DefaultConvergenceTest"
+               relative_tolerance = $DS_TOLER_PEL
+               absolute_tolerance = 1.0e-30
+            END MODULE LA_ConvergenceTest
+         END MODULE LA_IterativeSolver
+         MODULE LA_Preconditioner
+            concrete_name = "LA_Jacobi_PC"
+            smallest_inverted_item = 1.0e-10
+         END MODULE LA_Preconditioner
+      END MODULE LA_Solver#cg_jacobi
+      
+      MODULE LA_Solver#cg_ssor
+         concrete_name = "LA_PreconditionedSolver"
+         MODULE LA_IterativeSolver
+            concrete_name = "LA_CG_IS"
+            verbose = $BS_V2
+            nb_iterations_max = $IS_N
+            MODULE LA_ConvergenceTest
+               concrete_name = "LA_DefaultConvergenceTest"
+               relative_tolerance = $DS_TOLER_PEL
+               absolute_tolerance = 1.0e-30
+            END MODULE LA_ConvergenceTest
+         END MODULE LA_IterativeSolver
+         MODULE LA_Preconditioner
+            concrete_name = "LA_SSOR_PC"
+            omega = 1.75
+            smallest_inverted_item = 1.e-10
+            nb_inner_iterations = 1
+         END MODULE LA_Preconditioner
+      END MODULE LA_Solver#cg_ssor
+      
+      if( is_defined( "BS_with_PETSc" ) )
+      MODULE LA_Solver#PETSc1
+         concrete_name = "EXT_PETScSolver"
+         MODULE PETSc_Krylov_subspace_method
+            type = "gmres"
+            ksp_gmres_restart = $IS_R
+            verbose = $BS_V2
+            ksp_max_it = $IS_N
+            ksp_rtol = $DS_TOLER_PETSC
+            ksp_atol = $DS_TOLER_PETSC
+         END MODULE PETSc_Krylov_subspace_method
+         MODULE PETSc_preconditioner
+            type = "none"
+         END MODULE PETSc_preconditioner
+         MODULE LA_Matrix
+            concrete_name = "PETSc_SeqAIJ"
+         END MODULE LA_Matrix
+      END MODULE LA_Solver#PETSc1
+      
+      if( is_defined( "BS_with_Aztec" ) )
+      MODULE LA_Solver#Aztec1
+         concrete_name = "EXT_AztecSolver"
+         MODULE Aztec_IterativeSolver
+            type = "GMRES"
+            restart = $IS_R
+            verbose = $BS_V2
+            nb_iterations_max = $IS_N
+            relative_tolerance= $DS_TOLER_PETSC
+         END MODULE Aztec_IterativeSolver
+         MODULE Aztec_Preconditioner
+            type = "none"
+         END MODULE Aztec_Preconditioner
+      END MODULE LA_Solver#Aztec1
+      
+      if( is_defined( "BS_with_UMFPACK" ) )
+      MODULE LA_Solver#UMFPACK
+         concrete_name = "EXT_UMFsolver_DS"
+      END MODULE LA_Solver#UMFPACK
+      
+      if( is_defined( "BS_with_SPARSKIT" ) ) 
+      MODULE LA_Solver#SPARSKIT1
+         concrete_name = "EXT_SPARSKITsolver"
+         verbose = $BS_V
+         MODULE SPARSKIT_IterativeSolver
+            type = "GMRES"
+            restart = $IS_R
+            nb_iterations_max = $IS_N
+            tolerance = $DS_TOLER_PEL 
+         END MODULE SPARSKIT_IterativeSolver
+         MODULE SPARSKIT_Preconditioner
+            type = "none"
+         END MODULE SPARSKIT_Preconditioner
+      END MODULE LA_Solver#SPARSKIT1
+      
+   END MODULE list_of_LA_Solvers
+   
+END MODULE PEL_Application
+

@@ -1,0 +1,350 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>LA_Cholesky_DS.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="LA_Cholesky_DS.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="LApack-tree.html"><span>Tree</span></a>
+    <a href="LA_Cholesky_DS.html"><span>Class</span></a>
+    <a href="LA_Cholesky_DS.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="LApack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_Cholesky_DS</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_SymmetricMatrix</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_SeqVector</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_assertions</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;iostream&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;sstream&gt;
+
+</font><font class="kw3">LA_Cholesky_DS</font><font class="text"> </font><font class="kw1">const</font><font class="text">* </font><font class="kw3">LA_Cholesky_DS</font><font class="text">::PROTOTYPE = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">LA_Cholesky_DS</font><font class="text">() ;
+
+</font><font class="kw1">struct</font><font class="text"> LA_Cholesky_DS_ERROR
+{
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> n0( </font><font class="kw1">void</font><font class="text"> ) ;
+} ;
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_Cholesky_DS</font><font class="text">:: </font><font class="kw3">LA_Cholesky_DS</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">LA_Solver</font><font class="text">( </font><font class="string">&quot;LA_Cholesky_DS&quot;</font><font class="text"> )
+   , PIV_MIN_VAL( </font><font class="kw3">PEL</font><font class="text">::bad_double() )
+   , MAT( 0 )
+{
+}
+
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_Cholesky_DS</font><font class="text">*
+</font><font class="kw3">LA_Cholesky_DS</font><font class="text">:: create( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                        </font><font class="kw1">double</font><font class="text"> </font><font class="kw1">const</font><font class="text"> a_pivot_minimal_value )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_Cholesky_DS:: create&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( a_pivot_minimal_value&gt;0. ) ;
+   
+   </font><font class="kw3">LA_Cholesky_DS</font><font class="text">* result = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">LA_Cholesky_DS</font><font class="text">( a_owner,
+                                              a_pivot_minimal_value ) ;
+   
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;owner() == a_owner ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( !result-&gt;matrix_is_set() ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_Cholesky_DS</font><font class="text">*
+</font><font class="kw3">LA_Cholesky_DS</font><font class="text">:: create_replica( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_Cholesky_DS:: create_replica&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_PRE( a_owner, exp ) ) ;
+
+   </font><font class="kw1">double</font><font class="text"> </font><font class="kw1">const</font><font class="text"> a_piv_min_val = exp-&gt;double_data( </font><font class="string">&quot;pivot_minimal_value&quot;</font><font class="text"> ) ;
+   </font><font class="kw1">if</font><font class="text">( a_piv_min_val&lt;=0. )
+   {
+      </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_bad_data_value(
+         exp, </font><font class="string">&quot;pivot_minimal_value&quot;</font><font class="text">, </font><font class="string">&quot;a value greater than 0 is expected&quot;</font><font class="text"> ) ;
+   }
+   
+   </font><font class="kw3">LA_Cholesky_DS</font><font class="text">* result = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">LA_Cholesky_DS</font><font class="text">( a_owner, a_piv_min_val ) ;
+   
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( create_replica_POST( result, a_owner, exp ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_Cholesky_DS</font><font class="text">:: </font><font class="kw3">LA_Cholesky_DS</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                 </font><font class="kw1">double</font><font class="text"> </font><font class="kw1">const</font><font class="text"> a_pivot_minimal_value )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">LA_Solver</font><font class="text">( a_owner )
+   , PIV_MIN_VAL( a_pivot_minimal_value )
+   , MAT( </font><font class="kw3">LA_SymmetricMatrix</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, 0 ) )
+{
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_Cholesky_DS</font><font class="text">*
+</font><font class="kw3">LA_Cholesky_DS</font><font class="text">:: create_clone( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_Cholesky_DS:: create_clone&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw3">LA_Cholesky_DS</font><font class="text">* result = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">LA_Cholesky_DS</font><font class="text">( a_owner, </font><font class="kw1">this</font><font class="text"> ) ;
+   
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( create_clone_POST( result, a_owner ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_Cholesky_DS</font><font class="text">:: </font><font class="kw3">LA_Cholesky_DS</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                               </font><font class="kw3">LA_Cholesky_DS</font><font class="text"> </font><font class="kw1">const</font><font class="text">* other )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">LA_Solver</font><font class="text">( a_owner )
+   , PIV_MIN_VAL( other-&gt;PIV_MIN_VAL )
+   , MAT( other-&gt;MAT-&gt;create_matrix( </font><font class="kw1">this</font><font class="text"> ) )
+{
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_Cholesky_DS</font><font class="text">:: ~</font><font class="kw3">LA_Cholesky_DS</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">if</font><font class="text">( is_a_prototype() )
+   {
+      PROTOTYPE = 0 ;
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_Cholesky_DS</font><font class="text">:: set_matrix_self( </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* mat,
+                                  </font><font class="kw1">bool</font><font class="text"> &amp;ok, </font><font class="kw1">bool</font><font class="text"> same_pattern )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_Cholesky_DS:: set_matrix_self&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( set_matrix_self_PRE( mat, same_pattern ) ) ;
+
+   </font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* smat =
+      </font><font class="kw1">dynamic_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;( mat ) ;
+   
+   ok = </font><font class="kw1">true</font><font class="text"> ;
+   </font><font class="kw1">if</font><font class="text">( smat!=0 &amp;&amp; smat-&gt;is_symmetric() )
+   {
+      factorize_LDLt( smat, ok ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain(
+         </font><font class="string">&quot;*** LA_Cholesky_DS :\n&quot;
+</font><font class="text">         </font><font class="string">&quot;    only a sequential symmetric matrix is allowed&quot;</font><font class="text"> ) ;
+   }
+   
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( set_matrix_self_POST( mat, ok ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_Cholesky_DS</font><font class="text">:: unset_matrix_self( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_Cholesky_DS:: unset_matrix_self&quot;</font><font class="text"> ) ;
+   MAT-&gt;re_initialize( 0, 0 ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_Cholesky_DS</font><font class="text">:: solve_self(  </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* b, 
+                              </font><font class="kw3">LA_Vector</font><font class="text">* x,
+                              </font><font class="kw2">size_t</font><font class="text"> &amp;nb_iter,
+                              </font><font class="kw1">bool</font><font class="text"> &amp;ok )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_Cholesky_DS:: solve_self&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( solve_self_PRE( b, x ) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   
+   </font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* bb = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;( b ) ;
+   </font><font class="kw3">LA_SeqVector</font><font class="text">* bx = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">LA_SeqVector</font><font class="text">*&gt;( x ) ;
+   
+   </font><font class="kw1">const</font><font class="text"> </font><font class="kw2">size_t</font><font class="text"> n = b-&gt;nb_rows() ;
+   
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;n ; i++ )
+   {
+      </font><font class="kw1">double</font><font class="text"> c = 0.0 ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; j&lt;i ; j++ )
+      {
+         c += MAT-&gt;item( i, j )*bx-&gt;item(j) ;
+      }
+      bx-&gt;set_item( i, ( bb-&gt;item( i ) - c )/MAT-&gt;item( i, i ) ) ;
+   }
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw1">int</font><font class="text"> i=n-1 ; i&gt;=0 ; i-- )
+   {
+      </font><font class="kw1">double</font><font class="text"> c = 0.0 ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=i+1 ; j&lt;n ; j++ )
+      {
+         c += MAT-&gt;item( i, j )*bx-&gt;item(j) ;
+      }
+      bx-&gt;set_item( i, ( bx-&gt;item(i) - c )/MAT-&gt;item( i, i ) ) ;
+   }   
+   ok = </font><font class="kw1">true</font><font class="text"> ;
+   nb_iter = 1 ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( solve_self_POST( b, x, nb_iter, ok ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_SymmetricMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">LA_Cholesky_DS</font><font class="text">:: factorized_LDLt_matrix( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_Cholesky_DS:: factorized_LDLt_matrix&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( matrix_is_set() ) ;
+   
+   </font><font class="kw1">return</font><font class="text">( MAT ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_Cholesky_DS</font><font class="text">:: print( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostream</font><font class="text">&amp; os, </font><font class="kw2">size_t</font><font class="text"> indent_width ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_Cholesky_DS:: print&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text"> s( indent_width, </font><font class="string">' '</font><font class="text"> ) ;
+   os &lt;&lt; s &lt;&lt; </font><font class="string">&quot;Direct solver : \&quot;</font><font class="kw3">LA_Cholesky_DS</font><font class="text">\</font><font class="string">&quot;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   os &lt;&lt; s &lt;&lt; </font><font class="string">&quot;   pivot_minimal_value = &quot;</font><font class="text"> &lt;&lt; PIV_MIN_VAL &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_Cholesky_DS</font><font class="text">:: factorize_LDLt( </font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* smat, </font><font class="kw1">bool</font><font class="text"> &amp;ok ) 
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_Cholesky_DS:: factorize_LDLt&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   
+   </font><font class="kw2">size_t</font><font class="text">  </font><font class="kw1">const</font><font class="text"> n = smat-&gt;nb_rows() ;
+   MAT-&gt;re_initialize( n, n ) ;
+   </font><font class="kw1">double</font><font class="text"> aux ,p=0.0 ;
+
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0; i&lt;n ; ++i )
+   {   
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=i; j&lt;n ; ++j )
+      {
+         aux = smat-&gt;item( i, j );
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> k=0; k&lt;i ; ++k )
+         {
+            aux -= MAT-&gt;item( k, j )*MAT-&gt;item( k, i ) ;
+         }
+         </font><font class="kw1">if</font><font class="text">( i==j )
+         {
+            </font><font class="kw1">if</font><font class="text">( aux&lt;PIV_MIN_VAL )
+            {
+               LA_Cholesky_DS_ERROR::n0() ;
+               ok = </font><font class="kw1">false</font><font class="text"> ;
+               </font><font class="kw1">return</font><font class="text"> ;
+            }
+            p = 1.0/</font><font class="kw3">PEL</font><font class="text">::sqrt( aux );
+         }   
+         MAT-&gt;set_item( i, j ,aux*p );
+      }
+   }
+
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_Cholesky_DS</font><font class="text">:: invariant( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( </font><font class="kw3">EQUIVALENT</font><font class="text">( is_a_prototype(), MAT==0 ) ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( </font><font class="kw3">IMPLIES</font><font class="text">( is_a_prototype(), !matrix_is_set() ) ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( </font><font class="kw3">IMPLIES</font><font class="text">( MAT!=0, MAT-&gt;owner()==</font><font class="kw1">this</font><font class="text"> ) ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( </font><font class="kw3">IMPLIES</font><font class="text">( MAT!=0, MAT-&gt;nb_rows() == MAT-&gt;nb_cols() ) ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="kw1">void</font><font class="text"> 
+LA_Cholesky_DS_ERROR:: n0( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> mesg ;
+   mesg &lt;&lt; </font><font class="string">&quot;*** LA_Cholesky_DS : &quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;    null pivot found for matrix : &quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;display_info( mesg.str() ) ;
+}
+
+</font>
+</pre>
+</body>
+</html>

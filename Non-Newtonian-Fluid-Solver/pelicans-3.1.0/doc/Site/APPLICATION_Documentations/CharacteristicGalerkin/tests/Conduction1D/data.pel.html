@@ -1,0 +1,151 @@
+<html>
+<head>
+<title>data.pel</title>
+<link rel=stylesheet type="text/css" href="stylesheet.css">
+</head>
+<body>
+<pre>
+<font class="kw1">MODULE</font><font class="text"> </font><font class="kw3">PEL_Application
+</font><font class="text">   
+   </font><font class="kw1">concrete_name</font><font class="text"> = </font><font class="string">&quot;FE_StepByStepProgression&quot;
+</font><font class="text">   
+   </font><font class="kw1">MODULE</font><font class="text"> PDE_DomainAndFields
+      type = </font><font class="string">&quot;finite_element&quot;
+</font><font class="text">      verbose_level = 2
+      nb_space_dimensions = 1
+      
+      </font><font class="kw1">MODULE</font><font class="text"> </font><font class="kw3">GE_Meshing
+</font><font class="text">         </font><font class="kw1">concrete_name</font><font class="text"> = </font><font class="string">&quot;GE_SplitMeshing&quot;
+</font><font class="text">         security_bandwidth = 0
+         </font><font class="kw1">MODULE</font><font class="text"> splitting_strategy
+            </font><font class="kw1">concrete_name</font><font class="text"> = </font><font class="string">&quot;GE_CoordinateSplitting&quot;
+</font><font class="text">            $DS_X = </font><font class="kw1">component</font><font class="text">( $DV_X, 0 )
+            coordinate_splitting_formula = 
+               unit_sort( $DS_X, 0., 1., nb_ranks() )
+         </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> splitting_strategy
+         </font><font class="kw1">MODULE</font><font class="text"> </font><font class="kw3">GE_Meshing</font><font class="text">   
+            </font><font class="kw1">concrete_name</font><font class="text"> = </font><font class="string">&quot;GE_BoxWithBoxes&quot;
+</font><font class="text">            mesh_polyhedron = &lt; </font><font class="string">&quot;GE_Mpoint&quot;</font><font class="text"> </font><font class="string">&quot;GE_Segment&quot;</font><font class="text"> &gt;
+            vertices_coordinate_0 = </font><font class="kw2">regular_vector</font><font class="text">( 0., 40, 1. )
+         </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> </font><font class="kw3">GE_Meshing</font><font class="text">   
+      </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> </font><font class="kw3">GE_Meshing
+</font><font class="text">      
+      </font><font class="kw1">MODULE</font><font class="text"> interior_fields         
+         
+         </font><font class="kw1">MODULE</font><font class="text"> temperature
+            name = </font><font class="string">&quot;temperature&quot;
+</font><font class="text">            nb_components = 1
+            element_name = </font><font class="string">&quot;PDE_1D_P1_2nodes&quot;
+</font><font class="text">            storage_depth = 2
+            </font><font class="kw1">MODULE</font><font class="text"> DOFs_values
+               type = </font><font class="string">&quot;uniformly_defined&quot;
+</font><font class="text">               value = &lt; 0.0 &gt;
+            </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> DOFs_values
+            </font><font class="kw1">MODULE</font><font class="text"> DOFs_imposed_value
+               </font><font class="kw1">MODULE</font><font class="text"> temperatureleft
+                  location = </font><font class="string">&quot;on_bounds&quot;
+</font><font class="text">                  color =</font><font class="string">&quot;left&quot;
+</font><font class="text">                  type = </font><font class="string">&quot;uniformly_defined&quot;
+</font><font class="text">                  value = &lt; 0.0 &gt;
+               </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> temperatureleft
+            </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> DOFs_imposed_value
+         </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> temperature
+         
+      </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> interior_fields
+
+      </font><font class="kw1">MODULE</font><font class="text"> </font><font class="kw3">PDE_ResultSaver
+</font><font class="text">         writing_mode = </font><font class="string">&quot;text&quot;
+</font><font class="text">         files_basename = </font><font class="string">&quot;save&quot;
+</font><font class="text">         </font><font class="kw1">MODULE</font><font class="text"> temperature
+            where_to_save = </font><font class="string">&quot;at_vertices&quot;
+</font><font class="text">            entry_name = </font><font class="string">&quot;T&quot;
+</font><font class="text">            field = </font><font class="string">&quot;temperature&quot;
+</font><font class="text">         </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> temperature
+      </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> </font><font class="kw3">PDE_ResultSaver
+</font><font class="text">
+      if( nb_ranks()=1 )
+      </font><font class="kw1">MODULE</font><font class="text"> </font><font class="kw3">PDE_ResultSaver
+</font><font class="text">         writers = &lt; </font><font class="string">&quot;PEL_TICwriter&quot;</font><font class="text"> &gt;
+      </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> </font><font class="kw3">PDE_ResultSaver
+</font><font class="text">
+      if( nb_ranks()&gt;1 )
+      </font><font class="kw1">MODULE</font><font class="text"> </font><font class="kw3">PDE_ResultSaver
+</font><font class="text">         writers = &lt; </font><font class="string">&quot;PEL_CrossProcessWriter&quot;</font><font class="text"> &gt;
+         sub_writers = &lt; </font><font class="string">&quot;PEL_TICwriter&quot;</font><font class="text"> &gt;
+      </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> </font><font class="kw3">PDE_ResultSaver
+</font><font class="text">      
+      </font><font class="kw1">MODULE</font><font class="text"> boundary_conditions
+         
+         </font><font class="kw1">MODULE</font><font class="text"> temperatureright
+            color =</font><font class="string">&quot;right&quot;
+</font><font class="text">            type = </font><font class="string">&quot;convection&quot;
+</font><font class="text">            field = </font><font class="string">&quot;temperature&quot;
+</font><font class="text">            convection_coefficient = 1.E8
+            far_field_temperature = 5.
+         </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> temperatureright
+         
+      </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> boundary_conditions
+      
+   </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> PDE_DomainAndFields
+   
+   </font><font class="kw1">MODULE</font><font class="text"> FE_TimeIterator
+      time_initial = 0.
+      time_end = 0.
+      time_step = 1.E8
+   </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> FE_TimeIterator
+
+   </font><font class="kw1">MODULE</font><font class="text"> FE_SetOfParameters
+      density = &lt; 0. &gt;
+      conductivity = &lt; 1. &gt;
+      specific_heat = &lt; 1. &gt;
+      volumic_power = &lt; 50. &gt;
+   </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> FE_SetOfParameters
+
+   </font><font class="kw1">MODULE</font><font class="text"> FE_OneStepIteration
+      </font><font class="kw1">concrete_name</font><font class="text"> =</font><font class="string">&quot;AP_DiffusionCG&quot;
+</font><font class="text">      
+      level_to_update = 0
+      level_of_explicit = 1
+      
+      param_density = </font><font class="string">&quot;density&quot;
+</font><font class="text">      param_conductivity = </font><font class="string">&quot;conductivity&quot;
+</font><font class="text">      param_specific_heat = </font><font class="string">&quot;specific_heat&quot;
+</font><font class="text">      param_volumic_power = </font><font class="string">&quot;volumic_power&quot;
+</font><font class="text">      
+      quadrature_rule_provider = </font><font class="string">&quot;GE_QRprovider_5&quot;
+</font><font class="text">
+      if( nb_ranks()=1 )
+      </font><font class="kw1">MODULE</font><font class="text"> LA_Matrix
+         </font><font class="kw1">concrete_name</font><font class="text"> = </font><font class="string">&quot;LA_PelMatrix&quot;
+</font><font class="text">      </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> LA_Matrix
+      if( nb_ranks()&gt;1 )
+      </font><font class="kw1">MODULE</font><font class="text"> LA_Matrix
+         </font><font class="kw1">concrete_name</font><font class="text"> = </font><font class="string">&quot;LA_DistMatrix&quot;
+</font><font class="text">      </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> LA_Matrix
+
+      </font><font class="kw1">MODULE</font><font class="text"> LA_Solver
+         </font><font class="kw1">concrete_name</font><font class="text"> = </font><font class="string">&quot;LA_PreconditionedSolver&quot;
+</font><font class="text">         </font><font class="kw1">MODULE</font><font class="text"> LA_IterativeSolver
+            </font><font class="kw1">concrete_name</font><font class="text"> = </font><font class="string">&quot;LA_CG_IS&quot;
+</font><font class="text">            verbose = </font><font class="kw1">false
+</font><font class="text">            nb_iterations_max = 2000
+            </font><font class="kw1">MODULE</font><font class="text"> LA_ConvergenceTest
+               </font><font class="kw1">concrete_name</font><font class="text"> = </font><font class="string">&quot;LA_DefaultConvergenceTest&quot;
+</font><font class="text">               relative_tolerance = 1.0e-10
+               absolute_tolerance = 1.0e-50
+            </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> LA_ConvergenceTest
+         </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> LA_IterativeSolver
+         </font><font class="kw1">MODULE</font><font class="text"> LA_Preconditioner
+            </font><font class="kw1">concrete_name</font><font class="text"> = </font><font class="string">&quot;LA_Jacobi_PC&quot;
+</font><font class="text">            smallest_inverted_item = 1.0e-20
+         </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> LA_Preconditioner
+      </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> LA_Solver
+      
+   </font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> FE_OneStepIteration
+   
+</font><font class="kw1">END</font><font class="text"> </font><font class="kw1">MODULE</font><font class="text"> </font><font class="kw3">PEL_Application
+</font><font class="text">
+</font>
+</pre>
+</body>
+</html>

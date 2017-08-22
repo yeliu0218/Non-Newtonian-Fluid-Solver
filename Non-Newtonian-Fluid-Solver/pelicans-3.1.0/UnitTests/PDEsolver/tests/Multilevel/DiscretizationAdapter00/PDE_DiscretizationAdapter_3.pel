@@ -1,0 +1,60 @@
+MODULE PEL_ObjectTest#PDE_AdapterCHARMS_TEST
+   
+   MODULE PDE_DiscretizationAdapter_3
+
+      MODULE iterations_trace
+         output_file = "dom_3.trace"
+      END MODULE iterations_trace
+      
+      MODULE values_at_vertices_check
+         fields = < "uu" >
+         dbl_epsilon = 1.e-15
+         dbl_minimum = 1.e-100         
+      END MODULE values_at_vertices_check
+      
+      MODULE PDE_DomainAndFields
+         verbose_level = 1
+         nb_space_dimensions = 2
+         type = "finite_element"
+         
+         MODULE GE_Meshing
+            
+            concrete_name = "GE_BoxWithBoxes"
+            
+            vertices_coordinate_0 = regular_vector( 0.0, 1, 1.0 )
+            vertices_coordinate_1 = regular_vector( 0.0, 2, 1.0 )
+            mesh_polyhedron = < "GE_Segment" "GE_Rectangle" >
+            
+         END MODULE GE_Meshing
+         
+         MODULE interior_fields
+            
+            MODULE uu
+               name = "uu"
+               nb_components = 1
+               element_name = "PDE_2D_Q1_4nodes"
+               storage_depth = 1
+               MODULE DOFs_values
+                  type = "uniformly_defined"
+                  value = vector( component( $DV_X, 0 ) )
+               END MODULE DOFs_values
+            END MODULE uu
+            
+         END MODULE interior_fields
+         
+         MODULE PDE_AdapterCHARMS
+            verbose_level = 3
+            type = "quasi_hierarchical_basis"
+            MODULE PDE_AdaptationIndicator
+               concrete_name = "PDE_GeometricIndicator"
+               refinement_indicator = in_box( $DV_X, < 0.9 -0.1 >,
+                                                     < 1.1 0.4 > )
+               nb_steps = 3
+            END MODULE PDE_AdaptationIndicator
+         END MODULE PDE_AdapterCHARMS
+
+      END MODULE PDE_DomainAndFields
+
+   END MODULE PDE_DiscretizationAdapter_3
+   
+END MODULE PEL_ObjectTest#PDE_AdapterCHARMS_TEST

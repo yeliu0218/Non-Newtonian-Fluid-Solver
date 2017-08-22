@@ -1,0 +1,200 @@
+MODULE PEL_Application
+
+   concrete_name = "FE_StepByStepProgression"
+
+   $DS_T = 0.0
+
+   $DS_x = component( $DV_X, 0 )
+   $DS_y = component( $DV_X, 1 )
+
+   MODULE FE_TimeIterator
+      time_initial = 0.0
+      time_end = 1.0
+      time_step = 1.E+3
+   END MODULE FE_TimeIterator
+
+   graphics_output_times = regular_vector( 0.0, 150, 1.0 )
+   
+   MODULE PDE_DomainAndFields
+      
+      verbose_level = 1
+      nb_space_dimensions = 2
+      type = "finite_element"
+
+      MODULE GE_Meshing
+         concrete_name = "GE_SplitMeshing"
+         security_bandwidth = 0
+         MODULE splitting_strategy
+            concrete_name = "GE_CoordinateSplitting"
+            coordinate_splitting_formula =
+               unit_sort( $DS_x, -2.0, 2.0, nb_ranks() ) 
+         END MODULE splitting_strategy
+         
+         MODULE GE_Meshing
+            concrete_name = "GE_BoxWithBoxes"
+            vertices_coordinate_0 = regular_vector( -2.0, 4, 2.0 )
+            vertices_coordinate_1 = regular_vector(  0.0, 1, 1.0 )
+            mesh_polyhedron = < "GE_Segment" "GE_Rectangle" >
+         END MODULE GE_Meshing   
+      END MODULE GE_Meshing
+
+      MODULE interior_fields
+         
+         MODULE uu
+            name = "uu"
+            nb_components = 1
+            element_name = "PDE_2D_Q1_4nodes"
+            storage_depth = 1
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = < 0.0 >
+            END MODULE DOFs_values
+            MODULE DOFs_imposed_value
+               MODULE left
+                  location = "on_bounds"
+                  type = "uniformly_defined"
+                  color = "left"
+                  value = < 1.0 >
+               END MODULE left
+               MODULE right
+                  location = "on_bounds"
+                  type = "uniformly_defined"
+                  color = "right"
+                  value = < 2.0 >
+               END MODULE right
+            END MODULE DOFs_imposed_value
+         END MODULE uu
+
+         MODULE uu_explicit
+            name = "uu_explicit"
+            nb_components = 1
+            element_name = "PDE_2D_Q1_4nodes"
+            storage_depth = 1
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = < 0.0 >
+            END MODULE DOFs_values
+            MODULE DOFs_imposed_value
+               MODULE left
+                  location = "on_bounds"
+                  type = "uniformly_defined"
+                  color = "left"
+                  value = < 1.0 >
+               END MODULE left
+               MODULE right
+                  location = "on_bounds"
+                  type = "uniformly_defined"
+                  color = "right"
+                  value = < 2.0 >
+               END MODULE right
+            END MODULE DOFs_imposed_value
+         END MODULE uu_explicit
+
+      END MODULE interior_fields
+
+      if( nb_ranks() > 0 )
+      MODULE PDE_ResultSaver
+          writers = < "PEL_CrossProcessWriter" >
+          sub_writers = < "PEL_TICwriter" >
+       END MODULE PDE_ResultSaver
+
+       if( nb_ranks() = 0 )
+       MODULE PDE_ResultSaver
+          writers = < "PEL_TICwriter" >
+       END MODULE PDE_ResultSaver
+       
+       MODULE PDE_ResultSaver
+         writing_mode = "text"
+         files_basename = "save"
+         MODULE uu
+            where_to_save = "at_vertices"
+            entry_name = "U"
+            field = "uu"
+         END MODULE uu
+      END MODULE PDE_ResultSaver
+
+      MODULE PDE_AdapterCHARMS
+         verbose_level = 0
+         type = "quasi_hierarchical_basis"
+         one_level_difference_rule = "supports"
+         MODULE PDE_AdaptationIndicator
+            concrete_name = "PDE_GeometricIndicator"
+            refinement_indicator = ( $DS_x > 1.9 ) && ( $DS_y > 0.1 )
+            nb_steps = 1
+         END MODULE PDE_AdaptationIndicator
+      END MODULE PDE_AdapterCHARMS
+      
+   END MODULE PDE_DomainAndFields
+
+   MODULE FE_SetOfParameters
+      lambda = < 1.0 >
+   END MODULE FE_SetOfParameters
+
+   MODULE FE_OneStepIteration
+      
+      concrete_name = "FE_SplitSystem"
+            
+      MODULE list_of_FE_OneStepIteration
+         
+         MODULE FE_OneStepIteration#adapt
+            concrete_name = "FE_AdaptationStepCHARMS"
+            nb_iterations_max_before_time_stepping = 0
+            nb_iterations_max_during_time_stepping = 3
+            stop_after_nb_iterations_max = false
+            check_faces_consistency = true
+            check_covering_of_cells_boundary = true
+            MODULE list_of_PDE_DiscreteField
+               MODULE uu
+                  current = "uu"
+                  explicit = "uu_explicit"
+               END MODULE uu
+            END MODULE list_of_PDE_DiscreteField
+            
+         END MODULE FE_OneStepIteration#adapt
+         
+         MODULE FE_OneStepIteration#edp
+            
+            concrete_name = "AP_AdvectionDiffusion1G"
+            
+            field = "uu"
+            level_of_field = 0
+
+            param_diffusion = "lambda"
+
+            quadrature_rule_provider = "GE_QRprovider_5"
+            
+            if(  nb_ranks() = 1 )
+            MODULE LA_Matrix
+               concrete_name = "LA_PelMatrix"
+            END MODULE LA_Matrix
+
+            if( nb_ranks() > 1 )
+            MODULE LA_Matrix
+               concrete_name = "LA_DistMatrix"
+            END MODULE LA_Matrix
+            
+            MODULE LA_Solver
+               concrete_name = "LA_PreconditionedSolver"
+               MODULE LA_IterativeSolver
+                  concrete_name = "LA_CG_IS"
+                  verbose = true
+                  nb_iterations_max = 2000
+                  MODULE LA_ConvergenceTest
+                     concrete_name = "LA_DefaultConvergenceTest"
+                     relative_tolerance = 1.0e-12
+                     absolute_tolerance = 1.0e-50
+                  END MODULE LA_ConvergenceTest
+               END MODULE LA_IterativeSolver
+               MODULE LA_Preconditioner
+                  concrete_name = "LA_Jacobi_PC"
+                  smallest_inverted_item = 1.0e-300
+               END MODULE LA_Preconditioner
+            END MODULE LA_Solver
+            
+         END MODULE FE_OneStepIteration#edp
+
+      END MODULE list_of_FE_OneStepIteration
+
+   END MODULE FE_OneStepIteration
+
+END MODULE PEL_Application

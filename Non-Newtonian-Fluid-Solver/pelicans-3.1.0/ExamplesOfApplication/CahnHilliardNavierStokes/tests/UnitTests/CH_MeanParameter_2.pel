@@ -1,0 +1,97 @@
+MODULE PEL_ObjectTest#FE_Parameter_TEST
+
+   MODULE CH_MeanParameter_2
+
+      $DS_x = component( $DV_X, 0 )
+      $DS_y = component( $DV_X, 1 )
+
+      $DS_rhoa =  5.0
+      $DS_rhob = -3.0
+      $DS_rhoc =  1.0
+
+      $DS_c1 = 0.2
+      $DS_c2 = 0.5
+      $DS_c3 = 1.0 - $DS_c1 - $DS_c2
+
+      $DS_xx = $DS_c1/$DS_rhoa + $DS_c2/$DS_rhob + $DS_c3*(1.0/$DS_rhoc)
+      $DS_val_h = 1.0 / $DS_xx
+      
+      MODULE PDE_DomainAndFields
+         type = "finite_element"
+         verbose_level = 0
+         nb_space_dimensions = 2
+         MODULE GE_Meshing
+            concrete_name = "GE_BoxWithBoxes"
+            vertices_coordinate_0 = < 0.  1. >
+            vertices_coordinate_1 = < 0.  1. >
+            mesh_polyhedron = < "GE_Segment" "GE_Rectangle" >
+         END MODULE GE_Meshing
+         MODULE interior_fields
+            MODULE cc_1
+               name = "cc_1"
+               nb_components = 1
+               element_name = "PDE_2D_Q1_4nodes"
+               storage_depth = 1
+               MODULE DOFs_values
+                  type = "uniformly_defined"
+                  value = vector( $DS_c1 )
+               END MODULE DOFs_values
+            END MODULE cc_1
+            MODULE cc_2
+               name = "cc_2"
+               nb_components = 1
+               element_name = "PDE_2D_Q1_4nodes"
+               storage_depth = 1
+               MODULE DOFs_values
+                  type = "uniformly_defined"
+                  value = vector( $DS_c2 )
+               END MODULE DOFs_values
+            END MODULE cc_2
+         END MODULE interior_fields
+      END MODULE PDE_DomainAndFields
+      
+      MODULE FE_TimeIterator
+         time_step = 1.
+         time_end = 0.
+         time_initial = 0.
+      END MODULE FE_TimeIterator
+      
+      MODULE FE_SetOfParameters
+                  
+         MODULE FE_Parameter#density
+            concrete_name = "CH_MeanParameter"
+            name = "param"
+            average = "harmonic"
+            MODULE phase_fields
+               MODULE xx1
+                  field = "cc_1"
+                  level_of_phase_field = 0
+                  parameter_value = $DS_rhoa
+               END MODULE xx1
+               MODULE xx2
+                  field = "cc_2"
+                  level_of_phase_field = 0
+                  parameter_value = $DS_rhob
+               END MODULE xx2
+            END MODULE phase_fields
+            parameter_value_in_last_phase = $DS_rhoc         
+         END MODULE FE_Parameter#density
+         
+      END MODULE FE_SetOfParameters
+      
+      MODULE tests
+         
+         MODULE cell_value_at_IPs
+            type = "cell_value_at_IPs"
+            parameter_name = "param"
+            parameter_nb_components = 1
+            QRprovider_name = "GE_QRprovider_3"
+            dbl_epsilon = 1.E-8
+            dbl_minimum = 1.E-8
+            value = vector( $DS_val_h )
+         END MODULE cell_value_at_IPs
+      END MODULE tests
+
+   END MODULE CH_MeanParameter_2
+
+END MODULE PEL_ObjectTest#FE_Parameter_TEST

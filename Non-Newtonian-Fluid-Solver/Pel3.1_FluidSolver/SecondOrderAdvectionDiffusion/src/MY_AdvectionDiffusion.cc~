@@ -1,0 +1,690 @@
+#include <MY_AdvectionDiffusion.hh>
+
+#include <PEL.hh>
+#include <PEL_Communicator.hh>
+#include <PEL_ContextSimple.hh>
+#include <PEL_DataWithContext.hh>
+#include <PEL_DoubleVector.hh>
+#include <PEL_Double.hh>
+#include <PEL_Error.hh>
+#include <PEL_Exec.hh>
+#include <PEL_MemoryTracer.hh>
+#include <PEL_ModuleExplorer.hh>
+#include <PEL_Variable.hh>
+
+#include <GE_Color.hh>
+#include <GE_QRprovider.hh>
+#include <GE_Mpolyhedron.hh>
+#include <GE_Point.hh>
+#include <GE_Vector.hh>
+
+#include <PDE.hh>
+#include <PDE_CursorFEside.hh>
+#include <PDE_DiscreteField.hh>
+#include <PDE_SetOfDiscreteFields.hh>
+#include <PDE_DomainAndFields.hh>
+#include <PDE_LinkDOF2Unknown.hh>
+#include <PDE_LocalEquation.hh>
+#include <PDE_LocalFEbound.hh>
+#include <PDE_LocalFEcell.hh>
+#include <PDE_ResultSaver.hh>
+#include <PDE_SetOfBCs.hh>
+#include <PDE_SystemNumbering.hh>
+
+#include <FE.hh>
+#include <FE_Parameter.hh>
+#include <FE_SetOfParameters.hh>
+#include <FE_TimeIterator.hh>
+#include <FE_LocalTimeIteratorAdapter.hh>
+
+// KWB check if we need all
+#include <LA_Matrix.hh>	
+#include <LA_SeqMatrix.hh>
+#include <LA_SeqVector.hh>
+#include <LA_Solver.hh>
+
+#include <LA_Vector.hh> // KWB do we need it?
+
+#include <MY_AdvectiveScheme.hh>
+
+#include <cmath>
+#include <iostream>
+
+
+using std::string ;
+using std::cout ;
+using std::endl ;
+
+MY_AdvectionDiffusion const*
+MY_AdvectionDiffusion::PROTOTYPE = new MY_AdvectionDiffusion() ;
+
+//---------------------------------------------------------------------------
+MY_AdvectionDiffusion:: MY_AdvectionDiffusion( void )
+//---------------------------------------------------------------------------
+   : FE_OneStepIteration( "MY_AdvectionDiffusion" )
+   , CC( 0 )
+   , DENSITY( 0 )
+   , DIFFU( 0 )
+   , SOURCE( 0 )
+   , BCs( 0 )
+   , ELEMENT_EQ( 0 )
+   , bFE( 0 )
+   , cFE( 0 )
+   , sFE( 0 )
+   , EPSILON( 0. )
+   , AS( 0 ) 
+   , useCOURANT( false )
+   , FIELDS( NULL )
+   , LEVEL0( PEL::bad_index() )
+   , FIELDS_TABLE( 0 )
+   , COURANT( 0 )
+   , A_OWNER( NULL )
+   , DOM( NULL )
+   , PRMS ( NULL )
+   , EXP ( NULL )
+   , gDT( 0 )
+   , valOutlet( 0 )
+   , Xoutlet( 0 )
+   , Youtlet( 0 )
+{
+}
+
+//---------------------------------------------------------------------------
+MY_AdvectionDiffusion*
+MY_AdvectionDiffusion:: create_replica( PEL_Object* a_owner,
+		           PDE_DomainAndFields const* dom,
+		           FE_SetOfParameters const* prms,
+		           PEL_ModuleExplorer* exp ) const
+//---------------------------------------------------------------------------
+{
+   PEL_LABEL( "MY_AdvectionDiffusion:: create_replica" ) ;
+   PEL_CHECK( create_replica_PRE( a_owner, dom, prms, exp ) ) ;
+
+   MY_AdvectionDiffusion* result = new MY_AdvectionDiffusion( a_owner, dom, prms, exp ) ;
+
+   PEL_CHECK( create_replica_POST( result, a_owner, dom, prms, exp ) ) ;
+   return( result ) ;
+}
+
+//---------------------------------------------------------------------------
+MY_AdvectionDiffusion:: MY_AdvectionDiffusion( PEL_Object* a_owner,
+		     PDE_DomainAndFields const* dom,
+		     FE_SetOfParameters const* prms,
+		     PEL_ModuleExplorer const* exp )
+//---------------------------------------------------------------------------
+   : FE_OneStepIteration( a_owner, dom, exp )
+   , CC( dom->set_of_discrete_fields()->item( exp->string_data("AD_unknown_field") ) )
+   , L_UPDATE(0)      
+   , DENSITY( prms->item( exp->string_data("AD_coeff_unsteady" ) ))
+   , DIFFU( prms->item( exp->string_data("AD_coeff_diffusion") ))
+   , SOURCE( prms->item( exp->string_data("AD_param_source") ) )
+   , BCs( dom->set_of_boundary_conditions() )
+   , CONTEXT( PEL_ContextSimple::create( this ) )
+   , COORDS( PEL_DoubleVector::create( CONTEXT, doubleVector( 0 ) ) )
+   , TT(PEL_Double::create( CONTEXT, 0.0 ) )
+   , ELEMENT_EQ( PDE_LocalEquation::create( this ) )
+   , bFE( dom->create_LocalFEbound( this ) )
+   , cFE( dom->create_LocalFEcell( this ) )
+   , sFE( dom->create_CursorFEside( this ) )
+   , EPSILON( 1.E-03 )
+   , AS( 0 )
+   , useCOURANT( false )
+   , FIELDS( dom->set_of_discrete_fields() )
+   , LEVEL0( PEL::bad_index() )
+   , FIELDS_TABLE( 0 )
+   , COURANT( 0 )
+   , A_OWNER( a_owner )
+   , DOM( dom )
+   , PRMS ( prms )
+   , EXP ( exp )
+   , gDT( doubleVector( 0 ) )
+   , valOutlet( doubleVector( 0 ) )
+   , Xoutlet( doubleVector( 0 ) )
+   , Youtlet( doubleVector( 0 ) )
+   , X_LOC( LA_SeqVector::create( this, 0 ) )   
+{
+
+   PEL_LABEL( "MY_AdvectionDiffusion:: MY_AdvectionDiffusion" ) ;
+
+   cFE->require_field_calculation( CC, PDE_LocalFE::node ) ;
+   sFE->require_field_calculation( CC, PDE_LocalFE::node ) ;
+   bFE->require_field_calculation( CC, PDE_LocalFE::node ) ;
+   bFE->require_field_calculation( CC, PDE_LocalFE::N ) ;
+
+   DENSITY->transfer_cell_calculation_requirements( cFE, FE_Parameter::Val ) ;
+
+   SOURCE->transfer_cell_calculation_requirements( cFE, FE_Parameter::Val ) ;
+
+   DIFFU->transfer_side_calculation_requirements( sFE, FE_Parameter::Val ) ;
+   DIFFU->transfer_bound_calculation_requirements( bFE, FE_Parameter::Val ) ;
+
+
+   PDE_LinkDOF2Unknown* cc_link = PDE_LinkDOF2Unknown::create( 0,
+                        	          CC, "sequence_of_the_components",
+                                      true ) ;
+   NMB = PDE_SystemNumbering::create( this, cc_link ) ;
+	
+   PEL_ModuleExplorer const* se = 0 ;
+   se = exp->create_subexplorer( 0, "convective_scheme" ) ;
+   AS = MY_AdvectiveScheme::make( this, dom, prms, CC, se ) ;
+   AS->initialize( cFE, sFE, bFE ) ;
+   se->destroy() ; se = 0 ;
+
+   se = exp->create_subexplorer( 0, "LA_Matrix" ) ;
+   A = LA_Matrix::make( this, se ) ;
+   se->destroy() ; se = 0 ;
+   
+   F = A ->create_vector( this );
+   X = A ->create_vector( this ); 
+   
+   se = exp->create_subexplorer( 0, "LA_Solver" ) ;
+   SOLVER = LA_Solver::make( this, se ) ;
+   se->destroy() ; se = 0 ;
+
+   if (exp->has_module( "CourantNumber" ) )
+   {
+		se = exp->create_subexplorer( 0, "CourantNumber" ) ;
+		useCOURANT = true;
+		COURANT = se->double_data( "Courant" );
+		LEVEL0 = se->int_data( "active_level" ) ;
+		FIELDS_TABLE = se->stringVector_data( "discrete_fields" ) ;
+		t_global = FE_TimeIterator::create( A_OWNER, EXP );
+		se->destroy() ; se = 0 ;
+   }
+
+   // Context used to determine the value of Dirichlet boundary conditions
+   CONTEXT->extend( PEL_Variable::object( "DV_X" ), COORDS ) ;
+   CONTEXT->extend( PEL_Variable::object( "DS_T" ), TT ) ;
+
+   Xoutlet.resize(CC->nb_nodes());
+   Youtlet.resize(CC->nb_nodes());
+   valOutlet.resize(CC->nb_nodes());
+
+}
+
+//---------------------------------------------------------------------------
+MY_AdvectionDiffusion:: ~MY_AdvectionDiffusion( void )
+//---------------------------------------------------------------------------
+{
+}
+//-----------------------------------------------------------------------------
+void
+MY_AdvectionDiffusion:: do_before_inner_iterations_stage( FE_TimeIterator const* t_it )
+//-----------------------------------------------------------------------------
+{
+   PEL_LABEL( "MY_AdvectionDiffusion:: do_before_inner_iterations_stage" ) ;
+   PEL_CHECK_PRE( do_before_inner_iterations_stage_PRE( t_it ) ) ;
+
+   start_total_timer( "MY_AdvectionDiffusion:: do_before_inner_iterations_stage" ) ;
+   
+   TT->set( t_it->time() ) ;
+
+   size_t glob_n = 0 ;
+   size_t j = 0 ;
+   boolVector done( CC->nb_nodes() ) ;
+
+   for( bFE->start() ; bFE->is_valid() ; bFE->go_next() )
+   { 
+      GE_Color const* color = bFE->color() ;
+      if( BCs->has_BC( color, CC ) )
+      {
+         PEL_ModuleExplorer const* ee =  BCs->BC_explorer( color, CC ) ;
+	     if( ee->string_data( "type" ) == "Periodic_outlet" )
+	     {	   
+            for( size_t loc_n=0 ; loc_n<bFE->nb_local_nodes( CC ) ; ++loc_n )
+            {
+		      GE_Point const* pt = bFE->local_node_location( CC, loc_n ) ;
+		      glob_n = bFE->global_node( CC, loc_n ) ;
+    		  if( ! done( glob_n ) )
+		      {
+                done( glob_n ) = true ;
+                valOutlet(j)=CC->DOF_value(  0, glob_n, 0 );
+                Xoutlet(j)= pt->coordinate(0) ;
+                Youtlet(j)= pt->coordinate(1) ;                        
+//			PEL::out() << "j= " <<  j <<  " x = " << Xoutlet(j) <<  " y = " << Youtlet(j);
+//		 	PEL::out() << " Save value at outlet = " << valOutlet(j) << std::endl;
+			     j++;
+	          }
+	        }
+	     }
+      }
+   }
+   Xoutlet.resize(j);
+   valOutlet.resize(j);
+   stop_total_timer() ;
+
+   PEL_CHECK_POST( do_before_inner_iterations_stage_POST( t_it ) ) ;
+}
+//---------------------------------------------------------------------------
+void MY_AdvectionDiffusion:: do_one_inner_iteration( FE_TimeIterator const* t_it )
+//---------------------------------------------------------------------------
+{
+   PEL_LABEL( "MY_AdvectionDiffusion:: do_one_inner_iteration" ) ;
+   PEL_CHECK_PRE( do_one_inner_iteration_PRE( t_it ) ) ;
+
+   start_total_timer( "MY_AdvectionDiffusion:: do_one_inner_iteration" ) ;
+   // --------------
+    
+   PEL_MemoryTracer::object()->start_event(
+      "MY_AdvectionDiffusion::do_one_inner_iteration \""+CC->name()+"\"" ) ;
+  
+   reset_discrete_problem( t_it );
+   
+   // Assembling
+   start_assembling_timer() ; 
+
+   PEL_MemoryTracer::object()->start_event( "assemble" ) ;
+   loop_on_cells( t_it ) ;
+   loop_on_sides( t_it ) ;
+   loop_on_bounds( t_it ) ;
+   PEL_MemoryTracer::object()->stop_event() ;
+   
+   stop_assembling_timer() ;
+
+   // Solving
+   start_solving_timer() ;
+   PEL_MemoryTracer::object()->start_event( "estimate_unknown" ) ;	
+   estimate_unknowns() ;	
+   PEL_MemoryTracer::object()->stop_event() ;
+
+   stop_solving_timer() ;
+ 
+   // Next time step   
+   if( ! SOLVER->solution_is_achieved() )
+   {
+      PEL_Error::object()->display_info(
+         "*** AP_AdvectionDiffusion1CFV error\n"
+         "    convergence failure when solving the discrete problem" ) ;
+      notify_inner_iterations_stage_failure() ;
+   }
+   else
+   {
+      if( verbose_level() >= 2 )
+      {
+         PEL::out() << indent() << "   update of " << CC->name()
+                    << "(" << L_UPDATE << ")" << endl ;
+      }
+     update_fields() ;
+   }
+      
+   stop_total_timer() ;
+   PEL_MemoryTracer::object()->stop_event() ;
+}
+
+//------------------------------------------------------------------------
+void
+MY_AdvectionDiffusion:: loop_on_cells( FE_TimeIterator const* t_it )
+//------------------------------------------------------------------------
+{
+   PEL_LABEL( "MY_AdvectionDiffusion:: loop_on_cells" ) ;
+
+   for( cFE->start() ; cFE->is_valid() ; cFE->go_next() )
+   {
+      cFE->set_row_and_col_fields( CC, CC ) ;
+      PEL_ASSERT( cFE->row_field_node_connectivity().size()==1 ) ;
+      ELEMENT_EQ->initialize( cFE->row_field_node_connectivity(), 1,
+                              cFE->row_field_node_connectivity(), 1 ) ;
+
+      double const dt = t_it->time_step() ;
+      double const measure = FE::cell_measure( cFE ) ;
+      double const dens = DENSITY->cell_value( t_it, cFE ) ;
+
+      // Unsteady term :
+      {
+         ELEMENT_EQ->add_to_matrix( dens*measure/dt, 0, 0 ) ;
+         size_t n_cFE = cFE->global_node( CC, 0 ) ;
+         double const uun = CC->DOF_value( 0, n_cFE ) ;
+         ELEMENT_EQ->add_to_vector( dens*measure*uun/dt, 0 ) ;
+      }
+
+      // Source terms :
+      {
+         cFE->set_calculation_point( cFE->polyhedron()->center() ) ;
+         double const source = SOURCE->cell_value_at_pt( t_it, cFE ) ;
+         ELEMENT_EQ->add_to_vector( measure*source, 0 ) ;
+      }
+
+	PDE::assemble_in_matrix_vector_0( A, F, ELEMENT_EQ, NMB);
+   }
+}
+
+//------------------------------------------------------------------------
+void
+MY_AdvectionDiffusion:: loop_on_sides( FE_TimeIterator const* t_it )
+//------------------------------------------------------------------------
+{
+   PEL_LABEL( "MY_AdvectionDiffusion:: loop_on_sides" ) ;
+
+   for( sFE->start() ; sFE->is_valid() ; sFE->go_next() )
+   {
+      sFE->set_row_and_col_fields( CC, CC ) ;
+      PEL_ASSERT( sFE->row_field_node_connectivity().size()==2 ) ;
+      ELEMENT_EQ->initialize( sFE->row_field_node_connectivity(), 1,
+                              sFE->row_field_node_connectivity(), 1 ) ;
+      double const measure = FE::side_measure( sFE ) ;
+
+      // Diffusive fluxes
+      {
+	 double d = sFE->distance_to_adjacent_finite_volume_center( 0 )
+	           +sFE->distance_to_adjacent_finite_volume_center( 1 ) ;
+	 if( PEL::abs( d )<EPSILON*measure )
+         {
+	    d = EPSILON*measure ;
+	 }
+	 double const normal_diff_flux
+	    = measure*DIFFU->side_value( t_it, sFE )/d ;
+	 ELEMENT_EQ->add_to_matrix(  normal_diff_flux, 0, 0 ) ;
+	 ELEMENT_EQ->add_to_matrix( -normal_diff_flux, 0, 1 ) ;
+	 ELEMENT_EQ->add_to_matrix( -normal_diff_flux, 1, 0 ) ;
+	 ELEMENT_EQ->add_to_matrix(  normal_diff_flux, 1, 1 ) ;
+      }
+
+      // Convective fluxes - first order upwinding
+      {
+         AS->assemble_convection_on_side( t_it, sFE, ELEMENT_EQ ) ;
+      }
+
+	PDE::assemble_in_matrix_vector_0( A, F, ELEMENT_EQ, NMB);
+   }
+}
+
+//------------------------------------------------------------------------
+void
+MY_AdvectionDiffusion:: loop_on_bounds( FE_TimeIterator const* t_it )
+//------------------------------------------------------------------------
+{
+   PEL_LABEL( "MY_AdvectionDiffusion:: loop_on_bounds" ) ;
+
+   for( bFE->start() ; bFE->is_valid() ; bFE->go_next() )
+   {
+      bFE->set_row_and_col_fields( CC, CC ) ;
+      PEL_ASSERT( bFE->row_field_node_connectivity().size()==1 ) ;
+      ELEMENT_EQ->initialize( bFE->row_field_node_connectivity(), 1,
+                              bFE->row_field_node_connectivity(), 1 ) ;
+      double const measure = FE::bound_measure( bFE ) ;
+
+      bFE->set_calculation_point( bFE->polyhedron()->center() ) ;
+      double value = 0. ;
+
+      // Diffusive fluxes in case of Dirichlet boundary condition
+      if( BCs->has_BC( bFE->color(), CC ) )
+      {
+         PEL_ModuleExplorer const* ee = BCs->BC_explorer( bFE->color(), CC ) ;
+         std::string const& type = ee->string_data( "type" ) ;
+
+	     if( type == "Dirichlet" )
+	     {
+            PEL_DataWithContext const* value_bf
+                               = ee->abstract_data( 0, "value", CONTEXT ) ;
+            COORDS->set( bFE->calculation_point()->coordinate_vector() ) ;
+            value = value_bf->to_double() ;
+            
+            //PEL::out() << " Dirichlet value = " << value << std::endl;
+	        double const d = bFE->distance_to_adjacent_finite_volume_center() ;
+	        {
+	           double const normal_diff_flux
+		                  = measure*DIFFU->bound_value( t_it, bFE )/d ;
+	           ELEMENT_EQ->add_to_matrix( normal_diff_flux, 0, 0 ) ;
+	           ELEMENT_EQ->add_to_vector( normal_diff_flux*value, 0, 0 ) ;
+	        }
+            value_bf->destroy() ;
+	     }
+         else if( type == "Periodic_inlet" )
+	     {
+	       size_t glob_n = 0 ;
+           boolVector done( CC->nb_nodes() ) ;
+           for( size_t loc_n=0 ; loc_n<bFE->nb_local_nodes( CC ) ; ++loc_n )
+           {
+   	          GE_Point const* pt = bFE->local_node_location( CC, loc_n ) ;
+		      glob_n = bFE->global_node( CC, loc_n ) ;
+		      if( ! done( glob_n ) )
+		      {
+		          done( glob_n ) = true ;
+		          double Xinlet; 
+		          double epsilon=1.e-10;	
+	  		      Xinlet = pt->coordinate(0);
+                  for( size_t ll=0 ; ll<Xoutlet.size() ; ++ll )
+                  {  
+			         if (PEL::abs(Xoutlet(ll)-Xinlet)<epsilon)
+                     { 
+                        value=valOutlet(ll);
+				        double const d =
+					    bFE->distance_to_adjacent_finite_volume_center() ;
+
+    				    double const normal_diff_flux= 
+					           measure*DIFFU->bound_value( t_it, bFE )/d ;
+	          		    ELEMENT_EQ->add_to_matrix( normal_diff_flux, 0, 0 ) ;
+	           		    ELEMENT_EQ->add_to_vector( normal_diff_flux*value, 0, 0 ) ;
+                               // PEL::out() << " inlet value=" << value;
+                     }
+			       }
+	           }
+            }
+	//PEL::out() << "PERIODIC boundary condition!" << std::endl;
+         }
+         else if( type == "CC_outlet" )
+         {
+           size_t glob_n = 0 ;
+           boolVector done( CC->nb_nodes() ) ;
+           for( size_t loc_n=0 ; loc_n<bFE->nb_local_nodes( CC ) ; ++loc_n )
+           {
+              GE_Point const* pt = bFE->local_node_location( CC, loc_n ) ;
+              glob_n = bFE->global_node( CC, loc_n ) ;
+              if( ! done( glob_n ) )
+              {
+                  done( glob_n ) = true ;
+                  value=1.0;
+                  double const d =
+                  bFE->distance_to_adjacent_finite_volume_center() ;
+                  double const normal_diff_flux= 
+                         measure*DIFFU->bound_value( t_it, bFE )/d ;
+                                                       
+                  double const mass_flux = AS->pour_rate( t_it,bFE ) ;                                  
+                  if( mass_flux < 0.0 ){
+                      ELEMENT_EQ->add_to_matrix( normal_diff_flux, 0, 0 ) ;
+                      ELEMENT_EQ->add_to_vector( normal_diff_flux*value, 0, 0 ) ;
+//                      PEL::out() << "neg mass flux: outlet value=" << value << std::endl;
+                  }
+               }
+            }
+    //PEL::out() << "PERIODIC boundary condition!" << std::endl;
+         }
+      // Neumann homogeneous : nothing to do
+//	else
+//	    raise_bad_BC_type ( type, "\"Dirichlet\" \"Periodic_inlet\" ", CC);  
+// conflict with Dirichlet_to_update
+      }
+
+      // Convective fluxes
+      {
+         AS->assemble_convection_on_bound( t_it, bFE, value, ELEMENT_EQ ) ;
+      }
+
+	PDE::assemble_in_matrix_vector_0( A, F, ELEMENT_EQ, NMB);
+   }
+}
+
+
+//-------------------------------------------------------------------------
+void
+MY_AdvectionDiffusion::do_inner_iterations_stage( FE_TimeIterator const* t_it )
+//-------------------------------------------------------------------------
+{
+   PEL_LABEL( "MY_AdvectionDiffusion:: do_inner_iterations_stage" ) ;
+
+   if( useCOURANT ){
+	double epsilon= -1.e-5;
+	double dt_new = t_it->time_step();
+      t_local =  FE_LocalTimeIteratorAdapter::make_default(t_global, DOM, PRMS);
+      t_global->start();
+      t_global->set_time_offset( t_it->time()-t_it->time_step() );
+	
+      dt_new = time_step_by_Courant( dt_new, t_it);
+	  t_local->restart_iteration_with_new_time_step(dt_new);
+      do {
+	    PEL::out() << indent() << "- local time step = " << t_global->time() << std::endl;
+	    t_local->initialize_time_step();
+	    t_local->propose_next_time_step( dt_new );
+	    t_local->adapt_time_iterator();
+
+            do_one_inner_iteration( t_global ) ;
+
+		t_global->go_next_time( t_it->time() + epsilon); //go_next_time(double tend)
+      }
+      while ( !AD_inner_iterations_are_completed( t_global, t_it, epsilon ) );
+
+      delete t_local;
+   }
+   else
+       do_one_inner_iteration( t_it ) ;
+}
+
+
+//-------------------------------------------------------------------------
+bool
+MY_AdvectionDiffusion::AD_inner_iterations_are_completed( FE_TimeIterator * t_glo, FE_TimeIterator const* t_it, double epsilon ) const
+//-------------------------------------------------------------------------
+{
+   PEL_LABEL( "MY_AdvectionDiffusion:: AD_inner_iterations_are_completed( t_global, t_it )" ) ;
+
+   if ( useCOURANT )
+	{
+	   if( t_glo->time() <= t_it->time()+epsilon )
+        {
+           return false ;
+        }
+	  else
+	  {
+	     t_glo->finish_iterations();
+	     return true;
+	  }
+	}
+   else
+	return true;
+
+}
+
+//----------------------------------------------------------------------
+void
+MY_AdvectionDiffusion:: reset_discrete_problem( FE_TimeIterator const* t_it )
+//----------------------------------------------------------------------
+{
+   PEL_LABEL( "MY_AdvectionDiffusion:: reset_discrete_problem" ) ;
+   
+   NMB->reset() ;
+   
+   size_t n_glob = NMB->nb_global_unknowns() ;
+   size_t n_loc  = NMB->nb_unknowns_on_current_process() ;
+   
+   A->re_initialize( n_glob, n_glob, n_loc, n_loc ) ;
+   F->re_initialize( n_glob, n_loc ) ;
+   X->re_initialize( n_glob, n_loc ) ;
+   
+   X_LOC->re_initialize( NMB->link()->unknown_vector_size() ) ;
+   
+   NMB->define_scatters( X ) ;
+}
+
+//-------------------------------------------------------------------------
+void
+MY_AdvectionDiffusion::estimate_unknowns( void )
+//-------------------------------------------------------------------------
+{
+   PEL_LABEL( "MY_AdvectionDiffusion:: estimate_unknowns" ) ;
+   
+   A->synchronize() ;
+   F->synchronize() ;
+   
+   SOLVER->set_matrix( A ) ;
+   SOLVER->solve( F, X ) ;
+   SOLVER->unset_matrix() ;   
+}
+
+//-------------------------------------------------------------------------
+void
+MY_AdvectionDiffusion::update_fields( void )
+//-------------------------------------------------------------------------
+{
+   PEL_LABEL( "MY_AdvectionDiffusion:: update_fields" ) ;
+   
+   LA_Scatter const* sca = NMB->scatter() ;
+   sca->get( X, X_LOC) ;
+   CC->update_free_DOFs_value( L_UPDATE, X_LOC, NMB->link() )  ;
+}
+
+//-------------------------------------------------------------------------
+double
+MY_AdvectionDiffusion::smallest_vertices( void )
+//-------------------------------------------------------------------------
+{
+   PEL_LABEL( "MY_AdvectionDiffusion:: smallest_vertices" ) ;
+
+   PEL_Communicator const* com = PEL_Exec::communicator() ;
+
+   double min_distance = PEL::bad_double() ;;
+   for ( sFE->start() ; sFE->is_valid(); sFE->go_next() )
+   {
+	   double d_KL = sFE->distance_to_adjacent_finite_volume_center( 0 ) +
+	                 sFE->distance_to_adjacent_finite_volume_center( 1 );
+
+       if( PEL::abs(d_KL) < min_distance ) min_distance = PEL::abs(d_KL) ;
+   }
+
+   min_distance = com->min(min_distance);
+   return (min_distance);
+}
+
+
+//-------------------------------------------------------------------------
+double
+MY_AdvectionDiffusion::time_step_by_Courant( double dt_new, FE_TimeIterator const* t_it )
+//-------------------------------------------------------------------------
+{
+   PEL_LABEL( "MY_AdvectionDiffusion:: time_step_by_Courant" ) ;
+
+   double min_distance = smallest_vertices();
+   PEL_Communicator const* com = PEL_Exec::communicator() ;
+
+   for( size_t i=0 ; i<FIELDS_TABLE.size() ; ++i )
+   {
+      PDE_DiscreteField const* f = FIELDS->item( FIELDS_TABLE(i) ) ;
+      doubleVector v_max( f->nb_components() ) ;
+      double cfl_tmp=0.;
+      for( size_t ic=0 ; ic<f->nb_components() ; ++ic )
+      {
+         v_max(ic) = -PEL::bad_double() ;
+         for( size_t i_node=0 ; i_node<f->nb_nodes() ; ++i_node )
+         {
+             double const v_cur = f->DOF_value( LEVEL0, i_node, ic ) ;
+             if( PEL::abs(v_cur) > v_max(ic) ) v_max(ic) = PEL::abs(v_cur) ;
+         }
+         v_max(ic) = com->max( v_max(ic) ) ;
+         cfl_tmp += v_max(ic) ;
+      }
+
+	  bool change_dt = false;
+
+	  double cfl = cfl_tmp * dt_new/min_distance; // initial value
+      while ( cfl > COURANT ) {
+         dt_new = 0.9 * dt_new ;
+         cfl = cfl_tmp * dt_new/min_distance;
+         change_dt = true;
+      }
+
+	  if(change_dt) {
+	     PEL::out() << indent() << "Given Courant number = " << COURANT << ", (grid) min distance = " << min_distance << std::endl;
+	     PEL::out() << indent() << "Time step by Courant number = " <<  dt_new << std::endl;
+         if (dt_new < 1.E-06) {
+                PEL::out() << "*****************************************" << endl;                
+                PEL::out() << "**  New time step too small (<1.E-6)!  **" << endl;
+                PEL::out() << "*****************************************" << endl;   
+                PEL_Error::exit();
+         }
+	     int tmp = int(t_it->time_step()/dt_new)+1 ;
+	     dt_new = t_it->time_step()/tmp ;
+	     PEL::out() << indent() << "Number of local time steps " << tmp << std::endl;
+	     PEL::out() << indent() << "Adjusted new time step to fit time interval = " <<  dt_new << std::endl;
+	  }
+   }
+   return( dt_new );
+}

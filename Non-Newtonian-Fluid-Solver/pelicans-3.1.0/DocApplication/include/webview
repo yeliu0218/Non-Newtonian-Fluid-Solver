@@ -1,0 +1,1289 @@
+#include <sys/types.h>
+#include <dir.h>
+
+#include <string>
+#include <set>
+#include <map>
+#include <vector>
+#include <deque>
+#include <iostream>
+#include <iomanip>
+#include <fstream>
+#include <sstream>
+
+#include <PEL_export.hh>
+#include <PEL_System.hh>
+
+using std::cerr ;
+using std::cin ;
+using std::cout ;
+using std::endl ;
+
+namespace WebView 
+{
+
+
+/*
+g++ -g -o webview webview.cc -R/usr/local/lib
+*/
+
+class PEL_EXPORT StringTokenizer {
+   public :
+      typedef std::vector<std::string>::iterator iterator;
+      StringTokenizer(const std::string &val
+		      , std::vector<std::string> & vec
+		      , const std::string del=" \t\n\r\f");
+      StringTokenizer(const std::string &val
+		      , std::string del=" \t\n\r\f");
+      bool has_more_tokens() const {
+	 return pos < str.length() && str.find_first_not_of(delim, pos) != str.npos;
+      }
+      const std::string &current_token() const {return current;}
+      const std::string &next_token();
+      const std::string &next_token(const std::string &del);
+   private:
+      std::string::size_type pos, endpos;
+      std::string str;
+      std::string delim;
+      std::string current;
+};
+
+StringTokenizer::StringTokenizer(const std::string &val, std::vector<std::string> & vec, const std::string del)
+   : pos(0), endpos(0), str(val), delim(del) {
+   do {
+      pos = str.find_first_not_of(delim, pos);
+      if (pos == str.npos) break;
+      endpos = str.find_first_of(delim, pos);
+      if (endpos == str.npos) endpos = str.length();
+      vec.push_back(str.substr(pos, endpos-pos));
+      pos = endpos;
+   } while(pos != str.length());
+}
+
+StringTokenizer::StringTokenizer(const std::string &val, const std::string del)
+   : pos(0), endpos(0), str(val), delim(del) {}
+
+const std::string &StringTokenizer::next_token() {
+   pos = str.find_first_not_of(delim, pos);
+   endpos = str.find_first_of(delim, pos);
+   current=str.substr(pos, endpos-pos);
+   pos = endpos;
+   return current;
+}
+
+const std::string &StringTokenizer::next_token(const std::string &del) {
+   delim = del;
+   return next_token();
+}
+
+
+// Envir ===============================================================
+
+class PEL_EXPORT Envir {
+   public:
+      Envir(const std::string &name)
+	 : _name(name)
+	 , _verbose(false)
+      {}
+      virtual ~Envir();
+      void set_verbose(bool b) {_verbose=b;}
+      bool verbose() const {return _verbose;}
+
+      bool find_file(const std::string &name, std::string &fullname) const;
+      void list_all_files(const std::string &type) const;
+      const std::string &name() const {return _name;}
+   private:
+      Envir(Envir const &);
+      bool _verbose;
+      std::string _name;
+};
+
+Envir::~Envir(){}
+
+
+bool Envir::find_file(const std::string &name, std::string &fullname) const {
+   // search for <name> in ., then in WEBVIEWPATH
+   std::string webpath(".");
+   webpath.append(":").append(_name.substr(0, _name.rfind("/")));
+   std::string envvar = PEL_System::getenv("WEBVIEWPATH");
+   if (verbose()) cerr << "WEBVIEWPATH = " << envvar << endl;
+   if (!envvar.empty()) webpath.append(":").append(envvar);
+   std::string envpel = PEL_System::getenv("PELICANSHOME");
+   if (verbose()&& !envpel.empty()) cerr << "PELICANSHOME = " << envpel << endl;
+   if (!envpel.empty())
+   {
+      webpath.append(":").append(envpel).append("/doc/share/webview");
+      webpath.append(":").append(envpel).append("/doc/share");
+   }
+   
+   StringTokenizer tokenizer(webpath, ":, ");
+   while (tokenizer.has_more_tokens()) {
+      fullname.assign(tokenizer.next_token()).append("/").append(name);
+	  std::ifstream in(fullname.c_str()) ; 
+      if (in.good()) return true;
+   }
+   return false;
+
+}
+
+void Envir::list_all_files(const std::string &type) const {
+   std::string webpath(".");
+   std::string dir;
+   std::string envvar = PEL_System::getenv("WEBVIEWPATH");
+   if (!envvar.empty()) webpath.append(":").append(envvar);
+
+   StringTokenizer tokenizer(webpath, ":, ");
+   while (tokenizer.has_more_tokens()) {
+
+      dir = tokenizer.next_token();
+
+      DIR *dirp;
+      if ((dirp=opendir(dir.c_str())) != 0) {
+	 struct dirent *entry;
+	 std::string file;
+	 while ((entry=readdir(dirp)) != 0) {
+	    file.assign(entry->d_name);
+	    if (file.find(type) == 0) {
+	       cerr << file.substr(file.rfind(".")+1) << "\t: " << dir << "/" << file << endl;
+	    }
+	 }
+	 closedir(dirp);
+      }
+   }
+}
+
+
+// Lang ===============================================================
+
+
+class PEL_EXPORT Token : public std::string {
+   public:
+      typedef std::string tokentype;
+      Token() : _type(DEFAULT){}
+      Token(const tokentype &t, const std::string &s) : std::string(s), _type(t){}
+      const std::string &value() const {return *this;}
+
+      void set_type(tokentype t) {_type=t;}
+      const tokentype type() const {return _type;}
+      static const tokentype TEXT;
+      static const tokentype BLOCKCOMMENT;
+      static const tokentype LINECOMMENT;
+      static const tokentype STRING;
+      static const tokentype &DEFAULT;
+   private:
+      tokentype _type;
+};
+
+const Token::tokentype Token::TEXT = "text";
+const Token::tokentype Token::BLOCKCOMMENT = "bcomment";
+const Token::tokentype Token::LINECOMMENT = "lcomment";
+const Token::tokentype Token::STRING = "string";
+const Token::tokentype &Token::DEFAULT = Token::TEXT;
+
+class PEL_EXPORT limiters {
+   public:
+      limiters(const std::string &b, const std::string &e):_begin(b), _end(e){}
+      const std::string &begin() const {return _begin;}
+      const std::string &end() const {return _end;}
+   private:
+      std::string _begin;
+      std::string _end;
+};
+
+class PEL_EXPORT linecomment {
+   public:
+      linecomment(const std::string &s, int col=0):_str(s), _col(col-1){}
+      const std::string &str() const {return _str;}
+      int col() const {return _col;}
+   private:
+      std::string _str;
+      int _col;
+};
+
+class PEL_EXPORT Lang {
+   public:
+
+      static void list(const Envir &env);
+
+      typedef enum chartype { SEPARATOR, LETTER, DIGIT };
+      Lang(Envir *env) : _env(env) {reset();}
+      virtual ~Lang();
+      void reset();
+      void load(const std::string &name);
+      void detect(const std::string &filename);
+      bool verbose() const {return _env->verbose();}
+      bool is_separator(unsigned char c) const {return _chars[c]==SEPARATOR;}
+      bool is_letter(unsigned char c) const {return _chars[c]==LETTER;}
+      bool is_digit(unsigned char c) const {return _chars[c]==DIGIT;}
+      bool is_alphanu(char c) const {return is_letter(c) || is_digit(c);}
+
+      bool case_sensitive() const {return _case_sensitive;}
+      void set_case_sensitive(bool b) {_case_sensitive=b;}
+      void set_escape_char(char c) {_escape_char=c;}
+      const char escape_char() const {return _escape_char;}
+      void to_upper(std::string &str) const;
+
+      std::vector<linecomment> linecomments;
+      std::vector<limiters> blockcomments;
+      std::vector<limiters> strings;
+   private:
+      Lang(Lang const &);
+      Envir *_env;
+      std::string _name;
+      chartype _chars[256];
+      bool _case_sensitive;
+      char _escape_char;
+
+
+   public:
+      class KeywordSet : public std::vector<std::string> {
+	 public:
+	    std::string name;
+	    KeywordSet(const std::string &s) : name(s) {}
+
+      };
+
+      std::vector<Lang::KeywordSet*> all_kwsets;
+      Lang::KeywordSet *get_kwset(std::string &s);
+
+};
+
+Lang::~Lang() {}
+
+void Lang::list(const Envir &env) {
+   cerr << "List of languages available :" << endl;
+   env.list_all_files("lang.");
+}
+
+void Lang::to_upper(std::string &str) const {
+   for(std::string::iterator p=str.begin() ; p != str.end() ; p++) {
+      if ((*p)>='a'&& (*p)<='z') (*p) += 'A'-'a';
+   }
+}
+
+Lang::KeywordSet *Lang::get_kwset(std::string &s) {
+   Lang::KeywordSet *kwset;
+   for (int i=0;i<all_kwsets.size(); i++) {
+      if (all_kwsets[i]->name == s) return all_kwsets[i];
+   }
+   all_kwsets.push_back(kwset = new Lang::KeywordSet(s));
+   return kwset;
+}
+
+void
+Lang::reset() {
+   _name = "default";
+
+   _case_sensitive = true;
+   _escape_char = 0;
+
+   for(int i=0;i<256;i++) _chars[i]=SEPARATOR;
+   for(int i='0';i<='9';i++) _chars[i]=DIGIT;
+   for(int i='A';i<='Z';i++) _chars[i]=LETTER;
+   for(int i='a';i<='z';i++) _chars[i]=LETTER;
+   _chars['_']=LETTER;
+
+   all_kwsets.clear();
+   linecomments.clear();
+   blockcomments.clear();
+   strings.clear();
+   strings.push_back(limiters("\"", /*hello */ "\""));
+   strings.push_back(limiters("'", "'"));
+}
+
+void
+Lang::load(const std::string &name) {
+   if (name == _name) return;
+
+   if (verbose()) cerr << "loading lang " << name << " was " << _name <<endl;
+   _name = name;
+   std::string lang_file_name;
+   if (! _env->find_file("lang."+name, lang_file_name)) return;
+
+   std::ifstream input(lang_file_name.c_str());
+   std::string key, sep, val;
+   while(input >> key) {
+      input >> sep;
+      getline(input, val, '\n');
+      std::vector<std::string> tokens;
+      StringTokenizer tokenizer(val, tokens, " ,");
+      
+      if (key.find("#") == 0) {
+	 continue;
+      } else if (key.find("include") == 0) {
+	 load(sep);
+	 _name = name;
+      } else if (key.find("casesensitive") == 0) {
+	 set_case_sensitive(tokens[0] != "0");
+
+      } else if (key.find("escapechar") == 0) {
+	 set_escape_char(tokens[0][0]);
+
+      } else if (key.find(Token::LINECOMMENT) == 0) {
+	 if (sep == "=") linecomments.clear();
+	 if (sep == "+=" || sep == "=") {
+	    if (tokens.size() == 1)
+	       linecomments.push_back(linecomment(tokens[0]));
+	    else if (tokens.size() == 2) {
+               std::istringstream is(tokens[1]) ;
+	       int col ;
+               is >> col ;
+	       linecomments.push_back(linecomment(tokens[0], col));
+	    } else {
+	       cerr << "Invalid number of words encountered in " << name << endl
+		    << " value : " << val << endl;
+	       continue;
+	    }
+	 }
+      } else if (key.find(Token::BLOCKCOMMENT) == 0) {
+	 if (sep == "=") blockcomments.clear();
+	 if (sep == "+=" || sep == "=") {
+	    if (tokens.size() == 2)
+	       blockcomments.push_back(limiters(tokens[0], tokens[1]));
+	    else {
+	       cerr << "Invalid number of words encountered in " << name << endl
+		    << " value : " << val << endl;
+	       continue;
+	    }
+	 }
+      } else if (key.find(Token::STRING) == 0) {
+	 if (sep == "=") strings.clear();
+	 if (sep == "+=" || sep == "=") {
+	    if (tokens.size() == 2)
+	       strings.push_back(limiters(tokens[0], tokens[1]));
+	    else {
+	       cerr << "Invalid number of words encountered in " << name << endl
+		    << " value : " << val << endl;
+	       continue;
+	    }
+	 }
+      } else {
+	 Lang::KeywordSet *kwset = get_kwset(key);
+	 if (sep == "=") kwset->clear();
+	 if (! this->case_sensitive()) this->to_upper(val);
+	 if (sep == "+=" || sep == "=") {
+	    for(int i=0;i<tokens.size();i++)
+	       kwset->push_back(tokens[i]);
+	 }
+      }
+   }
+
+   input.close();
+}
+
+void
+Lang::detect(const std::string &filename) {
+   if (verbose()) cerr << "detecting lang from " << filename << endl;
+   int dot = filename.find_last_of("./");
+   std::string lang;
+
+   if (dot >= 0) {
+      lang.assign(filename.substr(dot+1));
+   } else {
+      lang.assign(filename);
+   }
+   if (lang != _name) reset();
+   if (lang != "") load(lang);
+}
+
+
+
+
+class PEL_EXPORT Tokenizer {
+   public:
+      Tokenizer(const Lang &lang);
+      void tokenize(std::istream &input);
+      const Token &next_token();
+      bool has_token() const;
+      int line_number() const {return lineno;}
+
+   private:
+      const Lang *_lang;
+      std::istream *_stream;
+      int lineno;
+      Token _current_token;
+      std::deque<Token> tokens;
+      // indices +1 du type de commentaires ou chaines rencontree..
+      int in_comment;
+      int in_string;
+      bool is_valid_word(const std::string &s, std::string::size_type p, int l);
+      bool is_escaped(const std::string &s, std::string::size_type p);
+      bool find_end_limit(const std::string &s, std::string::size_type start
+			  , std::string::size_type &end, const limiters &lim);
+      typedef struct {
+	    Token::tokentype type;
+	    int type_id;
+	    std::string::size_type pos;
+	    std::string::size_type last_pos;
+	    
+      } context;
+
+      void find_next_token(const limiters &lim, context &ct, const Token::tokentype &token_type, int id
+			   , const std::string &s, std::string::size_type start);
+      void find_next_token(const linecomment &lim, context &ct, const Token::tokentype &token_type, int id
+			   , const std::string &s, std::string::size_type start);
+      void find_next_token(const std::string &lim, context &ct, const Token::tokentype &token_type, int id
+			   , const std::string &s, std::string::size_type start);
+
+};
+
+Tokenizer::Tokenizer(const Lang &lang)
+   : _lang(&lang)
+   , lineno(-1), _stream(0) {
+}
+   
+void Tokenizer::tokenize(std::istream &input) {
+   _stream = &input;
+   lineno = 0;
+   in_comment = in_string = 0;
+}
+   
+bool Tokenizer::has_token() const {
+   return _stream && !(_stream->eof() && tokens.empty());
+}
+
+bool Tokenizer::is_valid_word(const std::string &s, std::string::size_type p, int l) {
+   return (p == 0 || _lang->is_separator(s[p-1]) || _lang->is_separator(s[p]))
+      && ((p+l)>= s.length() || _lang->is_separator(s[p+l]) || _lang->is_separator(s[p+l-1]));
+}
+
+bool Tokenizer::is_escaped(const std::string &s, std::string::size_type p) {
+   bool escaped=false;
+   if (_lang->escape_char()) {
+      while(p > 0 && s[--p]==_lang->escape_char()) escaped = ! escaped;
+   }
+   return escaped;
+}
+
+bool Tokenizer::find_end_limit(const std::string &s, std::string::size_type start
+			       , std::string::size_type &end, const limiters &lim) {
+   bool found=false;
+
+   end = start /*+ lim.begin().length()*/ - 1;
+   do {
+      end = s.find(lim.end(), end+1);
+   } while (end != s.npos && is_escaped(s, end));
+
+   if (end == s.npos)
+      end = s.length();
+   else {
+      found=true;
+      end += lim.end().length();
+   }
+
+   return found;
+}
+
+void Tokenizer::find_next_token(const limiters &lim, context &ct, const Token::tokentype &token_type, int id
+				, const std::string &s, std::string::size_type start) {
+
+   std::string::size_type next_pos = start - 1;
+   do {
+      next_pos = s.find(lim.begin(), next_pos+1);
+   } while (next_pos != s.npos && next_pos < ct.pos && is_escaped(s, next_pos));
+
+   if (next_pos != s.npos && next_pos < ct.pos) {
+      ct.type = token_type;
+      ct.type_id = id;
+      ct.pos = next_pos;
+      ct.last_pos = s.length();
+   }
+}
+
+void Tokenizer::find_next_token(const linecomment &lim, context &ct, const Token::tokentype &token_type, int id
+				, const std::string &s, std::string::size_type start) {
+
+   std::string::size_type next_pos = start - 1;
+   bool anychar = lim.str() == "*";
+   if (anychar && lim.col() != -1) {
+      next_pos = (s[lim.col()] == ' ') ? s.npos : lim.col();
+   } else {
+      do {
+	 next_pos = s.find(lim.str(), next_pos+1);
+      } while (next_pos != s.npos && next_pos < ct.pos && is_escaped(s, next_pos));
+   }
+
+   if (next_pos != s.npos && next_pos < ct.pos
+       && ( lim.col() == -1 || lim.col() == next_pos )
+      ) {
+      ct.type = token_type;
+      ct.type_id = id;
+      ct.pos = next_pos;
+      ct.last_pos = s.length();
+   }
+}
+
+void Tokenizer::find_next_token(const std::string &lim, context &ct, const Token::tokentype &token_type, int id
+				, const std::string &s, std::string::size_type start) {
+
+   std::string::size_type next_pos = start - 1;
+   do {
+      next_pos = s.find(lim, next_pos+1);
+   } while (next_pos != s.npos && next_pos < ct.pos && is_escaped(s, next_pos));
+
+   if (next_pos != s.npos && next_pos < ct.pos && is_valid_word(s, next_pos, lim.length())
+      ) {
+      ct.type = token_type;
+      ct.type_id = id;
+      ct.pos = next_pos;
+      ct.last_pos = next_pos+lim.length();
+   }
+}
+
+const Token &Tokenizer::next_token() {
+
+   if ( tokens.empty() ) {
+      std::string srcline, *line;
+      getline(*_stream, srcline, '\n');
+      if (! _lang->case_sensitive()) {
+	 line = new std::string(srcline);
+	 _lang->to_upper(*line);
+      } else {
+	 line = &srcline;
+      }
+      
+      lineno++;
+      std::string::size_type pos = 0;
+      // offset to pos when a string or block comment has just been found
+      std::string::size_type offsetpos = 0;
+      while ( pos < srcline.length() ) {
+
+	 if (in_string) {
+
+	    //look for the end of the string _lang->strings[in_string-1]...
+	    std::string::size_type end_pos;
+	    if (find_end_limit(*line, pos+offsetpos, end_pos, _lang->strings[in_string-1]))
+	       in_string=0;
+
+	    //assign token
+	    tokens.push_back(Token(Token::STRING, srcline.substr(pos, end_pos-pos)));
+	    pos = end_pos;
+	    
+	 } else if (in_comment) {
+	    
+	    std::string::size_type end_pos;
+	    if (find_end_limit(*line, pos+offsetpos, end_pos, _lang->blockcomments[in_comment-1]))
+	       in_comment=0;
+
+	    //assign token
+	    tokens.push_back(Token(Token::BLOCKCOMMENT, srcline.substr(pos, end_pos-pos)));
+	    pos = end_pos;
+
+	 } else {
+
+	    // get index of first string and type
+	    context next_token;
+	    next_token.type = Token::DEFAULT;
+	    next_token.type_id = -1;
+	    next_token.pos = srcline.length();
+	    next_token.last_pos = srcline.length();
+
+	    for(int i=0 ; i<_lang->strings.size() && next_token.pos > pos ; i++)
+	       find_next_token(_lang->strings[i], next_token, Token::STRING, i, *line, pos);
+
+	    for(int i=0 ; i<_lang->blockcomments.size() && next_token.pos > pos ; i++)
+	       find_next_token(_lang->blockcomments[i], next_token, Token::BLOCKCOMMENT, i, *line, pos);
+	    for(int i=0 ; i<_lang->linecomments.size() && next_token.pos > pos ; i++)
+	       find_next_token(_lang->linecomments[i], next_token, Token::LINECOMMENT, i, *line, pos);
+
+	    for(int k=0 ; k<_lang->all_kwsets.size() ; k++) {
+	       Lang::KeywordSet &kwset = *_lang->all_kwsets[k];
+	       for(int i=0 ; i<kwset.size() && next_token.pos > pos ; i++)
+		  find_next_token(kwset[i], next_token, kwset.name, i, *line, pos);
+	    }
+
+	    // if the min of index
+	    if (pos < next_token.pos) {
+	       tokens.push_back(Token(Token::DEFAULT, srcline.substr(pos, next_token.pos - pos)));
+	       pos = next_token.pos;
+	    }
+	    if (next_token.type == Token::STRING) {
+	       offsetpos = _lang->strings[next_token.type_id].begin().length();
+	       in_string = next_token.type_id+1;
+	    } else if (next_token.type == Token::BLOCKCOMMENT) {
+	       offsetpos = _lang->blockcomments[next_token.type_id].begin().length();
+	       in_comment = next_token.type_id+1;
+	    } else if (pos < next_token.last_pos) {
+	       tokens.push_back(Token(next_token.type, srcline.substr(pos, next_token.last_pos - pos)));
+	       pos = next_token.last_pos;
+	    }
+	 }
+      }
+      if (! _lang->case_sensitive()) delete line;
+
+      if (tokens.empty()) tokens.push_back(Token());
+      tokens.back().append("\n");
+   }
+
+   _current_token = tokens.front();
+   tokens.pop_front();
+
+   //cerr << _current_token << endl;
+   return _current_token;
+}
+
+
+
+
+// Theme ===============================================================
+
+class PEL_EXPORT Style {
+   public:
+      Style(const std::string &s);
+
+      typedef enum fontflags {
+	 NORMAL = 0x1,
+	 BOLD   = 0x2,
+	 ITALIC = 0x4
+      };
+
+      std::string name;
+      unsigned int color;
+      fontflags style;
+      int fontsize;
+      typedef  std::map<std::string, Style*> map_of_styles;
+      static std::map<std::string, Style*> all_styles;
+      static Style &get_style(const std::string &s);
+};
+
+std::map<std::string, Style*> Style::all_styles;
+
+Style &Style::get_style(const std::string &s) {
+   Style *style;
+   if ((style=all_styles[s]) == 0) {
+      style=all_styles[s] = new Style(s);
+   }
+   return *style;
+}
+
+Style::Style(const std::string &s) : name(s), color(0), style(NORMAL), fontsize(-1) {
+   all_styles[name] = this;
+}
+
+class PEL_EXPORT Theme {
+   public:
+      static void list(const Envir &env);
+      Theme(Envir *env) : _env(env) {reset();}
+      virtual ~Theme();
+      void reset();
+      void load(const std::string &name);
+      bool verbose() const {return _env->verbose();}
+      const Style *get_style(const Token &token) const{return get_style(token.type());}
+      const Style *get_style(const Token::tokentype &type) const;
+
+      std::string _name;
+      std::string bg_image;
+      unsigned int bg_color;
+      std::string fontname;
+      int fontsize;
+      
+   private:
+      Theme(Theme const &);
+      Envir *_env;
+};
+
+
+Theme::~Theme() {}
+
+void Theme::list(const Envir &env) {
+   cerr << "List of themes available :" << endl;
+   env.list_all_files("theme.");
+}
+
+
+void
+Theme::reset() {
+   _name = "std";
+   bg_image = "";
+   bg_color = 0xFFFFFF;
+   fontname = "lucidatypewriter, courier";
+   fontsize=12;
+
+   Style::all_styles.clear();
+   Style *style;
+
+   style = &Style::get_style("comment");
+   style->color = 0xC0C0C0;
+   style->style = Style::ITALIC;
+   Style::all_styles[Token::LINECOMMENT] = style;
+   Style::all_styles[Token::BLOCKCOMMENT] = style;
+
+   style = &Style::get_style(Token::STRING);
+   style->color = 0x008000;
+   style->style = Style::NORMAL;
+   style = &Style::get_style("kw1");
+   style->color = 0x0000C0;
+   style->style = Style::BOLD;
+   style = &Style::get_style("kw2");
+   style->color = 0x000080;
+   style->style = Style::BOLD;
+   style = &Style::get_style("kw3");
+   style->color = 0x0000FF;
+   style->style = Style::BOLD;
+   style = &Style::get_style(Token::TEXT);
+   style->color = 0x000000;
+   style->style = Style::NORMAL;
+}
+
+void
+Theme::load(const std::string &name) {
+   if (name == _name) return;
+   reset();
+   _name = name;
+   if (verbose()) cerr << "loading theme " << name << endl;
+   std::string theme_file_name;
+   if (! ( _env->find_file("theme."+name, theme_file_name) ||
+           _env->find_file(name, theme_file_name))) return;
+
+   std::ifstream input(theme_file_name.c_str());
+   std::string key, sep, val;
+   unsigned int ival;
+   Style::fontflags fstyle;
+   while(input >> key) {
+      input >> sep;
+      if (key.find("#") == 0) {
+	 continue;
+      } else if (key.find(".color") != key.npos) {
+	 char c;
+	 input >> c >> std::hex >> ival;
+      } else if (key.find(".size") != key.npos) {
+	 input >> std::dec >> ival;
+      } else if (key.find(".style") != key.npos) {
+	 getline(input, val, '\n');
+	 std::vector<std::string> tokens;
+	 StringTokenizer tokenizer(val, tokens, " ,");
+
+	 fstyle = Style::NORMAL;
+	 for(std::vector<std::string>::iterator p = tokens.begin(); p < tokens.end(); p++) {
+	    if ((*p) == "normal")           fstyle  = Style::NORMAL;
+	    else if ((*p) == "bold")   fstyle =
+                                          (Style::fontflags)((int)fstyle|Style::BOLD);
+	    else if ((*p) == "italic") fstyle = 
+                                          (Style::fontflags)((int)fstyle|Style::ITALIC);
+	 }
+      } else {
+	 input >> val;
+      }
+      
+      //pas beau du tout du tout du tout ===>
+      //Style = std::map<string, property> ; color,style, ... étant des property (xml ?)
+      if (key == "bg.color") bg_color = ival;
+      else if (key == "bg.image") bg_image = val;
+      else if (key == "font.name") fontname = val;
+      else if (key == "font.size") fontsize = ival;
+      else {
+	 std::string stylename = key.substr(0, key.find_first_of('.'));
+	 if (verbose()) cerr << "looking for style " << stylename << endl;
+	 Style &style = Style::get_style(stylename);
+	 if (key.find(".color") != key.npos) style.color = ival;
+	 else if (key.find(".style") != key.npos) style.style = fstyle;
+	 else if (key.find(".size") != key.npos) style.fontsize = ival;
+      }
+   }
+   input.close();
+}
+
+const Style *
+Theme::get_style(const Token::tokentype &type) const {
+   return &Style::get_style(type);
+}
+
+
+// HTMLFormatter ===============================================================
+
+class PEL_EXPORT HTMLFormatter {
+   public:
+      HTMLFormatter(std::ostream &out=cout, bool mode_cgi=false);
+      void output(const Style &);
+      void output(const Theme &, std::string const& css_file );
+      void output_internal(const Theme &theme);
+
+      void set_style(const Style *);
+      void output_html(const std::string&);
+      void output(const std::string&);
+      void start();
+      void start_header(const std::string& title);
+      void end();
+      void start_body();
+      std::ostream & operator ()() {return _out;}
+   private:
+      const Style* current_style;
+      bool _mode_cgi;
+      std::ostream &_out;
+      std::string encodechar[256];
+};
+
+HTMLFormatter::HTMLFormatter(std::ostream &out, bool mode_cgi)
+	 : current_style(0), _mode_cgi(mode_cgi), _out(out)  {
+   const char hexa[]="0123456789ABCDEF";
+   for (unsigned int i=0;i<' ';i++) {
+      encodechar[i] ="^";
+      encodechar[i] +=i+'A'-1;
+   }
+   for (unsigned int i=' ';i<128;i++) {
+      encodechar[i]=i;
+   }
+   for (unsigned int i=128;i<256;i++) {
+      encodechar[i] = "&#x";
+      encodechar[i] += hexa[(i&0xF0)>>4];
+      encodechar[i] += hexa[i&0x0F];
+      encodechar[i] += ";";
+   }
+   encodechar[9] = '\t';
+   encodechar[10] = '\n';
+   encodechar[13] = "";
+   encodechar['"'] = "&quot;";
+   encodechar['<'] = "&lt;";
+   encodechar['>'] = "&gt;";
+   encodechar['&'] = "&amp;";
+   encodechar[127] = "^?";
+}
+
+void HTMLFormatter::start() {
+   if (_mode_cgi)
+      _out << "Content-Type: text/html" << endl << endl;
+   _out << "<html>" << endl;
+}
+
+void HTMLFormatter::end() {
+   if (current_style) {
+      _out << "</font>";
+      current_style = 0;
+   }
+   _out << "</body>" << endl
+	<< "</html>" << endl;
+}
+
+void HTMLFormatter::start_header(const std::string& title) {
+   _out << "<head>" << endl
+	<< "<title>" << title << "</title>" << endl;
+}
+
+void HTMLFormatter::start_body() {
+   _out << "</head>" << endl
+	<< "<body>" << endl;
+   current_style=0;
+}
+
+
+void HTMLFormatter::output_internal(const Theme &theme) {
+   _out << "body {" << endl;
+   _out << "background: ";
+   if (!theme.bg_image.empty()) {
+      _out << "url(" << theme.bg_image << ")" << endl;
+   }
+   _out << "#" << std::setw(6) << std::setfill('0') << std::hex
+        << theme.bg_color << std::dec << endl;
+
+//        << "background-color: " << "#" << setw(6) << setfill('0') << hex << theme.bg_color << dec << endl;
+//    if (!theme.bg_image.empty()) {
+//       _out << "background-image: url(" << theme.bg_image << ");" << endl
+// 	  << "background-attachment: fixed" << endl;
+//    }
+   _out << "}" << endl;
+   _out << "pre {" << endl
+	<< "font-family: "<< theme.fontname << ", monospace;" << endl
+	<< "color: #000000;" << endl
+	<< "font-size: " << theme.fontsize << "pt;" << endl
+	<< "}" << endl;
+
+   for (Style::map_of_styles::iterator p = Style::all_styles.begin() ;
+	p != Style::all_styles.end() ;
+	p ++)
+      output(*(*p).second);
+}
+
+void HTMLFormatter::output(const Theme &theme, std::string const& cssfile ) {
+   if( !cssfile.empty() ) {
+      _out << "<link rel=stylesheet type=\"text/css\" href=\""
+	   << cssfile << "\">" << endl;
+   } else {
+      _out << "<style type=\"text/css\">" << endl;
+      output_internal(theme);
+      _out << "</style>" << endl;
+   }
+}
+
+void HTMLFormatter::output(const Style &style) {
+   _out << "font." << style.name << " {" << "color: #" << std::setw(6)
+        << std::setfill('0') << std::hex << style.color << std::dec ;
+   if (style.style & Style::BOLD) _out << ";font-weight: bold";
+   if (style.style & Style::ITALIC) _out << ";font-style: italic";
+   if (style.fontsize != -1) _out << ";font-size: " << style.fontsize << "pt;";
+   _out << "}" << endl;
+}
+
+void HTMLFormatter::set_style(const Style *style) {
+   if (current_style && current_style != style) {
+      _out << "</font>";
+      current_style = 0;
+   }
+   if (!current_style && style)
+      _out << "<font class=\"" << style->name << "\">";
+   current_style = style;
+}
+
+void HTMLFormatter::output_html(const std::string&s) {
+   for (int i=0 ; i < s.length() ; i++) {
+      unsigned char c=s[i];
+      _out <<  encodechar[c];
+   }
+}
+
+void HTMLFormatter::output(const std::string&s) {
+   _out << s;
+}
+
+// Config ===============================================================
+
+class PEL_EXPORT Config : public Envir {
+   public:
+      Config(const std::string &name);
+      virtual ~Config();
+      Theme &theme() {return _theme;}
+      Lang &lang() {return _lang;}
+      void set_autolang(bool b) {_autolang=b;}
+      bool autolang() const {return _autolang;}
+      void set_autofile(bool b) {_autofile=b;}
+      bool autofile() const {return _autofile;}
+      void set_mode_cgi(bool b) {_mode_cgi=b;}
+      bool mode_cgi() const {return _mode_cgi;}
+      void set_line_numbering(bool b) {_line_numbering=b;}
+      bool line_numbering() const {return _line_numbering;}
+      void set_external_styles(bool b) {_external_styles=b;}
+      bool external_styles() const {return _external_styles;}
+      void set_with_header(bool b) {_with_header=b;}
+      bool with_header() const {return _with_header;}
+
+      void set_output_file(const std::string &outputfile) {outfile=outputfile;}
+      void set_css_file(const std::string &css) {cssfile=css;}
+      const std::string &css_file(void) const {return cssfile;}
+      const std::string &output_file() const {return outfile;}
+      void set_output_dir(const std::string &outputdir) {
+	 outdir=outputdir;
+	 if (outdir != "") outdir += "/";
+      }
+      const std::string &output_dir() const {return outdir;}
+
+      std::ostream & output_stream(const std::string & inputfile) {
+	 std::ios_base::openmode fflag = std::ios_base::trunc  ;
+	 if( !_with_header ) { fflag = std::ios_base::app ;}
+	 if (_output) {
+	    if (_output != &cout) delete _output;
+	    _output = 0;
+	 }
+	 if (output_file() != "") {
+	    _output =  new std::ofstream(output_file().c_str(), fflag);
+	 } else if (output_dir() == "") {
+	    _output = &cout;
+	 } else if (inputfile == "") {
+	    _output = &cout;
+	 } else {
+	    std::string o(output_dir());
+	    _output = new std::ofstream(o.append(inputfile).append(".html").c_str(), fflag);
+	 }
+
+	 return *_output;
+      }
+      void process(const std::string &name);
+      void process(std::istream &src, HTMLFormatter &dst, const std::string & title);
+
+   private:
+      Config(Config const &);
+      bool _autolang;
+      bool _autofile;
+      bool _mode_cgi;
+      bool _line_numbering;
+      bool _external_styles;
+      bool _with_header;
+      std::string outfile;
+      std::string cssfile;
+      std::string outdir;
+      Lang _lang;
+      Theme _theme;
+      std::ostream *_output;
+};
+
+Config::Config(const std::string &name)
+   : Envir(name)
+   , _autolang(true)
+   , _autofile(true)
+   , _mode_cgi(false)
+   , _line_numbering(false)
+   , _with_header(true)
+   , _lang(this)
+   , _theme(this)
+   , _output(0)
+   , _external_styles( false )	
+{
+   std::string cgi(".cgi");
+   std::string::size_type pos = name.find(cgi);
+   _mode_cgi = (pos != name.npos && pos+cgi.length()==name.length());
+}
+
+Config::~Config() {}
+
+void
+Config::process(std::istream & src, HTMLFormatter & dst, const std::string & title) {
+   if (with_header()) {
+      dst.start();
+      dst.start_header(title);
+      if( external_styles() ) set_css_file( theme()._name ) ;
+      dst.output(theme(), css_file());
+      dst.start_body();
+   }
+   dst.output("<pre>\n");
+   std::string buffer;
+   Tokenizer tokenizer(lang());
+   tokenizer.tokenize(src);
+   int lineno = 0;
+   while( tokenizer.has_token() ) {
+      const Token &token = tokenizer.next_token();
+      //cout << "flags : " << hex << src.rdstate() << endl;
+      if (line_numbering() && lineno != tokenizer.line_number()) {
+	 lineno = tokenizer.line_number();
+	 dst.set_style(theme().get_style(Token::DEFAULT));
+	 dst() << std::setw(6) << std::setfill(' ') << lineno << "  ";
+      }
+      dst.set_style(theme().get_style(token));
+      dst.output_html(token.value());
+   }
+   dst.set_style(0);
+   dst.output("\n</pre>\n");
+
+   if (with_header()) {
+      dst.end();
+   }
+
+   if (external_styles()) {
+      std::string cssfile(output_dir());
+      cssfile.append(theme()._name).append(".css");
+      std::ofstream outcss(cssfile.c_str());
+      HTMLFormatter css(outcss);
+      css.output_internal(theme());
+      outcss.close();
+   }
+}
+
+void
+Config::process(const std::string &name) {
+   if (verbose()) cerr << "working on " << name << endl;
+   if (autolang()) lang().detect(name);
+   // check autofile
+   // open output file
+
+   if (verbose()) cerr << "processing file" << endl;
+   // open input file
+   std::ifstream input(name.c_str());
+   if (! input.fail()) {
+      std::ostream &output = output_stream(name);
+      if (output.fail())
+	 cerr << this->name() << " can not open the output file for " << name << endl;
+      else {
+	 HTMLFormatter format(output, mode_cgi());
+	 std::string title = name ;
+         int idx = name.find_last_of( "/" ) ;
+	 if( idx<name.length() ) title = name.substr( idx+1, name.length()-idx-1 ) ;
+	 process(input, format, title);
+	 input.close();
+	 if (&output != &cout) 
+	 {
+            dynamic_cast<std::ofstream&>(output).flush();
+            dynamic_cast<std::ofstream&>(output).close();
+	 }	
+	 //output.close();
+      }
+   } else if (mode_cgi()) {
+      HTMLFormatter format(cout, true);
+      format.start();
+      format.start_header(name);
+      format.start_body();
+      format() << this->name() << " can not process the file <b>" << name << "</b>";
+      format.end();
+   } else if (input.fail()) {
+      cerr << this->name() << " can not process the file " << name << endl;
+   }
+
+   // close output file
+}
+
+void usage(const std::string &name) {
+   cerr << endl
+	<< "usage : " << name/*.substr(name.rfind('/'))*/ << " {[OPTIONS],[FILE]}" << endl
+	<< endl
+	<< "Convert FILE(s) or standard input to HTML." << endl
+	<< endl
+	<< "Mandatory arguments to long options are mandatory for short options too." << endl
+//	<< "Long options marked with * require a yes/no argument, corresponding" << endl
+//	<< "short options stand for `yes'." << endl
+	<< endl
+	<< "Global:" << endl
+	<< "  --version              display version" << endl
+	<< "  -h, --help             display this help" << endl
+	<< "  -v, --verbose          set verbosity on, or to LEVEL" << endl
+	<< "  --list                 detailed list of languages and themes available" << endl
+	<< endl
+	<< "Style:" << endl
+	<< "  -n, --line-numbers     precede each line with its line number" << endl
+	<< "  -N, --no-line-numbers  no line number at all" << endl
+	<< "  -t, --theme=THEME      change style to THEME" << endl
+	<< endl
+	<< "Input:" << endl
+	<< "  -g, --guess            autodetect the language on input file suffix" << endl
+	<< "  -l, --lang=LANG        force language to LANG" << endl
+	<< "  default input file is standard input" << endl
+	<< endl
+	<< "Output:" << endl
+	<< "  -d, --dir=DIR          leave all output in directory DIR" << endl
+	<< "  -o, --output=FILE      leave output to file FILE" << endl
+	<< "  -x, --external-css     write the THEME in a .css file" << endl
+	<< "  -p, --provided-css     use given .css file" << endl
+	<< "  -cgi, --mode-cgi       prepend the html starter for CGI compliance" << endl
+	<< "  --no-header            output nothing else but the file" << endl
+	<< "  default output file is standard output, with header, embedding css" << endl
+	<< endl
+      ;
+}
+
+int webview_main(int argc, stringVector const& argv ) {
+   Config *config = new Config(argv(0));
+
+   if (config->mode_cgi()) {
+      bool has_file = false;
+      std::string query(PEL_System::getenv("QUERY_STRING"));
+      std::string::size_type pos=0, npos;
+      while((npos = query.find("=",pos)) != std::string::npos) {
+	 std::string key = query.substr(pos, npos-pos);
+	 pos=npos+1;
+	 npos = query.find("&",pos);
+	 if (npos == std::string::npos) npos=query.length();
+	 std::string val = query.substr(pos, npos-pos);
+	 pos=npos+1;
+	 //cout << "key="<<key<<", val="<<val<<"<br>";
+	 if ( key == "lang" ) {
+	    config->lang().load(val);
+	    config->set_autolang(false);
+
+	 } else if ( key == "theme" ) {
+	    config->theme().load(val);
+
+	 } else if ( key == "file" ) {
+	    has_file = true;
+	    config->process(val);
+
+	 } else if ( key == "ln" ) {
+	    config->set_line_numbering(true);
+
+	 }
+      }
+      if (!has_file) {
+	 config->process(PEL_System::getenv("PATH_TRANSLATED"));
+      }
+   } else {
+      bool has_file = false;
+      for (int i=1;i<argc;i++) {
+	 std::string key = argv(i);
+
+	 if (key == "--verbose" || key == "-v") {
+	    config->set_verbose(true);
+
+	 } else if (key == "--guess" || key == "-g") {
+	    config->set_autolang(true);
+
+	 } else if (key == "--mode-cgi" || key == "-cgi") {
+	    config->set_mode_cgi(true);
+
+	 } else if (key == "--line-numbers" || key == "-n") {
+	    config->set_line_numbering(true);
+
+	 } else if (key == "--no-line-numbers" || key == "-N") {
+	    config->set_line_numbering(false);
+
+	 } else if ( key.find("--lang=") == 0) {
+            std::string arg = key.substr( key.find("=")+1 ) ;
+	    config->lang().load(arg);
+	    config->set_autolang(false);
+
+	 } else if (key == "-l") {
+
+	    config->lang().load(argv(i+1)); i++ ;
+	    config->set_autolang(false);
+
+	 } else if (key.find("--theme=") == 0) {
+
+            std::string arg = key.substr( key.find("=")+1 ) ;
+	    config->theme().load(arg);
+
+	 } else if (key == "-t") {
+
+	    config->theme().load(argv(i+1)); i++ ;
+
+	 } else if (key == "--external-css" || key == "-x") {
+	    config->set_external_styles(true);
+
+	 } else if (key.find("--output=") == 0) {
+
+            std::string arg = key.substr( key.find("=")+1 ) ;
+	    config->set_output_file(arg);
+            
+ 	 } else if (key == "-o") {
+
+	    config->set_output_file(argv(i+1)); i++ ;
+            
+         } else if (key.find("--provided-css=") == 0) {
+
+            std::string arg = key.substr( key.find("=")+1 ) ;
+	    config->set_css_file(arg);
+
+         } else if (key == "-p") {
+
+	    config->set_css_file(argv(i+1)); i++ ;
+
+	 } else if (key.find("--dir=") == 0) {
+
+            std::string arg = key.substr( key.find("=")+1 ) ;
+	    config->set_output_dir(arg);
+
+	 } else if (key == "-d") {
+
+	    config->set_output_dir(argv(i+1)); i++ ;
+
+	 } else if (key == "--help" || key == "-h") {
+	    usage(config->name());
+	    PEL_System::exit(1);
+
+	 } else if (key == "--no-header") {
+	    config->set_with_header(false);
+
+	 } else if (key == "--version") {
+	    cerr << key << " : not implemented yet" << endl;
+	    PEL_System::exit(1);
+
+	 } else if (key =="--list") {
+	    Lang::list(*config);
+	    Theme::list(*config);
+	    PEL_System::exit(1);
+
+	 } else {
+	    has_file = true;
+	    config->process(key);
+
+	 }
+      }
+
+      //process stdin when no file has been encountered
+      if (!has_file) {
+	 std::ostream &output = config->output_stream("");
+	 if (output.fail())
+	    cerr << config->name() << " can not open the output file" << endl;
+	 else {
+	    HTMLFormatter f(output);
+	    config->process(cin, f, "");
+	 }
+      }
+   }
+   delete config ; config = 0 ;
+   return 0 ;
+}
+
+}

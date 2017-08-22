@@ -1,0 +1,196 @@
+<html>
+<head>
+<title>CH_CapillaryForce.cc</title>
+<link rel=stylesheet type="text/css" href="stylesheet.css">
+</head>
+<body>
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated
+ *  reusable components, whose purpose is to simplify the task of developing
+ *  softwares of numerical mathematics and scientific computing.
+ *
+ *  This software is governed by the CeCILL-C license under French law and
+ *  abiding by the rules of distribution of free software. You can use, modify
+ *  and/or redistribute the software under the terms of the CeCILL-C license
+ *  as circulated by CEA, CNRS and INRIA at the following URL
+ *  &quot;http://www.cecill.info&quot;.
+ *
+ *  As a counterpart to the access to the source code and rights to copy,
+ *  modify and redistribute granted by the license, users are provided only
+ *  with a limited warranty and the software's author, the holder of the
+ *  economic rights, and the successive licensors have only limited liability.
+ *
+ *  In this respect, the user's attention is drawn to the risks associated
+ *  with loading, using, modifying and/or developing or reproducing the
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also
+ *  therefore means that it is reserved for developers and experienced
+ *  professionals having in-depth computer knowledge. Users are therefore
+ *  encouraged to load and test the software's suitability as regards their
+ *  requirements in conditions enabling the security of their systems and/or
+ *  data to be ensured and, more generally, to use and operate it in the same
+ *  conditions as regards security.
+ *
+ *  The fact that you are presently reading this means that you have had
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;CH_CapillaryForce.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_DomainAndFields</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_LocalFEcell</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_SetOfDiscreteFields</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE_Parameter</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE_SetOfParameters</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;iostream&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;sstream&gt;
+
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> ;
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> ;
+
+CH_CapillaryForce </font><font class="kw1">const</font><font class="text">* 
+CH_CapillaryForce:: PROTOTYPE = </font><font class="kw1">new</font><font class="text"> CH_CapillaryForce() ;
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">CH_CapillaryForce:: CH_CapillaryForce( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">FE_Parameter</font><font class="text">( </font><font class="string">&quot;CH_CapillaryForce&quot;</font><font class="text"> )
+{
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">CH_CapillaryForce*
+CH_CapillaryForce:: create_replica( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+				       </font><font class="kw3">PDE_DomainAndFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dom,
+				       </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp ) </font><font class="kw1">const
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;CH_CapillaryForce:: create_replica&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_PRE( a_owner, dom, exp ) ) ;
+
+   CH_CapillaryForce* result =
+                             </font><font class="kw1">new</font><font class="text"> CH_CapillaryForce( a_owner, dom, exp ) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_POST( result, a_owner, dom, exp ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">CH_CapillaryForce:: CH_CapillaryForce( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+					     </font><font class="kw3">PDE_DomainAndFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dom,
+					     </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp )
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">FE_Parameter</font><font class="text">( a_owner, exp-&gt;string_data( </font><font class="string">&quot;name&quot;</font><font class="text"> ) )
+   , NBCS( dom-&gt;nb_space_dimensions() )
+   , S1( exp-&gt;double_data( </font><font class="string">&quot;coef_sigma_1&quot;</font><font class="text"> ) )
+   , S2( exp-&gt;double_data( </font><font class="string">&quot;coef_sigma_2&quot;</font><font class="text"> ) )
+   , S3( exp-&gt;double_data( </font><font class="string">&quot;coef_sigma_3&quot;</font><font class="text"> ) )
+{
+   </font><font class="kw3">PDE_SetOfDiscreteFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dfs = dom-&gt;set_of_discrete_fields() ;
+   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* se = exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;fields&quot;</font><font class="text"> ) ;
+   se-&gt;start_module_iterator() ;
+   </font><font class="kw1">for</font><font class="text">( ; se-&gt;is_valid_module() ; se-&gt;go_next_module() )
+   {
+      </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* sse = se-&gt;create_subexplorer( 0 ) ;
+      </font><font class="kw3">PDE_DiscreteField</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ff = 
+                               dfs-&gt;item( sse-&gt;string_data( </font><font class="string">&quot;phase_field&quot;</font><font class="text"> ) ) ;
+      CCs.push_back( ff ) ;
+      ff = dfs-&gt;item( sse-&gt;string_data( </font><font class="string">&quot;generalized_potential&quot;</font><font class="text"> ) ) ;
+      MMs.push_back( ff ) ;
+      L_CCs.push_back( sse-&gt;int_data( </font><font class="string">&quot;level_of_fields&quot;</font><font class="text"> ) ) ;
+      sse-&gt;destroy() ;
+   }
+   se-&gt;destroy() ;
+
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">CH_CapillaryForce:: ~CH_CapillaryForce( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw2">size_t
+</font><font class="text">CH_CapillaryForce:: nb_components( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">return</font><font class="text">( NBCS ) ;
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw1">double
+</font><font class="text">CH_CapillaryForce:: cell_value_at_IP( </font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* t_it,
+					 </font><font class="kw3">PDE_LocalFEcell</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fe,
+					 </font><font class="kw2">size_t</font><font class="text"> ic ) </font><font class="kw1">const
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;CH_CapillaryForce:: cell_value_at_IP&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( cell_value_at_IP_PRE( t_it, fe, ic ) ) ;
+
+   </font><font class="kw1">double</font><font class="text"> result = 0.0 ; 
+
+   </font><font class="kw1">double</font><font class="text"> m =  fe-&gt;value_at_IP( MMs[0], L_CCs[0] ) ;
+   </font><font class="kw1">double</font><font class="text"> n =  fe-&gt;value_at_IP( MMs[1], L_CCs[1] ) ;
+   </font><font class="kw1">double</font><font class="text"> p = - ( m*S3/S1 + n*S3/S2 ) ;
+
+   </font><font class="kw1">double</font><font class="text"> grad_c = fe-&gt;gradient_at_IP( CCs[0], L_CCs[0], ic ) ;
+   </font><font class="kw1">double</font><font class="text"> grad_d = fe-&gt;gradient_at_IP( CCs[1], L_CCs[1], ic ) ;
+   </font><font class="kw1">double</font><font class="text"> grad_f = - ( grad_c + grad_d ) ;
+   
+   result = m*grad_c + n*grad_d + p*grad_f ;
+
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw1">double
+</font><font class="text">CH_CapillaryForce:: cell_value_at_pt( </font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* t_it,
+					 </font><font class="kw3">PDE_LocalFEcell</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fe,
+					 </font><font class="kw2">size_t</font><font class="text"> ic ) </font><font class="kw1">const
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;CH_CapillaryForce:: cell_value_at_pt&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( cell_value_at_pt_PRE( t_it, fe, ic ) ) ;
+
+   </font><font class="kw1">double</font><font class="text"> result = 0.0 ; 
+
+   </font><font class="kw1">double</font><font class="text"> m =  fe-&gt;value_at_pt( MMs[0], L_CCs[0] ) ;
+   </font><font class="kw1">double</font><font class="text"> n =  fe-&gt;value_at_pt( MMs[1], L_CCs[1] ) ;
+   </font><font class="kw1">double</font><font class="text"> p = - ( m*S3/S1 + n*S3/S2 ) ;
+
+   </font><font class="kw1">double</font><font class="text"> grad_c = fe-&gt;gradient_at_pt( CCs[0], L_CCs[0], ic ) ;
+   </font><font class="kw1">double</font><font class="text"> grad_d = fe-&gt;gradient_at_pt( CCs[1], L_CCs[1], ic ) ;
+   </font><font class="kw1">double</font><font class="text"> grad_f = - ( grad_c + grad_d ) ;
+   
+   result = m*grad_c + n*grad_d + p*grad_f ;
+
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">CH_CapillaryForce:: prepare_for_value_on_cells( </font><font class="kw3">PDE_LocalFEcell</font><font class="text">* fe ) </font><font class="kw1">const
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;CCs.size() ; ++i ) 
+   {
+      fe-&gt;require_field_calculation( CCs[i], </font><font class="kw3">PDE_LocalFE</font><font class="text">::dN )  ;   
+      fe-&gt;require_field_calculation( MMs[i], </font><font class="kw3">PDE_LocalFE</font><font class="text">::N )  ;   
+   }
+}
+
+</font>
+</pre>
+</body>
+</html>

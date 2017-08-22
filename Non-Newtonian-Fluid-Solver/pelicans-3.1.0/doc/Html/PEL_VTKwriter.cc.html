@@ -1,0 +1,878 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>PEL_VTKwriter.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="PEL_VTKwriter.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="PELpack-tree.html"><span>Tree</span></a>
+    <a href="PEL_VTKwriter.html"><span>Class</span></a>
+    <a href="PEL_VTKwriter.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="PELpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_VTKwriter</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Communicator</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_DataWithContext</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_DoubleArray2D</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Exec</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Int</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_IntVector</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_List</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Map</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Module</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_String</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_System</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">doubleArray2D</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">intArray2D</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">size_t_vector</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">stringVector</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;fstream&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;iostream&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;sstream&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw2">string</font><font class="text">&gt;
+
+</font><font class="kw2">#ifdef</font><font class="text"> ZLIB
+</font><font class="kw2">#include</font><font class="text"> &lt;zlib.h&gt;
+</font><font class="kw2">#endif
+</font><font class="text">
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ; 
+
+</font><font class="kw3">PEL_VTKwriter</font><font class="text"> </font><font class="kw1">const</font><font class="text">* </font><font class="kw3">PEL_VTKwriter</font><font class="text">::PROTOTYPE = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_VTKwriter</font><font class="text">() ;
+</font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw3">PEL_VTKwriter</font><font class="text">::UNAMED = </font><font class="string">&quot;_unamed_&quot;</font><font class="text"> ;
+
+</font><font class="kw1">static</font><font class="text"> </font><font class="kw2">size_t</font><font class="text"> sizeof_Float32 = 4 ;
+</font><font class="kw1">static</font><font class="text"> </font><font class="kw2">size_t</font><font class="text"> sizeof_Int32 = 4 ;
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">PEL_VTKwriter</font><font class="text">:: is_parallel_writer( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_VTKwriter</font><font class="text">:: </font><font class="kw3">PEL_VTKwriter</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_DataOnMeshingWriter</font><font class="text">( </font><font class="string">&quot;PEL_VTKwriter&quot;</font><font class="text"> )
+   , SPACE_DIM( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+   , PVD_STRINGS( 0 )
+   , BINARY( </font><font class="kw1">false</font><font class="text"> )
+   , CYCLE_NUMBER( 0 )
+   , VERTICES( 0, 0 )
+   , LINEAR_CONNECTIVITY( 0 ) 
+   , OFFSET_CONNECTIVITY( 0 )
+   , CELL_TYPES( 0 )
+{
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_VTKwriter</font><font class="text">*
+</font><font class="kw3">PEL_VTKwriter</font><font class="text">:: create_replica( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+				</font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_VTKwriter:: create_replica&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_PRE( a_owner, exp ) ) ;
+
+   </font><font class="kw3">PEL_VTKwriter</font><font class="text">* result = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_VTKwriter</font><font class="text">( a_owner, exp ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( create_replica_POST( result, a_owner, exp ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_VTKwriter</font><font class="text">:: </font><font class="kw3">PEL_VTKwriter</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+			       </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_DataOnMeshingWriter</font><font class="text">( a_owner )
+   , SPACE_DIM( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+   , BASE_FILENAME( exp-&gt;string_data( </font><font class="string">&quot;files_basename&quot;</font><font class="text"> ) )
+   , PVD_FILENAME( exp-&gt;string_data( </font><font class="string">&quot;files_basename&quot;</font><font class="text"> ) + </font><font class="string">&quot;.pvd&quot;</font><font class="text"> )
+   , PVD_STRINGS( 0 )
+   , BINARY( </font><font class="kw1">false</font><font class="text"> )
+   , CYCLE_NUMBER( 0 )
+   , VERTICES( 0, 0 )
+   , LINEAR_CONNECTIVITY( 0 )
+   , OFFSET_CONNECTIVITY( 0 )
+   , CELL_TYPES( 0 )
+   , BUFFER( 0 )
+   , ALLOCATED( 0 )
+   , OFFSET( 0 )
+   , ENCODING( </font><font class="kw3">PEL_System</font><font class="text">::big_endian_encoding() ?
+                                       </font><font class="string">&quot;BigEndian&quot;</font><font class="text"> : </font><font class="string">&quot;LittleEndian&quot;</font><font class="text"> ) 
+   , COMPRESS( </font><font class="kw1">false</font><font class="text"> )
+   , COM( </font><font class="kw3">PEL_Exec</font><font class="text">::communicator() )
+{
+   </font><font class="kw1">if</font><font class="text">( exp-&gt;string_data( </font><font class="string">&quot;writing_mode&quot;</font><font class="text"> )==</font><font class="string">&quot;binary&quot;</font><font class="text"> )
+   {
+      BINARY = </font><font class="kw1">true</font><font class="text"> ;
+      </font><font class="kw1">if</font><font class="text">( exp-&gt;has_entry( </font><font class="string">&quot;compress&quot;</font><font class="text"> ) )
+      {
+         COMPRESS = exp-&gt;bool_data( </font><font class="string">&quot;compress&quot;</font><font class="text"> ) ;
+      }
+</font><font class="kw2">#ifdef</font><font class="text"> ZLIB
+      </font><font class="kw1">else</font><font class="text"> COMPRESS=</font><font class="kw1">true</font><font class="text"> ;
+</font><font class="kw2">#else
+</font><font class="text">      </font><font class="kw1">if</font><font class="text">( COMPRESS ) 
+      {
+		  </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain(
+           </font><font class="string">&quot;No compression allowed without ZLIB library linking&quot;</font><font class="text"> ) ;
+      }
+</font><font class="kw2">#endif
+</font><font class="text">   }
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+}
+
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_VTKwriter</font><font class="text">:: ~</font><font class="kw3">PEL_VTKwriter</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">if</font><font class="text">( is_a_prototype() )
+   {
+      PROTOTYPE = 0 ;
+   }
+}
+
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_VTKwriter</font><font class="text">:: write_cycle( </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_VTKwriter:: write_cycle&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( write_cycle_PRE( exp ) ) ;
+
+   </font><font class="comment">// Current time
+</font><font class="text">   CYCLE_NUMBER = exp-&gt;int_data( </font><font class="string">&quot;cycle_number&quot;</font><font class="text"> ) ;
+
+   </font><font class="comment">// Open files and test
+</font><font class="text">   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> fname = output_file_name( CYCLE_NUMBER, </font><font class="kw1">false</font><font class="text">, COM-&gt;rank() ) ;
+   </font><font class="kw2">std</font><font class="text">::ofstream file( fname.c_str() ) ;
+   </font><font class="kw1">if</font><font class="text">( !file )
+   {
+      </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain(
+	 </font><font class="string">&quot;unable to open the VTK output file : &quot;</font><font class="text"> + fname ) ;
+   }
+   </font><font class="kw1">if</font><font class="text">( COM-&gt;nb_ranks()&gt;1 &amp;&amp; COM-&gt;rank()==0 )
+   {
+      write_pvd_file( exp, output_file_name( CYCLE_NUMBER, </font><font class="kw1">true</font><font class="text">, 0 ) ) ;
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( COM-&gt;rank()==0 )
+   {
+      write_pvd_file( exp, output_file_name( CYCLE_NUMBER, </font><font class="kw1">false</font><font class="text">, 0 ) ) ;
+   }
+   </font><font class="kw3">PEL_Module</font><font class="text"> * vtk = </font><font class="kw3">PEL_Module</font><font class="text">::create( 0, </font><font class="string">&quot;VTKFile&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw1">if</font><font class="text">( exp-&gt;has_module( </font><font class="string">&quot;meshing&quot;</font><font class="text"> ) )
+   {
+      </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* se = exp-&gt;create_subexplorer( 0,
+                                                              </font><font class="string">&quot;meshing&quot;</font><font class="text"> ) ;
+      store_meshing( se ) ;
+      se-&gt;destroy() ;
+   }
+                                 
+   build_vtu( vtk, exp, </font><font class="kw1">false</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* mexp = </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">::create( vtk, vtk ) ;
+   
+   write_vtk( mexp, file, 0, </font><font class="kw1">false</font><font class="text"> ) ;
+                                 
+   file.close() ;
+   vtk-&gt;destroy() ;
+
+   </font><font class="kw1">if</font><font class="text">( COM-&gt;nb_ranks() &gt; 1 &amp;&amp; COM-&gt;rank()==0 ) 
+   {
+      vtk = </font><font class="kw3">PEL_Module</font><font class="text">::create( 0, </font><font class="string">&quot;VTKFile&quot;</font><font class="text"> ) ;
+      build_vtu( vtk, exp, </font><font class="kw1">true</font><font class="text"> ) ;
+      </font><font class="kw3">PEL_Module</font><font class="text">* grid = vtk-&gt;module( </font><font class="string">&quot;PUnstructuredGrid&quot;</font><font class="text"> ) ;
+      grid-&gt;add_entry( </font><font class="string">&quot;GhostLevel&quot;</font><font class="text">, </font><font class="kw3">PEL_Int</font><font class="text">::create( grid, 0 ) ) ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;COM-&gt;nb_ranks() ; i++ ) 
+      {
+         </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> npiece ;
+         npiece &lt;&lt; </font><font class="string">&quot;Piece#&quot;</font><font class="text"> &lt;&lt; i ;
+         </font><font class="kw3">PEL_Module</font><font class="text">* piece = </font><font class="kw3">PEL_Module</font><font class="text">::create( grid, npiece.str() ) ;
+         </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> file_name =
+            </font><font class="kw3">PEL_System</font><font class="text">::basename( output_file_name(CYCLE_NUMBER, </font><font class="kw1">false</font><font class="text">, i ) ) ;
+         piece-&gt;add_entry( </font><font class="string">&quot;Source&quot;</font><font class="text">, </font><font class="kw3">PEL_String</font><font class="text">::create( piece, file_name ) ) ;
+         grid-&gt;add_module( piece ) ;
+      }
+      
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> pfname = output_file_name( CYCLE_NUMBER, </font><font class="kw1">true</font><font class="text">, 0 ) ;
+      
+      </font><font class="kw2">std</font><font class="text">::ofstream pfile( pfname.c_str() ) ;
+      </font><font class="kw1">if</font><font class="text">( !pfile )
+      {
+         </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain(
+            </font><font class="string">&quot;unable to open the VTK output file : &quot;</font><font class="text"> + pfname ) ;
+      }
+      mexp = </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">::create( vtk, vtk ) ;
+   
+      write_vtk( mexp, pfile, 0, </font><font class="kw1">true</font><font class="text"> ) ;
+      pfile.close() ;
+      vtk-&gt;destroy() ;
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_VTKwriter</font><font class="text">:: store_meshing( </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">(</font><font class="string">&quot;PEL_VTKwriter:: store_meshing&quot;</font><font class="text">) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( exp!=0 ) ;
+
+   </font><font class="comment">// VERTICES
+</font><font class="text">   VERTICES = exp-&gt;doubleArray2D_data( </font><font class="string">&quot;vertices&quot;</font><font class="text"> ) ;
+   
+   </font><font class="comment">// Cells
+</font><font class="text">   </font><font class="kw3">intArray2D</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; connectivity = exp-&gt;intArray2D_data( </font><font class="string">&quot;cell2vertex&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">intVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; cell_nb_vertices = exp-&gt;intVector_data( </font><font class="string">&quot;cell_nb_vertices&quot;</font><font class="text"> ) ;
+   
+   NB_CELLS = connectivity.index_bound(1) ;
+   LINEAR_CONNECTIVITY.resize( 0 ) ;
+   OFFSET_CONNECTIVITY.resize( NB_CELLS ) ;
+   CELL_TYPES.resize( NB_CELLS ) ;
+   SPACE_DIM = VERTICES.index_bound( 0 ) ;
+   
+   </font><font class="kw2">size_t</font><font class="text"> n = 0 ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;NB_CELLS ; ++i )
+   {
+      </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> vert_by_mesh = cell_nb_vertices( i ) ;
+      VTK_TYPE elm_type = VTK_UNDEF ;
+      </font><font class="kw1">if</font><font class="text">( SPACE_DIM==1 &amp;&amp; vert_by_mesh==2 )
+      {
+         elm_type = VTK_LINE ;
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( SPACE_DIM==2 &amp;&amp; vert_by_mesh==3 )
+      {
+         elm_type = VTK_TRIANGLE ;
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( SPACE_DIM==2 &amp;&amp; vert_by_mesh==4 )
+      {
+         elm_type = VTK_QUAD ;
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( SPACE_DIM==3 &amp;&amp; vert_by_mesh==4 )
+      {
+         elm_type = VTK_TETRA ;
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( SPACE_DIM==3 &amp;&amp; vert_by_mesh==8 )
+      {
+         elm_type = VTK_HEXAHEDRON ;
+      }
+      </font><font class="kw1">else</font><font class="text"> 
+      {
+         </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain(
+            </font><font class="string">&quot;Invalid polyhedron type for VTK output &quot;</font><font class="text"> ) ;
+      }
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; j&lt;vert_by_mesh ; j++ )
+      {
+         LINEAR_CONNECTIVITY.append( connectivity(j,i) ) ;
+      }
+      n += vert_by_mesh ;
+      OFFSET_CONNECTIVITY(i) = n ;
+      CELL_TYPES(i) = (</font><font class="kw1">int</font><font class="text">) elm_type ;
+   }   
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_VTKwriter</font><font class="text">:: write_pvd_file( </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp,
+                                </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; vtu_filename )
+</font><font class="comment">//-----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_VTKwriter:: write_pvd_file&quot;</font><font class="text"> ) ;
+
+   </font><font class="comment">// First step : add a new line for new cycle if any
+</font><font class="text">   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> new_line = </font><font class="string">&quot;&lt;DataSet timestep=\&quot;&quot; ;
+   std::ostringstream oss;
+   oss &lt;&lt; exp-&gt;int_data( &quot;</font><font class="text">cycle_number</font><font class="string">&quot; ) ;
+</font><font class="text">
+</font><font class="string">   new_line += oss.str() ;
+   new_line += &quot;</font><font class="text">\</font><font class="string">&quot; group=\&quot;</font><font class="text">\</font><font class="string">&quot; part=\&quot;</font><font class="text">0\</font><font class="string">&quot; file=\&quot;&quot; ;
+   new_line += PEL_System::basename( vtu_filename ).c_str() ;
+   new_line += &quot;</font><font class="text">\</font><font class="string">&quot;/&gt;&quot;</font><font class="text"> ;
+
+   PVD_STRINGS.append( new_line ) ;
+   
+   </font><font class="comment">// Second step : build pvd file with header, one line by cycle and end. 
+</font><font class="text">   </font><font class="kw2">std</font><font class="text">::ofstream file( PVD_FILENAME.c_str(), </font><font class="kw2">std</font><font class="text">::ios::trunc ) ;
+   </font><font class="kw1">if</font><font class="text">( !file )
+   {
+      </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain(
+	 </font><font class="string">&quot;unable to open the FTK output file : &quot;</font><font class="text"> + PVD_FILENAME ) ;
+   }
+
+   file &lt;&lt; </font><font class="string">&quot;&lt;?xml version=\&quot;</font><font class="text">1.0\</font><font class="string">&quot;?&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   file &lt;&lt; </font><font class="string">&quot;&lt;VTKFile type=\&quot;</font><font class="text">Collection\</font><font class="string">&quot; version=\&quot;</font><font class="text">0.1\</font><font class="string">&quot;&quot;
+</font><font class="text">        &lt;&lt; </font><font class="string">&quot; byte_order=\&quot;&quot; &lt;&lt; ENCODING &lt;&lt; &quot;</font><font class="text">\</font><font class="string">&quot;&quot;</font><font class="text"> ;
+   </font><font class="kw1">if</font><font class="text">( COMPRESS )
+   {
+      file &lt;&lt; </font><font class="string">&quot; compressor=\&quot;</font><font class="text">vtkZLibDataCompressor\</font><font class="string">&quot;&quot;</font><font class="text"> ;
+   }
+   file &lt;&lt; </font><font class="string">&quot;&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   file &lt;&lt; </font><font class="string">&quot;&lt;Collection&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0; i&lt;PVD_STRINGS.size(); ++i )
+   {
+      file &lt;&lt; PVD_STRINGS( i ) &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   }
+
+   file &lt;&lt; </font><font class="string">&quot;&lt;/Collection&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   file &lt;&lt; </font><font class="string">&quot;&lt;/VTKFile&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   file.close() ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_VTKwriter</font><font class="text">:: build_vtu( </font><font class="kw3">PEL_Module</font><font class="text">* vtk,
+                           </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp,
+                           </font><font class="kw1">bool</font><font class="text"> parallel ) 
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">(</font><font class="string">&quot;PEL_VTKwriter:: build_vtu&quot;</font><font class="text">) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( exp!=0 ) ;
+
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> pre = ( parallel ? </font><font class="string">&quot;P&quot;</font><font class="text"> : </font><font class="string">&quot;&quot;</font><font class="text"> ) ;
+   
+   vtk-&gt;add_entry( </font><font class="string">&quot;type&quot;</font><font class="text">, </font><font class="kw3">PEL_String</font><font class="text">::create( vtk,
+                                               pre+</font><font class="string">&quot;UnstructuredGrid&quot;</font><font class="text"> ) ) ;
+
+   </font><font class="kw1">if</font><font class="text">( BINARY )
+   {
+      vtk-&gt;add_entry( </font><font class="string">&quot;byte_order&quot;</font><font class="text">,
+		      </font><font class="kw3">PEL_String</font><font class="text">::create( vtk, ENCODING ) ) ;
+   }
+   
+   </font><font class="kw1">if</font><font class="text">( COMPRESS )
+      vtk-&gt;add_entry( </font><font class="string">&quot;compressor&quot;</font><font class="text">, </font><font class="kw3">PEL_String</font><font class="text">::create( vtk, </font><font class="string">&quot;vtkZLibDataCompressor&quot;</font><font class="text"> ) ) ;
+   
+   </font><font class="kw3">PEL_Module</font><font class="text">* grid = </font><font class="kw3">PEL_Module</font><font class="text">::create( vtk, pre+</font><font class="string">&quot;UnstructuredGrid&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_Module</font><font class="text">* piece = </font><font class="kw3">PEL_Module</font><font class="text">::create( grid, </font><font class="string">&quot;Piece&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_Module</font><font class="text">* base = ( parallel ? grid : piece ) ;
+   
+   write_grid(base, parallel) ;
+   
+   </font><font class="kw1">if</font><font class="text">( exp-&gt;has_module( </font><font class="string">&quot;fields&quot;</font><font class="text"> ) )
+   {
+      </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* se = exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;fields&quot;</font><font class="text"> ) ;
+      write_fields( base, se,  parallel) ;
+      se-&gt;destroy() ; se = 0 ;
+      
+   }
+      
+   </font><font class="kw1">if</font><font class="text">( !parallel ) grid-&gt;add_module(piece) ;
+   vtk-&gt;add_module(grid) ;
+   
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_VTKwriter</font><font class="text">:: write_grid( </font><font class="kw3">PEL_Module</font><font class="text">* base,
+                            </font><font class="kw1">bool</font><font class="text"> parallel ) 
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_VTKwriter:: write_grid&quot;</font><font class="text"> ) ;
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> pre = ( parallel ? </font><font class="string">&quot;P&quot;</font><font class="text"> : </font><font class="string">&quot;&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">if</font><font class="text">( !parallel ) 
+   {  
+      base-&gt;add_entry( </font><font class="string">&quot;NumberOfPoints&quot;</font><font class="text">,
+                       </font><font class="kw3">PEL_Int</font><font class="text">::create( base,
+                                        VERTICES.index_bound(1) ) ) ;
+      
+      base-&gt;add_entry( </font><font class="string">&quot;NumberOfCells&quot;</font><font class="text">,
+                       </font><font class="kw3">PEL_Int</font><font class="text">::create( base, NB_CELLS ) ) ;
+   }
+   
+   </font><font class="kw3">PEL_Module</font><font class="text">* Points = </font><font class="kw3">PEL_Module</font><font class="text">::create( base, pre+</font><font class="string">&quot;Points&quot;</font><font class="text"> ) ;
+   Points-&gt;add_entry( UNAMED, </font><font class="kw3">PEL_DoubleArray2D</font><font class="text">::create(Points,VERTICES) ) ;
+   
+   </font><font class="kw3">PEL_Module</font><font class="text">* PointData = </font><font class="kw3">PEL_Module</font><font class="text">::create( base, pre+</font><font class="string">&quot;PointData&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw3">PEL_Module</font><font class="text">* Cells = </font><font class="kw3">PEL_Module</font><font class="text">::create( base, pre+</font><font class="string">&quot;Cells&quot;</font><font class="text"> ) ;
+   Cells-&gt;add_entry( </font><font class="string">&quot;connectivity&quot;</font><font class="text">,
+                     </font><font class="kw3">PEL_IntVector</font><font class="text">::create(Cells,LINEAR_CONNECTIVITY) ) ;
+   Cells-&gt;add_entry( </font><font class="string">&quot;offsets&quot;</font><font class="text">,
+                     </font><font class="kw3">PEL_IntVector</font><font class="text">::create(Cells,OFFSET_CONNECTIVITY) ) ;
+   Cells-&gt;add_entry( </font><font class="string">&quot;types&quot;</font><font class="text">,
+                     </font><font class="kw3">PEL_IntVector</font><font class="text">::create(Cells,CELL_TYPES) ) ;
+
+   </font><font class="kw3">PEL_Module</font><font class="text">* CellData = </font><font class="kw3">PEL_Module</font><font class="text">::create( base, pre+</font><font class="string">&quot;CellData&quot;</font><font class="text"> ) ;
+   
+   base-&gt;add_module(Cells) ;
+   base-&gt;add_module(Points) ;
+   base-&gt;add_module(PointData) ;
+   base-&gt;add_module( CellData ) ;
+}
+
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_VTKwriter</font><font class="text">:: write_fields( </font><font class="kw3">PEL_Module</font><font class="text">* base,
+                              </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* exp,
+                              </font><font class="kw1">bool</font><font class="text"> parallel ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_VTKwriter:: write_fields&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( exp!=0 ) ;
+
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> pre = ( parallel ? </font><font class="string">&quot;P&quot;</font><font class="text"> : </font><font class="string">&quot;&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw3">PEL_Module</font><font class="text">*point_data = base-&gt;module(pre+</font><font class="string">&quot;PointData&quot;</font><font class="text">) ;
+   </font><font class="kw3">PEL_Module</font><font class="text">*cell_data = base-&gt;module(pre+</font><font class="string">&quot;CellData&quot;</font><font class="text">) ;
+   </font><font class="kw1">for</font><font class="text">( exp-&gt;start_module_iterator()  ;
+        exp-&gt;is_valid_module() ;
+        exp-&gt;go_next_module() )
+   {
+      </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fexp = exp-&gt;create_subexplorer( 0 ) ;
+      write_one_field( fexp, point_data, cell_data ) ;
+      fexp-&gt;destroy() ; fexp = 0 ;
+   }
+   
+}
+
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_VTKwriter</font><font class="text">:: write_one_field( </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fexp,
+                                 </font><font class="kw3">PEL_Module</font><font class="text">* point_data,
+                                 </font><font class="kw3">PEL_Module</font><font class="text">* cell_data ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_VTKwriter:: write_one_field&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( fexp!=0 ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( point_data!=0 ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( cell_data!=0 ) ;
+
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; name = fexp-&gt;string_data( </font><font class="string">&quot;name&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">doubleArray2D</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; X = fexp-&gt;doubleArray2D_data( </font><font class="string">&quot;value&quot;</font><font class="text"> ) ;
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; location = fexp-&gt;string_data( </font><font class="string">&quot;location&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_Module</font><font class="text">* target = cell_data ;
+   
+   </font><font class="kw1">if</font><font class="text">( location == </font><font class="string">&quot;at_vertices&quot;</font><font class="text"> ) 
+   {
+      target = point_data ;
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( location != </font><font class="string">&quot;at_cell_centers&quot;</font><font class="text"> )
+   {
+      raise_field_location_error(
+         name, location, </font><font class="string">&quot;at_vertices,at_cell_centers&quot;</font><font class="text"> ) ;
+   }
+
+   target-&gt;add_entry( name, </font><font class="kw3">PEL_DoubleArray2D</font><font class="text">::create( target, X ) ) ;
+   </font><font class="kw1">bool</font><font class="text"> scalar = X.index_bound(0)==1 ;
+   </font><font class="kw1">if</font><font class="text">(scalar&amp;&amp;!target-&gt;has_entry(</font><font class="string">&quot;Scalars&quot;</font><font class="text">)) 
+   {
+      target-&gt;add_entry( </font><font class="string">&quot;Scalars&quot;</font><font class="text">, </font><font class="kw3">PEL_String</font><font class="text">::create( target, name ) ) ;
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( !scalar&amp;&amp;!target-&gt;has_entry(</font><font class="string">&quot;Vectors&quot;</font><font class="text">)) 
+   {
+      target-&gt;add_entry( </font><font class="string">&quot;Vectors&quot;</font><font class="text">, </font><font class="kw3">PEL_String</font><font class="text">::create( target, name ) ) ;
+   }
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------
+</font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string
+</font><font class="kw3">PEL_VTKwriter</font><font class="text">:: output_file_name( </font><font class="kw2">size_t</font><font class="text"> nb,
+                                  </font><font class="kw1">bool</font><font class="text"> parallel,
+                                  </font><font class="kw2">size_t</font><font class="text"> rank )
+</font><font class="comment">//-----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_VTKwriter:: output_file_name&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( nb&lt;99999 ) ;
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> file_extension = ( parallel ? </font><font class="string">&quot;.pvtu&quot;</font><font class="text"> : </font><font class="string">&quot;.vtu&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> tmp ;
+   tmp &lt;&lt; BASE_FILENAME ;
+   tmp &lt;&lt; </font><font class="string">&quot;T&quot;</font><font class="text"> &lt;&lt; nb ;
+   </font><font class="kw1">if</font><font class="text">( !parallel &amp;&amp; COM-&gt;nb_ranks() &gt; 1 )
+   {
+      tmp &lt;&lt; </font><font class="string">&quot;_&quot;</font><font class="text"> &lt;&lt; rank ;
+   }
+   
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> result = tmp.str() + file_extension ;
+
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+
+</font><font class="comment">//-----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_VTKwriter</font><font class="text">:: write_vtk( </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* vtk,
+                           </font><font class="kw2">std</font><font class="text">::ofstream&amp; file,
+                           </font><font class="kw2">size_t</font><font class="text"> level,
+                           </font><font class="kw1">bool</font><font class="text"> parallel )  
+</font><font class="comment">//-----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_VTKwriter:: write_vtk&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> data_array = ( parallel ? </font><font class="string">&quot;PDataArray&quot;</font><font class="text"> : </font><font class="string">&quot;DataArray&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw1">if</font><font class="text">( level==0 )
+      file &lt;&lt; </font><font class="string">&quot;&lt;?xml version=\&quot;</font><font class="text">1.0\</font><font class="string">&quot;?&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> bl( 2*level, </font><font class="string">' '</font><font class="text"> ) ;
+   bl = </font><font class="string">&quot;\n&quot;</font><font class="text"> + bl ;
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> name =  vtk-&gt;name() ;
+   </font><font class="kw1">if</font><font class="text">( name.find( </font><font class="string">&quot;#&quot;</font><font class="text"> )&lt;name.length() )
+      name = name.substr( 0, name.find( </font><font class="string">&quot;#&quot;</font><font class="text"> ) ) ;
+   
+   file &lt;&lt; bl &lt;&lt; </font><font class="string">&quot;&lt;&quot;</font><font class="text"> &lt;&lt; name ;
+   </font><font class="kw1">for</font><font class="text">( vtk-&gt;start_entry_iterator() ;
+        vtk-&gt;is_valid_entry() ;
+        vtk-&gt;go_next_entry() ) 
+   {
+      </font><font class="kw3">PEL_Data</font><font class="text">* data = vtk-&gt;data( 0 ) ;
+      </font><font class="kw3">PEL_Data</font><font class="text">::Type dt = data-&gt;data_type() ;
+      
+      </font><font class="kw1">if</font><font class="text">( dt==</font><font class="kw3">PEL_Data</font><font class="text">::String  ) 
+      {
+         file &lt;&lt; </font><font class="string">&quot; &quot;</font><font class="text"> &lt;&lt; vtk-&gt;keyword() &lt;&lt; </font><font class="string">&quot;=&quot;</font><font class="text"> ;
+         data-&gt;print(file,0) ;
+         file&lt;&lt;</font><font class="string">&quot; &quot;</font><font class="text"> ;
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">(  dt==</font><font class="kw3">PEL_Data</font><font class="text">::Int ) 
+      {
+         file &lt;&lt; </font><font class="string">&quot; &quot;</font><font class="text"> &lt;&lt; vtk-&gt;keyword() &lt;&lt; </font><font class="string">&quot;=\&quot;&quot; ;
+         data-&gt;print(file,0) ;
+         file&lt;&lt;&quot;</font><font class="text">\</font><font class="string">&quot; &quot;</font><font class="text"> ;
+      }
+      data-&gt;destroy() ;
+   }
+   file &lt;&lt; </font><font class="string">&quot;&gt;&quot;</font><font class="text"> ;
+   </font><font class="kw1">for</font><font class="text">( vtk-&gt;start_entry_iterator() ;
+        vtk-&gt;is_valid_entry() ;
+        vtk-&gt;go_next_entry() ) 
+   {
+      </font><font class="kw3">PEL_Data</font><font class="text">* data = vtk-&gt;data( 0 ) ;
+      </font><font class="kw3">PEL_Data</font><font class="text">::Type dt = data-&gt;data_type() ;
+      </font><font class="kw1">if</font><font class="text">( dt==</font><font class="kw3">PEL_Data</font><font class="text">::DoubleArray2D || dt==</font><font class="kw3">PEL_Data</font><font class="text">::IntVector ) 
+      {
+         file &lt;&lt; </font><font class="string">&quot;&lt;&quot;</font><font class="text"> &lt;&lt; data_array &lt;&lt; </font><font class="string">&quot; &quot;</font><font class="text"> ;
+         
+         </font><font class="kw1">if</font><font class="text">( vtk-&gt;keyword()!=UNAMED ) 
+         {
+            file &lt;&lt; </font><font class="string">&quot;Name=\&quot;&quot; &lt;&lt; vtk-&gt;keyword() &lt;&lt; &quot;</font><font class="text">\</font><font class="string">&quot; &quot;</font><font class="text"> ;
+         }
+         </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> a_type = </font><font class="string">&quot;Int32&quot;</font><font class="text"> ;
+         
+         </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> format = </font><font class="string">&quot;ascii&quot;</font><font class="text"> ;
+         
+         </font><font class="kw1">if</font><font class="text">( BINARY &amp;&amp; !parallel )
+         {
+            format=</font><font class="string">&quot;appended&quot;</font><font class="text"> ;
+            file &lt;&lt; </font><font class="string">&quot;offset=\&quot;&quot;&lt;&lt;OFFSET&lt;&lt;&quot;</font><font class="text">\</font><font class="string">&quot; &quot;</font><font class="text"> ;
+         }
+         
+         </font><font class="kw1">if</font><font class="text">( dt==</font><font class="kw3">PEL_Data</font><font class="text">::DoubleArray2D )
+         {
+            </font><font class="kw1">int</font><font class="text"> nbc = data-&gt;to_double_array2D().index_bound(0) ;
+            </font><font class="kw1">if</font><font class="text">( nbc&gt;1 )
+               file &lt;&lt; </font><font class="string">&quot;NumberOfComponents=\&quot;</font><font class="text">3\</font><font class="string">&quot; &quot;</font><font class="text"> ;
+            a_type=</font><font class="string">&quot;Float32&quot;</font><font class="text"> ;
+         }
+         
+         file &lt;&lt; </font><font class="string">&quot;type=\&quot;&quot; &lt;&lt; a_type &lt;&lt; &quot;</font><font class="text">\</font><font class="string">&quot; &quot;</font><font class="text"> ;
+         
+         file &lt;&lt; </font><font class="string">&quot;format=\&quot;&quot; &lt;&lt; format &lt;&lt; &quot;</font><font class="text">\</font><font class="string">&quot; &quot;</font><font class="text"> ;
+
+         file &lt;&lt; </font><font class="string">&quot;&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+
+         </font><font class="kw1">if</font><font class="text">( !parallel )
+         {
+            
+            </font><font class="kw1">if</font><font class="text">( dt==</font><font class="kw3">PEL_Data</font><font class="text">::DoubleArray2D ) 
+            {
+               </font><font class="kw3">doubleArray2D</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; tab = data-&gt;to_double_array2D() ;
+               </font><font class="kw2">size_t</font><font class="text"> nbc = data-&gt;to_double_array2D().index_bound(0) ;
+               </font><font class="kw2">size_t</font><font class="text"> ncmax = ( nbc==1 ? 1 : 3 ) ;
+            
+               start_output( sizeof_Float32, ncmax*tab.index_bound(1) ) ;
+               </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;tab.index_bound(1) ; i++ )
+               {
+                  </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; j&lt;ncmax ; j++ )
+                     write_double( file, ( j&lt;nbc ? tab(j,i) : 0.0 ) ) ;
+                  
+               }
+               flush(file) ;
+               
+            }
+            </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( dt==</font><font class="kw3">PEL_Data</font><font class="text">::IntVector  )
+            {
+               </font><font class="kw3">intVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; tab = data-&gt;to_int_vector() ;
+               start_output( sizeof_Int32, tab.size() ) ;
+               </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;tab.size() ; i++ )
+                  write_int( file, tab(i) ) ;
+               flush(file) ;
+            }
+         }
+         
+         file &lt;&lt; </font><font class="string">&quot;&lt;/&quot;</font><font class="text"> &lt;&lt; data_array &lt;&lt; </font><font class="string">&quot;&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( ! ( dt==</font><font class="kw3">PEL_Data</font><font class="text">::String || dt==</font><font class="kw3">PEL_Data</font><font class="text">::Int ) ) 
+      {
+         </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_internal(
+            </font><font class="string">&quot; Bad type &quot;</font><font class="text">+data-&gt;data_type() ) ;
+      }
+      data-&gt;destroy() ;
+   }
+   </font><font class="kw1">for</font><font class="text">( vtk-&gt;start_module_iterator() ;
+        vtk-&gt;is_valid_module() ;
+        vtk-&gt;go_next_module() ) 
+   {
+      </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* sexp = vtk-&gt;create_subexplorer( 0 ) ;
+      write_vtk(sexp,file,level+1,parallel) ;
+      sexp-&gt;destroy() ;
+   }
+   </font><font class="kw1">if</font><font class="text">( level==0 &amp;&amp; BINARY &amp;&amp; !parallel ) 
+   {
+      file &lt;&lt; bl &lt;&lt; </font><font class="string">&quot;&lt;AppendedData encoding=\&quot;</font><font class="text">raw\</font><font class="string">&quot; &gt; &quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> &lt;&lt; </font><font class="string">&quot;    _&quot;</font><font class="text"> ;
+      file.write( BUFFER, OFFSET ) ;
+      file &lt;&lt; bl &lt;&lt; </font><font class="string">&quot;&lt;/AppendedData&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      </font><font class="kw1">delete</font><font class="text"> [] BUFFER ; BUFFER = 0 ;
+      ALLOCATED = 0 ;
+      OFFSET = 0 ;
+   }
+   
+   file &lt;&lt; bl &lt;&lt; </font><font class="string">&quot;&lt;/&quot;</font><font class="text"> &lt;&lt; name &lt;&lt;</font><font class="string">&quot;&gt;&quot;</font><font class="text"> ;
+  
+   
+}
+
+
+
+</font><font class="comment">//-----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_VTKwriter</font><font class="text">:: start_output( </font><font class="kw2">size_t</font><font class="text"> size, </font><font class="kw2">size_t</font><font class="text"> number )  
+</font><font class="comment">//-----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_VTKwriter:: start_output&quot;</font><font class="text"> ) ;
+   </font><font class="kw1">if</font><font class="text">(BINARY)
+   {
+      </font><font class="kw1">int</font><font class="text"> current_output_size = size*number ;
+      </font><font class="kw1">unsigned</font><font class="text"> </font><font class="kw1">long</font><font class="text"> ncomp = current_output_size + (current_output_size+999)/1000 + 12 + sizeof_Int32 ;
+      check_allocated( ncomp ) ;
+      CURRENT_LENGTH = store_int(current_output_size) ;
+   }
+}
+
+
+</font><font class="comment">//-----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_VTKwriter</font><font class="text">:: write_double( </font><font class="kw2">std</font><font class="text">::ofstream&amp; file, </font><font class="kw1">double</font><font class="text"> val )  
+</font><font class="comment">//-----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_VTKwriter:: write_double&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( sizeof_Float32==sizeof(</font><font class="kw1">float</font><font class="text">) ) ;
+   
+   </font><font class="kw1">if</font><font class="text">(BINARY)
+   {
+      </font><font class="kw3">PEL_CHECK</font><font class="text">( OFFSET + sizeof_Float32 &lt;= ALLOCATED ) ;
+      *((</font><font class="kw1">float</font><font class="text">*)&amp;(BUFFER[OFFSET])) = (</font><font class="kw1">float</font><font class="text">)val ;
+      OFFSET += sizeof_Float32  ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">      file &lt;&lt; </font><font class="string">&quot; &quot;</font><font class="text"> &lt;&lt; (</font><font class="kw1">float</font><font class="text">)val ;
+}
+
+
+</font><font class="comment">//-----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_VTKwriter</font><font class="text">:: write_int( </font><font class="kw2">std</font><font class="text">::ofstream&amp; file, </font><font class="kw1">int</font><font class="text"> val )  
+</font><font class="comment">//-----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_VTKwriter:: write_int&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( sizeof_Int32==sizeof(</font><font class="kw1">int</font><font class="text">) ) ;
+   
+   </font><font class="kw1">if</font><font class="text">(BINARY)
+   {
+      store_int(val) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">      file &lt;&lt; </font><font class="string">&quot; &quot;</font><font class="text"> &lt;&lt; val ;
+}
+
+
+
+</font><font class="comment">//-----------------------------------------------------------------------
+</font><font class="kw2">size_t
+</font><font class="kw3">PEL_VTKwriter</font><font class="text">:: store_int( int val )  
+</font><font class="comment">//-----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_VTKwriter:: store_int&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( OFFSET + sizeof_Int32 &lt;= ALLOCATED ) ;
+   
+   </font><font class="kw2">size_t</font><font class="text"> result = OFFSET ;
+   *((</font><font class="kw1">int</font><font class="text">*)&amp;(BUFFER[OFFSET])) = val ;
+   OFFSET += sizeof_Int32  ;
+   </font><font class="kw1">return</font><font class="text"> result ;
+}
+
+
+</font><font class="comment">//-----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_VTKwriter</font><font class="text">:: check_allocated( </font><font class="kw2">size_t</font><font class="text"> size )  
+</font><font class="comment">//-----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_VTKwriter:: check_allocated&quot;</font><font class="text"> ) ;
+   </font><font class="kw1">if</font><font class="text">(OFFSET+size&gt;=ALLOCATED) 
+   {
+      </font><font class="kw2">size_t</font><font class="text"> new_size = </font><font class="kw3">PEL</font><font class="text">::max( 2*ALLOCATED, (</font><font class="kw2">size_t</font><font class="text">)1024 ) ;
+      new_size = </font><font class="kw3">PEL</font><font class="text">::max( new_size, 2*(OFFSET+size) ) ;
+      new_size = 4 * ( new_size/4 +1 ) ; </font><font class="comment">// allignement sur 4 bytes
+</font><font class="text">      
+      </font><font class="kw1">char</font><font class="text"> * new_buffer = new </font><font class="kw1">char</font><font class="text"> [ new_size ] ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ;i&lt;OFFSET ;i++ )
+         new_buffer[i] = BUFFER[i] ;
+      </font><font class="kw1">if</font><font class="text">( BUFFER!=0 ) </font><font class="kw1">delete</font><font class="text"> [] BUFFER ;
+      BUFFER = new_buffer ;
+      ALLOCATED = new_size ;
+      
+   }
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( OFFSET+size&lt;ALLOCATED ) ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_VTKwriter</font><font class="text">:: flush( </font><font class="kw2">std</font><font class="text">::ofstream&amp; file )  
+</font><font class="comment">//-----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_VTKwriter:: flush&quot;</font><font class="text"> ) ;
+   </font><font class="kw1">if</font><font class="text">(COMPRESS)
+   {
+      compress_segment(CURRENT_LENGTH) ;         
+   }
+   file &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+}
+
+
+
+</font><font class="comment">//-----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_VTKwriter</font><font class="text">:: compress_segment( </font><font class="kw2">size_t</font><font class="text"> seg )  
+</font><font class="comment">//-----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_VTKwriter:: compress_segment&quot;</font><font class="text"> ) ;
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw2">size_t</font><font class="text"> BlockSize = 32768 ;
+   </font><font class="kw2">size_t</font><font class="text"> size = (</font><font class="kw2">size_t</font><font class="text">)(*((</font><font class="kw1">int</font><font class="text">*)&amp;BUFFER[seg])) ;
+   
+   </font><font class="kw2">size_t</font><font class="text"> numFullBlocks = size / BlockSize;
+   </font><font class="kw2">size_t</font><font class="text"> lastBlockSize = size % BlockSize;
+   </font><font class="kw2">size_t</font><font class="text"> numBlocks = numFullBlocks + (lastBlockSize?1:0);
+
+   </font><font class="kw2">size_t</font><font class="text"> headerLength = numBlocks+3;
+
+   </font><font class="kw1">int</font><font class="text"> * CompressionHeader = </font><font class="kw1">new</font><font class="text"> </font><font class="kw1">int</font><font class="text">[headerLength];
+   CompressionHeader[0] = numBlocks;
+   CompressionHeader[1] = BlockSize;
+   CompressionHeader[2] = lastBlockSize;
+
+   </font><font class="kw1">unsigned</font><font class="text"> </font><font class="kw1">long</font><font class="text"> encoded_buff_size = </font><font class="kw3">PEL</font><font class="text">::max(BlockSize,size)  ;
+   </font><font class="kw1">unsigned</font><font class="text"> </font><font class="kw1">char</font><font class="text">* encoded_buff = </font><font class="kw1">new</font><font class="text"> </font><font class="kw1">unsigned</font><font class="text"> </font><font class="kw1">char</font><font class="text"> [ encoded_buff_size ] ;
+   </font><font class="kw2">size_t</font><font class="text"> encoded_offset = 0 ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> block=0 ; block&lt;numBlocks ; block++ )
+   {
+      </font><font class="kw2">size_t</font><font class="text"> buffer_start = seg + sizeof_Int32 + block*BlockSize ;
+      </font><font class="kw2">size_t</font><font class="text"> length = ( block+1&lt;numBlocks || !lastBlockSize ? BlockSize : lastBlockSize ) ;
+      </font><font class="kw1">unsigned</font><font class="text"> </font><font class="kw1">char</font><font class="text">* to_encode = (</font><font class="kw1">unsigned</font><font class="text"> </font><font class="kw1">char</font><font class="text"> *)(&amp;BUFFER[buffer_start]) ;
+      </font><font class="kw1">unsigned</font><font class="text"> </font><font class="kw1">char</font><font class="text">* encoded = &amp;encoded_buff[encoded_offset] ;
+      </font><font class="kw1">unsigned</font><font class="text"> </font><font class="kw1">long</font><font class="text"> ncomp = encoded_buff_size - encoded_offset ;
+</font><font class="kw2">#ifdef</font><font class="text"> ZLIB
+      </font><font class="kw1">if</font><font class="text">(compress2((Bytef*)encoded,
+                   &amp;ncomp,
+                   (</font><font class="kw1">const</font><font class="text"> Bytef*)to_encode,
+                   length,
+                   Z_DEFAULT_COMPRESSION) != Z_OK)
+</font><font class="kw2">#endif
+</font><font class="text">      {
+         </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain(
+            </font><font class="string">&quot;Zlib error while compressing data.&quot;</font><font class="text">);
+      }
+      CompressionHeader[3+block] = ncomp ;
+      encoded_offset += ncomp ;
+   }
+   
+   OFFSET = seg ;
+   check_allocated( headerLength*sizeof_Int32 + encoded_offset ) ;
+   
+   </font><font class="kw1">for</font><font class="text">(</font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;headerLength ; i++ )
+      store_int(CompressionHeader[i]) ;     
+
+   </font><font class="kw1">for</font><font class="text">(</font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;encoded_offset ; i++ )
+      BUFFER[OFFSET++] = encoded_buff[i] ;
+
+   </font><font class="kw1">if</font><font class="text">( OFFSET%4 != 0 )
+      OFFSET = 4*( OFFSET/4 +1 ) ; </font><font class="comment">// Re-allignement
+</font><font class="text">   
+   </font><font class="kw1">delete</font><font class="text"> [] CompressionHeader ;
+   </font><font class="kw1">delete</font><font class="text"> [] encoded_buff ;
+}
+
+
+</font>
+</pre>
+</body>
+</html>

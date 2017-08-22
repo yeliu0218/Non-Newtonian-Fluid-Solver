@@ -1,0 +1,1082 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>FE_Parameter_TEST.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="FE_Parameter_TEST.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="FEpack-tree.html"><span>Tree</span></a>
+    <a href="FE_Parameter_TEST.html"><span>Class</span></a>
+    <a href="FE_Parameter_TEST.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="FEpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE_Parameter_TEST</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ContextSimple</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Double</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_DoubleVector</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Variable</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_assertions</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">doubleVector</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">doubleArray2D</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">GE_Mpolyhedron</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">GE_Point</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">GE_QRprovider</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_CursorFEside</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_DomainAndFields</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_LocalFEbound</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_LocalFEcell</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE_Parameter</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE_SetOfParameters</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE_TimeIterator</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;iostream&gt;
+
+</font><font class="kw3">FE_Parameter_TEST</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">FE_Parameter_TEST</font><font class="text">::PROTOTYPE = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">FE_Parameter_TEST</font><font class="text">() ;
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw3">FE_Parameter_TEST</font><font class="text">:: </font><font class="kw3">FE_Parameter_TEST</font><font class="text">( </font><font class="kw1">void</font><font class="text"> ) 
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_ObjectTest</font><font class="text">( </font><font class="string">&quot;FE_Parameter&quot;</font><font class="text">, </font><font class="string">&quot;FE_Parameter_TEST&quot;</font><font class="text"> )
+   , CTX( 0 )
+   , TIME( 0 )
+   , COORDS( 0 )
+{
+   </font><font class="kw3">PEL_ContextSimple</font><font class="text">* ctx_dummy = </font><font class="kw3">PEL_ContextSimple</font><font class="text">::create( </font><font class="kw1">this</font><font class="text"> ) ;
+   TIME = </font><font class="kw3">PEL_Double</font><font class="text">::create( ctx_dummy, 0. ) ;
+   ctx_dummy-&gt;extend( </font><font class="kw3">PEL_Variable</font><font class="text">::object( </font><font class="string">&quot;DS_T&quot;</font><font class="text"> ), TIME ) ;
+   COORDS = </font><font class="kw3">PEL_DoubleVector</font><font class="text">::create( ctx_dummy, </font><font class="kw3">doubleVector</font><font class="text">(0) ) ;
+   ctx_dummy-&gt;extend( </font><font class="kw3">PEL_Variable</font><font class="text">::object( </font><font class="string">&quot;DV_X&quot;</font><font class="text"> ), COORDS ) ;
+   CTX = ctx_dummy ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw3">FE_Parameter_TEST</font><font class="text">:: ~</font><font class="kw3">FE_Parameter_TEST</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_Parameter_TEST</font><font class="text">:: process_one_test( </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp )
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_Parameter_TEST:: process_one_test&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* dom_exp =
+                          exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;PDE_DomainAndFields&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PDE_DomainAndFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dom = </font><font class="kw3">PDE_DomainAndFields</font><font class="text">::create( 0, dom_exp ) ;
+   dom_exp-&gt;destroy() ; dom_exp = 0 ;
+
+   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* param_exp =
+                           exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;FE_SetOfParameters&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">FE_SetOfParameters</font><font class="text"> </font><font class="kw1">const</font><font class="text">* params =
+                              </font><font class="kw3">FE_SetOfParameters</font><font class="text">::create( 0, dom, param_exp ) ;
+   param_exp-&gt;destroy() ; param_exp = 0 ;
+
+   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* time_exp =
+                              exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;FE_TimeIterator&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">FE_TimeIterator</font><font class="text">* t_it = </font><font class="kw3">FE_TimeIterator</font><font class="text">::create( 0, time_exp ) ;
+   time_exp-&gt;destroy() ; time_exp = 0 ;
+
+   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* tests_exp = exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;tests&quot;</font><font class="text"> ) ;
+   </font><font class="kw1">for</font><font class="text">( tests_exp-&gt;start_module_iterator() ;
+        tests_exp-&gt;is_valid_module() ;
+        tests_exp-&gt;go_next_module() )
+   {
+      </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* t_exp = tests_exp-&gt;create_subexplorer( 0 ) ;
+      
+      out() &lt;&lt; </font><font class="string">&quot;| &quot;</font><font class="text"> &lt;&lt;  exp-&gt;name() &lt;&lt; </font><font class="string">&quot;/&quot;</font><font class="text"> &lt;&lt; t_exp-&gt;name() &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+
+      </font><font class="kw3">FE_Parameter</font><font class="text">* param = 0 ;
+
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; p = t_exp-&gt;string_data( </font><font class="string">&quot;parameter_name&quot;</font><font class="text"> ) ;
+      </font><font class="kw1">bool</font><font class="text"> ok = params-&gt;has( p ) ;
+      notify_one_test_result( </font><font class="string">&quot;FE_SetOfParameters::has&quot;</font><font class="text">, ok ) ;
+      </font><font class="kw1">if</font><font class="text">( ok )
+      {
+         param = params-&gt;item( p ) ;
+         </font><font class="kw1">int</font><font class="text"> </font><font class="kw1">const</font><font class="text"> nb_comps = t_exp-&gt;int_data( </font><font class="string">&quot;parameter_nb_components&quot;</font><font class="text"> ) ;
+         ok = ( param-&gt;nb_components() == (</font><font class="kw2">size_t</font><font class="text">) nb_comps ) ;
+         notify_one_test_result( </font><font class="string">&quot;nb_components&quot;</font><font class="text">, ok ) ;
+      }
+
+      </font><font class="kw1">if</font><font class="text">( ok )
+      {
+         </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; type = t_exp-&gt;string_data( </font><font class="string">&quot;type&quot;</font><font class="text">) ;
+         D_EPS = t_exp-&gt;double_data( </font><font class="string">&quot;dbl_epsilon&quot;</font><font class="text"> ) ;
+         D_MIN = t_exp-&gt;double_data( </font><font class="string">&quot;dbl_minimum&quot;</font><font class="text"> ) ;
+         </font><font class="kw1">for</font><font class="text">( t_it-&gt;start() ; !t_it-&gt;is_finished() ; t_it-&gt;go_next_time() )
+         {
+            </font><font class="kw1">if</font><font class="text">( type == </font><font class="string">&quot;cell_value&quot;</font><font class="text"> )
+            {
+               cell_test( dom, param, t_it, t_exp ) ;
+            }
+            </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">(  type == </font><font class="string">&quot;cell_value_at_IPs&quot;</font><font class="text"> )
+            {
+               cell_at_IPs_test( dom, param, t_it, t_exp ) ;
+            }
+            </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">(  type == </font><font class="string">&quot;cell_value_at_centers&quot;</font><font class="text"> )
+            {
+               cell_at_centers_test( dom, param, t_it, t_exp ) ;
+            }
+            </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( type == </font><font class="string">&quot;side_value&quot;</font><font class="text"> )
+            {
+               side_test( dom, param, t_it, t_exp ) ;
+            }
+            </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">(  type == </font><font class="string">&quot;side_value_at_IPs&quot;</font><font class="text"> )
+            {
+               side_at_IPs_test( dom, param, t_it, t_exp ) ;
+            }
+            </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">(  type == </font><font class="string">&quot;side_value_at_centers&quot;</font><font class="text"> )
+            {
+               side_at_centers_test( dom, param, t_it, t_exp ) ;
+            }
+            </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( type == </font><font class="string">&quot;bound_value&quot;</font><font class="text"> )
+            {
+               bound_test( dom, param, t_it, t_exp ) ;
+            }
+            </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">(  type == </font><font class="string">&quot;bound_value_at_IPs&quot;</font><font class="text"> )
+            {
+               bound_at_IPs_test( dom, param, t_it, t_exp ) ;
+            }
+            </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">(  type == </font><font class="string">&quot;bound_value_at_centers&quot;</font><font class="text"> )
+            {
+               bound_at_centers_test( dom, param, t_it, t_exp ) ;
+            }
+            </font><font class="kw1">else
+</font><font class="text">            {
+               </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_bad_data_value(
+                  tests_exp, </font><font class="string">&quot;type&quot;</font><font class="text">,
+                  </font><font class="string">&quot;expected values are: \n&quot;
+</font><font class="text">                  </font><font class="string">&quot;   - \&quot;</font><font class="text">cell_value\</font><font class="string">&quot;\n&quot;
+</font><font class="text">                  </font><font class="string">&quot;   - \&quot;</font><font class="text">cell_value_at_IPs\</font><font class="string">&quot;\n&quot;
+</font><font class="text">                  </font><font class="string">&quot;   - \&quot;</font><font class="text">cell_value_at_centers\</font><font class="string">&quot;\n&quot;
+</font><font class="text">                  </font><font class="string">&quot;   - \&quot;</font><font class="text">side_value\</font><font class="string">&quot;\n&quot;
+</font><font class="text">                  </font><font class="string">&quot;   - \&quot;</font><font class="text">side_value_at_IPs\</font><font class="string">&quot;\n&quot;
+</font><font class="text">                  </font><font class="string">&quot;   - \&quot;</font><font class="text">side_value_at_centers\</font><font class="string">&quot;\n&quot;
+</font><font class="text">                  </font><font class="string">&quot;   - \&quot;</font><font class="text">bound_value\</font><font class="string">&quot;\n&quot;
+</font><font class="text">                  </font><font class="string">&quot;   - \&quot;</font><font class="text">bound_value_at_IPs\</font><font class="string">&quot;\n&quot;
+</font><font class="text">                  </font><font class="string">&quot;   - \&quot;</font><font class="text">bound_value_at_centers\</font><font class="string">&quot;&quot;</font><font class="text"> ) ;
+            }
+         }
+      }
+      t_exp-&gt;destroy() ; t_exp = 0 ;
+   }
+
+   dom-&gt;destroy() ; dom = 0 ;
+   params-&gt;destroy() ; params = 0 ;
+   t_it-&gt;destroy() ; t_it = 0 ;
+   tests_exp-&gt;destroy() ; tests_exp = 0 ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_Parameter_TEST</font><font class="text">:: cell_test( </font><font class="kw3">PDE_DomainAndFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dom,
+                               </font><font class="kw3">FE_Parameter</font><font class="text">* param,
+                               </font><font class="kw3">FE_TimeIterator</font><font class="text">* t_it,
+                               </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* t_exp )
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_Parameter_TEST:: cell_test&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( dom != 0 ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( param != 0 ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( t_it != 0 &amp;&amp; t_it-&gt;is_started() ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( t_exp != 0 ) ;
+   
+   </font><font class="kw3">PDE_LocalFEcell</font><font class="text">* cFE = dom-&gt;create_LocalFEcell( 0 ) ;
+
+   </font><font class="kw1">if</font><font class="text">( t_exp-&gt;has_entry( </font><font class="string">&quot;value&quot;</font><font class="text"> ) )
+   {
+      </font><font class="kw3">doubleVector</font><font class="text"> val( param-&gt;nb_components() ) ;
+      param-&gt;transfer_cell_calculation_requirements( cFE, </font><font class="kw3">FE_Parameter</font><font class="text">::Val ) ;
+      </font><font class="kw1">bool</font><font class="text"> ok = param-&gt;ok_for_cell_calculations( cFE, </font><font class="kw3">FE_Parameter</font><font class="text">::Val ) ;
+      notify_one_test_result( </font><font class="string">&quot;ok_for_cell_calculations(Val)&quot;</font><font class="text">, ok ) ;
+      </font><font class="kw1">if</font><font class="text">( ok )
+      {
+         </font><font class="kw1">for</font><font class="text">( cFE-&gt;start() ; cFE-&gt;is_valid() ; cFE-&gt;go_next() )
+         {
+            </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; cFE-&gt;mesh_id() &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+            </font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ct = context( cFE-&gt;polyhedron()-&gt;center(),
+                                             t_it-&gt;time() ) ;
+            </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; v = t_exp-&gt;doubleVector_data( </font><font class="string">&quot;value&quot;</font><font class="text">, ct ) ;
+            </font><font class="kw1">if</font><font class="text">( v.size() != param-&gt;nb_components() )
+            {
+               </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_bad_data_value(
+                  t_exp, </font><font class="string">&quot;value&quot;</font><font class="text">, </font><font class="string">&quot;bad number of components&quot;</font><font class="text"> ) ;
+            }
+            </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> ic = 0 ; ic&lt;param-&gt;nb_components() ; ++ic )
+            {
+               </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="string">&quot;calcul de value : &quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+               </font><font class="kw1">double</font><font class="text"> value = param-&gt;cell_value( t_it, cFE, ic ) ;
+               </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="string">&quot;   value=&quot;</font><font class="text"> &lt;&lt; value &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+               ok &amp;= test_equality( value, v(ic) ) ;
+            }
+         }
+         notify_one_test_result( </font><font class="string">&quot;cell_value&quot;</font><font class="text">, ok ) ;
+      }
+   }
+   
+   </font><font class="kw1">if</font><font class="text">( t_exp-&gt;has_entry( </font><font class="string">&quot;gradient&quot;</font><font class="text"> ) )
+   {
+      </font><font class="kw3">doubleArray2D</font><font class="text"> grad( param-&gt;nb_components(), dom-&gt;nb_space_dimensions() ) ;
+      param-&gt;transfer_cell_calculation_requirements( cFE, </font><font class="kw3">FE_Parameter</font><font class="text">::Grad ) ;
+      </font><font class="kw1">bool</font><font class="text"> ok = param-&gt;ok_for_cell_calculations( cFE, </font><font class="kw3">FE_Parameter</font><font class="text">::Grad ) ;
+      notify_one_test_result( </font><font class="string">&quot;ok_for_cell_calculations(Grad)&quot;</font><font class="text">, ok ) ;
+      </font><font class="kw1">if</font><font class="text">( ok )
+      {
+         </font><font class="kw1">for</font><font class="text">( cFE-&gt;start() ; cFE-&gt;is_valid() ; cFE-&gt;go_next() )
+         {
+            </font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ct = context( cFE-&gt;polyhedron()-&gt;center(),
+                                             t_it-&gt;time() ) ;
+            </font><font class="kw3">doubleArray2D</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; g = t_exp-&gt;doubleArray2D_data( </font><font class="string">&quot;gradient&quot;</font><font class="text">, ct ) ;
+            </font><font class="kw1">if</font><font class="text">( g.index_bound(0) != param-&gt;nb_components() ||
+                g.index_bound(1) != dom-&gt;nb_space_dimensions() )
+            {
+               </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_bad_data_value(
+                  t_exp, </font><font class="string">&quot;gradient&quot;</font><font class="text">, </font><font class="string">&quot;bad number of components&quot;</font><font class="text"> ) ;
+            }
+            </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> ic = 0 ; ic&lt;param-&gt;nb_components() ; ++ic )
+            {
+               </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> d=0 ; d&lt;dom-&gt;nb_space_dimensions() ; ++d )
+               {
+                  </font><font class="kw1">double</font><font class="text"> gradient = param-&gt;cell_gradient( t_it, cFE, d, ic ) ;
+                  ok &amp;= test_equality( gradient, g(ic,d) ) ;
+               }
+            }
+         }
+         notify_one_test_result( </font><font class="string">&quot;cell_gradient&quot;</font><font class="text">, ok ) ;
+      }
+   }
+
+   cFE-&gt;destroy() ; cFE = 0 ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_Parameter_TEST</font><font class="text">:: cell_at_centers_test( </font><font class="kw3">PDE_DomainAndFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dom,
+                                          </font><font class="kw3">FE_Parameter</font><font class="text">* param,
+                                          </font><font class="kw3">FE_TimeIterator</font><font class="text">* t_it,
+                                          </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* t_exp )
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_Parameter_TEST:: cell_at_centers_test&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( dom != 0 ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( param != 0 ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( t_it != 0 &amp;&amp; t_it-&gt;is_started() ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( t_exp != 0 ) ;
+   
+   </font><font class="kw3">PDE_LocalFEcell</font><font class="text">* cFE = dom-&gt;create_LocalFEcell( 0 ) ;
+
+   </font><font class="kw1">if</font><font class="text">( t_exp-&gt;has_entry( </font><font class="string">&quot;value&quot;</font><font class="text"> ) )
+   {
+      </font><font class="kw3">doubleVector</font><font class="text"> val( param-&gt;nb_components() ) ;
+      param-&gt;transfer_cell_calculation_requirements( cFE, </font><font class="kw3">FE_Parameter</font><font class="text">::Val ) ;
+      </font><font class="kw1">bool</font><font class="text"> ok = param-&gt;ok_for_cell_calculations( cFE, </font><font class="kw3">FE_Parameter</font><font class="text">::Val ) ;
+      notify_one_test_result( </font><font class="string">&quot;ok_for_cell_calculations(Val)&quot;</font><font class="text">, ok ) ;
+      </font><font class="kw1">if</font><font class="text">( ok )
+      {
+         </font><font class="kw1">for</font><font class="text">( cFE-&gt;start() ; cFE-&gt;is_valid() ; cFE-&gt;go_next() )
+         {
+            cFE-&gt;set_calculation_point( cFE-&gt;polyhedron()-&gt;center() ) ;
+            </font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ct = context( cFE-&gt;calculation_point(),
+                                             t_it-&gt;time() ) ;
+            </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; v = t_exp-&gt;doubleVector_data( </font><font class="string">&quot;value&quot;</font><font class="text">, ct ) ;
+            </font><font class="kw1">if</font><font class="text">( v.size() != param-&gt;nb_components() )
+            {
+               </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_bad_data_value(
+                  t_exp, </font><font class="string">&quot;value&quot;</font><font class="text">, </font><font class="string">&quot;bad number of components&quot;</font><font class="text"> ) ;
+            }
+            </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> ic = 0 ; ic&lt;param-&gt;nb_components() ; ++ic )
+            {
+               </font><font class="kw1">double</font><font class="text"> value = param-&gt;cell_value_at_pt( t_it, cFE, ic ) ;
+               ok &amp;= test_equality( value, v(ic) ) ;
+            }
+         }
+         notify_one_test_result( </font><font class="string">&quot;cell_value_at_pt&quot;</font><font class="text">, ok ) ;
+      }
+   }
+   
+   </font><font class="kw1">if</font><font class="text">( t_exp-&gt;has_entry( </font><font class="string">&quot;gradient&quot;</font><font class="text"> ) )
+   {
+      </font><font class="kw3">doubleArray2D</font><font class="text"> grad( param-&gt;nb_components(), dom-&gt;nb_space_dimensions() ) ;
+      param-&gt;transfer_cell_calculation_requirements( cFE, </font><font class="kw3">FE_Parameter</font><font class="text">::Grad ) ;
+      </font><font class="kw1">bool</font><font class="text"> ok = param-&gt;ok_for_cell_calculations( cFE, </font><font class="kw3">FE_Parameter</font><font class="text">::Grad ) ;
+      notify_one_test_result( </font><font class="string">&quot;ok_for_cell_calculations(Grad)&quot;</font><font class="text">, ok ) ;
+      </font><font class="kw1">if</font><font class="text">( ok )
+      {
+         </font><font class="kw1">for</font><font class="text">( cFE-&gt;start() ; cFE-&gt;is_valid() ; cFE-&gt;go_next() )
+         {
+            cFE-&gt;set_calculation_point( cFE-&gt;polyhedron()-&gt;center() ) ;
+            </font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ct = context( cFE-&gt;calculation_point(),
+                                             t_it-&gt;time() ) ;
+            </font><font class="kw3">doubleArray2D</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; g = t_exp-&gt;doubleArray2D_data( </font><font class="string">&quot;gradient&quot;</font><font class="text">, ct ) ;
+            </font><font class="kw1">if</font><font class="text">( g.index_bound(0) != param-&gt;nb_components() ||
+                g.index_bound(1) != dom-&gt;nb_space_dimensions() )
+            {
+               </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_bad_data_value(
+                  t_exp, </font><font class="string">&quot;gradient&quot;</font><font class="text">, </font><font class="string">&quot;bad number of components&quot;</font><font class="text"> ) ;
+            }
+            </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> ic = 0 ; ic&lt;param-&gt;nb_components() ; ++ic )
+            {
+               </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> d=0 ; d&lt;dom-&gt;nb_space_dimensions() ; ++d )
+               {
+                  </font><font class="kw1">double</font><font class="text"> gradient = param-&gt;cell_gradient_at_pt( t_it, cFE,
+                                                                d, ic ) ;
+                  ok &amp;= test_equality( gradient, g(ic,d) ) ;
+               }
+            }
+         }
+         notify_one_test_result( </font><font class="string">&quot;cell_gradient_at_pt&quot;</font><font class="text">, ok ) ;
+      }
+   }
+
+   cFE-&gt;destroy() ; cFE = 0 ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_Parameter_TEST</font><font class="text">:: cell_at_IPs_test( </font><font class="kw3">PDE_DomainAndFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dom,
+                                      </font><font class="kw3">FE_Parameter</font><font class="text">* param,
+                                      </font><font class="kw3">FE_TimeIterator</font><font class="text">* t_it,
+                                      </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* t_exp )
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_Parameter_TEST:: cell_at_IPs_test&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( dom != 0 ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( param != 0 ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( t_it != 0 &amp;&amp; t_it-&gt;is_started() ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( t_exp != 0 ) ;
+   
+   </font><font class="kw1">double</font><font class="text"> xxx = </font><font class="kw3">PEL</font><font class="text">::bad_double() ;
+   
+   </font><font class="kw3">PDE_LocalFEcell</font><font class="text">*  cFE = dom-&gt;create_LocalFEcell( 0 ) ;
+   </font><font class="kw3">PDE_CursorFEside</font><font class="text">* sFE = dom-&gt;create_CursorFEside( 0 ) ;
+   </font><font class="kw3">PDE_LocalFEcell</font><font class="text"> </font><font class="kw1">const</font><font class="text">* cfe0 = sFE-&gt;adjacent_localFEcell( 0 ) ;
+   </font><font class="kw3">PDE_LocalFEcell</font><font class="text"> </font><font class="kw1">const</font><font class="text">* cfe1 = sFE-&gt;adjacent_localFEcell( 1 ) ;
+   
+   </font><font class="kw3">GE_QRprovider</font><font class="text"> </font><font class="kw1">const</font><font class="text">* qr =
+      </font><font class="kw3">GE_QRprovider</font><font class="text">::object( t_exp-&gt;string_data( </font><font class="string">&quot;QRprovider_name&quot;</font><font class="text"> ) ) ;
+
+   </font><font class="kw1">if</font><font class="text">( t_exp-&gt;has_entry( </font><font class="string">&quot;value&quot;</font><font class="text"> ) )
+   {
+      </font><font class="kw3">doubleVector</font><font class="text"> val( param-&gt;nb_components() ) ;
+      param-&gt;transfer_cell_calculation_requirements( cFE, </font><font class="kw3">FE_Parameter</font><font class="text">::Val ) ;
+      </font><font class="kw1">bool</font><font class="text"> ok = param-&gt;ok_for_cell_calculations( cFE, </font><font class="kw3">FE_Parameter</font><font class="text">::Val ) ;
+      notify_one_test_result( </font><font class="string">&quot;ok_for_cell_calculations(Val)&quot;</font><font class="text">, ok ) ;
+      </font><font class="kw1">if</font><font class="text">( !ok ) </font><font class="kw1">return</font><font class="text"> ; 
+      
+      </font><font class="kw1">for</font><font class="text">( cFE-&gt;start() ; cFE-&gt;is_valid() ; cFE-&gt;go_next() )
+      {
+         cFE-&gt;start_IP_iterator( qr ) ;
+         </font><font class="kw1">for</font><font class="text">( ; cFE-&gt;valid_IP() ; cFE-&gt;go_next_IP() )
+         {
+            </font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ct = context( cFE-&gt;coordinates_of_IP(),
+                                             t_it-&gt;time() ) ;
+            </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; v = t_exp-&gt;doubleVector_data( </font><font class="string">&quot;value&quot;</font><font class="text">, ct ) ;
+            </font><font class="kw1">if</font><font class="text">( v.size() != param-&gt;nb_components() )
+            {
+               </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_bad_data_value(
+                                                         t_exp, </font><font class="string">&quot;value&quot;</font><font class="text">, </font><font class="string">&quot;bad number of components&quot;</font><font class="text"> ) ;
+            }
+            </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> ic = 0 ; ic&lt;param-&gt;nb_components() ; ++ic )
+            {
+               xxx = param-&gt;cell_value_at_IP( t_it, cFE, ic ) ;
+               ok &amp;= test_equality( xxx, v(ic) ) ;
+            }
+         }
+      }
+      notify_one_test_result( </font><font class="string">&quot;cell_value_at_IP&quot;</font><font class="text">, ok ) ;
+      
+      param-&gt;transfer_side_calculation_requirements( sFE, </font><font class="kw3">FE_Parameter</font><font class="text">::Val ) ;
+      ok = param-&gt;ok_for_side_calculations( sFE, </font><font class="kw3">FE_Parameter</font><font class="text">::Val ) ;
+      ok &amp;= param-&gt;ok_for_cell_calculations( cfe0, </font><font class="kw3">FE_Parameter</font><font class="text">::Val ) ;
+      ok &amp;= param-&gt;ok_for_cell_calculations( cfe1, </font><font class="kw3">FE_Parameter</font><font class="text">::Val ) ;
+      notify_one_test_result( </font><font class="string">&quot;ok_for_side_calculations(Val)&quot;</font><font class="text">, ok ) ;
+      </font><font class="kw1">if</font><font class="text">( !ok ) </font><font class="kw1">return</font><font class="text"> ;
+      
+      </font><font class="kw1">for</font><font class="text">( sFE-&gt;start() ; sFE-&gt;is_valid() ; sFE-&gt;go_next() )
+      {
+         sFE-&gt;start_IP_iterator( qr ) ;
+         </font><font class="kw1">for</font><font class="text">( ; sFE-&gt;valid_IP() ; sFE-&gt;go_next_IP() )
+         {
+            </font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ct = context( sFE-&gt;coordinates_of_IP(),
+                                             t_it-&gt;time() ) ;
+            </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; v = t_exp-&gt;doubleVector_data( </font><font class="string">&quot;value&quot;</font><font class="text">, ct ) ;
+            </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> ic = 0 ; ic&lt;param-&gt;nb_components() ; ++ic )
+            {
+               xxx = param-&gt;cell_value_at_IP( t_it, cfe0, ic ) ;
+               ok &amp;= test_equality( xxx, v(ic) ) ;
+               xxx = param-&gt;cell_value_at_IP( t_it, cfe1, ic ) ;
+               ok &amp;= test_equality( xxx, v(ic) ) ;
+            }
+         }
+      }      
+      notify_one_test_result( </font><font class="string">&quot;cell_value_at_IP (from sides)&quot;</font><font class="text">, ok ) ;
+   }
+            
+   </font><font class="kw1">if</font><font class="text">( t_exp-&gt;has_entry( </font><font class="string">&quot;gradient&quot;</font><font class="text"> ) )
+   {
+      </font><font class="kw3">doubleArray2D</font><font class="text"> grad( param-&gt;nb_components(), dom-&gt;nb_space_dimensions() ) ;
+      param-&gt;transfer_cell_calculation_requirements( cFE, </font><font class="kw3">FE_Parameter</font><font class="text">::Grad ) ;
+      </font><font class="kw1">bool</font><font class="text"> ok = param-&gt;ok_for_cell_calculations( cFE, </font><font class="kw3">FE_Parameter</font><font class="text">::Grad ) ;
+      notify_one_test_result( </font><font class="string">&quot;ok_for_cell_calculations(Grad)&quot;</font><font class="text">, ok ) ;
+      </font><font class="kw1">if</font><font class="text">( !ok ) </font><font class="kw1">return</font><font class="text"> ;
+
+      </font><font class="kw1">for</font><font class="text">( cFE-&gt;start() ; cFE-&gt;is_valid() ; cFE-&gt;go_next() )
+      {
+         cFE-&gt;start_IP_iterator( qr ) ;
+         </font><font class="kw1">for</font><font class="text">( ; cFE-&gt;valid_IP() ; cFE-&gt;go_next_IP() )
+         {
+            </font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ct = context( cFE-&gt;coordinates_of_IP(),
+                                             t_it-&gt;time() ) ;
+            </font><font class="kw3">doubleArray2D</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; g = t_exp-&gt;doubleArray2D_data( </font><font class="string">&quot;gradient&quot;</font><font class="text">, ct ) ;
+            </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> ic = 0 ; ic&lt;param-&gt;nb_components() ; ++ic )
+            {
+               </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> d=0 ; d&lt;dom-&gt;nb_space_dimensions() ; ++d )
+               {
+                  xxx = param-&gt;cell_gradient_at_IP( t_it, cFE, d, ic ) ;
+                  ok &amp;= test_equality( xxx, g(ic,d) ) ;
+               }
+            }
+         }
+      }
+      notify_one_test_result( </font><font class="string">&quot;cell_gradient_at_IP&quot;</font><font class="text">, ok ) ;
+      
+      param-&gt;transfer_side_calculation_requirements( sFE, </font><font class="kw3">FE_Parameter</font><font class="text">::Grad ) ;
+      ok = param-&gt;ok_for_side_calculations( sFE, </font><font class="kw3">FE_Parameter</font><font class="text">::Grad ) ;
+      ok &amp;= param-&gt;ok_for_cell_calculations( cfe0, </font><font class="kw3">FE_Parameter</font><font class="text">::Grad ) ;
+      ok &amp;= param-&gt;ok_for_cell_calculations( cfe1, </font><font class="kw3">FE_Parameter</font><font class="text">::Grad ) ;
+      notify_one_test_result( </font><font class="string">&quot;ok_for_side_calculations(Val)&quot;</font><font class="text">, ok ) ;
+      </font><font class="kw1">if</font><font class="text">( !ok ) </font><font class="kw1">return</font><font class="text"> ;
+      
+      </font><font class="kw1">for</font><font class="text">( sFE-&gt;start() ; sFE-&gt;is_valid() ; sFE-&gt;go_next() )
+      {
+         sFE-&gt;start_IP_iterator( qr ) ;
+         </font><font class="kw1">for</font><font class="text">( ; sFE-&gt;valid_IP() ; sFE-&gt;go_next_IP() )
+         {
+            </font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ct = context( sFE-&gt;coordinates_of_IP(),
+                                             t_it-&gt;time() ) ;
+            </font><font class="kw3">doubleArray2D</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; g = t_exp-&gt;doubleArray2D_data( </font><font class="string">&quot;gradient&quot;</font><font class="text">, ct ) ;
+            </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> ic = 0 ; ic&lt;param-&gt;nb_components() ; ++ic )
+            {
+               </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> d=0 ; d&lt;dom-&gt;nb_space_dimensions() ; ++d )
+               {
+                  xxx = param-&gt;cell_gradient_at_IP( t_it, cfe0, d, ic ) ;
+                  ok &amp;= test_equality( xxx, g(ic,d) ) ;
+                  xxx = param-&gt;cell_gradient_at_IP( t_it, cfe1, d, ic ) ;
+                  ok &amp;= test_equality( xxx, g(ic,d) ) ;
+               }
+            }
+         }
+      }
+      notify_one_test_result( </font><font class="string">&quot;cell_gradient_at_IP (from sides)&quot;</font><font class="text">, ok ) ;
+   }
+
+   cFE-&gt;destroy() ; cFE = 0 ;
+   sFE-&gt;destroy() ; sFE = 0 ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_Parameter_TEST</font><font class="text">:: bound_test( </font><font class="kw3">PDE_DomainAndFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dom,
+                               </font><font class="kw3">FE_Parameter</font><font class="text">* param,
+                               </font><font class="kw3">FE_TimeIterator</font><font class="text">* t_it,
+                               </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* t_exp )
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_Parameter_TEST:: bound_test&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( dom != 0 ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( param != 0 ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( t_it != 0 &amp;&amp; t_it-&gt;is_started() ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( t_exp != 0 ) ;
+   
+   </font><font class="kw3">PDE_LocalFEbound</font><font class="text">* bFE = dom-&gt;create_LocalFEbound( 0 ) ;
+
+   </font><font class="kw1">if</font><font class="text">( t_exp-&gt;has_entry( </font><font class="string">&quot;value&quot;</font><font class="text"> ) )
+   {
+      </font><font class="kw3">doubleVector</font><font class="text"> val( param-&gt;nb_components() ) ;
+      param-&gt;transfer_bound_calculation_requirements( bFE, </font><font class="kw3">FE_Parameter</font><font class="text">::Val ) ;
+      </font><font class="kw1">bool</font><font class="text"> ok = param-&gt;ok_for_bound_calculations( bFE, </font><font class="kw3">FE_Parameter</font><font class="text">::Val ) ;
+      notify_one_test_result( </font><font class="string">&quot;ok_for_bound_calculations(Val)&quot;</font><font class="text">, ok ) ;
+      </font><font class="kw1">if</font><font class="text">( ok )
+      {
+         </font><font class="kw1">for</font><font class="text">( bFE-&gt;start() ; bFE-&gt;is_valid() ; bFE-&gt;go_next() )
+         {
+            </font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ct = context( bFE-&gt;polyhedron()-&gt;center(),
+                                             t_it-&gt;time() ) ;
+            </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; v = t_exp-&gt;doubleVector_data( </font><font class="string">&quot;value&quot;</font><font class="text">, ct ) ;
+            </font><font class="kw1">if</font><font class="text">( v.size() != param-&gt;nb_components() )
+            {
+               </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_bad_data_value(
+                  t_exp, </font><font class="string">&quot;value&quot;</font><font class="text">, </font><font class="string">&quot;bad number of components&quot;</font><font class="text"> ) ;
+            }
+            </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> ic = 0 ; ic&lt;param-&gt;nb_components() ; ++ic )
+            {
+               </font><font class="kw1">double</font><font class="text"> value = param-&gt;bound_value( t_it, bFE, ic ) ;
+               ok &amp;= test_equality( value, v(ic) ) ;
+            }
+         }
+         notify_one_test_result( </font><font class="string">&quot;bound_value&quot;</font><font class="text">, ok ) ;
+      }
+   }
+   
+   </font><font class="kw1">if</font><font class="text">( t_exp-&gt;has_entry( </font><font class="string">&quot;gradient&quot;</font><font class="text"> ) )
+   {
+      </font><font class="kw3">doubleArray2D</font><font class="text"> grad( param-&gt;nb_components(), dom-&gt;nb_space_dimensions() ) ;
+      param-&gt;transfer_bound_calculation_requirements( bFE, </font><font class="kw3">FE_Parameter</font><font class="text">::Grad ) ;
+      </font><font class="kw1">bool</font><font class="text"> ok = param-&gt;ok_for_bound_calculations( bFE, </font><font class="kw3">FE_Parameter</font><font class="text">::Grad ) ;
+      notify_one_test_result( </font><font class="string">&quot;ok_for_bound_calculations(Grad)&quot;</font><font class="text">, ok ) ;
+      </font><font class="kw1">if</font><font class="text">( ok )
+      {
+         </font><font class="kw1">for</font><font class="text">( bFE-&gt;start() ; bFE-&gt;is_valid() ; bFE-&gt;go_next() )
+         {
+            </font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ct = context( bFE-&gt;polyhedron()-&gt;center(),
+                                             t_it-&gt;time() ) ;
+            </font><font class="kw3">doubleArray2D</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; g = t_exp-&gt;doubleArray2D_data( </font><font class="string">&quot;gradient&quot;</font><font class="text">, ct ) ;
+            </font><font class="kw1">if</font><font class="text">( g.index_bound(0) != param-&gt;nb_components() ||
+                g.index_bound(1) != dom-&gt;nb_space_dimensions() )
+            {
+               </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_bad_data_value(
+                  t_exp, </font><font class="string">&quot;gradient&quot;</font><font class="text">, </font><font class="string">&quot;bad number of components&quot;</font><font class="text"> ) ;
+            }
+            </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> ic = 0 ; ic&lt;param-&gt;nb_components() ; ++ic )
+            {
+               </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> d=0 ; d&lt;dom-&gt;nb_space_dimensions() ; ++d )
+               {
+                  </font><font class="kw1">double</font><font class="text"> gradient = param-&gt;bound_gradient( t_it, bFE, d, ic ) ;
+                  ok &amp;= test_equality( gradient, g(ic,d) ) ;
+               }
+            }
+         }
+         notify_one_test_result( </font><font class="string">&quot;bound_gradient&quot;</font><font class="text">, ok ) ;
+      }
+   }
+
+   bFE-&gt;destroy() ; bFE = 0 ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_Parameter_TEST</font><font class="text">:: bound_at_centers_test( </font><font class="kw3">PDE_DomainAndFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dom,
+                                          </font><font class="kw3">FE_Parameter</font><font class="text">* param,
+                                          </font><font class="kw3">FE_TimeIterator</font><font class="text">* t_it,
+                                          </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* t_exp )
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_Parameter_TEST:: bound_at_centers_test&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( dom != 0 ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( param != 0 ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( t_it != 0 &amp;&amp; t_it-&gt;is_started() ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( t_exp != 0 ) ;
+   
+   </font><font class="kw3">PDE_LocalFEbound</font><font class="text">* bFE = dom-&gt;create_LocalFEbound( 0 ) ;
+
+   </font><font class="kw1">if</font><font class="text">( t_exp-&gt;has_entry( </font><font class="string">&quot;value&quot;</font><font class="text"> ) )
+   {
+      </font><font class="kw3">doubleVector</font><font class="text"> val( param-&gt;nb_components() ) ;
+      param-&gt;transfer_bound_calculation_requirements( bFE, </font><font class="kw3">FE_Parameter</font><font class="text">::Val ) ;
+      </font><font class="kw1">bool</font><font class="text"> ok = param-&gt;ok_for_bound_calculations( bFE, </font><font class="kw3">FE_Parameter</font><font class="text">::Val ) ;
+      notify_one_test_result( </font><font class="string">&quot;ok_for_bound_calculations(Val)&quot;</font><font class="text">, ok ) ;
+      </font><font class="kw1">if</font><font class="text">( ok )
+      {
+         </font><font class="kw1">for</font><font class="text">( bFE-&gt;start() ; bFE-&gt;is_valid() ; bFE-&gt;go_next() )
+         {
+            bFE-&gt;set_calculation_point( bFE-&gt;polyhedron()-&gt;center() ) ;
+            </font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ct = context( bFE-&gt;calculation_point(),
+                                             t_it-&gt;time() ) ;
+            </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; v = t_exp-&gt;doubleVector_data( </font><font class="string">&quot;value&quot;</font><font class="text">, ct ) ;
+            </font><font class="kw1">if</font><font class="text">( v.size() != param-&gt;nb_components() )
+            {
+               </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_bad_data_value(
+                  t_exp, </font><font class="string">&quot;value&quot;</font><font class="text">, </font><font class="string">&quot;bad number of components&quot;</font><font class="text"> ) ;
+            }
+            </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> ic = 0 ; ic&lt;param-&gt;nb_components() ; ++ic )
+            {
+               </font><font class="kw1">double</font><font class="text"> value = param-&gt;bound_value_at_pt( t_it, bFE, ic ) ;
+               ok &amp;= test_equality( value, v(ic) ) ;
+            }
+         }
+         notify_one_test_result( </font><font class="string">&quot;bound_value_at_pt&quot;</font><font class="text">, ok ) ;
+      }
+   }
+   
+   </font><font class="kw1">if</font><font class="text">( t_exp-&gt;has_entry( </font><font class="string">&quot;gradient&quot;</font><font class="text"> ) )
+   {
+      </font><font class="kw3">doubleArray2D</font><font class="text"> grad( param-&gt;nb_components(), dom-&gt;nb_space_dimensions() ) ;
+      param-&gt;transfer_bound_calculation_requirements( bFE, </font><font class="kw3">FE_Parameter</font><font class="text">::Grad ) ;
+      </font><font class="kw1">bool</font><font class="text"> ok = param-&gt;ok_for_bound_calculations( bFE, </font><font class="kw3">FE_Parameter</font><font class="text">::Grad ) ;
+      notify_one_test_result( </font><font class="string">&quot;ok_for_bound_calculations(Grad)&quot;</font><font class="text">, ok ) ;
+      </font><font class="kw1">if</font><font class="text">( ok )
+      {
+         </font><font class="kw1">for</font><font class="text">( bFE-&gt;start() ; bFE-&gt;is_valid() ; bFE-&gt;go_next() )
+         {
+            bFE-&gt;set_calculation_point( bFE-&gt;polyhedron()-&gt;center() ) ;
+            </font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ct = context( bFE-&gt;calculation_point(),
+                                             t_it-&gt;time() ) ;
+            </font><font class="kw3">doubleArray2D</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; g = t_exp-&gt;doubleArray2D_data( </font><font class="string">&quot;gradient&quot;</font><font class="text">, ct ) ;
+            </font><font class="kw1">if</font><font class="text">( g.index_bound(0) != param-&gt;nb_components() ||
+                g.index_bound(1) != dom-&gt;nb_space_dimensions() )
+            {
+               </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_bad_data_value(
+                  t_exp, </font><font class="string">&quot;gradient&quot;</font><font class="text">, </font><font class="string">&quot;bad number of components&quot;</font><font class="text"> ) ;
+            }
+            </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> ic = 0 ; ic&lt;param-&gt;nb_components() ; ++ic )
+            {
+               </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> d=0 ; d&lt;dom-&gt;nb_space_dimensions() ; ++d )
+               {
+                  </font><font class="kw1">double</font><font class="text"> gradient = param-&gt;bound_gradient_at_pt( t_it, bFE,
+                                                                d, ic ) ;
+                  ok &amp;= test_equality( gradient, g(ic,d) ) ;
+               }
+            }
+         }
+         notify_one_test_result( </font><font class="string">&quot;bound_gradient_at_pt&quot;</font><font class="text">, ok ) ;
+      }
+   }
+
+   bFE-&gt;destroy() ; bFE = 0 ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_Parameter_TEST</font><font class="text">:: bound_at_IPs_test( </font><font class="kw3">PDE_DomainAndFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dom,
+                                      </font><font class="kw3">FE_Parameter</font><font class="text">* param,
+                                      </font><font class="kw3">FE_TimeIterator</font><font class="text">* t_it,
+                                      </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* t_exp )
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_Parameter_TEST:: bound_at_IPs_test&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( dom != 0 ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( param != 0 ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( t_it != 0 &amp;&amp; t_it-&gt;is_started() ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( t_exp != 0 ) ;
+   
+   </font><font class="kw3">PDE_LocalFEbound</font><font class="text">* bFE = dom-&gt;create_LocalFEbound( 0 ) ;
+   
+   </font><font class="kw3">GE_QRprovider</font><font class="text"> </font><font class="kw1">const</font><font class="text">* qr =
+      </font><font class="kw3">GE_QRprovider</font><font class="text">::object( t_exp-&gt;string_data( </font><font class="string">&quot;QRprovider_name&quot;</font><font class="text"> ) ) ;
+
+   </font><font class="kw1">if</font><font class="text">( t_exp-&gt;has_entry( </font><font class="string">&quot;value&quot;</font><font class="text"> ) )
+   {
+      </font><font class="kw3">doubleVector</font><font class="text"> val( param-&gt;nb_components() ) ;
+      param-&gt;transfer_bound_calculation_requirements( bFE, </font><font class="kw3">FE_Parameter</font><font class="text">::Val ) ;
+      </font><font class="kw1">bool</font><font class="text"> ok = param-&gt;ok_for_bound_calculations( bFE, </font><font class="kw3">FE_Parameter</font><font class="text">::Val ) ;
+      notify_one_test_result( </font><font class="string">&quot;ok_for_bound_calculations(Val)&quot;</font><font class="text">, ok ) ;
+      </font><font class="kw1">if</font><font class="text">( ok )
+      {
+         </font><font class="kw1">for</font><font class="text">( bFE-&gt;start() ; bFE-&gt;is_valid() ; bFE-&gt;go_next() )
+         {
+            bFE-&gt;start_IP_iterator( qr ) ;
+            </font><font class="kw1">for</font><font class="text">( ; bFE-&gt;valid_IP() ; bFE-&gt;go_next_IP() )
+            {
+               </font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ct = context( bFE-&gt;coordinates_of_IP(),
+                                                t_it-&gt;time() ) ;
+               </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; v = t_exp-&gt;doubleVector_data( </font><font class="string">&quot;value&quot;</font><font class="text">, ct ) ;
+               </font><font class="kw1">if</font><font class="text">( v.size() != param-&gt;nb_components() )
+               {
+                  </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_bad_data_value(
+                     t_exp, </font><font class="string">&quot;value&quot;</font><font class="text">, </font><font class="string">&quot;bad number of components&quot;</font><font class="text"> ) ;
+               }
+               </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> ic = 0 ; ic&lt;param-&gt;nb_components() ; ++ic )
+               {
+                  </font><font class="kw1">double</font><font class="text"> value = param-&gt;bound_value_at_IP( t_it, bFE, ic ) ;
+                  ok &amp;= test_equality( value, v(ic) ) ;
+               }
+            }
+         }
+         notify_one_test_result( </font><font class="string">&quot;bound_value_at_IP&quot;</font><font class="text">, ok ) ;
+      }
+   }
+   
+   </font><font class="kw1">if</font><font class="text">( t_exp-&gt;has_entry( </font><font class="string">&quot;gradient&quot;</font><font class="text"> ) )
+   {
+      </font><font class="kw3">doubleArray2D</font><font class="text"> grad( param-&gt;nb_components(), dom-&gt;nb_space_dimensions() ) ;
+      param-&gt;transfer_bound_calculation_requirements( bFE, </font><font class="kw3">FE_Parameter</font><font class="text">::Grad ) ;
+      </font><font class="kw1">bool</font><font class="text"> ok = param-&gt;ok_for_bound_calculations( bFE, </font><font class="kw3">FE_Parameter</font><font class="text">::Grad ) ;
+      notify_one_test_result( </font><font class="string">&quot;ok_for_bound_calculations(Grad)&quot;</font><font class="text">, ok ) ;
+      </font><font class="kw1">if</font><font class="text">( ok )
+      {
+         </font><font class="kw1">for</font><font class="text">( bFE-&gt;start() ; bFE-&gt;is_valid() ; bFE-&gt;go_next() )
+         {
+            bFE-&gt;start_IP_iterator( qr ) ;
+            </font><font class="kw1">for</font><font class="text">( ; bFE-&gt;valid_IP() ; bFE-&gt;go_next_IP() )
+            {
+               </font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ct = context( bFE-&gt;coordinates_of_IP(),
+                                                t_it-&gt;time() ) ;
+               </font><font class="kw3">doubleArray2D</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; g = t_exp-&gt;doubleArray2D_data( </font><font class="string">&quot;gradient&quot;</font><font class="text">, ct ) ;
+               </font><font class="kw1">if</font><font class="text">( g.index_bound(0) != param-&gt;nb_components() ||
+                   g.index_bound(1) != dom-&gt;nb_space_dimensions() )
+               {
+                  </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_bad_data_value(
+                     t_exp, </font><font class="string">&quot;gradient&quot;</font><font class="text">, </font><font class="string">&quot;bad number of components&quot;</font><font class="text"> ) ;
+               }
+               </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> ic = 0 ; ic&lt;param-&gt;nb_components() ; ++ic )
+               {
+                  </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> d=0 ; d&lt;dom-&gt;nb_space_dimensions() ; ++d )
+                  {
+                     </font><font class="kw1">double</font><font class="text"> gradient = param-&gt;bound_gradient_at_IP( t_it, bFE,
+                                                                   d, ic ) ;
+                     ok &amp;= test_equality( gradient, g(ic,d) ) ;
+                  }
+               }
+            }
+         }
+         notify_one_test_result( </font><font class="string">&quot;bound_gradient_at_IP&quot;</font><font class="text">, ok ) ;
+      }
+   }
+
+   bFE-&gt;destroy() ; bFE = 0 ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_Parameter_TEST</font><font class="text">:: side_test( </font><font class="kw3">PDE_DomainAndFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dom,
+                               </font><font class="kw3">FE_Parameter</font><font class="text">* param,
+                               </font><font class="kw3">FE_TimeIterator</font><font class="text">* t_it,
+                               </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* t_exp )
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_Parameter_TEST:: side_test&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( dom != 0 ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( param != 0 ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( t_it != 0 &amp;&amp; t_it-&gt;is_started() ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( t_exp != 0 ) ;
+   
+   </font><font class="kw3">PDE_CursorFEside</font><font class="text">* sFE = dom-&gt;create_CursorFEside( 0 ) ;
+
+   </font><font class="kw1">if</font><font class="text">( t_exp-&gt;has_entry( </font><font class="string">&quot;value&quot;</font><font class="text"> ) )
+   {
+      </font><font class="kw3">doubleVector</font><font class="text"> val( param-&gt;nb_components() ) ;
+      param-&gt;transfer_side_calculation_requirements( sFE, </font><font class="kw3">FE_Parameter</font><font class="text">::Val ) ;
+      </font><font class="kw1">bool</font><font class="text"> ok = param-&gt;ok_for_side_calculations( sFE, </font><font class="kw3">FE_Parameter</font><font class="text">::Val ) ;
+      notify_one_test_result( </font><font class="string">&quot;ok_for_side_calculations(Val)&quot;</font><font class="text">, ok ) ;
+      </font><font class="kw1">if</font><font class="text">( ok )
+      {
+         </font><font class="kw1">for</font><font class="text">( sFE-&gt;start() ; sFE-&gt;is_valid() ; sFE-&gt;go_next() )
+         {
+            </font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ct = context( sFE-&gt;polyhedron()-&gt;center(),
+                                             t_it-&gt;time() ) ;
+            </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; v = t_exp-&gt;doubleVector_data( </font><font class="string">&quot;value&quot;</font><font class="text">, ct ) ;
+            </font><font class="kw1">if</font><font class="text">( v.size() != param-&gt;nb_components() )
+            {
+               </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_bad_data_value(
+                  t_exp, </font><font class="string">&quot;value&quot;</font><font class="text">, </font><font class="string">&quot;bad number of components&quot;</font><font class="text"> ) ;
+            }
+            </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> ic = 0 ; ic&lt;param-&gt;nb_components() ; ++ic )
+            {
+               </font><font class="kw1">double</font><font class="text"> value = param-&gt;side_value( t_it, sFE, ic ) ;
+               ok &amp;= test_equality( value, v(ic) ) ;
+            }
+         }
+         notify_one_test_result( </font><font class="string">&quot;side_value&quot;</font><font class="text">, ok ) ;
+      }
+   }
+   
+   </font><font class="kw1">if</font><font class="text">( t_exp-&gt;has_entry( </font><font class="string">&quot;gradient&quot;</font><font class="text"> ) )
+   {
+      </font><font class="kw3">doubleArray2D</font><font class="text"> grad( param-&gt;nb_components(), dom-&gt;nb_space_dimensions() ) ;
+      param-&gt;transfer_side_calculation_requirements( sFE, </font><font class="kw3">FE_Parameter</font><font class="text">::Grad ) ;
+      </font><font class="kw1">bool</font><font class="text"> ok = param-&gt;ok_for_side_calculations( sFE, </font><font class="kw3">FE_Parameter</font><font class="text">::Grad ) ;
+      notify_one_test_result( </font><font class="string">&quot;ok_for_side_calculations(Grad)&quot;</font><font class="text">, ok ) ;
+      </font><font class="kw1">if</font><font class="text">( ok )
+      {
+         </font><font class="kw1">for</font><font class="text">( sFE-&gt;start() ; sFE-&gt;is_valid() ; sFE-&gt;go_next() )
+         {
+            </font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ct = context( sFE-&gt;polyhedron()-&gt;center(),
+                                             t_it-&gt;time() ) ;
+            </font><font class="kw3">doubleArray2D</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; g = t_exp-&gt;doubleArray2D_data( </font><font class="string">&quot;gradient&quot;</font><font class="text">, ct ) ;
+            </font><font class="kw1">if</font><font class="text">( g.index_bound(0) != param-&gt;nb_components() ||
+                g.index_bound(1) != dom-&gt;nb_space_dimensions() )
+            {
+               </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_bad_data_value(
+                  t_exp, </font><font class="string">&quot;gradient&quot;</font><font class="text">, </font><font class="string">&quot;bad number of components&quot;</font><font class="text"> ) ;
+            }
+            </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> ic = 0 ; ic&lt;param-&gt;nb_components() ; ++ic )
+            {
+               </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> d=0 ; d&lt;dom-&gt;nb_space_dimensions() ; ++d )
+               {
+                  </font><font class="kw1">double</font><font class="text"> gradient = param-&gt;side_gradient( t_it, sFE, d, ic ) ;
+                  ok &amp;= test_equality( gradient, g(ic,d) ) ;
+               }
+            }
+         }
+         notify_one_test_result( </font><font class="string">&quot;side_gradient&quot;</font><font class="text">, ok ) ;
+      }
+   }
+
+   sFE-&gt;destroy() ; sFE = 0 ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_Parameter_TEST</font><font class="text">:: side_at_centers_test( </font><font class="kw3">PDE_DomainAndFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dom,
+                                          </font><font class="kw3">FE_Parameter</font><font class="text">* param,
+                                          </font><font class="kw3">FE_TimeIterator</font><font class="text">* t_it,
+                                          </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* t_exp )
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_Parameter_TEST:: side_at_centers_test&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( dom != 0 ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( param != 0 ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( t_it != 0 &amp;&amp; t_it-&gt;is_started() ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( t_exp != 0 ) ;
+   
+   </font><font class="kw3">PDE_CursorFEside</font><font class="text">* sFE = dom-&gt;create_CursorFEside( 0 ) ;
+
+   </font><font class="kw1">if</font><font class="text">( t_exp-&gt;has_entry( </font><font class="string">&quot;value&quot;</font><font class="text"> ) )
+   {
+      </font><font class="kw3">doubleVector</font><font class="text"> val( param-&gt;nb_components() ) ;
+      param-&gt;transfer_side_calculation_requirements( sFE, </font><font class="kw3">FE_Parameter</font><font class="text">::Val ) ;
+      </font><font class="kw1">bool</font><font class="text"> ok = param-&gt;ok_for_side_calculations( sFE, </font><font class="kw3">FE_Parameter</font><font class="text">::Val ) ;
+      notify_one_test_result( </font><font class="string">&quot;ok_for_side_calculations(Val)&quot;</font><font class="text">, ok ) ;
+      </font><font class="kw1">if</font><font class="text">( ok )
+      {
+         </font><font class="kw1">for</font><font class="text">( sFE-&gt;start() ; sFE-&gt;is_valid() ; sFE-&gt;go_next() )
+         {
+            sFE-&gt;set_calculation_point( sFE-&gt;polyhedron()-&gt;center() ) ;
+            </font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ct = context( sFE-&gt;calculation_point(),
+                                             t_it-&gt;time() ) ;
+            </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; v = t_exp-&gt;doubleVector_data( </font><font class="string">&quot;value&quot;</font><font class="text">, ct ) ;
+            </font><font class="kw1">if</font><font class="text">( v.size() != param-&gt;nb_components() )
+            {
+               </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_bad_data_value(
+                  t_exp, </font><font class="string">&quot;value&quot;</font><font class="text">, </font><font class="string">&quot;bad number of components&quot;</font><font class="text"> ) ;
+            }
+            </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> ic = 0 ; ic&lt;param-&gt;nb_components() ; ++ic )
+            {
+               </font><font class="kw1">double</font><font class="text"> value = param-&gt;side_value_at_pt( t_it, sFE, ic ) ;
+               ok &amp;= test_equality( value, v(ic) ) ;
+            }
+         }
+         notify_one_test_result( </font><font class="string">&quot;side_value_at_pt&quot;</font><font class="text">, ok ) ;
+      }
+   }
+   
+   </font><font class="kw1">if</font><font class="text">( t_exp-&gt;has_entry( </font><font class="string">&quot;gradient&quot;</font><font class="text"> ) )
+   {
+      </font><font class="kw3">doubleArray2D</font><font class="text"> grad( param-&gt;nb_components(), dom-&gt;nb_space_dimensions() ) ;
+      param-&gt;transfer_side_calculation_requirements( sFE, </font><font class="kw3">FE_Parameter</font><font class="text">::Grad ) ;
+      </font><font class="kw1">bool</font><font class="text"> ok = param-&gt;ok_for_side_calculations( sFE, </font><font class="kw3">FE_Parameter</font><font class="text">::Grad ) ;
+      notify_one_test_result( </font><font class="string">&quot;ok_for_side_calculations(Grad)&quot;</font><font class="text">, ok ) ;
+      </font><font class="kw1">if</font><font class="text">( ok )
+      {
+         </font><font class="kw1">for</font><font class="text">( sFE-&gt;start() ; sFE-&gt;is_valid() ; sFE-&gt;go_next() )
+         {
+            sFE-&gt;set_calculation_point( sFE-&gt;polyhedron()-&gt;center() ) ;
+            </font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ct = context( sFE-&gt;calculation_point(),
+                                             t_it-&gt;time() ) ;
+            </font><font class="kw3">doubleArray2D</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; g = t_exp-&gt;doubleArray2D_data( </font><font class="string">&quot;gradient&quot;</font><font class="text">, ct ) ;
+            </font><font class="kw1">if</font><font class="text">( g.index_bound(0) != param-&gt;nb_components() ||
+                g.index_bound(1) != dom-&gt;nb_space_dimensions() )
+            {
+               </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_bad_data_value(
+                  t_exp, </font><font class="string">&quot;gradient&quot;</font><font class="text">, </font><font class="string">&quot;bad number of components&quot;</font><font class="text"> ) ;
+            }
+            </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> ic = 0 ; ic&lt;param-&gt;nb_components() ; ++ic )
+            {
+               </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> d=0 ; d&lt;dom-&gt;nb_space_dimensions() ; ++d )
+               {
+                  </font><font class="kw1">double</font><font class="text"> gradient = param-&gt;side_gradient_at_pt( t_it, sFE,
+                                                                d, ic ) ;
+                  ok &amp;= test_equality( gradient, g(ic,d) ) ;
+               }
+            }
+         }
+         notify_one_test_result( </font><font class="string">&quot;side_gradient_at_pt&quot;</font><font class="text">, ok ) ;
+      }
+   }
+
+   sFE-&gt;destroy() ; sFE = 0 ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_Parameter_TEST</font><font class="text">:: side_at_IPs_test( </font><font class="kw3">PDE_DomainAndFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dom,
+                                      </font><font class="kw3">FE_Parameter</font><font class="text">* param,
+                                      </font><font class="kw3">FE_TimeIterator</font><font class="text">* t_it,
+                                      </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* t_exp )
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_Parameter_TEST:: side_at_IPs_test&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( dom != 0 ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( param != 0 ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( t_it != 0 &amp;&amp; t_it-&gt;is_started() ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( t_exp != 0 ) ;
+   
+   </font><font class="kw3">PDE_CursorFEside</font><font class="text">* sFE = dom-&gt;create_CursorFEside( 0 ) ;
+   
+   </font><font class="kw3">GE_QRprovider</font><font class="text"> </font><font class="kw1">const</font><font class="text">* qr =
+      </font><font class="kw3">GE_QRprovider</font><font class="text">::object( t_exp-&gt;string_data( </font><font class="string">&quot;QRprovider_name&quot;</font><font class="text"> ) ) ;
+
+   </font><font class="kw1">if</font><font class="text">( t_exp-&gt;has_entry( </font><font class="string">&quot;value&quot;</font><font class="text"> ) )
+   {
+      </font><font class="kw3">doubleVector</font><font class="text"> val( param-&gt;nb_components() ) ;
+      param-&gt;transfer_side_calculation_requirements( sFE, </font><font class="kw3">FE_Parameter</font><font class="text">::Val ) ;
+      </font><font class="kw1">bool</font><font class="text"> ok = param-&gt;ok_for_side_calculations( sFE, </font><font class="kw3">FE_Parameter</font><font class="text">::Val ) ;
+      notify_one_test_result( </font><font class="string">&quot;ok_for_side_calculations(Val)&quot;</font><font class="text">, ok ) ;
+      </font><font class="kw1">if</font><font class="text">( ok )
+      {
+         </font><font class="kw1">for</font><font class="text">( sFE-&gt;start() ; sFE-&gt;is_valid() ; sFE-&gt;go_next() )
+         {
+            sFE-&gt;start_IP_iterator( qr ) ;
+            </font><font class="kw1">for</font><font class="text">( ; sFE-&gt;valid_IP() ; sFE-&gt;go_next_IP() )
+            {
+               </font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ct = context( sFE-&gt;coordinates_of_IP(),
+                                                t_it-&gt;time() ) ;
+               </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; v = t_exp-&gt;doubleVector_data( </font><font class="string">&quot;value&quot;</font><font class="text">, ct ) ;
+               </font><font class="kw1">if</font><font class="text">( v.size() != param-&gt;nb_components() )
+               {
+                  </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_bad_data_value(
+                     t_exp, </font><font class="string">&quot;value&quot;</font><font class="text">, </font><font class="string">&quot;bad number of components&quot;</font><font class="text"> ) ;
+               }
+               </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> ic = 0 ; ic&lt;param-&gt;nb_components() ; ++ic )
+               {
+                  </font><font class="kw1">double</font><font class="text"> value = param-&gt;side_value_at_IP( t_it, sFE, ic ) ;
+                  ok &amp;= test_equality( value, v(ic) ) ;
+               }
+            }
+         }
+         notify_one_test_result( </font><font class="string">&quot;side_value_at_IP&quot;</font><font class="text">, ok ) ;
+      }
+   }
+   
+   </font><font class="kw1">if</font><font class="text">( t_exp-&gt;has_entry( </font><font class="string">&quot;gradient&quot;</font><font class="text"> ) )
+   {
+      </font><font class="kw3">doubleArray2D</font><font class="text"> grad( param-&gt;nb_components(), dom-&gt;nb_space_dimensions() ) ;
+      param-&gt;transfer_side_calculation_requirements( sFE, </font><font class="kw3">FE_Parameter</font><font class="text">::Grad ) ;
+      </font><font class="kw1">bool</font><font class="text"> ok = param-&gt;ok_for_side_calculations( sFE, </font><font class="kw3">FE_Parameter</font><font class="text">::Grad ) ;
+      notify_one_test_result( </font><font class="string">&quot;ok_for_side_calculations(Grad)&quot;</font><font class="text">, ok ) ;
+      </font><font class="kw1">if</font><font class="text">( ok )
+      {
+         </font><font class="kw1">for</font><font class="text">( sFE-&gt;start() ; sFE-&gt;is_valid() ; sFE-&gt;go_next() )
+         {
+            sFE-&gt;start_IP_iterator( qr ) ;
+            </font><font class="kw1">for</font><font class="text">( ; sFE-&gt;valid_IP() ; sFE-&gt;go_next_IP() )
+            {
+               </font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ct = context( sFE-&gt;coordinates_of_IP(),
+                                                t_it-&gt;time() ) ;
+               </font><font class="kw3">doubleArray2D</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; g = t_exp-&gt;doubleArray2D_data( </font><font class="string">&quot;gradient&quot;</font><font class="text">, ct ) ;
+               </font><font class="kw1">if</font><font class="text">( g.index_bound(0) != param-&gt;nb_components() ||
+                   g.index_bound(1) != dom-&gt;nb_space_dimensions() )
+               {
+                  </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_bad_data_value(
+                     t_exp, </font><font class="string">&quot;gradient&quot;</font><font class="text">, </font><font class="string">&quot;bad number of components&quot;</font><font class="text"> ) ;
+               }
+               </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> ic = 0 ; ic&lt;param-&gt;nb_components() ; ++ic )
+               {
+                  </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> d=0 ; d&lt;dom-&gt;nb_space_dimensions() ; ++d )
+                  {
+                     </font><font class="kw1">double</font><font class="text"> gradient = param-&gt;side_gradient_at_IP( t_it, sFE,
+                                                                   d, ic ) ;
+                     ok &amp;= test_equality( gradient, g(ic,d) ) ;
+                  }
+               }
+            }
+         }
+         notify_one_test_result( </font><font class="string">&quot;side_gradient_at_IP&quot;</font><font class="text">, ok ) ;
+      }
+   }
+
+   sFE-&gt;destroy() ; sFE = 0 ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">FE_Parameter_TEST</font><font class="text">:: context( </font><font class="kw3">GE_Point</font><font class="text"> </font><font class="kw1">const</font><font class="text">* pt, </font><font class="kw1">double</font><font class="text"> time )
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_Parameter_TEST:: context&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( pt != 0 ) ;
+
+   TIME-&gt;</font><font class="kw2">set</font><font class="text">( time ) ;
+   COORDS-&gt;</font><font class="kw2">set</font><font class="text">( pt-&gt;coordinate_vector() ) ;
+   </font><font class="kw1">return</font><font class="text">( CTX ) ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">FE_Parameter_TEST</font><font class="text">:: test_equality( </font><font class="kw1">double</font><font class="text"> value, </font><font class="kw1">double</font><font class="text"> expected_value )
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_Parameter_TEST:: test_equality&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">bool</font><font class="text"> result = </font><font class="kw3">PEL</font><font class="text">::double_equality( value, expected_value,
+                                       D_EPS, D_MIN ) ;
+   </font><font class="kw1">if</font><font class="text">( !result )
+   {
+      out() &lt;&lt; </font><font class="string">&quot;   expected : &quot;</font><font class="text"> &lt;&lt; expected_value &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+      out() &lt;&lt; </font><font class="string">&quot;   computed : &quot;</font><font class="text"> &lt;&lt; value &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+      out() &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   }
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font>
+</pre>
+</body>
+</html>

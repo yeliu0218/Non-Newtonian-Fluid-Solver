@@ -1,0 +1,53 @@
+MODULE PEL_Application
+   // Cas test de PDE_ResultSaver sur maillage periodique 3D
+   concrete_name = "PDE_DomainVisu"
+
+   MODULE PDE_DomainAndFields
+      verbose_level = 1
+      nb_space_dimensions = 3
+      type = "finite_element"
+         
+         MODULE GE_Meshing  
+            concrete_name = "GE_BoxWithBoxes"
+            vertices_coordinate_0 = < 0.0 0.5 1.0 >
+            vertices_coordinate_1 = < 0.0 0.5 1.0 >
+            vertices_coordinate_2 = < 0.0 0.5 1.0 >
+            mesh_polyhedron = < "GE_Rectangle" "GE_Cuboid" >
+         END MODULE GE_Meshing
+      
+    
+      MODULE interior_fields
+      END MODULE interior_fields  
+      
+      MODULE field_compositions
+      END MODULE field_compositions
+
+      MODULE macro_boundary_conditions
+      END MODULE macro_boundary_conditions
+    
+      MODULE domain_periodicity
+         MODULE GE_Transform#horizontal
+            concrete_name = "GE_Translation"
+            translation_vector = < 1.0 0.0 0.0 > 
+            source_color = "left"
+            target_color = "right"
+         END MODULE GE_Transform#horizontal    
+         
+         MODULE GE_Transform#profondeur
+            concrete_name = "GE_Translation"
+            translation_vector = < 0.0 0.0 1.0 >
+            source_color = "behind"
+            target_color = "front"
+         END MODULE GE_Transform#profondeur       
+      END MODULE domain_periodicity
+      
+      
+      MODULE PDE_ResultSaver
+         writers =  < "PEL_GMVwriter" "PEL_PelWriter">
+         writing_mode = "text"
+         files_basename = "save"
+      END MODULE PDE_ResultSaver 
+      
+   END MODULE PDE_DomainAndFields
+
+END MODULE PEL_Application

@@ -1,0 +1,164 @@
+#
+# Win32 Makefile for PELICANS platform
+#
+SHELL := cmd.exe
+LICENSE :=
+CCC := gcc
+OPT_TEST := opt0
+RM    := erase /Q
+MKDIR := perl tools\pel\portable_mkdir.pl
+RMDIR := rmdir /Q /S
+
+SYS:=$(shell perl -I tools\pel tools\pel\arch.pl $(CCC))
+ifndef SYS
+$(shell perl -I tools\pel tools\pel/arch.pl -v $(CCC))
+$(error Unable to find a valid architecture for this computer)
+endif
+
+CONFIG=bin\init
+
+# determination de l'extension des DLL par perl
+DYNAMIC_LIB_EXT := $(shell perl -I tools\pel tools\pel\arch.pl $(CCC) -getvariable DYNAMIC_LIB_EXT)
+
+libdir = lib/$(SYS)
+abslibdir := $(shell perl -MFile::Spec -e 'print File::Spec->rel2abs("$(libdir)")')
+lib0 = $(libdir)/libpel0$(DYNAMIC_LIB_EXT)
+lib1 = $(libdir)/libpel1$(DYNAMIC_LIB_EXT)
+lib2 = $(libdir)/libpel2$(DYNAMIC_LIB_EXT)
+libg = $(libdir)/libpelg$(DYNAMIC_LIB_EXT)
+
+LIB_TEST = $(subst dbg,pelg,$(subst opt,pel,$(OPT_TEST)))
+lib_for_test = $(libdir)/lib$(LIB_TEST)$(DYNAMIC_LIB_EXT)
+export LIB_TEST
+
+PELICANS_VCPROJECT_2003 = admin/win32/vc2003/pelicans.vcproj
+PELICANS_VCPROJECT_2008 = admin/win32/vc2008/pelicans.vcproj
+STD_VCPROJECT_2008 = admin/win32/vc2008/standardapplications.vcproj
+
+##########################
+# MACRO TARGETS          #
+##########################
+
+default:help
+
+##################################
+# GNU-like MACRO TARGETS         #
+##################################
+
+all:libraries
+
+clean:FORCE cleanenv cleanlib cleantests
+
+########################
+## cleaner             #
+########################
+
+cleanenv:
+	$(RM) $(CONFIG).bat
+
+cleanlib:
+	$(RMDIR) lib
+
+cleantests:
+	$(RMDIR) tests
+	$(RMDIR) testing
+
+########################
+## Environment setting #
+########################
+
+environment: $(CONFIG).bat
+
+$(CONFIG).bat:
+	perl -l -I tools\pel admin\setEnvironment.pl $(CONFIG) $(LICENSE)
+
+#######################
+# Include directory   #
+#######################
+
+$(PELICANS_VCPROJECT_2003) $(PELICANS_VCPROJECT_2008) $(STD_VCPROJECT_2008) vcproj:FORCE $(CONFIG).bat
+	call $(CONFIG).bat & pel depend -vcproj $(PELICANS_VCPROJECT_2003) -mSTD -mPELICANS
+	call $(CONFIG).bat & pel depend -vcproj $(PELICANS_VCPROJECT_2008) -mPELICANS
+	call $(CONFIG).bat & pel depend -vcproj $(STD_VCPROJECT_2005) -mSTD
+
+#######################
+# Libraries builder   #
+#######################
+
+lib0 : $(lib0)
+lib1 : $(lib1)
+lib2 : $(lib2)
+libg : $(libg)
+libpg : $(libdir)/libpelpg$(DYNAMIC_LIB_EXT)
+
+libraries : lib0 lib1
+
+extra-libraries : lib2 libg
+
+.PRECIOUS:$(libdir)/%/lib$(DYNAMIC_LIB_EXT) $(libdir)/%/Makefile
+
+$(libdir)/libpelg$(DYNAMIC_LIB_EXT): $(libdir)/dbg/Makefile $(CONFIG).bat FORCE
+	call $(CONFIG).bat & cd "$(<D)" & pel build -make $(MAKE) -archive ../$(@F) .
+
+$(libdir)/libpel%$(DYNAMIC_LIB_EXT): $(libdir)/opt%/Makefile $(CONFIG).bat FORCE
+	call $(CONFIG).bat & cd "$(<D)" & pel build -make $(MAKE) -archive ../$(@F) .
+
+$(libdir)/%/Makefile: $(CONFIG).bat
+	$(MKDIR) $(@D)
+	call $(CONFIG).bat & pel depend -mPELICANS -compiler $(CCC) $* $(@D)
+
+#########################
+# Standard applications #
+#########################
+
+libdirtests=tests/$(libdir)/$(OPT_TEST)
+
+exetests=$(libdirtests)/exe
+makefile_lib_exe=$(libdirtests)/Makefile
+
+exe_test:$(lib_for_test) $(exetests)
+
+$(exetests):$(libdirtests) $(makefile_lib_exe) FORCE
+	call $(CONFIG).bat & pel build -make $(MAKE) -exe $(libdirtests)
+
+$(libdirtests):
+	$(MKDIR) $(libdirtests)
+
+$(makefile_lib_exe): 
+	call $(CONFIG).bat & pel depend -l $(LIB_TEST) -compiler $(CCC) -path $(abslibdir) $(OPT_TEST) $(libdirtests) ExamplesOfApplication
+
+#########
+# Tests #
+#########
+
+libtest=tests/$(SYS)
+test_stamp=$(libtest)/testing
+
+checkfull:$(test_stamp)  
+
+testing:checkfull 
+
+$(test_stamp):$(libtest) 
+	call $(CONFIG).bat & "$(exetests)" admin\check.pel
+
+$(libtest):exe_test
+	$(MKDIR) $(libtest)
+
+########
+# Help #
+########
+
+help:
+	@echo Usage: $(MAKE) CCC=[arg1] OPT_TEST=[arg2] [target]
+	@echo [target]
+	@echo     environment     : build environment configuration files
+	@echo     all             : build libraries
+	@echo     extra-libraries : build libpel2.so and libpelg.so
+	@echo     exe_test        : build executable of StandardApplication
+	@echo     testing         : run all self-tests
+	@echo     clean           : remove generated files
+	@echo [arg1] : compiler system (default: gcc)
+	@echo [arg2] : optimization level (default: opt1)
+
+FORCE:
+# DO NOT DELETE

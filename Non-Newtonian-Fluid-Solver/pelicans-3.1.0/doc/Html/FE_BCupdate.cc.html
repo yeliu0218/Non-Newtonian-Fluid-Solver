@@ -1,0 +1,230 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>FE_BCupdate.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="FE_BCupdate.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="FEpack-tree.html"><span>Tree</span></a>
+    <a href="FE_BCupdate.html"><span>Class</span></a>
+    <a href="FE_BCupdate.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="FEpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE_BCupdate</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ContextSimple</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Double</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_DoubleVector</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Variable</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">GE_Mpolyhedron</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">GE_Point</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_DiscreteField</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_DomainAndFields</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_LocalFEbound</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_SetOfBCs</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_SetOfDiscreteFields</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE_TimeIterator</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;iostream&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;cmath&gt;
+
+</font><font class="kw3">PDE_LocalFE</font><font class="text">::field_id </font><font class="kw1">const</font><font class="text"> row = </font><font class="kw3">PDE_LocalFE</font><font class="text">::row ;
+</font><font class="kw3">PDE_LocalFE</font><font class="text">::field_id </font><font class="kw1">const</font><font class="text"> col = </font><font class="kw3">PDE_LocalFE</font><font class="text">::col ;
+
+</font><font class="kw3">FE_BCupdate</font><font class="text"> </font><font class="kw1">const</font><font class="text">* </font><font class="kw3">FE_BCupdate</font><font class="text">::PROTOTYPE = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">FE_BCupdate</font><font class="text">() ;
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw3">FE_BCupdate</font><font class="text">:: </font><font class="kw3">FE_BCupdate</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">FE_OneStepIteration</font><font class="text">( </font><font class="string">&quot;FE_BCupdate&quot;</font><font class="text"> )
+   , L_FFs( 0 )
+{
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw3">FE_BCupdate</font><font class="text">*
+</font><font class="kw3">FE_BCupdate</font><font class="text">:: create_replica( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                              </font><font class="kw3">PDE_DomainAndFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dom,
+                              </font><font class="kw3">FE_SetOfParameters</font><font class="text"> </font><font class="kw1">const</font><font class="text">* prms,
+                              </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* exp ) </font><font class="kw1">const
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_BCupdate:: create_replica&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_PRE( a_owner, dom, prms, exp ) ) ;
+
+   </font><font class="kw3">FE_BCupdate</font><font class="text">* result = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">FE_BCupdate</font><font class="text">( a_owner, dom, prms, exp ) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_POST( result, a_owner, dom, prms, exp ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw3">FE_BCupdate</font><font class="text">:: </font><font class="kw3">FE_BCupdate</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                           </font><font class="kw3">PDE_DomainAndFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dom,
+                           </font><font class="kw3">FE_SetOfParameters</font><font class="text"> </font><font class="kw1">const</font><font class="text">* prms,
+                           </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">FE_OneStepIteration</font><font class="text">( a_owner, dom, exp )
+   , FF( dom-&gt;set_of_discrete_fields()-&gt;item( exp-&gt;string_data( </font><font class="string">&quot;field&quot;</font><font class="text"> ) ) )
+   , L_FFs( exp-&gt;intVector_data( </font><font class="string">&quot;levels_of_field&quot;</font><font class="text"> ) )
+   , BCs( dom-&gt;set_of_boundary_conditions() )
+   , bFE( dom-&gt;create_LocalFEbound( </font><font class="kw1">this</font><font class="text"> ) )
+   , CONTEXT( </font><font class="kw3">PEL_ContextSimple</font><font class="text">::create( </font><font class="kw1">this</font><font class="text"> ) )
+   , XX( 0 )
+   , TT( 0 )
+{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_BCupdate:: FE_BCupdate&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> l=0 ; l&lt;L_FFs.size() ; ++l )
+      check_field_storage_depth( FF, L_FFs( l ) ) ;
+            
+   bFE-&gt;require_field_calculation( FF, </font><font class="kw3">PDE_LocalFE</font><font class="text">::N ) ;
+ 
+   XX = </font><font class="kw3">PEL_DoubleVector</font><font class="text">::create( CONTEXT, </font><font class="kw3">doubleVector</font><font class="text">( 0 ) ) ;
+   CONTEXT-&gt;extend( </font><font class="kw3">PEL_Variable</font><font class="text">::object(</font><font class="string">&quot;DV_X&quot;</font><font class="text">), XX ) ;
+
+   TT = </font><font class="kw3">PEL_Double</font><font class="text">::create( CONTEXT, 0.0 ) ;
+   CONTEXT-&gt;extend( </font><font class="kw3">PEL_Variable</font><font class="text">::object(</font><font class="string">&quot;DS_T&quot;</font><font class="text">), TT ) ;
+
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw3">FE_BCupdate</font><font class="text">:: ~</font><font class="kw3">FE_BCupdate</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_BCupdate</font><font class="text">:: do_before_inner_iterations_stage( </font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* t_it )
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_BCupdate:: do_before_inner_iterations_stage&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( do_before_inner_iterations_stage_PRE( t_it ) ) ;
+
+   start_total_timer( </font><font class="string">&quot;FE_BCupdate:: do_before_inner_iterations_stage&quot;</font><font class="text"> ) ;
+   
+   TT-&gt;</font><font class="kw2">set</font><font class="text">( t_it-&gt;time() ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> glob_n = 0 ;
+
+   </font><font class="kw3">boolVector</font><font class="text"> done( FF-&gt;nb_nodes() ) ;
+   </font><font class="kw1">for</font><font class="text">( bFE-&gt;start() ; bFE-&gt;is_valid() ; bFE-&gt;go_next() )
+   { 
+      </font><font class="kw3">GE_Color</font><font class="text"> </font><font class="kw1">const</font><font class="text">* color = bFE-&gt;color() ;
+      </font><font class="kw1">if</font><font class="text">( BCs-&gt;has_BC( color, FF ) )
+      {
+         </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ee =  BCs-&gt;BC_explorer( color, FF ) ;
+         </font><font class="kw1">if</font><font class="text">( ee-&gt;string_data( </font><font class="string">&quot;type&quot;</font><font class="text"> ) == </font><font class="string">&quot;Dirichlet_to_update&quot;</font><font class="text"> )
+         {
+            </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> loc_n=0 ; loc_n&lt;bFE-&gt;nb_local_nodes( FF ) ; ++loc_n )
+            {
+               </font><font class="kw1">if</font><font class="text">( bFE-&gt;local_node_is_in_mesh( FF, loc_n ) )
+               {
+                  </font><font class="kw3">GE_Point</font><font class="text"> </font><font class="kw1">const</font><font class="text">* pt = bFE-&gt;local_node_location( FF, loc_n ) ;
+                  glob_n = bFE-&gt;global_node( FF, loc_n ) ;
+                  </font><font class="kw1">if</font><font class="text">( ! done( glob_n ) )
+                  {
+                     done( glob_n ) = </font><font class="kw1">true</font><font class="text"> ;
+                     XX-&gt;</font><font class="kw2">set</font><font class="text">( pt-&gt;coordinate_vector() ) ;
+                     </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; val = 
+                                  ee-&gt;doubleVector_data( </font><font class="string">&quot;value&quot;</font><font class="text">, CONTEXT ) ;
+                     </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;FF-&gt;nb_components() ; ++i )
+                     {
+                        </font><font class="kw1">if</font><font class="text">( FF-&gt;DOF_has_imposed_value( glob_n, i ) )
+                        {
+                           </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> l=0 ; l&lt;L_FFs.size() ; ++l )
+                           {
+                              </font><font class="kw2">size_t</font><font class="text"> level = L_FFs( l ) ;
+                              FF-&gt;set_DOF_value( level, 
+                                                 glob_n, val( i ), i ) ;
+                           }
+                           FF-&gt;set_DOF_imposed_value( glob_n, val(i), i ) ;
+                        }
+                     }
+                  }
+               }
+            }
+         }	 
+      }
+   }
+
+   stop_total_timer() ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( do_before_inner_iterations_stage_POST( t_it ) ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_BCupdate</font><font class="text">:: do_one_inner_iteration( </font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* t_it ) 
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_BCupdate:: do_one_inner_iteration&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( do_one_inner_iteration_PRE( t_it ) ) ;
+}
+
+</font>
+</pre>
+</body>
+</html>

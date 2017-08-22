@@ -1,0 +1,533 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>FE_OneStepIterationOpen.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="FE_OneStepIterationOpen.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="FEpack-tree.html"><span>Tree</span></a>
+    <a href="FE_OneStepIterationOpen.html"><span>Class</span></a>
+    <a href="FE_OneStepIterationOpen.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="FEpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE_OneStepIterationOpen</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_DistributedPartition</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_assertions</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_SeqMatrix</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_SeqVector</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_DiscreteField</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_SystemNumbering</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE_TimeIterator</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;iostream&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;sstream&gt;
+
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">cout</font><font class="text"> ; </font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> ; </font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> ;
+
+</font><font class="kw2">std</font><font class="text">::</font><font class="kw2">map</font><font class="text">&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text">, </font><font class="kw3">FE_OneStepIterationOpen</font><font class="text">* &gt; 
+</font><font class="kw3">FE_OneStepIterationOpen</font><font class="text">:: OBJS ;
+
+</font><font class="kw1">struct</font><font class="text"> FE_OneStepIterationOpen_ERROR {
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> n0( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_name ) ;
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> n1( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_name ) ;
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> n2( </font><font class="kw1">void</font><font class="text"> ) ;
+} ;
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw3">FE_OneStepIterationOpen</font><font class="text">:: </font><font class="kw3">FE_OneStepIterationOpen</font><font class="text">( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_name )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">FE_OneStepIteration</font><font class="text">( a_name )
+{
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw3">FE_OneStepIterationOpen</font><font class="text">:: </font><font class="kw3">FE_OneStepIterationOpen</font><font class="text">(
+                                             </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                             </font><font class="kw3">PDE_DomainAndFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dom,
+                                             </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">FE_OneStepIteration</font><font class="text">( a_owner, dom,  exp )
+   , NN( </font><font class="string">&quot;&quot;</font><font class="text"> )
+   , DOM( dom )
+{
+   </font><font class="kw1">if</font><font class="text">( exp-&gt;has_entry( </font><font class="string">&quot;name&quot;</font><font class="text"> ) )
+   {
+      NN = exp-&gt;string_data( </font><font class="string">&quot;name&quot;</font><font class="text"> ) ;
+      </font><font class="kw1">if</font><font class="text">( NN.substr(0,7) == </font><font class="string">&quot;unnamed&quot;</font><font class="text"> ) FE_OneStepIterationOpen_ERROR::n2() ;
+      </font><font class="kw1">if</font><font class="text">( OBJS.count( NN ) != 0 ) FE_OneStepIterationOpen_ERROR::n0( NN ) ;
+      OBJS[ NN ] = </font><font class="kw1">this</font><font class="text"> ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      </font><font class="kw1">static</font><font class="text"> </font><font class="kw2">size_t</font><font class="text"> i_unnamed = 0 ;
+      </font><font class="kw2">ostringstream</font><font class="text"> nnn ;
+      nnn &lt;&lt; </font><font class="string">&quot;unnamed_&quot;</font><font class="text"> &lt;&lt; i_unnamed ;
+      NN = nnn.str() ;
+      </font><font class="kw3">PEL_ASSERT</font><font class="text">( OBJS.count( NN ) == 0 ) ;
+      OBJS[ NN ] = </font><font class="kw1">this</font><font class="text"> ;
+      ++i_unnamed ;
+   }
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw3">FE_OneStepIterationOpen</font><font class="text">:: ~</font><font class="kw3">FE_OneStepIterationOpen</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   OBJS.erase( NN ) ;
+}
+
+</font><font class="comment">//--------------------------------------------------------------------------
+</font><font class="kw3">FE_OneStepIterationOpen</font><font class="text">*
+</font><font class="kw3">FE_OneStepIterationOpen</font><font class="text">:: object( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_name )
+</font><font class="comment">//--------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_OneStepIterationOpen:: object&quot;</font><font class="text"> ) ;
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">map</font><font class="text">&lt;</font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text">,</font><font class="kw3">FE_OneStepIterationOpen</font><font class="text">*&gt;::const_iterator it = 
+                                                         OBJS.find( a_name ) ;
+   </font><font class="kw1">if</font><font class="text">( it == OBJS.end() ) FE_OneStepIterationOpen_ERROR::n1( a_name ) ;
+   
+   </font><font class="kw3">FE_OneStepIterationOpen</font><font class="text">* result = (*it).second ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;name() == a_name ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw2">size_t
+</font><font class="kw3">FE_OneStepIterationOpen</font><font class="text">:: nb_objects( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">size_t</font><font class="text"> result = OBJS.size() ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw3">FE_OneStepIterationOpen</font><font class="text">*
+</font><font class="kw3">FE_OneStepIterationOpen</font><font class="text">:: object( </font><font class="kw2">size_t</font><font class="text"> i )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_OneStepIterationOpen:: object&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( i &lt; nb_objects() ) ;
+   
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">map</font><font class="text">&lt;</font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text">,</font><font class="kw3">FE_OneStepIterationOpen</font><font class="text">*&gt;::const_iterator it = 
+                                                              OBJS.begin() ;
+   </font><font class="kw2">size_t</font><font class="text"> i_cur=0 ;
+   </font><font class="kw1">for</font><font class="text">( ; it!=OBJS.end() ; ++it )
+   {
+      </font><font class="kw1">if</font><font class="text">( i_cur == i ) </font><font class="kw1">break</font><font class="text"> ;
+      ++i_cur ;
+   }
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( it != OBJS.end() ) ;
+   </font><font class="kw3">FE_OneStepIterationOpen</font><font class="text">* result = (*it).second ;
+   
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result != 0 ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp;
+</font><font class="kw3">FE_OneStepIterationOpen</font><font class="text">:: name( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_OneStepIterationOpen:: name&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">return</font><font class="text">( NN ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw3">PDE_DomainAndFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">FE_OneStepIterationOpen</font><font class="text">:: domain( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_OneStepIterationOpen:: domain&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw3">PDE_DomainAndFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result = DOM ;
+   
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result != 0 ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw2">size_t
+</font><font class="kw3">FE_OneStepIterationOpen</font><font class="text">:: index_of_field( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; fname ) </font><font class="kw1">const
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_OneStepIterationOpen:: index_of_field&quot;</font><font class="text"> ) ; 
+   
+   </font><font class="kw2">size_t</font><font class="text"> result = </font><font class="kw3">PEL</font><font class="text">::bad_index() ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;nb_unknowns() ; ++i )
+   {
+      </font><font class="kw1">if</font><font class="text">( field( i )-&gt;name() == fname )
+      {
+         result = i ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      }
+   }
+   
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result==</font><font class="kw3">PEL</font><font class="text">::bad_index() ||
+                   field( result )-&gt;name() == fname ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_OneStepIterationOpen</font><font class="text">:: build_function_and_jacobian( 
+                                              </font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* t_it )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_OneStepIterationOpen:: build_function_and_jacobian&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_not_implemented( </font><font class="kw1">this</font><font class="text">, 
+                                               </font><font class="string">&quot;build_function_and_jacobian&quot;</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">FE_OneStepIterationOpen</font><font class="text">:: create_function( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                           </font><font class="kw2">size_t</font><font class="text"> i_unk ) </font><font class="kw1">const
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_OneStepIterationOpen:: create_function&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( create_function_PRE( a_owner, i_unk ) ) ;
+   
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_not_implemented( </font><font class="kw1">this</font><font class="text">, </font><font class="string">&quot;create_function&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result = 0 ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( create_function_POST( result, a_owner, i_unk ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">FE_OneStepIterationOpen</font><font class="text">:: create_jacobian( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                           </font><font class="kw2">size_t</font><font class="text"> i_eq,
+                                           </font><font class="kw2">size_t</font><font class="text"> j_unk ) </font><font class="kw1">const
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_OneStepIterationOpen:: create_jacobian&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( create_jacobian_PRE( a_owner, i_eq, j_unk ) ) ;
+   
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_not_implemented( </font><font class="kw1">this</font><font class="text">, </font><font class="string">&quot;create_jacobian&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result = 0 ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( create_jacobian_POST( result, a_owner, i_eq, j_unk ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_OneStepIterationOpen</font><font class="text">:: assemble_contribution( </font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* t_it,
+                                                 </font><font class="kw3">LA_Matrix</font><font class="text">* matrix,
+                                                 </font><font class="kw3">LA_Vector</font><font class="text">* </font><font class="kw2">vector</font><font class="text">,
+                                                 </font><font class="kw3">PDE_SystemNumbering</font><font class="text"> </font><font class="kw1">const</font><font class="text">* nmb,
+                                                 </font><font class="kw2">size_t</font><font class="text"> i_link ) </font><font class="kw1">const
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_OneStepIterationOpen:: assemble_contribution&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( assemble_contribution_PRE( t_it, matrix, </font><font class="kw2">vector</font><font class="text">, 
+                                             nmb, i_link ) ) ;
+   
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_not_implemented( </font><font class="kw1">this</font><font class="text">, </font><font class="string">&quot;assemble_contribution&quot;</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_OneStepIterationOpen</font><font class="text">:: update_DOFs( </font><font class="kw3">LA_Vector</font><font class="text">* </font><font class="kw2">vector</font><font class="text">,
+                                       </font><font class="kw3">PDE_SystemNumbering</font><font class="text"> </font><font class="kw1">const</font><font class="text">* nmb,
+                                       </font><font class="kw2">size_t</font><font class="text"> i_link ) </font><font class="kw1">const
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_OneStepIterationOpen:: update_DOFs&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( update_DOFs_PRE( </font><font class="kw2">vector</font><font class="text">, nmb, i_link ) ) ;
+   
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_not_implemented( </font><font class="kw1">this</font><font class="text">, </font><font class="string">&quot;update_DOFs&quot;</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_OneStepIterationOpen</font><font class="text">:: check_assembled_system( 
+                                </font><font class="kw3">PDE_SystemNumbering</font><font class="text"> </font><font class="kw1">const</font><font class="text">* nmb,
+                                </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; function_name ) </font><font class="kw1">const
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">if</font><font class="text">( nmb == 0 )
+   {
+      </font><font class="kw2">ostringstream</font><font class="text"> mesg ;
+      mesg &lt;&lt; </font><font class="kw2">endl</font><font class="text"> &lt;&lt; </font><font class="string">&quot;*** &quot;</font><font class="text"> &lt;&lt; type_name() &lt;&lt; </font><font class="kw2">endl</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      mesg &lt;&lt; </font><font class="string">&quot;   an instance of&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      mesg &lt;&lt; </font><font class="string">&quot;      PDE_SystemNumbering&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      mesg &lt;&lt; </font><font class="string">&quot;   should be available when calling&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      mesg &lt;&lt; </font><font class="string">&quot;      &quot;</font><font class="text"> &lt;&lt; function_name  ;
+      </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( mesg.str() ) ;
+   }
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">FE_OneStepIterationOpen</font><font class="text">:: field_PRE( </font><font class="kw2">size_t</font><font class="text"> i_unk ) </font><font class="kw1">const
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( i_unk &lt; nb_unknowns() ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">FE_OneStepIterationOpen</font><font class="text">:: field_POST( </font><font class="kw3">PDE_DiscreteField</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result,
+                                      </font><font class="kw2">size_t</font><font class="text"> i_unk ) </font><font class="kw1">const
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( result != 0 ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( result == link_DOF_2_unknown( i_unk )-&gt;field() ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">FE_OneStepIterationOpen</font><font class="text">:: level_of_field_PRE( </font><font class="kw2">size_t</font><font class="text"> i_unk ) </font><font class="kw1">const
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( i_unk &lt; nb_unknowns() ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">FE_OneStepIterationOpen</font><font class="text">:: level_of_field_POST( </font><font class="kw2">size_t</font><font class="text"> result, 
+                                               </font><font class="kw2">size_t</font><font class="text"> i_unk ) </font><font class="kw1">const
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( result &lt; field( i_unk )-&gt;storage_depth() ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">FE_OneStepIterationOpen</font><font class="text">:: link_DOF_2_unknown_PRE( </font><font class="kw2">size_t</font><font class="text"> i_unk ) </font><font class="kw1">const
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( i_unk &lt; nb_unknowns() ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">FE_OneStepIterationOpen</font><font class="text">:: link_DOF_2_unknown_POST( 
+                                 </font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result,
+                                 </font><font class="kw2">size_t</font><font class="text"> i_unk ) </font><font class="kw1">const
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( result != 0 ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( result-&gt;field( ) == field( i_unk ) ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">FE_OneStepIterationOpen</font><font class="text">:: create_function_PRE( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                                </font><font class="kw2">size_t</font><font class="text"> i_unk ) </font><font class="kw1">const
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( i_unk &lt; nb_unknowns() ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">FE_OneStepIterationOpen</font><font class="text">:: create_function_POST( </font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result,
+                                                </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                                </font><font class="kw2">size_t</font><font class="text"> i_unk ) </font><font class="kw1">const
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( result != 0 ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( result-&gt;owner() == a_owner ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( result-&gt;nb_rows() == 
+               link_DOF_2_unknown( i_unk )-&gt;unknown_vector_size() ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">FE_OneStepIterationOpen</font><font class="text">:: create_jacobian_PRE( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                                </font><font class="kw2">size_t</font><font class="text"> i_eq,
+                                                </font><font class="kw2">size_t</font><font class="text"> j_unk) </font><font class="kw1">const
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( i_eq &lt; nb_unknowns() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( j_unk &lt; nb_unknowns() ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">FE_OneStepIterationOpen</font><font class="text">:: create_jacobian_POST( </font><font class="kw3">LA_SeqMatrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result,
+                                                 </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                                 </font><font class="kw2">size_t</font><font class="text"> i_eq,
+                                                 </font><font class="kw2">size_t</font><font class="text"> j_unk) </font><font class="kw1">const
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( result != 0 ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( result-&gt;owner() == a_owner ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( result-&gt;nb_rows() == 
+               link_DOF_2_unknown( i_eq )-&gt;unknown_vector_size() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( result-&gt;nb_cols() == 
+               link_DOF_2_unknown( j_unk )-&gt;unknown_vector_size() ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">FE_OneStepIterationOpen</font><font class="text">:: assemble_contribution_PRE( 
+                                                </font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* t_it,
+                                                </font><font class="kw3">LA_Matrix</font><font class="text">* matrix,
+                                                </font><font class="kw3">LA_Vector</font><font class="text">* </font><font class="kw2">vector</font><font class="text">,
+                                                </font><font class="kw3">PDE_SystemNumbering</font><font class="text"> </font><font class="kw1">const</font><font class="text">* nmb,
+                                                </font><font class="kw2">size_t</font><font class="text"> i_link  ) </font><font class="kw1">const
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( t_it != 0 ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( t_it-&gt;is_started() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( !t_it-&gt;is_finished() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( nmb != 0 ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( matrix != 0 ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( </font><font class="kw2">vector</font><font class="text"> != 0 ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( matrix-&gt;nb_rows() == nmb-&gt;nb_global_unknowns() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( matrix-&gt;nb_cols() == nmb-&gt;nb_global_unknowns() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( </font><font class="kw2">vector</font><font class="text">-&gt;nb_rows() == nmb-&gt;nb_global_unknowns() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( matrix-&gt;state() != </font><font class="kw3">LA</font><font class="text">::NotSync_set ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( </font><font class="kw2">vector</font><font class="text">-&gt;state() != </font><font class="kw3">LA</font><font class="text">::NotSync_set ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( i_link &lt; nmb-&gt;nb_links() ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">FE_OneStepIterationOpen</font><font class="text">:: update_DOFs_PRE( </font><font class="kw3">LA_Vector</font><font class="text">* </font><font class="kw2">vector</font><font class="text">,
+                                           </font><font class="kw3">PDE_SystemNumbering</font><font class="text"> </font><font class="kw1">const</font><font class="text">* nmb,
+                                           </font><font class="kw2">size_t</font><font class="text"> i_link ) </font><font class="kw1">const
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( </font><font class="kw2">vector</font><font class="text"> != 0 ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( nmb != 0 ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( nmb-&gt;scatters_are_defined() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( i_link &lt; nmb-&gt;nb_links() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( </font><font class="kw2">vector</font><font class="text"> != 0 ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( </font><font class="kw2">vector</font><font class="text">-&gt;is_synchronized() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( </font><font class="kw2">vector</font><font class="text">-&gt;implementation() == 
+               nmb-&gt;scatter( i_link )-&gt;implementation() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">(
+      </font><font class="kw3">IMPLIES</font><font class="text">( </font><font class="kw2">vector</font><font class="text">-&gt;row_distribution() != 0,
+               nmb-&gt;scatter( i_link )-&gt;distribution() != 0 ) ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">(
+      </font><font class="kw3">IMPLIES</font><font class="text">( </font><font class="kw2">vector</font><font class="text">-&gt;row_distribution() != 0,
+               </font><font class="kw2">vector</font><font class="text">-&gt;row_distribution()-&gt;is_compatible( 
+                       nmb-&gt;scatter( i_link )-&gt;distribution() ) ) ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//internal-------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">FE_OneStepIterationOpen_ERROR:: n0( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_name )
+</font><font class="comment">//internal-------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">ostringstream</font><font class="text"> mesg ;
+   mesg &lt;&lt; </font><font class="string">&quot;FE_OneStepIterationOpen:&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;   attempt to create two instances with the&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;   same name :\&quot;&quot; &lt;&lt; a_name &lt;&lt; &quot;</font><font class="text">\</font><font class="string">&quot;&quot;</font><font class="text"> ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( mesg.str() ) ;
+}
+
+</font><font class="comment">//internal-------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">FE_OneStepIterationOpen_ERROR:: n1( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_name )
+</font><font class="comment">//internal-------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">ostringstream</font><font class="text"> mesg ;
+   mesg &lt;&lt; </font><font class="string">&quot;FE_OneStepIterationOpen:&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;   there is no recorded instance of name :\&quot;&quot; &lt;&lt; a_name &lt;&lt; &quot;</font><font class="text">\</font><font class="string">&quot;&quot;</font><font class="text"> ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( mesg.str() ) ;
+}
+
+</font><font class="comment">//internal-------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">FE_OneStepIterationOpen_ERROR:: n2( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//internal-------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">ostringstream</font><font class="text"> mesg ;
+   mesg &lt;&lt; </font><font class="string">&quot;FE_OneStepIterationOpen:&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;   the name of an instance cannot start with \&quot;</font><font class="text">unnamed\</font><font class="string">&quot;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;   (\&quot;</font><font class="text">unnamed\</font><font class="string">&quot; is reserved for internal purposes)&quot;</font><font class="text"> ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( mesg.str() ) ;
+}
+
+
+</font>
+</pre>
+</body>
+</html>

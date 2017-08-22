@@ -1,0 +1,716 @@
+#!/bin/sh
+
+#-----------------------------------------------------------------------
+do_the_links() {
+#-----------------------------------------------------------------------
+   for name in $list
+   do
+      echo "$name;$package;;" >> $dbf
+
+      echo "kw3 += $name" >> $kw3_file
+
+      file=$incDir/$name.hh
+      if [ ! -f $file ]
+      then
+         echo "************** fichier inconnu : $file"
+         exit 1
+      fi
+      ln -s ../$file ./include/$name.hh
+
+      file=$incDir/$name.icc
+      if [ -f $file ]
+      then
+         ln -s ../$file ./include/$name.icc
+      fi
+
+      file=$srcDir/$name.cc
+      if [ -f $file ]
+      then
+         ln -s ../../../$file ./doc/Html/src/$name.cc
+      fi
+   done
+   list=""
+}
+
+
+#---------------------------------------------------------------------
+#   MAIN
+#-----------------------------------------------------------------------
+
+if [ -z "$PELICANSHOME" ]
+then
+   echo "empty environment variable PELICANSHOME"
+   exit
+fi
+
+cd $PELICANSHOME
+
+mkdir -p ./doc/Html/src
+mkdir -p ./include
+
+echo "cleaning: directory $PELICANSHOME/include"
+/bin/rm -f ./include/*
+
+echo "cleaning: directory $PELICANSHOME/doc/Html/src"
+/bin/rm -f ./doc/Html/src/*
+
+kw3_file=./doc/share/webview/lang.pelclass
+echo "cleaning: file $PELICANSHOME/doc/share/webview/lang.pelclass"
+/bin/rm -f $kw3_file
+
+
+dbf=./doc/Html/description.txt
+revision="PELICANS "`date +%d_%m_%Y`
+echo $revision > $dbf
+
+echo "Package inventory :" >> $dbf
+echo "Name;Comment;Package" >> $dbf
+
+echo "PELpack;PELbase;;" >> $dbf
+echo "UT;Unit Tests;PELpack;" >> $dbf
+echo "HDS;Hierarchical Data System;PELpack;" >> $dbf
+echo "COL;Containers;PELpack;" >> $dbf
+echo "BT;Basic Types;PELpack;" >> $dbf
+echo "MD;Data on Meshing;PELpack;" >> $dbf
+
+echo "GEpack;Geometry;;" >> $dbf
+echo "INT;Intersector;GEpack;" >> $dbf
+echo "POL;Polygon;GEpack;" >> $dbf
+echo "MPOL;Polyhedron;GEpack;" >> $dbf
+echo "MESH;Meshing builder;GEpack;" >> $dbf
+echo "QR;Quadrature rules;GEpack;" >> $dbf
+
+echo "LApack;LinearAlgebra;;" >> $dbf
+echo "LAUT;Unit Tests;LApack" >> $dbf
+echo "LAEXT;External solvers;LApack" >> $dbf
+
+echo "PDEpack;PDEsolver;;" >> $dbf
+
+echo "FEpack;FrameFE;;" >> $dbf
+
+echo "RSpack;RefSol;;" >> $dbf
+
+echo >> $dbf
+echo "Class inventory :" >> $dbf
+echo "Name;Package;Comment" >> $dbf
+
+#=========================================
+incDir="PDEsolver/include"
+srcDir="PDEsolver/src"
+#=========================================
+
+list="$list PDE"
+list="$list PDE_AdapterCHARMS"
+list="$list PDE_AdapterHN"
+list="$list PDE_SystemNumbering"
+list="$list PDE_ResultSaver"
+list="$list PDE_ResultReader"
+list="$list PDE_DiscreteField"
+list="$list PDE_DOFconstraintsIterator"
+list="$list PDE_AlgebraicCoarsener"
+list="$list PDE_MeshingCoarsener"
+list="$list PDE_AdaptationIndicator"
+   list="$list PDE_FluxCellIndicator"
+   list="$list PDE_GeometricIndicator"
+list="$list PDE_FieldComposition"
+   list="$list PDE_FieldCompositionExp"
+list="$list PDE_SetOfDiscreteFields"
+list="$list PDE_SetOfFieldCompositions"
+list="$list PDE_SetOfDomains"
+list="$list PDE_DomainAndFields"
+list="$list PDE_DomainVisu"
+list="$list PDE_CrossProcessNodeNumbering"
+list="$list PDE_CrossProcessUnknownNumbering"
+list="$list PDE_InterfaceAndFields"
+list="$list PDE_SetOfBCs"
+list="$list PDE_LinkDOF2Unknown"
+list="$list PDE_GridMover"
+list="$list PDE_HelperFIC"
+
+list="$list PDE_CFootFinder"
+list="$list PDE_LocalFE"
+   list="$list PDE_LocalFEsingle"
+      list="$list PDE_LocalFEcell"
+   list="$list PDE_LocalFEmulti"
+      list="$list PDE_LocalFEbound"
+      list="$list PDE_LocalFEinterface"
+      list="$list PDE_LocalFEmortarSide"
+list="$list PDE_CursorFEside"
+list="$list PDE_LocalEquation"
+list="$list PDE_ReferenceElement"
+   list="$list PDE_0D_Q0_1node"
+   list="$list PDE_1D_P0_1node"
+   list="$list PDE_1D_P1_2nodes"
+   list="$list PDE_1D_P2_3nodes"
+   list="$list PDE_2D_P0_1node"
+   list="$list PDE_2D_P1_3nodes"
+   list="$list PDE_2D_P1isoP2_6nodes"
+   list="$list PDE_2D_P1isoNonConf_3nodes"
+   list="$list PDE_2D_P1bubble_4nodes"
+   list="$list PDE_2D_P2_6nodes"
+   list="$list PDE_2D_Q0_1node"
+   list="$list PDE_2D_Q1_4nodes"
+   list="$list PDE_2D_Q1bubbles_6nodes"
+   list="$list PDE_2D_Q1isoNonConfA_4nodes"
+   list="$list PDE_2D_Q1isoNonConfB_4nodes"
+   list="$list PDE_2D_Q2_8nodes"
+   list="$list PDE_2D_Q2_9nodes"
+   list="$list PDE_3D_P0_1node"
+   list="$list PDE_3D_P1_4nodes"
+   list="$list PDE_3D_P1isoP2_10nodes"
+   list="$list PDE_3D_P1isoNonConf_4nodes"
+   list="$list PDE_3D_P1bubble_5nodes"
+   list="$list PDE_3D_P2_10nodes"
+   list="$list PDE_3D_Q0_1node"
+   list="$list PDE_3D_Q1_8nodes"
+   list="$list PDE_3D_Q1isoNonConfA_6nodes"
+   list="$list PDE_3D_Q1isoNonConfB_6nodes"
+   list="$list PDE_3D_Q2_27nodes"
+list="$list PDE_ProjectorForDOFsSetting"
+   list="$list PDE_PlainFieldProjector"
+list="$list PDE_PointInGridFE"
+list="$list PDE_GeometricMultilevel_PC"
+
+package="PDEpack"
+do_the_links
+
+#=========================================
+incDir="FrameFE/include"
+srcDir="FrameFE/src"
+#=========================================
+
+list="$list FE"
+list="$list FE_Launcher"
+list="$list FE_LocalBCsBuilder"
+list="$list FE_MortarInterfaceDiscretizer"
+list="$list FE_MorePostprocessing"
+list="$list FE_AdaptationIndicator"
+list="$list FE_OneBCbuilder"
+   list="$list FE_NormalVelocityBC"
+   list="$list FE_RobinBC"
+   list="$list FE_PressureStressBC"
+list="$list FE_OneStepIteration"
+   list="$list FE_AdaptationStepCHARMS"
+   list="$list FE_AdaptationStepHN"
+   list="$list FE_BCupdate"
+   list="$list FE_ComparatorWithAnalytic"
+   list="$list FE_DiscreteFieldUpdate"
+   list="$list FE_DOFsCopy"
+   list="$list FE_FieldSaver"
+   list="$list FE_FieldReader"
+   list="$list FE_FieldValue"
+   list="$list FE_GridMotion"
+   list="$list FE_GridHierarchyBuilder"
+   list="$list FE_Galerkin"
+   list="$list FE_GalerkinCharacteristic"
+   list="$list FE_InitAfterAdaptation"
+   list="$list FE_IteratedSystem"
+   list="$list FE_MultiDomainSystem"
+   list="$list FE_OneStepIterationOpen"
+   list="$list FE_SplitSystem"
+   list="$list FE_StreamFunction"
+   list="$list FE_SurfaceForce"
+   list="$list FE_Vorticity"
+list="$list FE_Parameter"
+   list="$list FE_AdvVelocityParameter"
+   list="$list FE_FieldCompositionParameter"
+   list="$list FE_FieldParameter"
+   list="$list FE_GradFieldParameter"
+   list="$list FE_GravityParameter"
+   list="$list FE_LinearParameter"
+   list="$list FE_ScaledParameter"
+   list="$list FE_SpaceTimeParameter"
+   list="$list FE_SumOfParameters"
+   list="$list FE_UniformParameter"
+list="$list FE_ParameterSaver"
+list="$list FE_SetOfParameters"
+list="$list FE_StepByStepProgression"
+list="$list FE_SteadyStateAdapter"
+list="$list FE_TimeIterator"
+list="$list FE_TimeIteratorAdapter"
+list="$list FE_TauStab"
+   list="$list FE_TauSUPG"
+      list="$list FE_OptimalTauSUPG"
+
+package="FEpack"
+do_the_links
+
+#=========================================
+incDir="UnitTests/FrameFE/include"
+srcDir="UnitTests/FrameFE/src"
+#=========================================
+
+list="$list FE_OneStepIterationOpen_TEST"
+list="$list FE_Parameter_TEST"
+list="$list FE_TimeIterator_TEST"
+
+package="FEpack"
+do_the_links
+
+#=========================================
+incDir="RefSol/include"
+srcDir="RefSol/src"
+#=========================================
+
+list="$list RS_AvulaEXP"
+list="$list RS_AdvectionDiffusionEXP"
+list="$list RS_Beltrami1EXP"
+list="$list RS_GreenTaylorEXP"
+list="$list RS_SolidBodyRotationEXP"
+list="$list RS_Stokes2EXP"
+list="$list RS_NavierStokes1EXP"
+list="$list RS_TransientDiffusion1EXP"
+list="$list RS_VariableDensityFlow1EXP"
+
+package="RSpack"
+do_the_links
+
+#=========================================
+incDir="Geometry/include"
+srcDir="Geometry/src"
+#=========================================
+
+#------ Default geometry
+list="$list GE"
+list="$list GE_Color"
+list="$list GE_ColorExp"
+list="$list GE_Colorist"
+list="$list GE_Point"
+list="$list GE_PointIterator"
+list="$list GE_SetOfPoints"
+list="$list GE_Vector"
+package="GEpack"
+do_the_links
+
+#----- Meshes
+list="$list GE_ReferencePolyhedron"
+   list="$list GE_ReferenceCube"
+   list="$list GE_ReferencePoint"
+   list="$list GE_ReferenceSquare"
+   list="$list GE_ReferenceSegment"
+   list="$list GE_ReferenceTetrahedron"
+   list="$list GE_ReferenceTriangle"
+list="$list GE_Mpolyhedron"
+   list="$list GE_Cuboid"
+   list="$list GE_Hexahedron"
+   list="$list GE_Quadrilateral"
+   list="$list GE_Rectangle"
+   list="$list GE_Mpoint"
+   list="$list GE_Segment"
+   list="$list GE_Triangle"
+   list="$list GE_Trapezoid"
+   list="$list GE_Tetrahedron"
+list="$list GE_ReferencePolyhedronRefiner"
+   list="$list GE_ReferenceCubeWithCubes"
+   list="$list GE_ReferenceCubeWithTetrahedra"
+   list="$list GE_ReferenceSquareWithSquares"
+   list="$list GE_ReferenceSquareWithTriangles"
+   list="$list GE_ReferenceTriangleWithTriangles"
+package="MPOL"
+do_the_links
+
+list="$list GE_Polygon"
+   list="$list GE_Polygon2D"
+   list="$list GE_SimplePolygon2D"
+package="POL"
+do_the_links
+
+list="$list GE_QuadratureRule"
+   list="$list GE_Mpoint_QR1"
+   list="$list GE_Segment_QR1"
+   list="$list GE_Segment_QR3"
+   list="$list GE_Segment_QR5"
+   list="$list GE_Segment_QR7"
+   list="$list GE_Segment_QR9"
+   list="$list GE_Triangle_QR1"
+   list="$list GE_Triangle_QR3"
+   list="$list GE_Triangle_QR5"
+   list="$list GE_Triangle_QR6"
+   list="$list GE_Triangle_QR7"
+   list="$list GE_Triangle_QR9"
+   list="$list GE_Square_QR1"
+   list="$list GE_Square_QR3"
+   list="$list GE_Square_QR5"
+   list="$list GE_Tetrahedron_QR1"
+   list="$list GE_Tetrahedron_QR3"
+   list="$list GE_Tetrahedron_QR5"
+   list="$list GE_Cube_QR1"
+   list="$list GE_Cube_QR3"
+   list="$list GE_Cube_QR5"
+   list="$list GE_Customized_QR"
+   list="$list GE_Product_QR"
+   list="$list GE_RefinedCube_QR"
+   list="$list GE_RefinedSegment_QR"
+   list="$list GE_RefinedSquare_QR"
+   list="$list GE_RefinedTetrahedron_QR"
+   list="$list GE_RefinedTriangle_QR"
+list="$list GE_QRprovider"
+   list="$list GE_QRprovider_1"
+   list="$list GE_QRprovider_3"
+   list="$list GE_QRprovider_5"
+   list="$list GE_QRprovider_6"
+   list="$list GE_QRprovider_7"
+   list="$list GE_QRprovider_9"
+   list="$list GE_ProductQRprovider_3"
+   list="$list GE_ProductQRprovider_5"
+   list="$list GE_RefinedQRprovider_3"
+   list="$list GE_RefinedQRprovider_7"
+   list="$list GE_RefinedQRprovider_9"
+   list="$list GE_RefinedProductQRprovider_3"
+   list="$list GE_RefinedProductQRprovider_5"
+   list="$list GE_RefinedProductQRprovider_7"
+   list="$list GE_RefinedProductQRprovider_9"
+   list="$list GE_CustomizedQR_provider"
+package="QR"
+do_the_links
+
+list="$list GE_Meshing"
+   list="$list GE_CachedMeshing"
+   list="$list GE_PerforatedMeshing"
+   list="$list GE_BoxWithBoxes"
+   list="$list GE_CurveWithSegments"
+   list="$list GE_EMC2Meshing"
+   list="$list GE_GmshMeshing"
+   list="$list GE_ExplicitMeshing"
+   list="$list GE_ExtrudedMeshing"
+   list="$list GE_GambitMeshing"
+   list="$list GE_MefistoMeshing"
+   list="$list GE_RefinedMeshing"
+   list="$list GE_ComposedMeshing"
+   list="$list GE_SplitMeshing"
+   list="$list GE_TriangleMeshing"
+   list="$list GE_TransformedMeshing"
+list="$list GE_SplittingStrategy"
+   list="$list GE_CoordinateSplitting"
+list="$list GE_PerturbatedMeshingExp"
+list="$list GE_RoundoffExp"
+list="$list GE_Transform"
+   list="$list GE_Translation"
+package="MESH"
+do_the_links
+
+list="$list GE_PointPoint_INT"
+   list="$list GE_PointPoint1_INT"
+list="$list GE_PointSegment_INT"
+   list="$list GE_PointSegment1_INT"
+list="$list GE_SegmentSegment_INT"
+   list="$list GE_SegmentSegment1_INT"
+   list="$list GE_SegmentSegment2_INT"
+list="$list GE_SegmentPolyhedron_INT"
+   list="$list GE_SegmentPolyhedron1D_INT"
+   list="$list GE_SegmentPolyhedron2D_INT"
+package="INT"
+do_the_links
+
+#=========================================
+incDir="LinearAlgebra/include"
+srcDir="LinearAlgebra/src"
+#=========================================
+list="$list LA"
+list="$list LA_RunSolver"
+list="$list LA_Sorting"
+list="$list LA_Solver"
+   list="$list LA_PreconditionedSolver"
+   list="$list LA_GaussLU_DS"
+   list="$list LA_Cholesky_DS"
+list="$list LA_Vector"
+   list="$list LA_SeqVector"
+   list="$list LA_DistVector"
+list="$list LA_Scatter"
+   list="$list LA_SeqScatter"
+   list="$list LA_DistScatter"
+list="$list LA_Implementation"
+   list="$list LA_SeqImplementation"
+   list="$list LA_DistImplementation"
+list="$list LA_Matrix"
+   list="$list LA_SeqMatrix"
+      list="$list LA_CRSmatrix"
+      list="$list LA_PelMatrix"
+      list="$list LA_BlockSeqMatrix"
+      list="$list LA_DenseMatrix"
+      list="$list LA_SymmetricMatrix"
+   list="$list LA_DistMatrix"
+list="$list LA_MatrixIterator"
+   list="$list LA_ShiftedIndexMatrixIterator"
+   list="$list LA_CRSmatrixIterator"
+   list="$list LA_DenseMatrixIterator"
+   list="$list LA_PelMatrixIterator"
+   list="$list LA_SymmetricMatrixIterator"
+   list="$list LA_BlockSeqMatrixIterator"
+list="$list LA_IterativeSolver"
+   list="$list LA_Identity_IS"
+   list="$list LA_CG_IS"
+   list="$list LA_GMRES_IS"
+   list="$list LA_BiCGSTAB_IS"
+list="$list LA_Preconditioner"
+   list="$list LA_BlockJacobi_DPC"
+   list="$list LA_ILU0_PC"
+   list="$list LA_ILUT_PC"
+   list="$list LA_ILUp_PC"
+   list="$list LA_Identity_PC"
+   list="$list LA_Jacobi_PC"
+   list="$list LA_SOR_PC"
+   list="$list LA_SSOR_PC"
+list="$list LA_ConvergenceTest"
+   list="$list LA_DefaultConvergenceTest"
+   list="$list LA_SkipConvergenceTest"
+list="$list LA_ConvergenceMonitor"
+   list="$list LA_DefaultConvergenceMonitor"
+list="$list LA_TwoBlocksMethod"
+   list="$list LA_PenaltyProjection"
+   list="$list LA_Uzawa"
+   list="$list LA_UzawaCG"
+   list="$list LA_Yosida"
+
+package="LApack"
+do_the_links
+
+#=========================================
+incDir="UnitTests/LinearAlgebra/include"
+srcDir="UnitTests/LinearAlgebra/src"
+#=========================================
+
+list="$list LA_Matrix_TEST"
+#TODO list="$list LA_SeqMatrix_TEST"
+
+package="LAUT"
+do_the_links
+
+#=========================================
+incDir="ExternalAPI/Silo/include"
+srcDir="ExternalAPI/Silo/src"
+#=========================================
+list="$list EXT_SiloWriter"
+package="MD"
+do_the_links
+
+#=========================================
+PETSc_VERSION=`pel arch -getvariable_extra=PETSc_VERSION`
+if [ -n "$PETSc_VERSION" ]
+then
+   incDir="ExternalAPI/PETSc_$PETSc_VERSION/include"
+   srcDir="ExternalAPI/PETSc_$PETSc_VERSION/src"
+   #=========================================
+   list="$list EXT_PETScAPI"
+   package="PELpack"
+   do_the_links
+
+   list="$list EXT_PETScImplementation"
+   list="$list EXT_PETScMatrix"
+   list="$list EXT_PETScSolver"
+   list="$list EXT_PETScVector"
+   list="$list EXT_PETScScatter"
+   package="LAEXT"
+   do_the_links
+
+#TODO   list="$list EXT_BlockAssembledSystemPETSc"
+   package="PDEpack"
+   do_the_links
+fi
+
+#=========================================
+incDir="ExternalAPI/Aztec/include"
+srcDir="ExternalAPI/Aztec/src"
+#=========================================
+list="$list EXT_AztecSolver"
+package="LAEXT"
+do_the_links
+
+#=========================================
+incDir="ExternalAPI/UMFPACK/include"
+srcDir="ExternalAPI/UMFPACK/src"
+#=========================================
+list="$list EXT_UMFsolver_DS"
+package="LAEXT"
+do_the_links
+
+#=========================================
+incDir="PELbase/include"
+srcDir="PELbase/src"
+#=========================================
+list="$list doubleVector"
+list="$list doubleArray2D"
+list="$list doubleArray3D"
+list="$list doubleArray4D"
+list="$list doubleArray5D"
+list="$list doubleArray6D"
+list="$list doubleArray7D"
+list="$list intVector"
+list="$list intArray2D"
+list="$list intArray3D"
+list="$list boolVector"
+list="$list boolArray2D"
+list="$list boolArray3D"
+list="$list size_t_vector"
+list="$list size_t_array2D"
+list="$list size_t_array3D"
+list="$list stringVector"
+list="$list PEL_NumberedDoubleVectors"
+
+package="BT"
+do_the_links
+
+list="$list PEL"
+list="$list PEL_assertions"
+list="$list PEL_export"
+list="$list PEL_Exceptions"
+list="$list PEL_Communicator"
+   list="$list PEL_SequentialCommunicator"
+list="$list PEL_DistributedPartition"
+list="$list PEL_Error"
+list="$list PEL_Exec"
+list="$list PEL_FileToModule"
+   list="$list PEL_NativeFileToModule"
+list="$list PEL_System"
+list="$list PEL_Object"
+list="$list PEL_ObjectRegister"
+list="$list PEL_Root"
+list="$list PEL_ObjectWriter"
+list="$list PEL_ObjectReader"
+list="$list PEL_MemoryTracer"
+list="$list PEL_Timer"
+list="$list PEL_Application"
+   list="$list PEL_ApplicationRestorer"
+   list="$list PEL_Check"
+   list="$list PEL_Comparator"
+   list="$list PEL_CoupledApplications"
+   list="$list PEL_DocumentPattern"
+   list="$list PEL_ModuleExpander"
+   list="$list PEL_RunTest"
+list="$list PEL_ExternalAPI"
+list="$list PEL_Randomizer"
+
+package="PELpack"
+do_the_links
+
+#------ Unit Tests
+
+list="$list PEL_TestSuite"
+list="$list PEL_ObjectTest"
+
+package="UT"
+do_the_links
+
+#------ Collection classes
+list="$list PEL_Container"
+   list="$list PEL_Collection"
+      list="$list PEL_Set"
+      list="$list PEL_HashTableSet"
+      list="$list PEL_BalancedBinaryTree"
+   list="$list PEL_Sequence"
+      list="$list PEL_Vector"
+      list="$list PEL_List"
+         list="$list PEL_ListIdentity"
+   list="$list PEL_Map"
+list="$list PEL_Iterator"
+   list="$list PEL_HashTableSetIterator"
+   list="$list PEL_BalancedBinaryTreeIterator"
+   list="$list PEL_VectorIterator"
+   list="$list PEL_ListIterator"
+   list="$list PEL_MapIterator"
+list="$list PEL_IndexSet"
+
+package="COL"
+do_the_links
+
+#------ Hierarchical Data Structure
+list="$list PEL_ModulePattern"
+list="$list PEL_ModuleExplorer"
+list="$list PEL_Module"
+list="$list PEL_ModuleIterator"
+list="$list PEL_KeywordDataPair"
+list="$list PEL_KeywordDataIterator"
+list="$list PEL_DoubleComparator"
+   list="$list PEL_DoubleComparatorExact"
+   list="$list PEL_DoubleComparatorFloat"
+list="$list PEL_Data"
+   list="$list PEL_DataWithContext"
+   list="$list PEL_Bool"
+   list="$list PEL_Double"
+   list="$list PEL_DoubleArray2D"
+   list="$list PEL_DoubleArray3D"
+   list="$list PEL_Int"
+   list="$list PEL_IntArray2D"
+   list="$list PEL_IntArray3D"
+   list="$list PEL_DoubleVector"
+   list="$list PEL_BoolVector"
+   list="$list PEL_IntVector"
+   list="$list PEL_StringVector"
+   list="$list PEL_String"
+list="$list PEL_Context"
+list="$list PEL_ContextSimple"
+list="$list PEL_ContextPair"
+list="$list PEL_Expression"
+   list="$list PEL_ArithmeticExp"
+   list="$list PEL_ArrayExp"
+   list="$list PEL_CommunicatorExp"
+   list="$list PEL_ConvertTypeExp"
+   list="$list PEL_CutPointsExp"
+   list="$list PEL_DataWithContextExp"
+   list="$list PEL_DerivativeExp"
+   list="$list PEL_ExtractionExp"
+   list="$list PEL_GroupExp"
+   list="$list PEL_InterpolExp"
+   list="$list PEL_MathFunctionExp"
+   list="$list PEL_MembershipExp"
+   list="$list PEL_RelationalExp"
+   list="$list PEL_SigalExp"
+   list="$list PEL_SortExp"
+   list="$list PEL_StringExp"
+   list="$list PEL_SystemExp"
+   list="$list PEL_TransferExp"
+   list="$list PEL_UnaryArithmeticExp"
+   list="$list PEL_VectorExp"
+   list="$list PEL_Variable"
+   list="$list PEL_VariableExp"
+   list="$list PEL_BooleanExp"
+   list="$list PEL_ConstantExp"
+
+package="HDS"
+do_the_links
+
+#------ Data on meshing
+list="$list PEL_DataOnMeshingWriter"
+   list="$list PEL_1Dwriter"
+   list="$list PEL_CrossProcessWriter"
+   list="$list PEL_GMVwriter"
+   list="$list PEL_VTKwriter"
+   list="$list PEL_FieldViewWriter"
+   list="$list PEL_OpenDXwriter"
+   list="$list PEL_PelWriter"
+   list="$list PEL_TICwriter"
+list="$list PEL_DataOnMeshingReader"
+   list="$list PEL_PelReader"
+   list="$list PEL_TICreader"
+
+package="MD"
+do_the_links
+
+#=========================================
+incDir="UnitTests/PELbase/include"
+srcDir="UnitTests/PELbase/src"
+#=========================================
+
+list="$list PEL_Communicator_TEST"
+list="$list vectorIO_TEST"
+
+package="UT"
+do_the_links
+
+#=========================================
+incDir="ExternalAPI/MPI/include"
+srcDir="ExternalAPI/MPI/src"
+#=========================================
+list="$list EXT_MPI_API"
+list="$list EXT_MPIcommunicator"
+package="PELpack"
+do_the_links
+
+#=========================================
+incDir="ExternalAPI/METIS_4.0.1/include"
+srcDir="ExternalAPI/METIS_4.0.1/src"
+#=========================================
+list="$list EXT_METISsplitting"
+package="MESH"
+do_the_links
+

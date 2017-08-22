@@ -1,0 +1,1411 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>PEL_RunTest.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="PEL_RunTest.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="PELpack-tree.html"><span>Tree</span></a>
+    <a href="PEL_RunTest.html"><span>Class</span></a>
+    <a href="PEL_RunTest.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="PELpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_RunTest</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_assertions</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Bool</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Comparator</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Context</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Exec</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Module</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ModuleIterator</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_System</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_String</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_StringVector</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Variable</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">stringVector</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;fstream&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;iostream&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;sstream&gt;
+
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::istringstream ;
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> ;
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> ;
+
+</font><font class="kw3">PEL_RunTest</font><font class="text"> </font><font class="kw1">const</font><font class="text">* </font><font class="kw3">PEL_RunTest</font><font class="text">::PROTOTYPE = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_RunTest</font><font class="text">() ;
+
+</font><font class="kw1">struct</font><font class="text"> PEL_RunTest_ERROR
+{
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> n0( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; f_name ) ;
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> n1( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; config_file ) ;
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> n2( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; config_file ) ;
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> n3( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; config_file, 
+                   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; nb_procs ) ;
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> n4( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; config_file, </font><font class="kw2">size_t</font><font class="text"> nb_procs ) ;
+} ;
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw3">PEL_RunTest</font><font class="text">:: </font><font class="kw3">PEL_RunTest</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_Application</font><font class="text">( </font><font class="string">&quot;peltest&quot;</font><font class="text"> )
+   , VERBOSE( </font><font class="kw1">false</font><font class="text"> )
+   , TESTED_EXE( </font><font class="string">&quot;&quot;</font><font class="text"> )
+   , PELCMP_EXE( </font><font class="string">&quot;&quot;</font><font class="text"> )
+   , DATA_FILE( </font><font class="string">&quot;&quot;</font><font class="text"> )
+   , CONFIG_FILE( </font><font class="string">&quot;&quot;</font><font class="text"> )
+   , COMMON_ROOT( </font><font class="string">&quot;&quot;</font><font class="text"> )
+   , LIST( 0 )
+   , DIR_IGNORED( 0 )
+   , NAME( 0 )
+   , DIR( 0 )
+   , OPTIONS( 0 )
+   , ACTION( ignore )
+   , VERIFY( </font><font class="kw1">false</font><font class="text"> )
+   , PATTERN_FILE( </font><font class="string">&quot;&quot;</font><font class="text"> )
+   , TEST_RESULT( test_successful )
+   , NB_SUCCESSFUL( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+   , NB_AMBIGUOUS( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+   , NB_FAILED( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+   , GLOB_IGNORED( 0 )
+   , RESU( </font><font class="string">&quot;&quot;</font><font class="text"> )
+   , MPI_RUN( </font><font class="string">&quot;&quot;</font><font class="text"> )
+   , DBL_EXACT( </font><font class="kw1">false</font><font class="text"> )
+   , MY_DBL_EPS( </font><font class="kw3">PEL</font><font class="text">::bad_double() )
+   , MY_DBL_MIN( </font><font class="kw3">PEL</font><font class="text">::bad_double() )
+{
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw3">PEL_RunTest</font><font class="text">*
+</font><font class="kw3">PEL_RunTest</font><font class="text">:: create_replica( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                              </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_RunTest:: create_replica&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_PRE( a_owner, exp ) ) ;
+   
+   </font><font class="kw3">PEL_RunTest</font><font class="text">* result = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_RunTest</font><font class="text">( a_owner, exp ) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_POST( result, a_owner, exp ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw3">PEL_RunTest</font><font class="text">:: </font><font class="kw3">PEL_RunTest</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                           </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp ) 
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_Application</font><font class="text">( a_owner, exp )
+   , VERBOSE( </font><font class="kw1">false</font><font class="text"> )
+   , TESTED_EXE( </font><font class="kw3">PEL_Exec</font><font class="text">::name_of_exe() )
+   , PELCMP_EXE( </font><font class="kw3">PEL_Exec</font><font class="text">::name_of_exe() )
+   , DATA_FILE( </font><font class="string">&quot;data.pel&quot;</font><font class="text"> )
+   , CONFIG_FILE( </font><font class="string">&quot;config.pel&quot;</font><font class="text"> )
+   , COMMON_ROOT( </font><font class="string">&quot;&quot;</font><font class="text"> )
+   , LIST( exp-&gt;stringVector_data( </font><font class="string">&quot;test_directories&quot;</font><font class="text"> ) )
+   , DIR_IGNORED( exp-&gt;has_entry( </font><font class="string">&quot;ignored_directories&quot;</font><font class="text"> ) ?
+         exp-&gt;stringVector_data( </font><font class="string">&quot;ignored_directories&quot;</font><font class="text"> ) : 0 ) 
+   , NAME( 0 )
+   , DIR( 0 )
+   , OPTIONS( 0 )
+   , ACTION( ignore )
+   , VERIFY( </font><font class="kw1">false</font><font class="text"> )
+   , PATTERN_FILE( </font><font class="string">&quot;&quot;</font><font class="text"> )
+   , TEST_RESULT( test_successful )
+   , NB_SUCCESSFUL( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+   , NB_AMBIGUOUS( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+   , NB_FAILED( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+   , GLOB_IGNORED( 0 )
+   , RESU( </font><font class="string">&quot;resu&quot;</font><font class="text"> )
+   , MPI_RUN( </font><font class="string">&quot;&quot;</font><font class="text"> )
+   , DBL_EXACT( </font><font class="kw1">false</font><font class="text"> )
+   , MY_DBL_EPS( </font><font class="kw3">PEL</font><font class="text">::bad_double() )
+   , MY_DBL_MIN( </font><font class="kw3">PEL</font><font class="text">::bad_double() )
+   , MODE( </font><font class="kw3">PEL_String</font><font class="text">::create( 0, </font><font class="string">&quot;&quot;</font><font class="text"> ) )
+{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_RunTest:: PEL_RunTest&quot;</font><font class="text"> ) ;
+
+   set_mpi_run() ;
+   
+   </font><font class="kw1">if</font><font class="text">( exp-&gt;has_entry( </font><font class="string">&quot;executable&quot;</font><font class="text"> ) )
+   {
+      TESTED_EXE = exp-&gt;string_data( </font><font class="string">&quot;executable&quot;</font><font class="text"> ) ;
+      exp-&gt;test_file( </font><font class="string">&quot;executable&quot;</font><font class="text">, </font><font class="string">&quot;read&quot;</font><font class="text"> ) ;
+   }
+    
+   </font><font class="kw1">if</font><font class="text">( exp-&gt;has_entry( </font><font class="string">&quot;mpirun&quot;</font><font class="text"> ) )
+   {
+      MPI_RUN = exp-&gt;string_data( </font><font class="string">&quot;mpirun&quot;</font><font class="text"> ) ;
+      exp-&gt;test_file( </font><font class="string">&quot;mpirun&quot;</font><font class="text">, </font><font class="string">&quot;read&quot;</font><font class="text"> ) ;
+   }
+   
+   </font><font class="kw1">if</font><font class="text">( exp-&gt;has_entry( </font><font class="string">&quot;data_filename&quot;</font><font class="text"> ) )
+   {
+      DATA_FILE = exp-&gt;string_data( </font><font class="string">&quot;data_filename&quot;</font><font class="text"> ) ;
+   }
+   
+   </font><font class="kw1">if</font><font class="text">( exp-&gt;has_entry( </font><font class="string">&quot;configuration_filename&quot;</font><font class="text"> ) )
+   {
+      CONFIG_FILE = exp-&gt;string_data( </font><font class="string">&quot;configuration_filename&quot;</font><font class="text"> ) ;
+   }
+   
+   </font><font class="kw1">if</font><font class="text">( exp-&gt;has_entry( </font><font class="string">&quot;verbose&quot;</font><font class="text"> ) )
+   {
+      VERBOSE = exp-&gt;bool_data( </font><font class="string">&quot;verbose&quot;</font><font class="text"> ) ;
+   }
+
+   </font><font class="kw1">if</font><font class="text">( exp-&gt;has_entry( </font><font class="string">&quot;run_options&quot;</font><font class="text"> ) )
+   {
+      OPTIONS = exp-&gt;stringVector_data( </font><font class="string">&quot;run_options&quot;</font><font class="text"> ) ;
+   }
+   
+   </font><font class="kw1">if</font><font class="text">( exp-&gt;has_module( </font><font class="string">&quot;pattern&quot;</font><font class="text"> ) ) 
+   {
+      </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* sub_exp =
+         exp-&gt;create_subexplorer( </font><font class="kw1">this</font><font class="text">, </font><font class="string">&quot;pattern&quot;</font><font class="text"> ) ;
+      PATTERN_FILE = </font><font class="kw3">PEL_System</font><font class="text">::absolute_path(
+                            sub_exp-&gt;string_data( </font><font class="string">&quot;pattern_filename&quot;</font><font class="text"> ) ) ;
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; type = sub_exp-&gt;string_data( </font><font class="string">&quot;type&quot;</font><font class="text"> ) ;
+      sub_exp-&gt;test_data_in( </font><font class="string">&quot;type&quot;</font><font class="text">, </font><font class="string">&quot;build,verify,build_then_verify&quot;</font><font class="text"> ) ;
+      </font><font class="kw1">if</font><font class="text">( type == </font><font class="string">&quot;build&quot;</font><font class="text"> )
+      {
+         sub_exp-&gt;test_file( </font><font class="string">&quot;pattern_filename&quot;</font><font class="text">, </font><font class="string">&quot;write&quot;</font><font class="text"> ) ;
+         ACTION = build ;
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( type == </font><font class="string">&quot;verify&quot;</font><font class="text"> )
+      {
+         sub_exp-&gt;test_file( </font><font class="string">&quot;pattern_filename&quot;</font><font class="text">, </font><font class="string">&quot;read&quot;</font><font class="text"> ) ;
+         ACTION = verify ;
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( type == </font><font class="string">&quot;build_then_verify&quot;</font><font class="text"> )
+      {
+         sub_exp-&gt;test_file( </font><font class="string">&quot;pattern_filename&quot;</font><font class="text">, </font><font class="string">&quot;write&quot;</font><font class="text"> ) ;
+         ACTION = build_then_verify ;
+      }
+   }
+   
+   </font><font class="kw1">if</font><font class="text">( exp-&gt;has_module( </font><font class="string">&quot;pel_compare&quot;</font><font class="text"> ) )
+   {
+      </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* se = 
+                         exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;pel_compare&quot;</font><font class="text"> ) ;
+      </font><font class="kw3">PEL_Comparator</font><font class="text">::set_preferred_motifs_formats( se ) ;
+      se-&gt;destroy() ;
+   }   
+   </font><font class="kw1">if</font><font class="text">( exp-&gt;has_entry( </font><font class="string">&quot;output_directories&quot;</font><font class="text"> ) )
+   {
+      DIR = exp-&gt;stringVector_data( </font><font class="string">&quot;output_directories&quot;</font><font class="text"> ) ;
+      set_resu_dirs( LIST, COMMON_ROOT, NAME ) ;
+      </font><font class="kw1">if</font><font class="text">( DIR.size() != LIST.size() )
+      {
+         </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_data_error(
+            exp,
+            </font><font class="string">&quot;output_directories&quot;</font><font class="text">,
+            </font><font class="string">&quot;should have the same size than \&quot;</font><font class="text">test_directories\</font><font class="string">&quot; table&quot;</font><font class="text"> ) ;
+      }     
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text"> default_root = </font><font class="string">&quot;PELICANS_TESTS&quot;</font><font class="text"> ;
+      set_resu_dirs( LIST, COMMON_ROOT, NAME ) ;
+      DIR = NAME ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;DIR.size() ; ++i )
+      {
+         </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> d = DIR(i) ;
+         DIR(i) = default_root+</font><font class="kw3">PEL_System</font><font class="text">::path_name_separator()+d ;
+      }
+      </font><font class="kw3">PEL_ASSERT</font><font class="text">( LIST.size() == DIR.size() ) ;
+   }
+   
+   </font><font class="kw1">if</font><font class="text">( exp-&gt;has_entry( </font><font class="string">&quot;files_to_ignore&quot;</font><font class="text"> ) )
+   {
+      GLOB_IGNORED = exp-&gt;stringVector_data( </font><font class="string">&quot;files_to_ignore&quot;</font><font class="text"> ) ;
+   }
+   
+   </font><font class="kw1">if</font><font class="text">( exp-&gt;has_entry( </font><font class="string">&quot;output_file&quot;</font><font class="text"> ) )
+   {
+      RESU = exp-&gt;string_data( </font><font class="string">&quot;output_file&quot;</font><font class="text"> ) ;
+   }
+   
+   </font><font class="kw1">if</font><font class="text">( exp-&gt;has_module( </font><font class="string">&quot;double_comparison&quot;</font><font class="text"> ) )
+   {
+      </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ee = 
+                         exp-&gt;create_subexplorer( </font><font class="kw1">this</font><font class="text"> ,</font><font class="string">&quot;double_comparison&quot;</font><font class="text"> ) ;
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; tt = ee-&gt;string_data( </font><font class="string">&quot;type&quot;</font><font class="text"> ) ;
+      ee-&gt;test_data_in( </font><font class="string">&quot;type&quot;</font><font class="text">, </font><font class="string">&quot;PEL_double_equality,exact&quot;</font><font class="text"> ) ;
+      </font><font class="kw1">if</font><font class="text">( tt == </font><font class="string">&quot;PEL_double_equality&quot;</font><font class="text"> )
+      {
+         DBL_EXACT = </font><font class="kw1">false</font><font class="text"> ;
+         MY_DBL_EPS = ee-&gt;double_data( </font><font class="string">&quot;dbl_eps&quot;</font><font class="text"> ) ;
+         ee-&gt;test_data( </font><font class="string">&quot;dbl_eps&quot;</font><font class="text">, </font><font class="string">&quot;dbl_eps&gt;=0.0&quot;</font><font class="text"> ) ;
+         MY_DBL_MIN = ee-&gt;double_data( </font><font class="string">&quot;dbl_min&quot;</font><font class="text"> ) ;
+         ee-&gt;test_data( </font><font class="string">&quot;dbl_min&quot;</font><font class="text">, </font><font class="string">&quot;dbl_min&gt;=0.0&quot;</font><font class="text"> ) ;
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( tt == </font><font class="string">&quot;exact&quot;</font><font class="text"> )
+      {
+         DBL_EXACT = </font><font class="kw1">true</font><font class="text"> ;
+      }
+   }   
+   </font><font class="kw3">PEL_Exec</font><font class="text">::add_variable_to_execution_context(
+                      </font><font class="kw3">PEL_Variable</font><font class="text">::object( </font><font class="string">&quot;SS_peltest_MODE&quot;</font><font class="text"> ),
+                      MODE ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw3">PEL_RunTest</font><font class="text">*
+</font><font class="kw3">PEL_RunTest</font><font class="text">:: create_replica_from_args( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                        </font><font class="kw3">stringVector</font><font class="text">&amp; args ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_RunTest:: create_replica_from_args&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw3">PEL_RunTest</font><font class="text">* result = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_RunTest</font><font class="text">( a_owner, args ) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_from_args_POST( result, a_owner, args ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw3">PEL_RunTest</font><font class="text">:: </font><font class="kw3">PEL_RunTest</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner, </font><font class="kw3">stringVector</font><font class="text">&amp; args )
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_Application</font><font class="text">( a_owner, 0 )
+   , VERBOSE( </font><font class="kw1">false</font><font class="text"> )
+   , TESTED_EXE( </font><font class="kw3">PEL_Exec</font><font class="text">::name_of_exe() )
+   , PELCMP_EXE( </font><font class="kw3">PEL_Exec</font><font class="text">::name_of_exe() )
+   , DATA_FILE( </font><font class="string">&quot;data.pel&quot;</font><font class="text"> )
+   , CONFIG_FILE( </font><font class="string">&quot;config.pel&quot;</font><font class="text"> )
+   , COMMON_ROOT( </font><font class="string">&quot;&quot;</font><font class="text"> )
+   , LIST( 0 )
+   , DIR_IGNORED( 0 )
+   , NAME( 0 )
+   , DIR( 0 )
+   , OPTIONS( 0 )
+   , ACTION( ignore )
+   , VERIFY( </font><font class="kw1">false</font><font class="text"> )
+   , PATTERN_FILE( </font><font class="string">&quot;&quot;</font><font class="text"> )
+   , TEST_RESULT( test_successful )
+   , NB_SUCCESSFUL( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+   , NB_AMBIGUOUS( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+   , NB_FAILED( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+   , GLOB_IGNORED( 0 )
+   , RESU( </font><font class="string">&quot;resu&quot;</font><font class="text"> )
+   , MPI_RUN( </font><font class="string">&quot;&quot;</font><font class="text"> )
+   , DBL_EXACT( </font><font class="kw1">false</font><font class="text"> )
+   , MY_DBL_EPS( </font><font class="kw3">PEL</font><font class="text">::bad_double() )
+   , MY_DBL_MIN( </font><font class="kw3">PEL</font><font class="text">::bad_double() )
+   , MODE( </font><font class="kw3">PEL_String</font><font class="text">::create( 0, </font><font class="string">&quot;&quot;</font><font class="text"> ) )
+{
+   set_mpi_run() ;
+   
+   </font><font class="kw1">while</font><font class="text">( args.size() != 0 )
+   {
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> arg = args( 0 ) ;
+      args.remove_at( 0 ) ;
+      </font><font class="kw1">if</font><font class="text">( arg == </font><font class="string">&quot;-pattern_build&quot;</font><font class="text"> )
+      {
+         </font><font class="kw1">if</font><font class="text">( args.size()==0 ) notify_error_in_arguments() ;
+         PATTERN_FILE = args( 0 ) ;
+         args.remove_at( 0 ) ;
+         ACTION = build ;
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( arg == </font><font class="string">&quot;-pattern_verify&quot;</font><font class="text"> )
+      {
+         </font><font class="kw1">if</font><font class="text">( args.size()==0 ) notify_error_in_arguments() ;
+         PATTERN_FILE = args( 0 ) ;
+         args.remove_at( 0 ) ;
+         ACTION = verify ;
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( arg == </font><font class="string">&quot;-pattern_build_then_verify&quot;</font><font class="text"> )
+      {
+         </font><font class="kw1">if</font><font class="text">( args.size()==0 ) notify_error_in_arguments() ;
+         PATTERN_FILE = args( 0 ) ;
+         args.remove_at( 0 ) ;
+         ACTION = build_then_verify ;
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( arg == </font><font class="string">&quot;-post&quot;</font><font class="text"> )
+      {
+         OPTIONS.append( </font><font class="string">&quot;-Cpost&quot;</font><font class="text"> ) ;
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( arg == </font><font class="string">&quot;-verbose&quot;</font><font class="text"> )
+      {
+         VERBOSE = </font><font class="kw1">true</font><font class="text"> ;
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( arg == </font><font class="string">&quot;-all&quot;</font><font class="text"> )
+      {
+         OPTIONS.append( </font><font class="string">&quot;-Call&quot;</font><font class="text"> ) ;
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( arg == </font><font class="string">&quot;-test_directories&quot;</font><font class="text"> )
+      {
+         </font><font class="kw1">while</font><font class="text">( args.size() != 0 &amp;&amp; args(0)[0] != </font><font class="string">'-'</font><font class="text"> )
+         {
+            LIST.append( args(0) ) ;
+            args.remove_at( 0 ) ;
+         }
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( arg == </font><font class="string">&quot;-files_to_ignore&quot;</font><font class="text"> )
+      {
+         </font><font class="kw1">while</font><font class="text">( args.size() != 0 &amp;&amp; args(0)[0] != </font><font class="string">'-'</font><font class="text"> )
+         {
+            GLOB_IGNORED.append( args(0) ) ;
+            args.remove_at( 0 ) ;
+         }
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( arg == </font><font class="string">&quot;-output_file&quot;</font><font class="text"> )
+      {
+         </font><font class="kw1">if</font><font class="text">( args.size()==0 ) notify_error_in_arguments() ;
+         RESU = args( 0 ) ;
+         args.remove_at( 0 ) ;
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( arg == </font><font class="string">&quot;-output_directories&quot;</font><font class="text"> )
+      {
+         </font><font class="kw1">while</font><font class="text">( args.size() != 0 &amp;&amp; args(0)[0] != </font><font class="string">'-'</font><font class="text"> )
+         {
+            DIR.append( args(0) ) ;
+            args.remove_at( 0 ) ;
+         }
+         set_resu_dirs( LIST, COMMON_ROOT, NAME ) ;
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( arg == </font><font class="string">&quot;-executable&quot;</font><font class="text"> )
+      {
+         </font><font class="kw1">if</font><font class="text">( args.size()==0 ) notify_error_in_arguments() ;
+         TESTED_EXE = args( 0 ) ;
+         args.remove_at( 0 ) ;
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( arg == </font><font class="string">&quot;-exact&quot;</font><font class="text"> )
+      {
+         DBL_EXACT = </font><font class="kw1">true</font><font class="text"> ;
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( arg == </font><font class="string">&quot;-dbl_eps&quot;</font><font class="text"> )
+      {
+         </font><font class="kw1">if</font><font class="text">( args.size()==0 ) notify_error_in_arguments() ;
+         </font><font class="kw2">std</font><font class="text">::istringstream is( args( 0 ) ) ;
+         is &gt;&gt; MY_DBL_EPS ;         
+         args.remove_at( 0 ) ;
+         </font><font class="kw1">if</font><font class="text">( MY_DBL_EPS&lt;0.0 ) 
+         {
+            notify_error_in_arguments() ;
+         }
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( arg == </font><font class="string">&quot;-dbl_min&quot;</font><font class="text"> )
+      {
+         </font><font class="kw1">if</font><font class="text">( args.size()==0 ) notify_error_in_arguments() ;
+         </font><font class="kw2">std</font><font class="text">::istringstream is( args( 0 ) ) ;
+         is &gt;&gt; MY_DBL_MIN ;         
+         args.remove_at( 0 ) ;
+         </font><font class="kw1">if</font><font class="text">( MY_DBL_MIN&lt;0.0 ) 
+         {
+            notify_error_in_arguments() ;
+         }
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( arg == </font><font class="string">&quot;-mpirun&quot;</font><font class="text"> )
+      {
+         </font><font class="kw1">if</font><font class="text">( args.size()==0 ) notify_error_in_arguments() ;
+         MPI_RUN = args( 0 ) ;
+         args.remove_at( 0 ) ;
+      }
+      </font><font class="kw1">else
+</font><font class="text">      {
+         notify_error_in_arguments() ;
+      }
+   }
+   
+   </font><font class="kw1">if</font><font class="text">( LIST.size() == 0 )
+   {
+      notify_error_in_arguments() ;
+   }
+   </font><font class="kw1">if</font><font class="text">( DIR.size() == 0 )
+   {
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text"> default_root = </font><font class="string">&quot;PELICANS_TESTS&quot;</font><font class="text"> ;
+      set_resu_dirs( LIST, COMMON_ROOT, NAME ) ;
+      DIR = NAME ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;DIR.size() ; ++i )
+      {
+         </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> d = DIR(i) ;
+         DIR(i) = default_root+</font><font class="kw3">PEL_System</font><font class="text">::path_name_separator()+d ;
+      }
+   }
+   
+   </font><font class="kw1">if</font><font class="text">( ! ( ( MY_DBL_EPS==</font><font class="kw3">PEL</font><font class="text">::bad_double() &amp;&amp; MY_DBL_MIN==</font><font class="kw3">PEL</font><font class="text">::bad_double() ) ||
+           ( MY_DBL_EPS!=</font><font class="kw3">PEL</font><font class="text">::bad_double() &amp;&amp; MY_DBL_MIN!=</font><font class="kw3">PEL</font><font class="text">::bad_double() ) ) )
+      notify_error_in_arguments() ;
+   </font><font class="kw1">if</font><font class="text">( DBL_EXACT &amp;&amp; ( MY_DBL_EPS!=</font><font class="kw3">PEL</font><font class="text">::bad_double() || MY_DBL_MIN!=</font><font class="kw3">PEL</font><font class="text">::bad_double() ) )
+      notify_error_in_arguments() ;      
+   </font><font class="kw1">if</font><font class="text">( DIR.size() != LIST.size() )
+   {
+      notify_error_in_arguments() ;
+   }
+
+   </font><font class="kw3">PEL_Exec</font><font class="text">::add_variable_to_execution_context(
+                      </font><font class="kw3">PEL_Variable</font><font class="text">::object( </font><font class="string">&quot;SS_peltest_MODE&quot;</font><font class="text"> ),
+                      MODE ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw3">PEL_RunTest</font><font class="text">:: ~</font><font class="kw3">PEL_RunTest</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_RunTest</font><font class="text">:: run( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_RunTest::run&quot;</font><font class="text"> ) ;   
+
+   out() &lt;&lt; </font><font class="string">&quot;executable : &quot;</font><font class="text"> &lt;&lt; TESTED_EXE &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   out() &lt;&lt; </font><font class="string">&quot;tests      : &quot;</font><font class="text"> &lt;&lt; COMMON_ROOT &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+
+   NB_SUCCESSFUL = 0 ;
+   NB_AMBIGUOUS = 0 ;
+   NB_FAILED = 0 ;
+   
+   VERIFY = ( ACTION == verify ) ;
+   do_tests() ;
+   
+   </font><font class="kw1">if</font><font class="text">( ACTION == build_then_verify )
+   {
+      VERIFY = </font><font class="kw1">true</font><font class="text"> ;
+      do_tests() ;
+   }
+   
+   out() &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text"> stars( 50, </font><font class="string">'*'</font><font class="text"> ) ;
+   out() &lt;&lt; stars &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   out() &lt;&lt; </font><font class="string">&quot;* number of successful tests: &quot;</font><font class="text"> &lt;&lt; NB_SUCCESSFUL &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   out() &lt;&lt; </font><font class="string">&quot;* number of  ambiguous tests: &quot;</font><font class="text"> &lt;&lt; NB_AMBIGUOUS &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   out() &lt;&lt; </font><font class="string">&quot;* number of    failing tests: &quot;</font><font class="text"> &lt;&lt; NB_FAILED &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   out() &lt;&lt; stars &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   out() &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_RunTest</font><font class="text">:: do_tests( </font><font class="kw1">void</font><font class="text"> ) 
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_RunTest::do_tests&quot;</font><font class="text"> ) ;
+   </font><font class="kw1">if</font><font class="text">( VERIFY )
+   {
+      MODE-&gt;</font><font class="kw2">set</font><font class="text">( </font><font class="string">&quot;verify&quot;</font><font class="text"> ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      MODE-&gt;</font><font class="kw2">set</font><font class="text">( </font><font class="string">&quot;execution&quot;</font><font class="text"> ) ;
+   }
+   
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;LIST.size() ; i++ )
+   {
+      </font><font class="kw3">stringVector</font><font class="text"> datas( 0 ) ;
+      </font><font class="kw3">PEL_System</font><font class="text">::find( LIST( i ), DATA_FILE, datas, </font><font class="kw1">true</font><font class="text"> ) ;
+      </font><font class="kw1">if</font><font class="text">( VERBOSE )
+         </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="string">&quot;List of file &quot;</font><font class="text">&lt;&lt;DATA_FILE&lt;&lt;</font><font class="string">&quot; in &quot;</font><font class="text">&lt;&lt;LIST(i)
+                    &lt;&lt;</font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text">&lt;&lt;datas&lt;&lt;</font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text">&lt;&lt;</font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text">  ;
+      
+      datas.sort() ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; j&lt;datas.size() ; j++ )
+      {
+         </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; data_file = datas( j ) ;
+         </font><font class="kw1">bool</font><font class="text"> ignored = </font><font class="kw1">false</font><font class="text"> ;
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> kk=0 ; kk&lt;DIR_IGNORED.size() ; ++kk )
+         {
+            </font><font class="kw1">if</font><font class="text">( data_file.find( DIR_IGNORED( kk ) ) &lt; data_file.length() )
+            {
+               ignored = </font><font class="kw1">true</font><font class="text"> ;
+               </font><font class="kw1">break</font><font class="text"> ;
+            }
+         }
+         
+         </font><font class="kw1">if</font><font class="text">( !ignored ) do_test( LIST( i ), NAME( i ), DIR( i ), datas( j ) ) ;
+      }
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_RunTest</font><font class="text">:: do_test( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; base,
+                       </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; print_name,
+                       </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; test_directory,
+                       </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; filename ) 
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_RunTest::do_test&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( filename.find( base )==0 ) ;
+   
+   TEST_RESULT = test_successful ;
+ 
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text"> tirets( 50, </font><font class="string">'-'</font><font class="text"> ) ;
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text"> rel = filename.substr( base.length()+1,
+                                            filename.length()-base.length()-1 ) ;
+
+   </font><font class="comment">// Banner: begin test:
+</font><font class="text">   out() &lt;&lt; tirets &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> &lt;&lt; </font><font class="string">&quot;| &quot;</font><font class="text"> ;
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> nn = print_name ;
+   </font><font class="kw1">if</font><font class="text">( </font><font class="kw3">PEL_System</font><font class="text">::dirname( rel ) != </font><font class="string">&quot;.&quot;</font><font class="text"> )
+   {
+      nn += </font><font class="kw3">PEL_System</font><font class="text">::path_name_separator() + </font><font class="kw3">PEL_System</font><font class="text">::dirname( rel ) ;
+   }
+   </font><font class="kw1">if</font><font class="text">( VERIFY )
+   {
+      out() &lt;&lt; </font><font class="string">&quot;verifying &quot;</font><font class="text"> &lt;&lt; </font><font class="kw3">PEL_System</font><font class="text">::basename( filename )
+            &lt;&lt; </font><font class="string">&quot; of &quot;</font><font class="text"> &lt;&lt; nn &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      out() &lt;&lt; nn &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   }
+   out() &lt;&lt; tirets &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+
+   </font><font class="comment">// Configuration data base:
+</font><font class="text">   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* conf =
+                         create_config( 0, </font><font class="kw3">PEL_System</font><font class="text">::dirname( filename ) ) ;
+   </font><font class="kw1">if</font><font class="text">( conf-&gt;has_entry( </font><font class="string">&quot;condition_for_execution&quot;</font><font class="text"> ) )
+   {
+      </font><font class="kw1">bool</font><font class="text"> do_it = conf-&gt;bool_data( </font><font class="string">&quot;condition_for_execution&quot;</font><font class="text">,
+                                    </font><font class="kw3">PEL_Exec</font><font class="text">::execution_context() ) ;
+      </font><font class="kw1">if</font><font class="text">( !do_it )
+      {
+         out() &lt;&lt; </font><font class="string">&quot;| Test not executed&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> &lt;&lt; tirets &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+         conf-&gt;destroy() ; conf = 0 ;
+         </font><font class="kw1">return</font><font class="text"> ; </font><font class="comment">// &lt;----------
+</font><font class="text">      }
+   }
+   
+   </font><font class="comment">// Build command line:
+</font><font class="text">   </font><font class="kw3">stringVector</font><font class="text"> cmd( 0 ) ;
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> dir ;
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> output_file ;
+      
+   </font><font class="kw1">bool</font><font class="text"> </font><font class="kw1">const</font><font class="text"> parallel = conf-&gt;has_entry( </font><font class="string">&quot;mpi_options&quot;</font><font class="text"> ) ;
+   </font><font class="comment">// mpi:
+</font><font class="text">   </font><font class="kw1">if</font><font class="text">( parallel )
+   {
+      </font><font class="comment">// Check mpi:
+</font><font class="text">      </font><font class="kw1">if</font><font class="text">( MPI_RUN.empty() )
+      {
+         notify_test_failure( </font><font class="string">&quot;Parallel test not allowed: no MPI tools defined&quot;</font><font class="text"> ) ;
+      }
+      cmd.append( MPI_RUN ) ;
+      </font><font class="kw3">stringVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; opts = conf-&gt;stringVector_data( </font><font class="string">&quot;mpi_options&quot;</font><font class="text"> ) ;
+
+      </font><font class="kw1">if</font><font class="text">( conf-&gt;has_entry( </font><font class="string">&quot;mpi_machinefile&quot;</font><font class="text"> ) )
+      {
+         </font><font class="kw3">stringVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; mm = 
+            conf-&gt;stringVector_data( </font><font class="string">&quot;mpi_machinefile&quot;</font><font class="text"> ) ;
+         check_mpi_opts( mm, opts ) ;
+         </font><font class="kw2">std</font><font class="text">::ofstream ff( </font><font class="string">&quot;machines.tmp&quot;</font><font class="text"> ) ;
+         </font><font class="kw1">if</font><font class="text">( !ff ) </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_file_handling( </font><font class="string">&quot;machines.tmp&quot;</font><font class="text">,
+                                                             </font><font class="string">&quot;open&quot;</font><font class="text"> ) ;
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;mm.size() ; ++i )
+            ff &lt;&lt; mm(i) &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+         cmd.append( </font><font class="string">&quot;-machinefile&quot;</font><font class="text"> ) ;
+         cmd.append( </font><font class="kw3">PEL_System</font><font class="text">::absolute_path( </font><font class="string">&quot;machines.tmp&quot;</font><font class="text"> ) ) ;
+      }
+
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;opts.size() ; ++i ) cmd.append( opts(i) ) ;
+   }
+   </font><font class="kw1">if</font><font class="text">( VERIFY ) 
+   {
+      cmd.append( </font><font class="kw3">PEL_System</font><font class="text">::absolute_path( PELCMP_EXE ) ) ;
+      cmd.append( </font><font class="string">&quot;-A&quot;</font><font class="text"> ) ;
+      cmd.append( </font><font class="string">&quot;check&quot;</font><font class="text"> ) ;
+      cmd.append( </font><font class="string">&quot;-s&quot;</font><font class="text"> ) ;
+      cmd.append( PATTERN_FILE ) ;
+      cmd.append( </font><font class="kw3">PEL_System</font><font class="text">::absolute_path( filename ) ) ;
+      dir = </font><font class="kw3">PEL_System</font><font class="text">::dirname( </font><font class="kw3">PEL_System</font><font class="text">::absolute_path( filename ) ) ;
+      output_file = </font><font class="string">&quot;&quot;</font><font class="text"> ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      output_file = RESU ;
+      dir = test_directory + </font><font class="kw3">PEL_System</font><font class="text">::path_name_separator()
+                           + </font><font class="kw3">PEL_System</font><font class="text">::dirname( rel ) ;
+      </font><font class="kw3">PEL_System</font><font class="text">::mkdir( dir ) ;
+      </font><font class="kw3">stringVector</font><font class="text"> oldfiles( 0 ) ;
+      </font><font class="kw3">PEL_System</font><font class="text">::find( dir, </font><font class="string">&quot;*&quot;</font><font class="text">, oldfiles, </font><font class="kw1">false</font><font class="text"> ) ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;oldfiles.size() ; ++i )
+      {
+         </font><font class="kw3">PEL_System</font><font class="text">::erase( oldfiles( i ) ) ;
+      }
+      
+      </font><font class="comment">// Executable:
+</font><font class="text">      {
+         cmd.append( </font><font class="kw3">PEL_System</font><font class="text">::absolute_path( TESTED_EXE ) ) ;
+      }
+      </font><font class="comment">// Data file:
+</font><font class="text">      {
+         cmd.append( </font><font class="kw3">PEL_System</font><font class="text">::absolute_path( filename ) ) ;
+      }
+      </font><font class="comment">// Output file:
+</font><font class="text">      </font><font class="kw1">if</font><font class="text">( parallel )
+      {
+         cmd.append( </font><font class="string">&quot;-o&quot;</font><font class="text"> ) ;
+         cmd.append( output_file ) ;
+         output_file = </font><font class="string">&quot;&quot;</font><font class="text"> ;
+      }
+      </font><font class="comment">// Verbose flag:
+</font><font class="text">      {
+         cmd.append( </font><font class="string">&quot;-v&quot;</font><font class="text"> ) ;
+      }
+      </font><font class="comment">// Pattern built:
+</font><font class="text">      </font><font class="kw1">if</font><font class="text">( !PATTERN_FILE.empty() )
+      {
+         cmd.append( </font><font class="string">&quot;-build_pattern&quot;</font><font class="text"> ) ;
+         cmd.append( PATTERN_FILE ) ;
+      }
+      </font><font class="comment">// Additional options:
+</font><font class="text">      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;OPTIONS.size() ; ++i )
+      {
+         cmd.append( OPTIONS(i) ) ;
+      }
+      </font><font class="kw1">if</font><font class="text">( conf-&gt;has_entry( </font><font class="string">&quot;run_options&quot;</font><font class="text"> ) ) 
+      {
+         </font><font class="kw3">stringVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; extra = conf-&gt;stringVector_data( </font><font class="string">&quot;run_options&quot;</font><font class="text"> ) ;
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;extra.size() ; ++i )
+         {
+            cmd.append( extra(i) ) ;
+         }
+      }
+   }
+   
+   </font><font class="kw1">if</font><font class="text">( VERBOSE ) out() &lt;&lt; </font><font class="string">&quot;| Running : &quot;</font><font class="text"> &lt;&lt; cmd &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   
+   </font><font class="kw1">if</font><font class="text">( TEST_RESULT == test_successful )
+   {
+      </font><font class="kw1">int</font><font class="text"> res = </font><font class="kw3">PEL_System</font><font class="text">::run( cmd, dir, output_file ) ;
+
+      do_report( conf,
+                 res,
+                 </font><font class="kw3">PEL_System</font><font class="text">::dirname( </font><font class="kw3">PEL_System</font><font class="text">::absolute_path( filename ) ),
+                 dir,
+                 </font><font class="kw3">PEL_System</font><font class="text">::basename( filename ) ) ;
+   }
+
+   </font><font class="comment">// Banner: test diagnostic
+</font><font class="text">   </font><font class="kw1">if</font><font class="text">( TEST_RESULT == test_successful )
+   {
+      out() &lt;&lt; </font><font class="string">&quot;| Test is successful&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+      ++NB_SUCCESSFUL ;
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( TEST_RESULT == test_failed )
+   {
+      
+      out() &lt;&lt; </font><font class="string">&quot;| Test failed&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+      </font><font class="kw3">PEL_Exec</font><font class="text">::set_exit_code( 1 ) ;
+      ++NB_FAILED ;
+   }
+   </font><font class="kw1">else</font><font class="text">  </font><font class="kw1">if</font><font class="text">( TEST_RESULT == test_ambiguous )
+   {
+      out() &lt;&lt; </font><font class="string">&quot;| Strict comparison failed&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+      out() &lt;&lt; </font><font class="string">&quot;| Test success ?... to be analyzed...&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+      </font><font class="kw1">if</font><font class="text">( </font><font class="kw3">PEL_Exec</font><font class="text">::exit_code() == 0 )
+      {
+         </font><font class="kw3">PEL_Exec</font><font class="text">::set_exit_code( 2 ) ;
+      }
+      ++NB_AMBIGUOUS ;
+   }    
+   out() &lt;&lt; tirets &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+
+   </font><font class="kw3">PEL_System</font><font class="text">::erase( </font><font class="string">&quot;machines.tmp&quot;</font><font class="text"> ) ;
+   conf-&gt;destroy() ; conf = 0 ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">*
+</font><font class="kw3">PEL_RunTest</font><font class="text">:: create_config( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                             </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; base ) 
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_RunTest::create_config&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( !base.empty() ) ;
+
+   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* result ;
+   </font><font class="kw3">PEL_Module</font><font class="text">* mod_result ;
+   
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text"> conf_file =
+               base + </font><font class="kw3">PEL_System</font><font class="text">::path_name_separator() + CONFIG_FILE ;
+   
+   </font><font class="kw2">std</font><font class="text">::ifstream file( conf_file.c_str() ) ;
+   </font><font class="kw1">if</font><font class="text">( file.good() )
+   {
+      file.close() ;
+      </font><font class="kw1">if</font><font class="text">( VERBOSE )
+      {
+         out() &lt;&lt; </font><font class="string">&quot;| reading configuration file: &quot;</font><font class="text"> &lt;&lt;  conf_file &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+      }
+      </font><font class="kw3">PEL_Module</font><font class="text">* mod = </font><font class="kw3">PEL_Module</font><font class="text">::create( 0, </font><font class="string">&quot;main&quot;</font><font class="text">, conf_file ) ;
+      </font><font class="kw3">PEL_ModuleIterator</font><font class="text"> * it = mod-&gt;create_module_iterator(0) ;
+      it-&gt;start() ;
+      mod_result = it-&gt;item() ;
+      result = </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">::create( a_owner, mod_result ) ;
+      mod-&gt;set_owner( result ) ;
+      it-&gt;destroy() ; it = 0 ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      mod_result = </font><font class="kw3">PEL_Module</font><font class="text">::create( 0, </font><font class="string">&quot;run_test&quot;</font><font class="text"> ) ;
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text"> old_conf_file =
+                 base + </font><font class="kw3">PEL_System</font><font class="text">::path_name_separator() + </font><font class="string">&quot;pel_test.pl&quot;</font><font class="text"> ;
+      </font><font class="kw2">std</font><font class="text">::ifstream old_file( old_conf_file.c_str() ) ;
+
+      </font><font class="comment">// Try to read obsolete perl configuration file:
+</font><font class="text">      </font><font class="kw1">if</font><font class="text">( old_file.good() )
+      {
+         </font><font class="kw1">if</font><font class="text">( VERBOSE )
+         {
+            out() &lt;&lt; </font><font class="string">&quot;| reading configuration file: &quot;</font><font class="text"> &lt;&lt;  old_conf_file &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+         }
+         out() &lt;&lt; </font><font class="string">&quot;| WARNING: configuration file \&quot;</font><font class="text">pel_test.pl\</font><font class="string">&quot; is obsolete&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+         </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> line ;
+         </font><font class="kw1">while</font><font class="text">( !old_file.eof() )
+         {
+            getline( old_file, line ) ;
+            </font><font class="kw1">if</font><font class="text">( !old_file.eof() )
+            {
+               </font><font class="kw1">if</font><font class="text">( !old_file.good() )
+               {
+                  </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain(
+                     </font><font class="string">&quot;*** syntax error file: \&quot;&quot;+old_conf_file+&quot;</font><font class="text">\</font><font class="string">&quot;&quot;</font><font class="text"> ) ;
+               }
+               </font><font class="kw1">if</font><font class="text">( line.find( </font><font class="string">&quot;$pel_run_options&quot;</font><font class="text"> )==0 )
+               {
+                  </font><font class="kw2">size_t</font><font class="text"> idx = line.find( </font><font class="string">&quot;\&quot;&quot; ) ;
+                  size_t jdx = line.rfind( &quot;</font><font class="text">\</font><font class="string">&quot;&quot;</font><font class="text"> ) ;
+                  </font><font class="kw1">if</font><font class="text">( !( idx &lt; jdx &amp;&amp; jdx &lt; line.length() ) )
+                  {
+                     PEL_RunTest_ERROR:: n0( old_conf_file ) ;
+                  }
+                  </font><font class="kw3">stringVector</font><font class="text"> extra(1) ;
+                  extra(0) = line.substr( idx+1, jdx-idx-1 ) ;
+                  mod_result-&gt;add_entry(
+                     </font><font class="string">&quot;run_options&quot;</font><font class="text">,
+                     </font><font class="kw3">PEL_StringVector</font><font class="text">::create( mod_result, extra ) ) ;
+               }
+               </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( line.find( </font><font class="string">&quot;@files_to_ignore&quot;</font><font class="text"> )==0 )
+               {
+                  </font><font class="kw2">size_t</font><font class="text"> idx = line.find( </font><font class="string">&quot;(&quot;</font><font class="text"> ) ;
+                  </font><font class="kw2">size_t</font><font class="text"> jdx = line.rfind( </font><font class="string">&quot;)&quot;</font><font class="text"> ) ;
+                  </font><font class="kw1">if</font><font class="text">( !( idx &lt; jdx &amp;&amp; jdx &lt; line.length() ) )
+                  {
+                     PEL_RunTest_ERROR:: n0( old_conf_file ) ;
+                  }
+                  </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> list = line.substr( idx+1, jdx-idx-1 ) ;
+                  </font><font class="kw2">size_t</font><font class="text"> dx = 0 ;
+                  </font><font class="kw2">size_t</font><font class="text"> odx = 0 ;
+                  </font><font class="kw3">stringVector</font><font class="text"> list_of_files(0) ;
+                  </font><font class="kw1">while</font><font class="text">( ( dx = list.find( </font><font class="string">&quot;,&quot;</font><font class="text">, odx ) ) &lt; list.length() )
+                  {
+                     </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> afile = list.substr( odx, dx-odx ) ;
+                     odx = dx+1 ;
+                     </font><font class="kw2">size_t</font><font class="text"> iidx = afile.find( </font><font class="string">&quot;\&quot;&quot; ) ;
+                     size_t jjdx = afile.rfind( &quot;</font><font class="text">\</font><font class="string">&quot;&quot;</font><font class="text"> ) ;
+                     </font><font class="kw1">if</font><font class="text">( !( iidx &lt; jjdx &amp;&amp; jjdx &lt; afile.length() ) )
+                     {
+                        PEL_RunTest_ERROR:: n0( old_conf_file ) ;
+                     }
+                     list_of_files.extend( afile.substr( iidx+1, jjdx-iidx-1 ) ) ;
+                  }
+                  </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> afile = list.substr( odx, list.length()-odx ) ;
+                  </font><font class="kw2">size_t</font><font class="text"> iidx = afile.find( </font><font class="string">&quot;\&quot;&quot; ) ;
+                  size_t jjdx = afile.rfind( &quot;</font><font class="text">\</font><font class="string">&quot;&quot;</font><font class="text"> ) ;
+                  </font><font class="kw1">if</font><font class="text">( !( iidx &lt; jjdx &amp;&amp; jjdx &lt; afile.length() ) )
+                  {
+                     PEL_RunTest_ERROR:: n0( old_conf_file ) ;
+                  }
+                  list_of_files.extend( afile.substr( iidx+1, jjdx-iidx-1 ) ) ;
+                  </font><font class="kw1">if</font><font class="text">( !( list_of_files.size() &gt; 0 ) )
+                  {
+                     PEL_RunTest_ERROR:: n0( old_conf_file ) ;
+                  }
+                  mod_result-&gt;add_entry(
+                     </font><font class="string">&quot;files_to_ignore&quot;</font><font class="text">,
+                     </font><font class="kw3">PEL_StringVector</font><font class="text">::create( mod_result, list_of_files ) ) ;
+               }
+            }
+         }
+      }
+      </font><font class="kw3">stringVector</font><font class="text"> error(0) ;
+      </font><font class="kw3">PEL_System</font><font class="text">::find( base, </font><font class="string">&quot;expected.err*&quot;</font><font class="text">, error, </font><font class="kw1">false</font><font class="text"> ) ;
+      </font><font class="kw1">if</font><font class="text">( error.size() != 0 )
+      {
+         mod_result-&gt;add_entry( </font><font class="string">&quot;failure_expected&quot;</font><font class="text">,
+                                </font><font class="kw3">PEL_Bool</font><font class="text">::create( mod_result, </font><font class="kw1">true</font><font class="text"> ) ) ;
+      }
+      result = </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">::create( a_owner, mod_result ) ;
+      mod_result-&gt;set_owner( result ) ;
+   }
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result !=0 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;owner() == a_owner ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_RunTest</font><font class="text">:: do_report( </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* conf,
+                         </font><font class="kw1">int</font><font class="text"> err_code,
+                         </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; base_dir,
+                         </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; test_dir,
+                         </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; filename ) 
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_RunTest:: do_report&quot;</font><font class="text"> ) ;
+   </font><font class="kw1">bool</font><font class="text"> failure = !VERIFY &amp;&amp; ( conf-&gt;has_entry( </font><font class="string">&quot;failure_expected&quot;</font><font class="text"> ) &amp;&amp;
+                               conf-&gt;bool_data( </font><font class="string">&quot;failure_expected&quot;</font><font class="text"> ) ) ;
+   
+   </font><font class="kw1">if</font><font class="text">( err_code!=0 &amp;&amp; !failure )
+   {
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> is ;
+      is &lt;&lt; </font><font class="string">&quot;Test execution failed : (exit code &quot;</font><font class="text"> ;
+      is &lt;&lt; err_code &lt;&lt; </font><font class="string">&quot;)&quot;</font><font class="text"> ;
+      notify_test_failure( is.str() ) ;
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( err_code==0 &amp;&amp; failure )
+   {
+      notify_test_failure( </font><font class="string">&quot;Test execution must fail, and it does not !&quot;</font><font class="text"> ) ;
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( !VERIFY ) 
+   {
+      </font><font class="kw3">stringVector</font><font class="text"> generated(0) ;
+      </font><font class="kw3">PEL_System</font><font class="text">::find( test_dir, </font><font class="string">&quot;*&quot;</font><font class="text">, generated, </font><font class="kw1">false</font><font class="text"> ) ;
+      </font><font class="kw3">stringVector</font><font class="text"> original(0) ;
+      </font><font class="kw3">PEL_System</font><font class="text">::find( base_dir, </font><font class="string">&quot;*&quot;</font><font class="text">, original, </font><font class="kw1">false</font><font class="text"> ) ;
+      </font><font class="kw3">stringVector</font><font class="text"> ignored(0) ;
+      </font><font class="kw1">if</font><font class="text">( conf-&gt;has_entry( </font><font class="string">&quot;files_to_ignore&quot;</font><font class="text"> ) )
+         ignored  = conf-&gt;stringVector_data( </font><font class="string">&quot;files_to_ignore&quot;</font><font class="text"> ) ;
+      </font><font class="kw1">bool</font><font class="text"> resu_build = </font><font class="kw1">false</font><font class="text"> ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; j&lt;generated.size() ; ++j )
+      {
+         </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> fg = </font><font class="kw3">PEL_System</font><font class="text">::basename( generated(j) ) ;
+         </font><font class="kw1">if</font><font class="text">( VERBOSE ) out() &lt;&lt; </font><font class="string">&quot;| checking file &quot;</font><font class="text"> &lt;&lt; fg &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+         </font><font class="kw1">if</font><font class="text">( ignored.has( fg ) )
+         {
+            ignored.remove_at( ignored.index_of( fg ) ) ;
+            </font><font class="kw1">if</font><font class="text">( VERBOSE ) out() &lt;&lt; </font><font class="string">&quot;|    ignored&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+         }
+         </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( GLOB_IGNORED.has( fg ) )
+         {
+            </font><font class="kw1">if</font><font class="text">( VERBOSE ) out() &lt;&lt; </font><font class="string">&quot;|    ignored&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+         }
+         </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( fg == RESU || fg.find( RESU + </font><font class="string">&quot;.&quot;</font><font class="text"> )==0 )
+         {
+            resu_build = </font><font class="kw1">true</font><font class="text"> ;
+         }
+         </font><font class="kw1">else
+</font><font class="text">         {
+            </font><font class="kw1">bool</font><font class="text"> found = </font><font class="kw1">false</font><font class="text"> ;
+            </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; !found &amp;&amp; i&lt;original.size() ; i++ )
+            {
+               </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> fn = </font><font class="kw3">PEL_System</font><font class="text">::basename( original(i) ) ;
+               found = ( fn == fg ) ;
+               </font><font class="kw1">if</font><font class="text">( found )
+               {
+                  </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ee = specific_option( conf, fg ) ;
+                  </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> format = </font><font class="string">&quot;UNKNOWN&quot;</font><font class="text"> ;
+
+                  </font><font class="kw3">PEL_Comparator</font><font class="text">::detect_file_format( ee, fg, format ) ;
+                  do_compare( original(i), generated(j), ee, format ) ;
+                  
+               }
+            }
+            </font><font class="kw1">if</font><font class="text">( !found ) notify_test_failure( </font><font class="string">&quot;Unknown generated file: &quot;</font><font class="text">+fg ) ;
+         }
+      }
+      </font><font class="kw1">if</font><font class="text">( !resu_build )
+      {
+         notify_test_failure( </font><font class="string">&quot;No output file &quot;</font><font class="text"> + RESU + </font><font class="string">&quot; generated&quot;</font><font class="text"> ) ;
+      }
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; j&lt;ignored.size() ; ++j )
+      {
+         notify_test_failure( </font><font class="string">&quot;File not generated: &quot;</font><font class="text">+ignored(j) ) ;
+      }
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">PEL_RunTest</font><font class="text">:: specific_option( </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* conf,
+                               </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; filename ) 
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_RunTest:: specific_option&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result = 0 ;
+
+   </font><font class="kw1">if</font><font class="text">( conf-&gt;has_module( </font><font class="string">&quot;PEL_Comparator&quot;</font><font class="text"> ) ) 
+   {
+      </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* e = conf-&gt;create_subexplorer( 0, </font><font class="string">&quot;PEL_Comparator&quot;</font><font class="text"> ) ;
+      e-&gt;start_module_iterator() ;
+      </font><font class="kw1">for</font><font class="text">( ; e-&gt;is_valid_module() ; e-&gt;go_next_module() ) 
+      {
+         </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ee = e-&gt;create_subexplorer( e ) ;
+         </font><font class="kw1">if</font><font class="text">( ee-&gt;string_data( </font><font class="string">&quot;filename&quot;</font><font class="text"> ) == filename ) 
+         {
+            result = ee-&gt;create_clone( </font><font class="kw1">this</font><font class="text"> ) ;
+            </font><font class="kw1">break</font><font class="text"> ;
+         }
+      }
+      e-&gt;destroy() ;
+   }
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( result==0 ||
+              ( result-&gt;owner()==</font><font class="kw1">this</font><font class="text"> &amp;&amp;
+                result-&gt;string_data( </font><font class="string">&quot;filename&quot;</font><font class="text"> )==filename ) ) ;
+   </font><font class="kw1">return</font><font class="text"> result ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_RunTest</font><font class="text">:: do_compare( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; first,
+                          </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; second,
+                          </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* options,
+                          </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; format ) 
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_RunTest:: do_compare&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">stringVector</font><font class="text"> cmd(5) ;
+   cmd(0) = </font><font class="kw3">PEL_System</font><font class="text">::absolute_path( PELCMP_EXE ) ;
+   cmd(1) = </font><font class="string">&quot;-A&quot;</font><font class="text">;
+   cmd(2) = </font><font class="string">&quot;pelcmp&quot;</font><font class="text">  ;
+   cmd(3) = </font><font class="kw3">PEL_System</font><font class="text">::absolute_path( first ) ;
+   cmd(4) = </font><font class="kw3">PEL_System</font><font class="text">::absolute_path( second ) ;
+   
+   </font><font class="kw1">if</font><font class="text">( VERBOSE ) out() &lt;&lt; </font><font class="string">&quot;|    format: &quot;</font><font class="text"> &lt;&lt; format &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+
+   </font><font class="kw1">if</font><font class="text">( MY_DBL_EPS != </font><font class="kw3">PEL</font><font class="text">::bad_double() ) 
+   {
+      {
+         </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> os ;
+         os &lt;&lt; MY_DBL_EPS ;
+         cmd.append( </font><font class="string">&quot;-dbl_eps&quot;</font><font class="text"> ) ;
+         cmd.append( os.str() ) ;
+      }
+      {
+         </font><font class="kw3">PEL_ASSERT</font><font class="text">( MY_DBL_MIN != </font><font class="kw3">PEL</font><font class="text">::bad_double() ) ;
+         </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> os ;
+         os &lt;&lt; MY_DBL_MIN ;
+         cmd.append( </font><font class="string">&quot;-dbl_min&quot;</font><font class="text"> ) ;
+         cmd.append( os.str() ) ;
+      }
+   }
+   </font><font class="kw1">if</font><font class="text">( VERBOSE )
+   {
+      cmd.append( </font><font class="string">&quot;-verbose&quot;</font><font class="text"> ) ;
+   }
+   </font><font class="kw1">if</font><font class="text">( options != 0 ) 
+   {
+      </font><font class="kw1">if</font><font class="text">( options-&gt;has_entry( </font><font class="string">&quot;ignore_data&quot;</font><font class="text"> ) ) 
+      {
+         </font><font class="kw3">stringVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; id = options-&gt;stringVector_data( </font><font class="string">&quot;ignore_data&quot;</font><font class="text"> ) ;
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;id.size() ; i++ )
+         {
+            cmd.append( </font><font class="string">&quot;-ignore_data&quot;</font><font class="text"> ) ;
+            cmd.append( id(i) ) ;
+         }
+      }
+      </font><font class="kw1">if</font><font class="text">( !DBL_EXACT &amp;&amp; MY_DBL_EPS == </font><font class="kw3">PEL</font><font class="text">::bad_double() &amp;&amp; 
+          options-&gt;has_module( </font><font class="string">&quot;double_comparison&quot;</font><font class="text"> ) )
+      {
+         </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* e = 
+                   options-&gt;create_subexplorer( 0, </font><font class="string">&quot;double_comparison&quot;</font><font class="text"> ) ;
+         {
+            </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> os ;
+            os &lt;&lt; e-&gt;double_data( </font><font class="string">&quot;dbl_eps&quot;</font><font class="text"> ) ;
+            cmd.append( </font><font class="string">&quot;-dbl_eps&quot;</font><font class="text"> ) ;
+            cmd.append( os.str() ) ;
+         }
+         {
+            </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> os ;
+            os &lt;&lt; e-&gt;double_data( </font><font class="string">&quot;dbl_min&quot;</font><font class="text"> ) ;
+            cmd.append( </font><font class="string">&quot;-dbl_min&quot;</font><font class="text"> ) ;
+            cmd.append( os.str() ) ;
+         }
+         e-&gt;destroy() ;
+      }
+   }
+   cmd.append( </font><font class="string">&quot;-format&quot;</font><font class="text"> ) ;
+   cmd.append( format ) ;
+   </font><font class="kw1">if</font><font class="text">( VERBOSE )  out() &lt;&lt; </font><font class="string">&quot;|    do_compare : &quot;</font><font class="text"> &lt;&lt; cmd &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   
+   </font><font class="kw1">int</font><font class="text"> res = </font><font class="kw3">PEL_System</font><font class="text">::run( cmd, </font><font class="string">&quot;.&quot;</font><font class="text">, </font><font class="string">&quot;cmp.out&quot;</font><font class="text"> ) ;
+   </font><font class="kw1">if</font><font class="text">( res!=0 )
+   {
+      notify_test_ambiguous( </font><font class="kw3">PEL_System</font><font class="text">::basename(first) + 
+                             </font><font class="string">&quot; differs from the original&quot;</font><font class="text"> ) ;
+      </font><font class="kw2">std</font><font class="text">::ifstream ares( </font><font class="string">&quot;cmp.out&quot;</font><font class="text"> ) ;
+      </font><font class="kw1">while</font><font class="text">( !ares.eof() )
+      {
+         </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> line ;
+         getline( ares, line ) ;
+         notify_test_ambiguous( line ) ;
+      }
+   }
+   </font><font class="kw3">PEL_System</font><font class="text">::erase( </font><font class="string">&quot;cmp.out&quot;</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_RunTest</font><font class="text">:: notify_test_failure( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; msg ) 
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_RunTest:: notify_test_failure&quot;</font><font class="text"> ) ;
+   
+   out() &lt;&lt; </font><font class="string">&quot;| &quot;</font><font class="text"> &lt;&lt; msg &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   TEST_RESULT = test_failed ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_RunTest</font><font class="text">:: notify_test_ambiguous( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; msg ) 
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_RunTest:: notify_test_ambiguous&quot;</font><font class="text"> ) ;
+   
+   out() &lt;&lt; </font><font class="string">&quot;| &quot;</font><font class="text"> &lt;&lt; msg &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   TEST_RESULT = test_ambiguous ;
+   
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostream</font><font class="text">&amp;
+</font><font class="kw3">PEL_RunTest</font><font class="text">:: out( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_RunTest:: out&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw1">return</font><font class="text"> </font><font class="kw3">PEL</font><font class="text">::out() ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_RunTest</font><font class="text">:: print_usage( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; usage_title( </font><font class="string">&quot;peltest&quot;</font><font class="text"> )  ;
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="string">&quot;[options...]  -test_directories dir1 ... dirn&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_RunTest</font><font class="text">:: print_operands( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="string">&quot;     -executable &lt;exe&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="string">&quot;          path name of the executable to be tested&quot;</font><font class="text"> 
+              &lt;&lt; </font><font class="kw2">endl</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="string">&quot;     -files_to_ignore file_1 ... file_n&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="string">&quot;          generated files to ignore&quot;</font><font class="text"> 
+              &lt;&lt; </font><font class="kw2">endl</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="string">&quot;     -output_file resu_file [default \&quot;</font><font class="text">resu\</font><font class="string">&quot;]&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="string">&quot;          name of the file from standard output of each &quot;
+</font><font class="text">              &lt;&lt; </font><font class="string">&quot;test running&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="string">&quot;     -output_directories dir1 ... dirn&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="string">&quot;          path names of the directories containing the &quot;
+</font><font class="text">              &lt;&lt; </font><font class="string">&quot;result of the test cases&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="string">&quot;     -pattern_build pattern_file&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="string">&quot;          build pattern file corresponding to all data files&quot;
+</font><font class="text">              &lt;&lt; </font><font class="kw2">endl</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="string">&quot;     -pattern_verify pattern_file&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="string">&quot;          verify all data files&quot;</font><font class="text"> 
+              &lt;&lt; </font><font class="kw2">endl</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="string">&quot;     -pattern_build_then_verify pattern_file&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="string">&quot;          build pattern file corresponding to all data files&quot;
+</font><font class="text">              &lt;&lt; </font><font class="kw2">endl</font><font class="text"> &lt;&lt; </font><font class="string">&quot;          and then verify all data files&quot;</font><font class="text"> 
+              &lt;&lt; </font><font class="kw2">endl</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="string">&quot;     -all and -post&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="string">&quot;          test cases additional option&quot;</font><font class="text"> 
+              &lt;&lt; </font><font class="kw2">endl</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="string">&quot;     -dbl_eps &lt;value&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl
+</font><font class="text">	&lt;&lt; </font><font class="string">&quot;          argument a_dbl_eps in calls to PEL::double_equality&quot;
+</font><font class="text">        &lt;&lt; </font><font class="kw2">endl</font><font class="text"> 
+        &lt;&lt; </font><font class="string">&quot;          when comparing values of type double&quot;</font><font class="text"> 
+        &lt;&lt; </font><font class="kw2">endl</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="string">&quot;     -dbl_min &lt;value&gt;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl
+</font><font class="text">	&lt;&lt; </font><font class="string">&quot;          argument a_dbl_min in calls to PEL::double_equality&quot;
+</font><font class="text">        &lt;&lt; </font><font class="kw2">endl</font><font class="text"> 
+        &lt;&lt; </font><font class="string">&quot;          when comparing values of type double&quot;</font><font class="text"> 
+        &lt;&lt; </font><font class="kw2">endl</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="string">&quot;     -exact&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> 
+        &lt;&lt; </font><font class="string">&quot;          do not use any tolerance when comparing values of &quot;</font><font class="text"> 
+        &lt;&lt; </font><font class="string">&quot;type double&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; operands_title() ;
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="string">&quot;     -test_directories dir1 ... dirn&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="string">&quot;          path names of the directories containing the &quot;
+</font><font class="text">              &lt;&lt; </font><font class="string">&quot;test cases&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_RunTest</font><font class="text">:: print_exit_status( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; exit_status_title() ;
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="string">&quot;     0    All the tests where successful&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="string">&quot;    &gt;0    Some tests failed&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_RunTest</font><font class="text">:: set_resu_dirs( </font><font class="kw3">stringVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; test_dirs,
+                             </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text">&amp; common_root,
+                             </font><font class="kw3">stringVector</font><font class="text">&amp; resu_dirs )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_RunTest:: set_resu_dirs&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( test_dirs.size() != 0 ) ;
+
+   common_root = </font><font class="string">&quot;&quot;</font><font class="text"> ;
+   resu_dirs = test_dirs ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;resu_dirs.size() ; ++i )
+   {
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> d = </font><font class="kw3">PEL_System</font><font class="text">::absolute_path( resu_dirs(i) ) ;
+      </font><font class="kw1">if</font><font class="text">( d[d.length()-1] == </font><font class="kw3">PEL_System</font><font class="text">::path_name_separator() )
+      {
+         d = d.substr( 0, d.length()-1 ) ;
+      }
+      resu_dirs(i)= d ;
+   }
+
+   </font><font class="kw1">if</font><font class="text">( resu_dirs.size() == 1 )
+   {
+      common_root = </font><font class="kw3">PEL_System</font><font class="text">::dirname( resu_dirs(0) ) ;
+      resu_dirs(0) = </font><font class="kw3">PEL_System</font><font class="text">::basename( resu_dirs(0) ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      </font><font class="kw1">bool</font><font class="text"> cont = </font><font class="kw1">true</font><font class="text"> ;
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> root_dir1 ;
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> base_dir1 ;
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> root_dir2 ;
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> base_dir2 ;
+      </font><font class="kw1">while</font><font class="text">( cont )
+      {
+         root_directory( resu_dirs(0), root_dir1, base_dir1 ) ;
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=1 ; cont &amp;&amp; i&lt;resu_dirs.size() ; ++i )
+         {
+            root_directory( resu_dirs(i), root_dir2, base_dir2 ) ;
+            cont = ( root_dir2 == root_dir1 ) ;
+         }
+         </font><font class="kw1">if</font><font class="text">( cont )
+         {
+            common_root += </font><font class="kw3">PEL_System</font><font class="text">::path_name_separator() + root_dir1 ;
+         }
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;resu_dirs.size() ; ++i )
+         {
+            root_directory( resu_dirs(i), root_dir2, base_dir2 ) ;
+            resu_dirs(i) = </font><font class="string">&quot;&quot;</font><font class="text"> ;
+            </font><font class="kw1">if</font><font class="text">( !cont &amp;&amp; !root_dir2.empty() )
+            {
+               resu_dirs(i) = root_dir2 ;
+            }
+            resu_dirs(i) += base_dir2 ;
+         }
+      }
+   }
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_RunTest</font><font class="text">:: set_mpi_run( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_RunTest:: set_mpi_run&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exe_ctx = </font><font class="kw3">PEL_Exec</font><font class="text">::execution_context() ;
+   </font><font class="kw3">PEL_Variable</font><font class="text"> </font><font class="kw1">const</font><font class="text">* with_mpi =  </font><font class="kw3">PEL_Variable</font><font class="text">::object( </font><font class="string">&quot;BS_with_MPI&quot;</font><font class="text"> ) ;
+   </font><font class="kw1">if</font><font class="text">( exe_ctx-&gt;has_variable( with_mpi ) &amp;&amp;
+       exe_ctx-&gt;value( with_mpi )-&gt;to_bool() )
+   {
+      </font><font class="kw3">PEL_Variable</font><font class="text"> </font><font class="kw1">const</font><font class="text">* mpi_run = </font><font class="kw3">PEL_Variable</font><font class="text">::object( </font><font class="string">&quot;SS_MPI_RUN&quot;</font><font class="text"> ) ;
+      </font><font class="kw1">if</font><font class="text">( !exe_ctx-&gt;has_variable( mpi_run ) )
+      {
+         </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_internal(
+            </font><font class="string">&quot;*** PEL_RunTest error:\n&quot;
+</font><font class="text">            </font><font class="string">&quot;    variable SS_MPI_RUN not set&quot;</font><font class="text"> ) ;
+      }
+      MPI_RUN = exe_ctx-&gt;value( mpi_run )-&gt;to_string() ;
+   }
+}
+   
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_RunTest</font><font class="text">:: check_mpi_opts( </font><font class="kw3">stringVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; machines,
+                              </font><font class="kw3">stringVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; mpi_options )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_RunTest:: check_mpi_opts&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> idx = mpi_options.index_of( </font><font class="string">&quot;-np&quot;</font><font class="text"> ) ;
+   </font><font class="kw1">if</font><font class="text">( idx &gt;= mpi_options.size() ) PEL_RunTest_ERROR::n1( CONFIG_FILE ) ;
+   </font><font class="kw1">if</font><font class="text">( idx == mpi_options.size()-1 ) PEL_RunTest_ERROR::n2( CONFIG_FILE ) ;
+   istringstream istr( mpi_options( idx+1 ) ) ;
+   </font><font class="kw2">size_t</font><font class="text"> nb_procs ;
+   istr &gt;&gt; nb_procs ;
+   </font><font class="kw1">if</font><font class="text">( !istr || !istr.eof() ) 
+      PEL_RunTest_ERROR::n3( CONFIG_FILE, mpi_options( idx+1 ) ) ;
+   </font><font class="kw1">if</font><font class="text">( machines.size() &lt; nb_procs ) 
+      PEL_RunTest_ERROR::n4( CONFIG_FILE, nb_procs ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_RunTest</font><font class="text">:: root_directory( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; dir,
+                              </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text">&amp; root_dir,
+                              </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text">&amp; base_dir )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_RunTest:: root_directory&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( dir.length() &gt; 0 ) ;
+   
+   </font><font class="kw2">size_t</font><font class="text"> idx = dir.find_first_of( </font><font class="kw3">PEL_System</font><font class="text">::path_name_separator(), 1 ) ;
+   </font><font class="kw1">if</font><font class="text">( idx &lt; dir.length() )
+   {
+      root_dir = dir.substr( 1, idx-1 ) ;
+      base_dir = dir.substr( idx, dir.length()-idx ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      root_dir = dir.substr( 1, dir.length()-1 ) ;
+      base_dir = </font><font class="string">&quot;&quot;</font><font class="text"> ;
+   }
+}
+
+</font><font class="comment">//internal------------------------------------------------------------------
+</font><font class="kw1">void</font><font class="text"> 
+PEL_RunTest_ERROR:: n0( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; f_name )
+</font><font class="comment">//internal------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">ostringstream</font><font class="text"> mesg ;
+   mesg &lt;&lt; </font><font class="string">&quot;*** PEL_RunTest error:&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;    syntax error in the test configuration file&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;       \&quot;&quot; &lt;&lt; f_name &lt;&lt; &quot;</font><font class="text">\</font><font class="string">&quot;&quot;</font><font class="text"> ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( mesg.str() ) ;
+}
+
+</font><font class="comment">//internal------------------------------------------------------------------
+</font><font class="kw1">void</font><font class="text"> 
+PEL_RunTest_ERROR:: n1( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; config_file )
+</font><font class="comment">//internal------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">ostringstream</font><font class="text"> mesg ;
+   mesg &lt;&lt; </font><font class="string">&quot;*** PEL_RunTest error:&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;    in the file &quot;</font><font class="text"> &lt;&lt; config_file &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;    the entry of keyword \&quot;</font><font class="text">mpi_options\</font><font class="string">&quot; should&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;    contain the \&quot;</font><font class="text">-np\</font><font class="string">&quot; item&quot;</font><font class="text"> ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( mesg.str() ) ;
+}
+
+</font><font class="comment">//internal------------------------------------------------------------------
+</font><font class="kw1">void</font><font class="text"> 
+PEL_RunTest_ERROR:: n2( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; config_file )
+</font><font class="comment">//internal------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">ostringstream</font><font class="text"> mesg ;
+   mesg &lt;&lt; </font><font class="string">&quot;*** PEL_RunTest error:&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;    in the file &quot;</font><font class="text"> &lt;&lt; config_file &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;    and in the entry of keyword \&quot;</font><font class="text">mpi_options\</font><font class="string">&quot;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;    the \&quot;</font><font class="text">-np\</font><font class="string">&quot; item should be followed by a string&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;       giving the number of processors&quot;</font><font class="text"> ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( mesg.str() ) ;
+}
+
+</font><font class="comment">//internal------------------------------------------------------------------
+</font><font class="kw1">void</font><font class="text"> 
+PEL_RunTest_ERROR:: n3( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; config_file,
+                        </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; nb_procs )
+</font><font class="comment">//internal------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">ostringstream</font><font class="text"> mesg ;
+   mesg &lt;&lt; </font><font class="string">&quot;*** PEL_RunTest error:&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;    in the file &quot;</font><font class="text"> &lt;&lt; config_file &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;    and in the entry of keyword \&quot;</font><font class="text">mpi_options\</font><font class="string">&quot; the&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;    \&quot;</font><font class="text">-np\</font><font class="string">&quot; item is followed the invalid item:&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;       \&quot;&quot; &lt;&lt; nb_procs &lt;&lt; &quot;</font><font class="text">\</font><font class="string">&quot;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;    it should be followed by a string giving the&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;       number of processors&quot;</font><font class="text"> ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( mesg.str() ) ;
+}
+
+</font><font class="comment">//internal------------------------------------------------------------------
+</font><font class="kw1">void</font><font class="text"> 
+PEL_RunTest_ERROR:: n4( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; config_file,
+                        </font><font class="kw2">size_t</font><font class="text"> nb_procs )
+</font><font class="comment">//internal------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">ostringstream</font><font class="text"> mesg ;
+   mesg &lt;&lt; </font><font class="string">&quot;*** PEL_RunTest error:&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;    in the file &quot;</font><font class="text"> &lt;&lt; config_file &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;    the number of processors requested by&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;    the entry of keyword \&quot;</font><font class="text">mpi_options\</font><font class="string">&quot; is &quot;</font><font class="text"> 
+        &lt;&lt; nb_procs &lt;&lt; </font><font class="string">&quot;,&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;    hence the entry of keyword \&quot;</font><font class="text">mpi_machinefile\</font><font class="string">&quot;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;    should contain a list of at least &quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;    &quot;</font><font class="text"> &lt;&lt; nb_procs &lt;&lt; </font><font class="string">&quot; machines (possibly duplicated)&quot;</font><font class="text"> ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( mesg.str() ) ;
+}
+
+
+</font>
+</pre>
+</body>
+</html>

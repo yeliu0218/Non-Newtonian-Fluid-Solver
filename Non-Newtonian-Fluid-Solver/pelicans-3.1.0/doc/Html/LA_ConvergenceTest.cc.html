@@ -1,0 +1,385 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>LA_ConvergenceTest.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="LA_ConvergenceTest.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="LApack-tree.html"><span>Tree</span></a>
+    <a href="LA_ConvergenceTest.html"><span>Class</span></a>
+    <a href="LA_ConvergenceTest.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="LApack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated
+ *  reusable components, whose purpose is to simplify the task of developing
+ *  softwares of numerical mathematics and scientific computing.
+ *
+ *  This software is governed by the CeCILL-C license under French law and
+ *  abiding by the rules of distribution of free software. You can use, modify
+ *  and/or redistribute the software under the terms of the CeCILL-C license
+ *  as circulated by CEA, CNRS and INRIA at the following URL
+ *  &quot;http://www.cecill.info&quot;.
+ *
+ *  As a counterpart to the access to the source code and rights to copy,
+ *  modify and redistribute granted by the license, users are provided only
+ *  with a limited warranty and the software's author, the holder of the
+ *  economic rights, and the successive licensors have only limited liability.
+ *
+ *  In this respect, the user's attention is drawn to the risks associated
+ *  with loading, using, modifying and/or developing or reproducing the
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also
+ *  therefore means that it is reserved for developers and experienced
+ *  professionals having in-depth computer knowledge. Users are therefore
+ *  encouraged to load and test the software's suitability as regards their
+ *  requirements in conditions enabling the security of their systems and/or
+ *  data to be ensured and, more generally, to use and operate it in the same
+ *  conditions as regards security.
+ *
+ *  The fact that you are presently reading this means that you have had
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_ConvergenceTest</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ObjectRegister</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Root</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_assertions</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">stringVector</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_Matrix</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_Preconditioner</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_Vector</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;iostream&gt;
+
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> ;
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw3">LA_ConvergenceTest</font><font class="text">*
+</font><font class="kw3">LA_ConvergenceTest</font><font class="text">:: make( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                           </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_ConvergenceTest:: make&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( exp != 0 ) ;
+   
+   </font><font class="kw2">string</font><font class="text"> name = exp-&gt;string_data( </font><font class="string">&quot;concrete_name&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">LA_ConvergenceTest</font><font class="text"> </font><font class="kw1">const</font><font class="text">* proto =
+      </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">LA_ConvergenceTest</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;( plugins_map()-&gt;item( name ) ) ;
+      
+   </font><font class="kw3">LA_ConvergenceTest</font><font class="text">* result = proto-&gt;create_replica( a_owner, exp ) ;
+      
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;owner() == a_owner ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw3">LA_ConvergenceTest</font><font class="text">:: ~</font><font class="kw3">LA_ConvergenceTest</font><font class="text">( </font><font class="kw1">void</font><font class="text">  )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw3">LA_ConvergenceTest</font><font class="text">:: </font><font class="kw3">LA_ConvergenceTest</font><font class="text">( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_name )
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_Object</font><font class="text">( plugins_map() )
+   , IS_PROTO( </font><font class="kw1">true</font><font class="text"> )
+   , NORM_TYPE( Invalid )
+   , REASON( Undetermined )
+{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_ConvergenceTest:: LA_ConvergenceTest&quot;</font><font class="text"> ) ;
+
+   plugins_map()-&gt;register_item( a_name, </font><font class="kw1">this</font><font class="text"> ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( is_a_prototype() ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw3">LA_ConvergenceTest</font><font class="text">:: </font><font class="kw3">LA_ConvergenceTest</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_Object</font><font class="text">( a_owner )
+   , IS_PROTO( </font><font class="kw1">false</font><font class="text"> )
+   , NORM_TYPE( Preconditioned )
+   , REASON( Undetermined )
+{
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw3">LA_ConvergenceTest</font><font class="text">:: </font><font class="kw3">LA_ConvergenceTest</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                         </font><font class="kw3">LA_ConvergenceTest</font><font class="text"> </font><font class="kw1">const</font><font class="text">* other )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_Object</font><font class="text">( a_owner )
+   , IS_PROTO( </font><font class="kw1">false</font><font class="text"> )
+   , NORM_TYPE( other-&gt;NORM_TYPE )
+   , REASON( other-&gt;REASON )
+{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_ConvergenceTest:: LA_ConvergenceTest&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( !is_a_prototype() ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_ConvergenceTest</font><font class="text">:: set_norm_type( </font><font class="kw3">LA_ConvergenceTest</font><font class="text">::NormType nt )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_ConvergenceTest:: set_norm_type&quot;</font><font class="text"> ) ;
+   
+   NORM_TYPE = nt ;
+   
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( norm_type() == nt ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw3">LA_ConvergenceTest</font><font class="text">::NormType
+</font><font class="kw3">LA_ConvergenceTest</font><font class="text">:: norm_type( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">return</font><font class="text">( NORM_TYPE ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_ConvergenceTest</font><font class="text">:: set_converged_reason( 
+                         </font><font class="kw3">LA_ConvergenceTest</font><font class="text">::ConvergedReason cr )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_ConvergenceTest:: set_converged_reason&quot;</font><font class="text"> ) ;
+   
+   REASON = cr ;
+   
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( converged_reason() == cr ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw3">LA_ConvergenceTest</font><font class="text">::ConvergedReason
+</font><font class="kw3">LA_ConvergenceTest</font><font class="text">:: converged_reason( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">return</font><font class="text">( REASON ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_ConvergenceTest</font><font class="text">:: print( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostream</font><font class="text">&amp; os, </font><font class="kw2">size_t</font><font class="text"> indent_width ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;LA_ConvergenceTest:: print&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> s( indent_width, </font><font class="string">' '</font><font class="text">) ;
+   
+   os &lt;&lt; s &lt;&lt; </font><font class="string">&quot;LA_ConvergenceTest: \&quot;&quot; &lt;&lt; type_name() &lt;&lt; &quot;</font><font class="text">\</font><font class="string">&quot;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   os &lt;&lt; s &lt;&lt; </font><font class="string">&quot;   norm type: &quot;</font><font class="text">   ; 
+   </font><font class="kw1">if</font><font class="text">( NORM_TYPE == Preconditioned )
+   {
+      os &lt;&lt; </font><font class="string">&quot;preconditioned&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( NORM_TYPE == Unpreconditioned )
+   {
+      os &lt;&lt; </font><font class="string">&quot;unpreconditioned&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   }
+   print_more( os, indent_width+3 ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">LA_ConvergenceTest</font><font class="text">:: print_more( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostream</font><font class="text">&amp; os, </font><font class="kw2">size_t</font><font class="text"> indent_width ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostream</font><font class="text">&amp;
+</font><font class="kw1">operator</font><font class="text">&lt;&lt;( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostream</font><font class="text">&amp; out, </font><font class="kw3">LA_ConvergenceTest</font><font class="text">::ConvergedReason cr )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">switch</font><font class="text">( cr )
+   {
+      </font><font class="kw1">case</font><font class="text"> </font><font class="kw3">LA_ConvergenceTest</font><font class="text">::ConvergedRtol :
+         out &lt;&lt; </font><font class="string">&quot;\&quot;</font><font class="text">ConvergedRtol\</font><font class="string">&quot;:\n&quot;
+</font><font class="text">             &lt;&lt; </font><font class="string">&quot;      converged: norm(r) &lt;= rtol*norm(b)&quot;</font><font class="text"> ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> </font><font class="kw3">LA_ConvergenceTest</font><font class="text">::ConvergedAtol :
+         out &lt;&lt; </font><font class="string">&quot;\&quot;</font><font class="text">ConvergedAtol\</font><font class="string">&quot;:\n&quot;
+</font><font class="text">             &lt;&lt; </font><font class="string">&quot;      converged: norm(r) &lt;= atol&quot;</font><font class="text"> ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> </font><font class="kw3">LA_ConvergenceTest</font><font class="text">::ConvergedIts :
+         out &lt;&lt; </font><font class="string">&quot;\&quot;</font><font class="text">ConvergedIts\</font><font class="string">&quot;&quot;</font><font class="text"> ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> </font><font class="kw3">LA_ConvergenceTest</font><font class="text">::ConvergedCGnegCurve :
+         out &lt;&lt; </font><font class="string">&quot;\&quot;</font><font class="text">ConvergedCGnegCurve\</font><font class="string">&quot;&quot;</font><font class="text"> ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> </font><font class="kw3">LA_ConvergenceTest</font><font class="text">::ConvergedCGconstrained :
+         out &lt;&lt; </font><font class="string">&quot;\&quot;</font><font class="text">ConvergedCGconstrained\</font><font class="string">&quot;&quot;</font><font class="text"> ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> </font><font class="kw3">LA_ConvergenceTest</font><font class="text">::ConvergedStepLength :
+         out &lt;&lt; </font><font class="string">&quot;\&quot;</font><font class="text">ConvergedStepLength\</font><font class="string">&quot;&quot;</font><font class="text"> ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> </font><font class="kw3">LA_ConvergenceTest</font><font class="text">::ConvergedHappyBreakdown :
+         out &lt;&lt; </font><font class="string">&quot;\&quot;</font><font class="text">ConvergedHappyBreakdown:\</font><font class="string">&quot;&quot;
+</font><font class="text">             &lt;&lt; </font><font class="string">&quot;       a breakdown in the Krylov method was detected but the convergence is reached&quot;</font><font class="text"> ;
+         </font><font class="kw1">break</font><font class="text"> ;
+         
+      </font><font class="kw1">case</font><font class="text"> </font><font class="kw3">LA_ConvergenceTest</font><font class="text">::DivergedNull :
+         out &lt;&lt; </font><font class="string">&quot;\&quot;</font><font class="text">DivergedNull\</font><font class="string">&quot;&quot;</font><font class="text"> ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> </font><font class="kw3">LA_ConvergenceTest</font><font class="text">::DivergedIts :
+         out &lt;&lt; </font><font class="string">&quot;\&quot;</font><font class="text">DivergedIts\</font><font class="string">&quot;:\n&quot;
+</font><font class="text">             &lt;&lt; </font><font class="string">&quot;      ran out of iterations before any convergence criteria was reached&quot;</font><font class="text"> ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> </font><font class="kw3">LA_ConvergenceTest</font><font class="text">::DivergedDtol :
+         out &lt;&lt; </font><font class="string">&quot;\&quot;</font><font class="text">DivergedDtol\</font><font class="string">&quot;:\n&quot;
+</font><font class="text">             &lt;&lt; </font><font class="string">&quot;      diverged: norm(r) &gt;= dtol*norm(b)&quot;</font><font class="text"> ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> </font><font class="kw3">LA_ConvergenceTest</font><font class="text">::DivergedBreakdown :
+         out &lt;&lt; </font><font class="string">&quot;\&quot;</font><font class="text">DivergedBreakdown\</font><font class="string">&quot;:\n&quot;
+</font><font class="text">             &lt;&lt; </font><font class="string">&quot;       a breakdown in the Krylov method was detected so the method\n&quot;
+</font><font class="text">             &lt;&lt; </font><font class="string">&quot;       could not continue to enlarge the Krylov space&quot;</font><font class="text"> ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> </font><font class="kw3">LA_ConvergenceTest</font><font class="text">::DivergedBreakdownBiCG :
+         out &lt;&lt; </font><font class="string">&quot;\&quot;</font><font class="text">DivergedBreakdownBiCG\</font><font class="string">&quot;:\n&quot;
+</font><font class="text">             &lt;&lt; </font><font class="string">&quot;       a breakdown in the BICG method was detected so the method\n&quot;
+</font><font class="text">             &lt;&lt; </font><font class="string">&quot;       could not continue to enlarge the Krylov space&quot;</font><font class="text"> ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> </font><font class="kw3">LA_ConvergenceTest</font><font class="text">::DivergedNonSymmetric :
+         out &lt;&lt; </font><font class="string">&quot;\&quot;</font><font class="text">DivergedNonSymmetric\</font><font class="string">&quot;:\n&quot;
+</font><font class="text">             &lt;&lt; </font><font class="string">&quot;      it appears the operator or preconditioner is not symmetric\n&quot;
+</font><font class="text">             &lt;&lt; </font><font class="string">&quot;      and this Krylov method requires symmetry&quot;</font><font class="text"> ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> </font><font class="kw3">LA_ConvergenceTest</font><font class="text">::DivergedIndefinitePC :
+         out &lt;&lt; </font><font class="string">&quot;\&quot;</font><font class="text">DivergedIndefinitePC\</font><font class="string">&quot;:\n&quot;
+</font><font class="text">             &lt;&lt; </font><font class="string">&quot;      it appears the preconditioner is indefinite\n&quot;
+</font><font class="text">             &lt;&lt; </font><font class="string">&quot;      (has both positive and negative eigenvalues)\n&quot;
+</font><font class="text">             &lt;&lt; </font><font class="string">&quot;      and this Krylov method requires it to be positive definite&quot;</font><font class="text"> ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> </font><font class="kw3">LA_ConvergenceTest</font><font class="text">::DivergedNAN :
+         out &lt;&lt; </font><font class="string">&quot;\&quot;</font><font class="text">DivergedNAN\</font><font class="string">&quot;&quot;</font><font class="text"> ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> </font><font class="kw3">LA_ConvergenceTest</font><font class="text">::DivergedIndefiniteMat :
+         out &lt;&lt; </font><font class="string">&quot;\&quot;</font><font class="text">DivergedIndefiniteMat\</font><font class="string">&quot;:\n&quot;
+</font><font class="text">             &lt;&lt; </font><font class="string">&quot;      it appears the matrix is indefinite\n&quot;
+</font><font class="text">             &lt;&lt; </font><font class="string">&quot;      (has both positive and negative eigenvalues)\n&quot;
+</font><font class="text">             &lt;&lt; </font><font class="string">&quot;      and this Krylov method requires it to be positive definite&quot;</font><font class="text"> ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> </font><font class="kw3">LA_ConvergenceTest</font><font class="text">::DivergedMisc :
+         out &lt;&lt; </font><font class="string">&quot;\&quot;</font><font class="text">DivergedMisc\</font><font class="string">&quot;&quot;</font><font class="text"> ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> </font><font class="kw3">LA_ConvergenceTest</font><font class="text">::PreconditionerFailure :
+         out &lt;&lt; </font><font class="string">&quot;\&quot;</font><font class="text">PreconditionerFailure\</font><font class="string">&quot;:\n&quot;
+</font><font class="text">             &lt;&lt; </font><font class="string">&quot;      preconditionner has failed&quot;</font><font class="text"> ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> </font><font class="kw3">LA_ConvergenceTest</font><font class="text">::Undetermined :
+         out &lt;&lt; </font><font class="string">&quot;\&quot;</font><font class="text">Undetermined\</font><font class="string">&quot;&quot;</font><font class="text"> ;
+         </font><font class="kw1">break</font><font class="text"> ;
+         
+      </font><font class="kw1">case</font><font class="text"> </font><font class="kw3">LA_ConvergenceTest</font><font class="text">::ConvergedIterating :
+         out &lt;&lt; </font><font class="string">&quot;\&quot;</font><font class="text">ConvergedIterating\</font><font class="string">&quot;:\n&quot;
+</font><font class="text">             &lt;&lt; </font><font class="string">&quot;      solving is still running&quot;</font><font class="text"> ;
+         </font><font class="kw1">break</font><font class="text"> ;
+         
+      </font><font class="kw1">default</font><font class="text">:
+         </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt; raise_internal( </font><font class="string">&quot;Unkwown ConvergedReason&quot;</font><font class="text"> ) ;
+   }
+   </font><font class="kw1">return</font><font class="text">( out ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_ConvergenceTest</font><font class="text">:: is_a_prototype( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">return</font><font class="text">( IS_PROTO ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_ConvergenceTest</font><font class="text">:: test_convergence_PRE( </font><font class="kw2">size_t</font><font class="text"> iter,
+                                           </font><font class="kw1">double</font><font class="text"> r_norm,
+                                           </font><font class="kw3">LA_Matrix</font><font class="text"> </font><font class="kw1">const</font><font class="text">* A, 
+                                           </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* b,
+                                           </font><font class="kw3">LA_Preconditioner</font><font class="text">* prec,
+                                           </font><font class="kw1">bool</font><font class="text"> zero_initial_guess ) </font><font class="kw1">const
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( r_norm &gt;= 0.0 ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( A != 0 ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( b != 0 ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( prec != 0 ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( A-&gt;nb_rows() == A-&gt;nb_cols() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( A-&gt;nb_cols() == b-&gt;nb_rows() ) ; 
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( prec-&gt;dimension() == A-&gt;nb_rows() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( converged_reason() == </font><font class="kw3">LA_ConvergenceTest</font><font class="text">::ConvergedIterating ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;  
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_ConvergenceTest</font><font class="text">:: create_replica_PRE( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                         </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( is_a_prototype() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( exp != 0 ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">LA_ConvergenceTest</font><font class="text">:: create_replica_POST(
+                                    </font><font class="kw3">LA_ConvergenceTest</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result,
+                                    </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                    </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp ) </font><font class="kw1">const
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( result != 0 ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( result-&gt;owner() == a_owner ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;  
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw3">PEL_ObjectRegister</font><font class="text">*
+</font><font class="kw3">LA_ConvergenceTest</font><font class="text">:: plugins_map( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw3">PEL_ObjectRegister</font><font class="text">* result =
+          </font><font class="kw3">PEL_ObjectRegister</font><font class="text">::create( </font><font class="kw3">PEL_Root</font><font class="text">::object(),
+                                      </font><font class="string">&quot;LA_ConvergenceTest descendant&quot;</font><font class="text"> ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font>
+</pre>
+</body>
+</html>

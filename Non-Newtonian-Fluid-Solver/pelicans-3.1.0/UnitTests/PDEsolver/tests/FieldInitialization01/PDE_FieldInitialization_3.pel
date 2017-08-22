@@ -1,0 +1,126 @@
+// field initialization
+//   initialization for DOFs_values and DOFs_imposed_value
+
+   
+   MODULE PEL_ObjectTest#PDE_FieldInitialization_TEST
+            
+      MODULE PDE_FieldInitialization_3
+         
+         MODULE PDE_DomainAndFields
+            
+            verbose_level = 0
+            nb_space_dimensions = 2
+            type = "finite_element"
+            
+            MODULE GE_Meshing
+               concrete_name = "GE_RefinedMeshing"
+               mesh_polyhedron = < "GE_Segment" "GE_Triangle" >
+               MODULE list_of_GE_ReferencePolyhedronRefiner
+                  MODULE GE_ReferencePolyhedronRefiner#1
+                     concrete_name = "GE_ReferenceSquareWithTriangles"
+                     strategy = "X"
+                  END MODULE GE_ReferencePolyhedronRefiner#1
+               END MODULE list_of_GE_ReferencePolyhedronRefiner
+               MODULE GE_Meshing
+                  concrete_name = "GE_BoxWithBoxes"
+                  vertices_coordinate_0 = regular_vector( 0.0, 1, 1.0 )
+                  vertices_coordinate_1 = regular_vector( 0.0, 2, 2.0 )
+                  mesh_polyhedron = < "GE_Segment" "GE_Rectangle" >
+               END MODULE GE_Meshing
+            END MODULE GE_Meshing
+            
+            MODULE interior_fields
+               
+               MODULE uu
+                  name = "uu"
+                  nb_components = 1
+                  element_name = "PDE_2D_P2_6nodes"
+                  storage_depth = 1
+                  MODULE DOFs_values
+                     type = "uniformly_defined"
+                     value = < 3.0 >
+                  END MODULE DOFs_values
+                  MODULE DOFs_imposed_value
+                     MODULE toto
+                        location = "on_bounds"
+                        type = "uniformly_defined"
+                        value = < 0.0 >
+                     END MODULE toto
+                  END MODULE DOFs_imposed_value
+               END MODULE uu
+
+               MODULE uu_2
+                  name = "uu_2"
+                  nb_components = 2
+                  element_name = "PDE_2D_P2_6nodes"
+                  storage_depth = 1
+                  MODULE DOFs_values
+                     type = "uniformly_defined"
+                     value = < 3.0 4.0 >
+                  END MODULE DOFs_values
+                  MODULE DOFs_imposed_value
+                     MODULE toto
+                        location = "on_bounds"
+                        type = "uniformly_defined"
+                        component = 0
+                        value = < 0.0 >
+                     END MODULE toto
+                  END MODULE DOFs_imposed_value
+               END MODULE uu_2
+
+               MODULE uu_3
+                  name = "uu_3"
+                  nb_components = 2
+                  element_name = "PDE_2D_P2_6nodes"
+                  storage_depth = 1
+                  MODULE DOFs_values
+                     type = "uniformly_defined"
+                     value = < 3.0 4.0 >
+                  END MODULE DOFs_values
+                  MODULE DOFs_imposed_value
+                     MODULE toto
+                        location = "on_bounds"
+                        type = "uniformly_defined"
+                        component = 1
+                        value = < 0.0 >
+                     END MODULE toto
+                  END MODULE DOFs_imposed_value
+               END MODULE uu_3
+
+            END MODULE interior_fields
+            
+         END MODULE PDE_DomainAndFields
+         
+         MODULE solution
+            
+            MODULE interior_fields
+               
+               MODULE uu
+                  name = "uu"
+                  value = ( in_box( $DV_X, < 0.01 0.01 >, <0.99 1.99> ) ?
+                          < 3.0 > :
+                          < 0.0 > )
+               END MODULE uu
+               
+               MODULE uu_2
+                  name = "uu_2"
+                  value = ( in_box( $DV_X, < 0.01 0.01 >, <0.99 1.99> ) ?
+                          < 3.0 4.0 > :
+                          < 0.0 4.0 > )
+               END MODULE uu_2
+               
+               MODULE uu_3
+                  name = "uu_3"
+                  value = ( in_box( $DV_X, < 0.01 0.01 >, <0.99 1.99> ) ?
+                          < 3.0 4.0 > :
+                          < 3.0 0.0 > )
+               END MODULE uu_3
+               
+            END MODULE interior_fields
+            
+         END MODULE solution
+         
+      END MODULE PDE_FieldInitialization_3
+      
+   END MODULE PEL_ObjectTest#PDE_FieldInitialization_TEST
+   

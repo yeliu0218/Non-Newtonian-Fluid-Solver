@@ -1,0 +1,504 @@
+<html>
+<head>
+<title>AP_DiffusionCG.cc</title>
+<link rel=stylesheet type="text/css" href="stylesheet.css">
+</head>
+<body>
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;AP_DiffusionCG.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_Matrix</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_SeqVector</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_Solver</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_Vector</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">GE_Color</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">GE_QRprovider</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_DiscreteField</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_DomainAndFields</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_LocalEquation</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_LocalFEbound</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_LocalFEcell</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_SetOfBCs</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_SetOfDiscreteFields</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_SystemNumbering</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE_Parameter</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE_SetOfParameters</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE_TimeIterator</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;iostream&gt;
+
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> ;
+
+</font><font class="kw3">PDE_LocalFE</font><font class="text">::field_id </font><font class="kw1">const</font><font class="text"> row = </font><font class="kw3">PDE_LocalFE</font><font class="text">::row ;
+</font><font class="kw3">PDE_LocalFE</font><font class="text">::field_id </font><font class="kw1">const</font><font class="text"> col = </font><font class="kw3">PDE_LocalFE</font><font class="text">::col ;
+
+AP_DiffusionCG </font><font class="kw1">const</font><font class="text">* AP_DiffusionCG::PROTOTYPE = </font><font class="kw1">new</font><font class="text"> AP_DiffusionCG() ;
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">AP_DiffusionCG:: AP_DiffusionCG( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">FE_Galerkin</font><font class="text">( </font><font class="string">&quot;AP_DiffusionCG&quot;</font><font class="text"> )
+{
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">AP_DiffusionCG*
+AP_DiffusionCG:: create_replica( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner, 
+                                 </font><font class="kw3">PDE_DomainAndFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dom,
+                                 </font><font class="kw3">FE_SetOfParameters</font><font class="text"> </font><font class="kw1">const</font><font class="text">* prms,
+                                 </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* exp ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;AP_DiffusionCG:: create_replica&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_PRE( a_owner, dom, prms, exp ) ) ;
+
+   AP_DiffusionCG* result = </font><font class="kw1">new</font><font class="text"> AP_DiffusionCG( a_owner, dom, prms, exp ) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_POST( result, a_owner, dom, prms, exp ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">AP_DiffusionCG:: AP_DiffusionCG( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                 </font><font class="kw3">PDE_DomainAndFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dom,
+                                 </font><font class="kw3">FE_SetOfParameters</font><font class="text"> </font><font class="kw1">const</font><font class="text">* prms,
+                                 </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">FE_Galerkin</font><font class="text">( a_owner, dom, exp )
+   , TT( dom-&gt;set_of_discrete_fields()-&gt;item( </font><font class="string">&quot;temperature&quot;</font><font class="text"> ) )
+   , L_UPDATE( exp-&gt;int_data( </font><font class="string">&quot;level_to_update&quot;</font><font class="text"> ) )
+   , L_EXPLICIT( exp-&gt;int_data( </font><font class="string">&quot;level_of_explicit&quot;</font><font class="text"> ) )
+   , DENS( prms-&gt;item( exp-&gt;string_data( </font><font class="string">&quot;param_density&quot;</font><font class="text"> ) ) )
+   , COND( prms-&gt;item( exp-&gt;string_data( </font><font class="string">&quot;param_conductivity&quot;</font><font class="text"> ) ) )
+   , CP( prms-&gt;item( exp-&gt;string_data( </font><font class="string">&quot;param_specific_heat&quot;</font><font class="text"> ) ) ) 
+   , POW( prms-&gt;item( exp-&gt;string_data( </font><font class="string">&quot;param_volumic_power&quot;</font><font class="text"> ) ) )
+   , BCs( dom-&gt;set_of_boundary_conditions() )
+   , ELEMENT_EQ( </font><font class="kw3">PDE_LocalEquation</font><font class="text">::create( </font><font class="kw1">this</font><font class="text"> ) )
+   , QRP( </font><font class="kw3">GE_QRprovider</font><font class="text">::object( 
+                            exp-&gt;string_data( </font><font class="string">&quot;quadrature_rule_provider&quot;</font><font class="text"> ) ) )
+   , cFE( 0 )
+   , bFE( 0 )
+   , U_LOC( </font><font class="kw3">LA_SeqVector</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, 0 ) )
+{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;AP_DiffusionCG:: AP_DiffusionCG&quot;</font><font class="text"> ) ;
+
+   check_field_storage_depth( TT, </font><font class="kw3">PEL</font><font class="text">::max( L_UPDATE, L_EXPLICIT ) ) ;
+
+   check_param_nb_components( DENS, </font><font class="string">&quot;param_density&quot;</font><font class="text">, 1 ) ;
+   check_param_nb_components( COND, </font><font class="string">&quot;param_conductivity&quot;</font><font class="text">, 1 ) ;
+   check_param_nb_components( CP, </font><font class="string">&quot;param_specific_heat&quot;</font><font class="text">, 1 ) ;
+   check_param_nb_components( POW, </font><font class="string">&quot;param_volumic_power&quot;</font><font class="text">, 1 ) ;
+
+   cFE = dom-&gt;create_LocalFEcell( </font><font class="kw1">this</font><font class="text"> ) ;
+   bFE = dom-&gt;create_LocalFEbound( </font><font class="kw1">this</font><font class="text"> ) ;
+
+   cFE-&gt;require_field_calculation( TT, </font><font class="kw3">PDE_LocalFE</font><font class="text">::N ) ;
+   cFE-&gt;require_field_calculation( TT, </font><font class="kw3">PDE_LocalFE</font><font class="text">::dN ) ;
+   bFE-&gt;require_field_calculation( TT, </font><font class="kw3">PDE_LocalFE</font><font class="text">::N ) ;
+
+   DENS-&gt;transfer_cell_calculation_requirements( cFE, </font><font class="kw3">FE_Parameter</font><font class="text">::Val ) ;
+   COND-&gt;transfer_cell_calculation_requirements( cFE, </font><font class="kw3">FE_Parameter</font><font class="text">::Val ) ;
+   CP-&gt;transfer_cell_calculation_requirements( cFE, </font><font class="kw3">FE_Parameter</font><font class="text">::Val ) ;
+   POW-&gt;transfer_cell_calculation_requirements( cFE, </font><font class="kw3">FE_Parameter</font><font class="text">::Val ) ;
+
+   add_one_convected_field( TT, L_EXPLICIT ) ;
+
+   </font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text">* tt_link =  </font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text">::create( 0, TT, </font><font class="kw1">true</font><font class="text"> ) ;
+   NMB = </font><font class="kw3">PDE_SystemNumbering</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, tt_link ) ;
+   
+   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ee = exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;LA_Matrix&quot;</font><font class="text"> ) ;
+   A = </font><font class="kw3">LA_Matrix</font><font class="text">::make( </font><font class="kw1">this</font><font class="text">, ee ) ;
+   ee-&gt;destroy() ; ee = 0 ;
+   
+   F = A-&gt;create_vector( </font><font class="kw1">this</font><font class="text"> ) ;
+   U = A-&gt;create_vector( </font><font class="kw1">this</font><font class="text"> ) ;
+   
+   ee = exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;LA_Solver&quot;</font><font class="text"> ) ;
+   SOLVER = </font><font class="kw3">LA_Solver</font><font class="text">::make( </font><font class="kw1">this</font><font class="text">, ee ) ;
+   ee-&gt;destroy() ; ee = 0 ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">AP_DiffusionCG:: ~AP_DiffusionCG( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">AP_DiffusionCG:: transfer_calculation_requirements_for_material_derivative( 
+         </font><font class="kw3">PDE_LocalFEcell</font><font class="text">* fe )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;AP_DiffusionCG:: transfer_calculation_requirements_for_material_derivative&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( 
+   transfer_calculation_requirements_for_material_derivative_PRE( fe ) ) ;
+
+   fe-&gt;require_field_calculation( TT, </font><font class="kw3">PDE_LocalFE</font><font class="text">::N ) ;
+   DENS-&gt;transfer_cell_calculation_requirements( fe, </font><font class="kw3">FE_Parameter</font><font class="text">::Val ) ;
+   CP-&gt;transfer_cell_calculation_requirements( fe, </font><font class="kw3">FE_Parameter</font><font class="text">::Val ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">AP_DiffusionCG:: reset_discrete_problem( </font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* t_it )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;AP_DiffusionCG:: reset_discrete_problem&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( reset_discrete_problem_PRE( t_it ) ) ;
+   
+   start_total_timer( </font><font class="string">&quot;AP_DiffusionCG:: reset_discrete_problem&quot;</font><font class="text"> ) ;
+   </font><font class="comment">// --------------
+</font><font class="text">   
+   NMB-&gt;reset() ;
+   
+   </font><font class="kw2">size_t</font><font class="text"> n_glob = NMB-&gt;nb_global_unknowns() ;
+   </font><font class="kw2">size_t</font><font class="text"> n_loc  = NMB-&gt;nb_unknowns_on_current_process() ;
+   
+   A-&gt;re_initialize( n_glob, n_glob, n_loc, n_loc ) ;
+   F-&gt;re_initialize( n_glob, n_loc ) ;
+   U-&gt;re_initialize( n_glob, n_loc ) ;
+   
+   U_LOC-&gt;re_initialize( NMB-&gt;link()-&gt;unknown_vector_size() ) ;
+   
+   NMB-&gt;define_scatters( U ) ;
+   
+   stop_total_timer() ;
+   </font><font class="comment">// -------------
+</font><font class="text">}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">AP_DiffusionCG:: terminate_discrete_problem( </font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* t_it )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;AP_DiffusionCG:: terminate_discrete_problem&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( terminate_discrete_problem_PRE( t_it ) ) ;
+   
+   start_total_timer( </font><font class="string">&quot;AP_DiffusionCG:: terminate_discrete_problem&quot;</font><font class="text"> ) ;
+   start_assembling_timer() ;
+   </font><font class="comment">// ---------------------
+</font><font class="text">
+   </font><font class="kw1">for</font><font class="text">( cFE-&gt;start() ; cFE-&gt;is_valid() ; cFE-&gt;go_next() )
+   {
+      build_cell_contribution_to_creation( t_it, cFE ) ;
+   }
+   </font><font class="kw1">for</font><font class="text">( bFE-&gt;start() ; bFE-&gt;is_valid() ; bFE-&gt;go_next() )
+   {
+      build_bound_contribution_to_creation( t_it, bFE ) ;
+   }
+   
+   stop_assembling_timer() ;
+   start_solving_timer() ;
+   </font><font class="comment">// ------------------
+</font><font class="text">
+   estimate_unknowns() ;
+   
+   stop_solving_timer() ;
+   </font><font class="comment">// -----------------
+</font><font class="text">
+   update_fields() ;
+   
+   stop_total_timer() ;
+   </font><font class="comment">// ---------------
+</font><font class="text">}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">AP_DiffusionCG:: do_one_inner_iteration( </font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* t_it )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;AP_DiffusionCG:: do_one_inner_iteration&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( do_one_inner_iteration_PRE( t_it ) ) ;
+   
+   reset_discrete_problem( t_it ) ;
+
+   start_total_timer( </font><font class="string">&quot;AP_DiffusionCG:: do_one_inner_iteration&quot;</font><font class="text"> ) ;
+   start_assembling_timer() ;
+   </font><font class="comment">// ---------------------
+</font><font class="text">
+   </font><font class="kw1">for</font><font class="text">( cFE-&gt;start() ; cFE-&gt;is_valid() ; cFE-&gt;go_next() )
+   {
+      build_cell_contribution_to_material_derivative( t_it, cFE ) ;
+      build_cell_contribution_to_creation( t_it, cFE ) ;
+   }
+   </font><font class="kw1">for</font><font class="text">( bFE-&gt;start() ; bFE-&gt;is_valid() ; bFE-&gt;go_next() )
+   {
+      build_bound_contribution_to_creation( t_it, bFE ) ;
+   }
+   
+   stop_assembling_timer() ;
+   start_solving_timer() ;
+   </font><font class="comment">// ------------------
+</font><font class="text">   
+   estimate_unknowns() ;
+
+   stop_solving_timer() ;
+   </font><font class="comment">// -----------------
+</font><font class="text">
+   update_fields() ;
+
+   stop_total_timer() ;
+   </font><font class="comment">// ---------------
+</font><font class="text">}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">AP_DiffusionCG:: build_cell_contribution_to_creation( 
+                                            </font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* t_it, 
+                                            </font><font class="kw3">PDE_LocalFEcell</font><font class="text">* fe )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;AP_DiffusionCG:: build_cell_contribution_to_creation&quot;</font><font class="text"> ) ;
+   
+   fe-&gt;set_row_and_col_fields( TT, TT ) ;
+
+   ELEMENT_EQ-&gt;initialize( fe-&gt;row_field_node_connectivity(), 
+                                1,
+                                fe-&gt;col_field_node_connectivity(), 
+                                1 ) ;
+
+   </font><font class="kw1">for</font><font class="text">( fe-&gt;start_IP_iterator( QRP ) ; fe-&gt;valid_IP() ; fe-&gt;go_next_IP() )
+   {
+      </font><font class="kw1">double</font><font class="text"> coef = COND-&gt;cell_value_at_IP( t_it, fe  ) ;
+      add_grad_row_dot_grad_col( ELEMENT_EQ, fe, coef ) ;
+      coef = POW-&gt;cell_value_at_IP( t_it, fe  ) ;
+      add_row( ELEMENT_EQ, fe, coef ) ;
+   }
+
+   </font><font class="kw3">PDE</font><font class="text">::assemble_in_matrix_vector_0( A, F, ELEMENT_EQ, NMB ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">GE_QRprovider</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+AP_DiffusionCG:: QRprovider_for_material_derivative( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">GE_QRprovider</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result = QRP ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( QRprovider_for_material_derivative_POST( result ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">AP_DiffusionCG:: build_cell_contribution_to_material_derivative( 
+                                              </font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* t_it, 
+                                              </font><font class="kw3">PDE_LocalFEcell</font><font class="text">* fe )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;AP_DiffusionCG:: build_cell_contribution_to_material_derivative&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( build_cell_contribution_to_material_derivative_PRE( t_it, 
+                                                                      fe ) ) ;
+
+   </font><font class="kw1">double</font><font class="text"> dt = t_it-&gt;time_step() ;
+
+   fe-&gt;set_row_and_col_fields( TT, TT ) ;
+
+   ELEMENT_EQ-&gt;initialize( fe-&gt;row_field_node_connectivity(), 1,
+                           fe-&gt;col_field_node_connectivity(), 1 ) ;
+
+   </font><font class="kw3">GE_QRprovider</font><font class="text"> </font><font class="kw1">const</font><font class="text">* qrp = QRprovider_for_material_derivative() ;
+   </font><font class="kw1">for</font><font class="text">( fe-&gt;start_IP_iterator( qrp ) ; fe-&gt;valid_IP() ; fe-&gt;go_next_IP() )
+   {
+      </font><font class="kw1">double</font><font class="text"> coef = DENS-&gt;cell_value_at_IP( t_it, fe ) * 
+                    CP-&gt;cell_value_at_IP( t_it, fe ) / dt ;
+      add_row_col( ELEMENT_EQ, fe, coef ) ;
+      add_row( ELEMENT_EQ, fe, coef*fe-&gt;value_at_IP( TT, L_EXPLICIT ) ) ;
+   }
+   
+   </font><font class="kw3">PDE</font><font class="text">::assemble_in_matrix_vector_0( A, F, ELEMENT_EQ, NMB ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">AP_DiffusionCG:: build_bound_contribution_to_creation(
+               	                                </font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* t_it,
+                                                </font><font class="kw3">PDE_LocalFEbound</font><font class="text">* fe )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;AP_DiffusionCG:: build_bound_contribution_to_creation&quot;</font><font class="text"> ) ;
+   
+   fe-&gt;set_row_and_col_fields( TT, TT ) ;
+
+   ELEMENT_EQ-&gt;initialize( fe-&gt;row_field_node_connectivity(), 
+                           1,
+                           fe-&gt;col_field_node_connectivity(), 
+                           1 ) ;
+
+   </font><font class="kw1">if</font><font class="text">( BCs-&gt;has_BC( fe-&gt;color(), TT ) )
+   {
+      </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* bc_exp =  BCs-&gt;BC_explorer( fe-&gt;color(), TT ) ;
+      </font><font class="kw2">string</font><font class="text"> bc_type = bc_exp-&gt;string_data( </font><font class="string">&quot;type&quot;</font><font class="text"> ) ;
+      </font><font class="kw1">if</font><font class="text">( bc_type==</font><font class="string">&quot;convection&quot;</font><font class="text"> )
+      {
+         </font><font class="kw1">double</font><font class="text"> h = bc_exp-&gt;double_data( </font><font class="string">&quot;convection_coefficient&quot;</font><font class="text"> ) ;
+         </font><font class="kw1">double</font><font class="text"> Tinf = bc_exp-&gt;double_data( </font><font class="string">&quot;far_field_temperature&quot;</font><font class="text"> ) ;
+
+         </font><font class="kw1">for</font><font class="text">( fe-&gt;start_IP_iterator( QRP ) ; fe-&gt;valid_IP() ; fe-&gt;go_next_IP() )
+         {
+            add_row_col( ELEMENT_EQ, fe, h ) ;
+            add_row( ELEMENT_EQ, fe, h*Tinf ) ;
+         }
+      }
+   }
+   
+   </font><font class="kw3">PDE</font><font class="text">::assemble_in_matrix_vector_0( A, F, ELEMENT_EQ, NMB ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">AP_DiffusionCG:: add_row_col( </font><font class="kw3">PDE_LocalEquation</font><font class="text">* leq,
+                              </font><font class="kw3">PDE_LocalFE</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fe, 
+                              </font><font class="kw1">double</font><font class="text"> coef )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;AP_DiffusionCG:: add_row_col&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> nb_nodes = fe-&gt;nb_basis_functions( row ) ;
+   </font><font class="kw1">double</font><font class="text"> c_w = fe-&gt;weight_of_IP() * coef ;
+
+   </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; N_row = fe-&gt;Ns_at_IP( row ) ;
+   </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; N_col = fe-&gt;Ns_at_IP( col ) ;
+
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;nb_nodes ; ++i )
+   {
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=i ; j&lt;nb_nodes ; ++j )
+      {
+         </font><font class="kw1">double</font><font class="text"> xx = N_row( i ) * N_col( j ) ;
+         xx *= c_w ;
+
+         leq-&gt;add_to_matrix( xx, i, j ) ;
+
+         </font><font class="kw1">if</font><font class="text">( i!=j ) leq-&gt;add_to_matrix( xx, j, i ) ;
+      }
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">AP_DiffusionCG:: add_grad_row_dot_grad_col( </font><font class="kw3">PDE_LocalEquation</font><font class="text">* leq,
+                                            </font><font class="kw3">PDE_LocalFEcell</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fe,
+                                            </font><font class="kw1">double</font><font class="text"> coef )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;AP_DiffusionCG:: add_grad_row_dot_grad_col&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> nb_dims = fe-&gt;nb_space_dimensions() ;
+   </font><font class="kw2">size_t</font><font class="text"> nb_nodes = fe-&gt;nb_basis_functions( row ) ;
+   </font><font class="kw1">double</font><font class="text"> c_w = fe-&gt;weight_of_IP() * coef ;
+
+   </font><font class="kw3">doubleArray2D</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; dN_row = fe-&gt;dNs_at_IP( row ) ;
+   </font><font class="kw3">doubleArray2D</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; dN_col = fe-&gt;dNs_at_IP( col ) ;
+
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;nb_nodes ; ++i )
+   {
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=i ; j&lt;nb_nodes ; ++j )
+      {
+         </font><font class="kw1">double</font><font class="text"> xx = 0.0 ;
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> d=0 ; d&lt;nb_dims ; ++d )
+         {
+            xx += dN_row( i, d ) * dN_col( j, d ) ;
+         }
+         xx *= c_w ;
+         leq-&gt;add_to_matrix( xx, i, j ) ;
+         </font><font class="kw1">if</font><font class="text">( i != j ) leq-&gt;add_to_matrix( xx, j, i ) ;
+      }
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">AP_DiffusionCG:: add_row( </font><font class="kw3">PDE_LocalEquation</font><font class="text">* leq,
+                          </font><font class="kw3">PDE_LocalFE</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fe,
+                          </font><font class="kw1">double</font><font class="text"> coef )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;AP_DiffusionCG:: add_row&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> nb_nodes = fe-&gt;nb_basis_functions( row ) ;
+   </font><font class="kw1">double</font><font class="text"> c_w = fe-&gt;weight_of_IP() * coef ;
+
+   </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; N_row = fe-&gt;Ns_at_IP( row ) ;
+
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;nb_nodes ; i++ )
+   {
+      </font><font class="kw1">double</font><font class="text"> xx = N_row( i ) ;
+      xx *= c_w ;
+
+      leq-&gt;add_to_vector( xx, i ) ;
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">AP_DiffusionCG:: estimate_unknowns( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;AP_DiffusionCG:: estimate_unknowns&quot;</font><font class="text"> ) ;
+   
+   A-&gt;synchronize() ;
+   F-&gt;synchronize() ;
+   
+   SOLVER-&gt;set_matrix( A ) ;
+   SOLVER-&gt;solve( F, U ) ;
+   SOLVER-&gt;unset_matrix() ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">AP_DiffusionCG:: update_fields( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;AP_DiffusionCG:: update_fields&quot;</font><font class="text"> ) ;  
+   
+   </font><font class="kw3">LA_Scatter</font><font class="text"> </font><font class="kw1">const</font><font class="text">* sca = NMB-&gt;scatter() ;
+   sca-&gt;get( U, U_LOC ) ;
+   TT-&gt;update_free_DOFs_value( L_UPDATE, U_LOC, NMB-&gt;link() ) ;
+}
+
+</font>
+</pre>
+</body>
+</html>

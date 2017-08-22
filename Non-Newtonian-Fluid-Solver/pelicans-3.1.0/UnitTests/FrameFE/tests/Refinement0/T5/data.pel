@@ -1,0 +1,164 @@
+MODULE PEL_Application
+   
+   concrete_name = "FE_RefinementAppli"
+
+   $DS_x = component( $DV_X, 0 )
+   $DS_x2 = $DS_x*$DS_x
+   $DS_x3 = $DS_x2*$DS_x
+   
+   MODULE PDE_DomainAndFields
+      
+      verbose_level = 1
+      nb_space_dimensions = 2
+      type = "finite_element"
+      
+      MODULE GE_Meshing
+         
+         concrete_name = "GE_BoxWithBoxes"
+         
+         vertices_coordinate_0 = regular_vector( 0.0, 10, 1.0 )
+         vertices_coordinate_1 = regular_vector( 0.0, 2, 1.0 )
+         mesh_polyhedron = < "GE_Segment" "GE_Rectangle" >
+         
+      END MODULE GE_Meshing
+
+      MODULE macro_colors
+         sym_bounds = < "top" "bottom" >
+      END MODULE macro_colors
+      
+      MODULE interior_fields
+         
+         MODULE uu
+            name = "uu"
+            nb_components = 1
+            element_name = "PDE_2D_Q1_4nodes"
+            storage_depth = 1
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = < 0.0 >
+            END MODULE DOFs_values
+            MODULE DOFs_imposed_value
+               MODULE yyy
+                  location = "on_bounds"
+                  color = "right"
+                  type = "uniformly_defined"
+                  value = < 0.0 >
+               END MODULE yyy
+            END MODULE DOFs_imposed_value
+         END MODULE uu
+
+         MODULE uu_explicit
+            name = "uu_explicit"
+            nb_components = 1
+            element_name = "PDE_2D_Q1_4nodes"
+            storage_depth = 1
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = < 0.0 >
+            END MODULE DOFs_values
+            MODULE DOFs_imposed_value
+               MODULE yyy
+                  location = "on_bounds"
+                  color = "right"
+                  type = "uniformly_defined"
+                  value = < 0.0 >
+               END MODULE yyy
+            END MODULE DOFs_imposed_value
+         END MODULE uu_explicit
+
+      END MODULE interior_fields
+
+      MODULE boundary_conditions
+         MODULE left
+            field = "uu"
+            color = "left"
+            type = "Neumann"
+            derivative_value = -25.0
+         END MODULE left
+         MODULE topbottom
+            field = "uu"
+            color = "sym_bounds"
+            type = "Neumann"
+            derivative_value = 0.0
+         END MODULE topbottom
+      END MODULE boundary_conditions
+
+      MODULE PDE_ResultSaver
+         writers = < "PEL_TICwriter" >
+         writing_mode = "text"
+         files_basename = "save"
+         MODULE uu
+            where_to_save = "at_vertices"
+            entry_name = "U"
+            field = "uu"
+         END MODULE uu
+      END MODULE PDE_ResultSaver
+
+      MODULE PDE_AdapterCHARMS
+         verbose_level = 0
+         type = "quasi_hierarchical_basis"
+         MODULE PDE_AdaptationIndicator
+            concrete_name = "PDE_FluxCellIndicator"
+            field = "uu"
+            level_of_field = 0
+            quadrature_rule_provider = "GE_QRprovider_5"
+            maximum_error = 0.05
+            minimum_error = 0.005
+         END MODULE PDE_AdaptationIndicator
+      END MODULE PDE_AdapterCHARMS
+   
+   END MODULE PDE_DomainAndFields
+
+   MODULE FE_TimeIterator
+      time_initial = 0.0
+      time_end = 0.1
+      time_step = 1.0
+   END MODULE FE_TimeIterator
+
+   MODULE FE_SetOfParameters
+      MODULE FE_Parameter#rhs
+         concrete_name = "FE_SpaceTimeParameter"      
+         name = "force_rhs"
+         nb_components = 1
+         value = vector( -2000.0*$DS_x3 + 3600.0*$DS_x2 -
+                          1950.0*$DS_x + 300.0 )
+      END MODULE FE_Parameter#rhs
+   END MODULE FE_SetOfParameters
+   
+   MODULE FE_RefinementAppli
+      
+      alpha = 0.0
+      lambda = 1.0
+      
+      level_of_current = 0
+      level_of_explicit = 0
+      
+      param_force = "force_rhs"
+      
+      quadrature_rule_provider = "GE_QRprovider_5"
+      
+      MODULE LA_Matrix
+         concrete_name = "LA_PelMatrix"
+      END MODULE LA_Matrix
+      
+      MODULE LA_Solver
+         concrete_name = "LA_PreconditionedSolver"
+         MODULE LA_Preconditioner
+            concrete_name = "LA_Jacobi_PC"
+            smallest_inverted_item = 1.0e-20
+         END MODULE LA_Preconditioner
+         MODULE LA_IterativeSolver
+            concrete_name = "LA_CG_IS"
+            verbose = false
+            nb_iterations_max = 2000
+            MODULE LA_ConvergenceTest
+               concrete_name = "LA_DefaultConvergenceTest"
+               relative_tolerance = 1.0e-12
+               absolute_tolerance = 1.0e-50
+            END MODULE LA_ConvergenceTest
+         END MODULE LA_IterativeSolver
+      END MODULE LA_Solver
+
+   END MODULE FE_RefinementAppli
+
+END MODULE PEL_Application

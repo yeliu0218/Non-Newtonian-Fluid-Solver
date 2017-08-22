@@ -1,0 +1,42 @@
+MODULE PEL_ObjectTest#PDE_CFootFinder_TEST
+   concrete_name = "PDE_CFootFinder_TEST"
+   MODULE Forward
+      verbose_level = 1
+      nb_space_dimensions = 2
+      type = "finite_element"
+      
+      MODULE GE_Meshing
+         
+         concrete_name = "GE_BoxWithBoxes"
+         
+         vertices_coordinate_1 = regular_vector( 0.0, 2, 1.0 )
+         vertices_coordinate_0 = regular_vector( 0.0, 3, 1.0 )
+         mesh_polyhedron = < "GE_Segment" "GE_Rectangle" >
+         
+      END MODULE GE_Meshing
+      
+      MODULE interior_fields
+         
+         MODULE velocity
+            name = "velocity"
+            nb_components = 2
+            element_name = "PDE_2D_Q1_4nodes"
+            storage_depth = 1
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = vector( component($DV_X,1),
+               1.0 - component($DV_X,0) )
+            END MODULE DOFs_values
+         END MODULE velocity
+         
+      END MODULE interior_fields
+      
+      MODULE PDE_CFootFinder
+         concrete_name = "PDE_ForwardEulerFinder"
+         nb_iter_max_when_searching_in_cell = 10
+         nb_iter_max_when_searching_in_bound = 10
+         distance_max_characteristic_foot = 3.0
+      END MODULE PDE_CFootFinder
+      
+   END MODULE Forward
+END MODULE PEL_ObjectTest#PDE_CFootFinder_TEST

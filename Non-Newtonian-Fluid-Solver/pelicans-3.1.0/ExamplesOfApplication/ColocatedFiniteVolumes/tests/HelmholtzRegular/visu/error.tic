@@ -1,0 +1,56 @@
+BATCH
+STAT PS
+
+FRAME WHITE 24. 24.
+
+ANAL
+   i = 0
+   xa  = SR1
+   xb  = SR1
+   xc  = SR1
+   xh = SR1
+END-ANAL
+
+LOOP
+
+   FILE ('save_'//CHAR(i)//'.gene') FORM END
+
+   CYCLE 2
+   PHYS XLD  TABL XLD
+   PHYS XLDD TABL XLDD
+   PHYS XHUD TABL XLUD
+   PHYS XH   TABL XH
+
+   ANAL XLD XLDD XLUD XH
+      xxa = XLD:1
+      xxb = XLDD:1
+      xxc = XLUD:1
+      xxh = XH:1
+      xa(0) <- xxa
+      xb(0) <- xxb
+      xc(0) <- xxc
+      xh(0) <- xxh
+   END-ANAL xa xb xc xh
+
+   ( i = i+1 )
+   IF( i > 3 ) EXIT
+
+ENDLOOP
+
+LIST TABL xh 0
+LIST TABL xa 0
+LIST TABL xb 0
+LIST TABL xc 0
+
+MARK '*' 0. SMOO POIN 
+CURV xh xa  'L2-norm'
+MARK 'x' 0. SMOO POIN 
+CURV xh xc  'H1-D-norm-D'
+MARK '+' 0. SMOO POIN 
+CURV xh xb  'L2-norm-D'
+
+LABEL "characteristic mesh size h" ATYP LOGA AXIS X1
+VMIN 1.E-6 VMAX 1.0 CUTT 6 SCUTT 8 LABEL "norm of error" ATYP LOGA AXIS Y1
+
+PSFN "doc/error.ps"
+DRAW CURV

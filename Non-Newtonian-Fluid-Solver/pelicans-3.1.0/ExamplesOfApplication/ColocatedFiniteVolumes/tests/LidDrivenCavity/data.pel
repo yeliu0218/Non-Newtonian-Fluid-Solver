@@ -1,0 +1,182 @@
+MODULE PEL_Application
+   
+   concrete_name = "FE_StepByStepProgression"
+   
+   MODULE FE_TimeIterator
+      time_initial = 0.0
+      time_end = 0.1
+      time_step = 1.0
+   END MODULE FE_TimeIterator
+      
+   MODULE PDE_DomainAndFields
+      
+      verbose_level = 0
+      nb_space_dimensions = 2
+      type = "finite_element"
+      
+      MODULE GE_Meshing
+         concrete_name = "GE_RefinedMeshing"
+         mesh_polyhedron = < "GE_Segment" "GE_Triangle" >
+         MODULE list_of_GE_ReferencePolyhedronRefiner
+            MODULE GE_ReferencePolyhedronRefiner#1
+               concrete_name = "GE_ReferenceTriangleWithTriangles"
+               nb_subintervals_per_edge = 2
+            END MODULE GE_ReferencePolyhedronRefiner#1
+         END MODULE list_of_GE_ReferencePolyhedronRefiner
+         MODULE GE_Meshing
+            concrete_name = "GE_RefinedMeshing"
+            mesh_polyhedron = < "GE_Segment" "GE_Triangle" >
+            MODULE list_of_GE_ReferencePolyhedronRefiner
+               MODULE GE_ReferencePolyhedronRefiner#1
+                  concrete_name = "GE_ReferenceSquareWithTriangles"
+                  strategy = "26_acute_triangles"
+               END MODULE GE_ReferencePolyhedronRefiner#1
+            END MODULE list_of_GE_ReferencePolyhedronRefiner
+            MODULE GE_Meshing
+               concrete_name = "GE_BoxWithBoxes"
+               vertices_coordinate_0 = regular_vector( 0.0, 2, 1.0 )
+               vertices_coordinate_1 = regular_vector( 0.0, 2, 1.0 )
+               mesh_polyhedron = < "GE_Segment" "GE_Rectangle" >
+            END MODULE GE_Meshing
+            MODULE GE_Colorist
+               MODULE faces
+                  cluster_boundary = true
+               END MODULE faces
+            END MODULE GE_Colorist
+         END MODULE GE_Meshing
+      END MODULE GE_Meshing
+      
+      MODULE interior_fields
+         
+         MODULE velocity
+            name = "velocity"
+            nb_components = 2
+            element_name = "PDE_2D_P0_1node"
+            storage_depth = 1
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = < 0.0 0.0 >
+            END MODULE DOFs_values
+         END MODULE velocity
+         
+         MODULE pressure
+            name = "pressure"
+            nb_components = 1
+            element_name = "PDE_2D_P0_1node"
+            storage_depth = 1
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = < 0.0 >
+            END MODULE DOFs_values
+         END MODULE pressure
+         
+      END MODULE interior_fields
+      
+      MODULE boundary_conditions
+         MODULE adherence
+            field = "velocity"
+            type = "Dirichlet"
+            imposed_value = ( component( $DV_X, 1 ) > 0.999 ?
+                                 < 1.0 0.0 > : < 0.0 0.0 > )
+         END MODULE adherence
+      END MODULE boundary_conditions  
+      
+      MODULE PDE_ResultSaver
+         
+         writers = < "PEL_TICwriter" >
+         
+         writing_mode = "text"
+         files_basename = "save"
+         
+         MODULE velocity
+            where_to_save = "at_cell_centers"
+            entry_name = "UU"
+            field = "velocity"
+         END MODULE velocity
+         
+         MODULE pressure
+            where_to_save = "at_cell_centers"
+            entry_name = "PP"
+            field = "pressure"
+         END MODULE pressure
+         
+      END MODULE PDE_ResultSaver
+      
+   END MODULE PDE_DomainAndFields
+   
+   MODULE FE_SetOfParameters
+      pi = < 0.0 0.0 >
+   END MODULE FE_SetOfParameters
+   
+   MODULE FE_OneStepIteration
+      
+      concrete_name = "FE_SplitSystem"
+      
+      MODULE list_of_FE_OneStepIteration
+         
+         MODULE FE_OneStepIteration#check
+            concrete_name = "AP_CheckDiscretizationCFV"
+            fields = < "velocity" "pressure" >
+            fields_with_BCs = < "velocity" >
+            max_allowed_negative_distance_to_face = -1.e-8
+            max_allowed_normal_scalar_VtoFVcenter = 1.e-8
+            min_distance_between_centers = 1.e-8
+         END MODULE FE_OneStepIteration#check
+         
+         MODULE FE_OneStepIteration#ns
+            
+            concrete_name = "AP_NavierStokes2CFV"
+
+            verbose_level = 1
+            
+            velocity = "velocity"
+            velocity_level_to_update = 0
+            
+            pressure = "pressure"
+            pressure_level_to_update = 0
+            
+            coef_vgrad_v  = 1.0
+            coef_viscous = 1.0/100.0
+            param_source = "pi"
+            
+            lambda_in_pressure_stabilization = 0.1
+            h_exponent_in_infsup_stabilization = 1.0
+            color_of_cluster_boundaries = "cluster_boundary"
+            
+            quadrature_rule_provider_for_source = "GE_QRprovider_1"
+            
+            nb_iterations_max = 1000
+            relaxation_coefficient = 1.
+            newton_tolerance = 1.e-6
+            
+            MODULE LA_Matrix
+               concrete_name = "LA_PelMatrix"
+            END MODULE LA_Matrix
+
+            MODULE LA_Solver
+               concrete_name = "LA_PreconditionedSolver"
+               MODULE LA_IterativeSolver
+                  concrete_name = "LA_GMRES_IS"
+                  nb_iterations_max = 2000
+                  MODULE LA_ConvergenceTest
+                     concrete_name = "LA_DefaultConvergenceTest"
+                     relative_tolerance = 1.e-8
+                     absolute_tolerance = 1.e-30
+                  END MODULE LA_ConvergenceTest
+                  restart = 50 
+                  verbose = false
+               END MODULE LA_IterativeSolver
+               MODULE LA_Preconditioner
+                  concrete_name = "LA_SSOR_PC"
+                  omega = 1.
+                  smallest_inverted_item = 1.e-30
+                  nb_inner_iterations = 1
+               END MODULE LA_Preconditioner
+            END MODULE LA_Solver
+         END MODULE FE_OneStepIteration#ns
+               
+      END MODULE list_of_FE_OneStepIteration
+      
+   END MODULE FE_OneStepIteration
+   
+END MODULE PEL_Application

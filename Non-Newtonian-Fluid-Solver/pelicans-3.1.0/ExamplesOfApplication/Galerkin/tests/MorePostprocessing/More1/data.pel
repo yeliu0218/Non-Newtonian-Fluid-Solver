@@ -1,0 +1,95 @@
+MODULE PEL_Application
+  
+   concrete_name = "FE_MorePostprocessing"
+   
+   MODULE PEL_ObjectReader
+      file_name = join( "..", "DoSaving", "saving.pel" )
+   END MODULE PEL_ObjectReader
+   
+   cycle_number = 2
+
+   MODULE domain_and_fields
+
+      verbose_level = 1
+      
+      MODULE interior_fields
+         
+         MODULE stream_function
+            name = "stream_function"
+            nb_components =   1
+            element_name = "PDE_2D_P1_3nodes"
+            storage_depth = 1
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = < 0.0 >
+            END MODULE DOFs_values
+         END MODULE stream_function
+
+      END MODULE interior_fields
+      
+      MODULE PDE_ResultSaver
+         
+         writers = < "PEL_TICwriter" >
+         
+         writing_mode = "text"
+         files_basename = "save"
+         
+         MODULE pressure
+            where_to_save = "at_vertices"
+            entry_name = "PP"
+            field = "pressure"
+         END MODULE pressure
+         
+         MODULE stream_function
+            where_to_save = "at_vertices"
+            entry_name = "sf"
+            field = "stream_function"
+         END MODULE stream_function
+
+      END MODULE PDE_ResultSaver
+
+   END MODULE domain_and_fields
+      
+   MODULE FE_OneStepIteration
+      
+      concrete_name = "FE_SplitSystem"
+      
+      MODULE list_of_FE_OneStepIteration
+         
+         MODULE FE_OneStepIteration#SF
+            concrete_name = "FE_StreamFunction"
+
+            stream_function = "stream_function"
+            level_to_update = 0
+
+            velocity = "velocity"
+            level_of_velocity = 0
+
+            MODULE LA_Matrix
+               concrete_name = "LA_PelMatrix"
+            END MODULE LA_Matrix
+            
+            MODULE LA_Solver
+               concrete_name = "LA_PreconditionedSolver"
+               MODULE LA_IterativeSolver
+                  verbose = false
+                  concrete_name = "LA_CG_IS"
+                  nb_iterations_max = 2000
+                  MODULE LA_ConvergenceTest
+                     concrete_name = "LA_DefaultConvergenceTest"
+                     relative_tolerance = 1.0e-12
+                     absolute_tolerance = 1.0e-50
+                  END MODULE LA_ConvergenceTest
+               END MODULE LA_IterativeSolver
+               MODULE LA_Preconditioner
+                  concrete_name = "LA_Jacobi_PC"
+                  smallest_inverted_item = 1.e-20
+               END MODULE LA_Preconditioner
+            END MODULE LA_Solver
+         END MODULE FE_OneStepIteration#SF
+
+      END MODULE list_of_FE_OneStepIteration
+      
+   END MODULE FE_OneStepIteration
+   
+END MODULE PEL_Application

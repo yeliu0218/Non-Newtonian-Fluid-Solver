@@ -1,0 +1,352 @@
+<html>
+<head>
+<title>CH_ResidualNSCellIndicator.cc</title>
+<link rel=stylesheet type="text/css" href="stylesheet.css">
+</head>
+<body>
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated
+ *  reusable components, whose purpose is to simplify the task of developing
+ *  softwares of numerical mathematics and scientific computing.
+ *
+ *  This software is governed by the CeCILL-C license under French law and
+ *  abiding by the rules of distribution of free software. You can use, modify
+ *  and/or redistribute the software under the terms of the CeCILL-C license
+ *  as circulated by CEA, CNRS and INRIA at the following URL
+ *  &quot;http://www.cecill.info&quot;.
+ *
+ *  As a counterpart to the access to the source code and rights to copy,
+ *  modify and redistribute granted by the license, users are provided only
+ *  with a limited warranty and the software's author, the holder of the
+ *  economic rights, and the successive licensors have only limited liability.
+ *
+ *  In this respect, the user's attention is drawn to the risks associated
+ *  with loading, using, modifying and/or developing or reproducing the
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also
+ *  therefore means that it is reserved for developers and experienced
+ *  professionals having in-depth computer knowledge. Users are therefore
+ *  encouraged to load and test the software's suitability as regards their
+ *  requirements in conditions enabling the security of their systems and/or
+ *  data to be ensured and, more generally, to use and operate it in the same
+ *  conditions as regards security.
+ *
+ *  The fact that you are presently reading this means that you have had
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;CH_ResidualNSCellIndicator.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">GE_Color</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">GE_Mpolyhedron</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">GE_Point</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">GE_QRprovider</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">GE_Vector</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_CursorFEside</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_DiscreteField</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_DomainAndFields</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_LocalFEbound</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_LocalFEcell</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_ReferenceElement</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_SetOfBCs</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_SetOfDiscreteFields</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE_SetOfParameters</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE_Parameter</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE_TimeIterator</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;iostream&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw2">string</font><font class="text">&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;math.h&gt;
+
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> ;
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">cout</font><font class="text"> ; </font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+
+CH_ResidualNSCellIndicator </font><font class="kw1">const</font><font class="text">*
+CH_ResidualNSCellIndicator:: PROTOTYPE = </font><font class="kw1">new</font><font class="text"> CH_ResidualNSCellIndicator() ;
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">CH_ResidualNSCellIndicator:: CH_ResidualNSCellIndicator( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">FE_AdaptationIndicator</font><font class="text">( </font><font class="string">&quot;CH_ResidualNSCellIndicator&quot;</font><font class="text"> )
+   , CELL_ERRORS( 0 )
+{
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">CH_ResidualNSCellIndicator*
+CH_ResidualNSCellIndicator:: create_replica(
+                                  </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                  </font><font class="kw3">PDE_DomainAndFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dom,
+                                  </font><font class="kw3">FE_SetOfParameters</font><font class="text"> </font><font class="kw1">const</font><font class="text">* prms,
+                                  </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp,
+                                  </font><font class="kw2">size_t</font><font class="text"> a_verbose_level ) </font><font class="kw1">const
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;CH_ResidualNSCellIndicator:: create_replica&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_PRE( a_owner, dom, prms, exp, a_verbose_level ) ) ;
+
+   CH_ResidualNSCellIndicator* result =
+                    </font><font class="kw1">new</font><font class="text"> CH_ResidualNSCellIndicator( a_owner, dom, prms,
+                                                    exp, a_verbose_level ) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_POST( result, a_owner,
+                                   dom, prms, exp, a_verbose_level ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">CH_ResidualNSCellIndicator:: CH_ResidualNSCellIndicator(
+                                           </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                           </font><font class="kw3">PDE_DomainAndFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dom,
+                                           </font><font class="kw3">FE_SetOfParameters</font><font class="text"> </font><font class="kw1">const</font><font class="text">* prms,
+                                           </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp,
+                                           </font><font class="kw2">size_t</font><font class="text"> a_verbose_level  )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">FE_AdaptationIndicator</font><font class="text">( a_owner, a_verbose_level )
+   , NB_REFS( 10000 )
+   , PT( </font><font class="kw3">GE_Point</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, dom-&gt;nb_space_dimensions() ) )
+   , ICALL( 0 )
+   , UU( dom-&gt;set_of_discrete_fields()-&gt;item(
+                     exp-&gt;string_data( </font><font class="string">&quot;velocity&quot;</font><font class="text"> ) ) )
+   , PP( dom-&gt;set_of_discrete_fields()-&gt;item(
+                     exp-&gt;string_data( </font><font class="string">&quot;pressure&quot;</font><font class="text"> ) ) )
+   , L_UU( exp-&gt;int_data( </font><font class="string">&quot;level_of_velocity&quot;</font><font class="text"> ) )
+   , L_PP( exp-&gt;int_data( </font><font class="string">&quot;level_of_pressure&quot;</font><font class="text"> ) )
+   , DENS( prms-&gt;item( exp-&gt;string_data( </font><font class="string">&quot;param_density&quot;</font><font class="text"> ) ) )
+   , MU( prms-&gt;item( exp-&gt;string_data( </font><font class="string">&quot;param_viscous&quot;</font><font class="text"> ) ) )
+   , RHS( prms-&gt;item( exp-&gt;string_data( </font><font class="string">&quot;param_source&quot;</font><font class="text"> ) ) )
+   , BCs( dom-&gt;set_of_boundary_conditions() )
+   , sFE( dom-&gt;create_CursorFEside( </font><font class="kw1">this</font><font class="text"> ) )
+   , bFE( dom-&gt;create_LocalFEbound( </font><font class="kw1">this</font><font class="text"> ) )
+   , cFE( dom-&gt;create_LocalFEcell( </font><font class="kw1">this</font><font class="text"> ) )
+   , QRP( </font><font class="kw3">GE_QRprovider</font><font class="text">::object(
+                           exp-&gt;string_data( </font><font class="string">&quot;quadrature_rule_provider&quot;</font><font class="text"> ) ) )
+   , NB_DIMS( dom-&gt;nb_space_dimensions() )
+   , CELL_ERRORS( 0 )
+   , MAX_ERR( exp-&gt;double_data( </font><font class="string">&quot;maximum_error&quot;</font><font class="text"> ) )
+   , MIN_ERR( -1.E+10 )
+   , BUILD_OK( </font><font class="kw1">false</font><font class="text"> )
+{
+   sFE-&gt;include_color( </font><font class="kw3">GE_Color</font><font class="text">::halo_color() ) ;
+   sFE-&gt;require_field_calculation( PP, </font><font class="kw3">PDE_LocalFE</font><font class="text">::N ) ;
+   sFE-&gt;require_field_calculation( UU, </font><font class="kw3">PDE_LocalFE</font><font class="text">::dN ) ;
+   DENS-&gt;transfer_side_calculation_requirements( sFE, </font><font class="kw3">FE_Parameter</font><font class="text">::Val ) ;
+   MU-&gt;transfer_side_calculation_requirements( sFE, </font><font class="kw3">FE_Parameter</font><font class="text">::Val ) ;
+
+   bFE-&gt;include_color( </font><font class="kw3">GE_Color</font><font class="text">::halo_color() ) ;
+   bFE-&gt;require_field_calculation( PP, </font><font class="kw3">PDE_LocalFE</font><font class="text">::N ) ;
+   bFE-&gt;require_field_calculation( UU, </font><font class="kw3">PDE_LocalFE</font><font class="text">::dN ) ;
+   DENS-&gt;transfer_bound_calculation_requirements( bFE, </font><font class="kw3">FE_Parameter</font><font class="text">::Val ) ;
+   MU-&gt;transfer_bound_calculation_requirements( bFE, </font><font class="kw3">FE_Parameter</font><font class="text">::Val ) ;
+
+   cFE-&gt;include_color( </font><font class="kw3">GE_Color</font><font class="text">::halo_color() ) ;
+   cFE-&gt;require_field_calculation( PP, </font><font class="kw3">PDE_LocalFE</font><font class="text">::dN ) ;
+   cFE-&gt;require_field_calculation( UU, </font><font class="kw3">PDE_LocalFE</font><font class="text">::N ) ;
+   cFE-&gt;require_field_calculation( UU, </font><font class="kw3">PDE_LocalFE</font><font class="text">::dN ) ;
+   cFE-&gt;require_field_calculation( UU, </font><font class="kw3">PDE_LocalFE</font><font class="text">::d2N ) ;
+   DENS-&gt;transfer_cell_calculation_requirements( cFE, </font><font class="kw3">FE_Parameter</font><font class="text">::Val ) ;
+   MU-&gt;transfer_cell_calculation_requirements( cFE, </font><font class="kw3">FE_Parameter</font><font class="text">::Val ) ;
+   RHS-&gt;transfer_cell_calculation_requirements( cFE, </font><font class="kw3">FE_Parameter</font><font class="text">::Val ) ;
+
+   CELL_ERRORS.re_initialize( cFE-&gt;nb_meshes() ) ;
+   BUILD_OK = </font><font class="kw1">false</font><font class="text"> ;
+
+   </font><font class="kw1">if</font><font class="text">( exp-&gt;has_entry( </font><font class="string">&quot;minimum_error&quot;</font><font class="text"> ) )
+         MIN_ERR = exp-&gt;double_data( </font><font class="string">&quot;minimum_error&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">if</font><font class="text">( exp-&gt;has_entry( </font><font class="string">&quot;max_nb_steps&quot;</font><font class="text"> ) )
+         NB_REFS = exp-&gt;int_data( </font><font class="string">&quot;max_nb_steps&quot;</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">CH_ResidualNSCellIndicator:: ~CH_ResidualNSCellIndicator( </font><font class="kw1">void</font><font class="text">  )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">CH_ResidualNSCellIndicator:: reset_self( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   ICALL = 0 ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">CH_ResidualNSCellIndicator:: build_self( </font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* t_it )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;CH_ResidualNSCellIndicator:: build_self&quot;</font><font class="text"> ) ;
+
+   ++ICALL ;
+   CELL_ERRORS.</font><font class="kw2">set</font><font class="text">( 0.0 ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> nbc = UU-&gt;nb_components() ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( nbc == cFE-&gt;nb_space_dimensions() ) ; </font><font class="comment">//cf ugradu et div
+</font><font class="text">
+   </font><font class="kw3">PDE_LocalFEcell</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fe_K = sFE-&gt;adjacent_localFEcell( 0 ) ;
+   </font><font class="kw3">PDE_LocalFEcell</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fe_L = sFE-&gt;adjacent_localFEcell( 1 ) ;
+   </font><font class="kw1">for</font><font class="text">( sFE-&gt;start() ; sFE-&gt;is_valid() ; sFE-&gt;go_next() )
+   {
+      </font><font class="kw3">GE_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* normal = sFE-&gt;normal() ;
+      </font><font class="kw2">size_t</font><font class="text"> id_0 = fe_K-&gt;mesh_id() ;
+      </font><font class="kw1">if</font><font class="text">( id_0 &gt;= CELL_ERRORS.size() )
+      {
+         CELL_ERRORS.resize( id_0 + 1 ) ;
+      }
+      </font><font class="kw2">size_t</font><font class="text"> id_1 = fe_L-&gt;mesh_id() ;
+      </font><font class="kw1">if</font><font class="text">( id_1 &gt;= CELL_ERRORS.size() )
+      {
+         CELL_ERRORS.resize( id_1 + 1) ;
+      }
+
+      sFE-&gt;start_IP_iterator( QRP ) ;
+      </font><font class="kw1">double</font><font class="text"> jump = 0.0 ;
+      </font><font class="kw1">for</font><font class="text">( ; sFE-&gt;valid_IP() ; sFE-&gt;go_next_IP() )
+      {
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> ic=0 ; ic &lt; UU-&gt;nb_components() ; ++ic )
+         {
+            </font><font class="kw1">double</font><font class="text"> gg = 0 ;
+            </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> d=0 ; d&lt;NB_DIMS ; ++d )
+            {
+               gg += ( MU-&gt;cell_value_at_IP( t_it, fe_K )
+                     * fe_K-&gt;gradient_at_IP( UU, L_UU, d, ic )
+                     - MU-&gt;cell_value_at_IP( t_it, fe_L )
+                     * fe_L-&gt;gradient_at_IP( UU, L_UU, d, ic ) )
+                     * normal-&gt;component( d ) ;
+            }
+            gg -= ( fe_K-&gt;value_at_IP( PP, L_PP, 0 )
+                  - fe_L-&gt;value_at_IP( PP, L_PP, 0 ) )
+                  * normal-&gt;component( ic ) ;
+            jump += 0.25 * </font><font class="kw3">PEL</font><font class="text">::sqr( gg ) ;
+         }
+      }
+
+      </font><font class="kw1">double</font><font class="text"> hh_0 = fe_K-&gt;polyhedron()-&gt;inter_vertices_maximum_distance() ;
+      CELL_ERRORS( id_0 ) += hh_0 * jump  ;
+      </font><font class="kw1">double</font><font class="text"> hh_1 = fe_L-&gt;polyhedron()-&gt;inter_vertices_maximum_distance() ;
+      CELL_ERRORS( id_1 ) += hh_1* jump  ;
+   }
+
+   </font><font class="comment">//???????????????Boucle sur les bords neumann
+</font><font class="text">
+         </font><font class="kw1">for</font><font class="text">( cFE-&gt;start() ; cFE-&gt;is_valid() ; cFE-&gt;go_next() )
+         {
+            </font><font class="kw2">size_t</font><font class="text"> id = cFE-&gt;mesh_id() ;
+            </font><font class="kw3">PEL_ASSERT</font><font class="text">( id &lt; CELL_ERRORS.size() ) ;
+
+            CELL_ERRORS( id ) = </font><font class="kw3">PEL</font><font class="text">::sqrt( CELL_ERRORS( id ) ) ;
+
+            cFE-&gt;start_IP_iterator( QRP ) ;
+            </font><font class="kw1">double</font><font class="text"> res = 0.0 ;
+            </font><font class="kw1">double</font><font class="text"> div = 0.0 ;
+            </font><font class="kw1">for</font><font class="text">( ; cFE-&gt;valid_IP() ; cFE-&gt;go_next_IP() )
+            {
+               </font><font class="kw1">double</font><font class="text"> div_ip = 0.0 ;
+               </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> ic=0 ; ic&lt;nbc ; ++ic )
+               {
+                  </font><font class="kw1">double</font><font class="text"> lapl = 0.0 ; </font><font class="comment">//????? Assembler div( 2 eta DU )
+</font><font class="text">                  </font><font class="kw1">double</font><font class="text"> ugradu = 0.0 ;
+                  </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> a=0 ; a&lt;cFE-&gt;nb_space_dimensions() ; ++a )
+                  {
+                     lapl += cFE-&gt;hessian_at_IP( UU, L_UU, a, a, ic ) ;
+                     ugradu += cFE-&gt;value_at_IP( UU, L_UU, a )
+                     * cFE-&gt;gradient_at_IP( UU, L_UU, a, ic )  ;
+                  }
+                  res += </font><font class="kw3">PEL</font><font class="text">::sqr( RHS-&gt;cell_value_at_IP( t_it, cFE, ic )
+                                 + MU-&gt;cell_value_at_IP( t_it, cFE ) *  lapl
+                                 - DENS -&gt;cell_value_at_IP( t_it, cFE ) * ugradu
+                                 - cFE-&gt;gradient_at_IP( PP, L_PP, ic, 0 ) ) ;
+                  div_ip +=  cFE-&gt;gradient_at_IP( UU, L_UU, ic, ic )  ;
+               }
+               div += </font><font class="kw3">PEL</font><font class="text">::sqr( div_ip ) ;
+            }
+            </font><font class="kw1">double</font><font class="text"> hh = cFE-&gt;polyhedron()-&gt;inter_vertices_maximum_distance() ;
+            CELL_ERRORS( id ) += hh* ( </font><font class="kw3">PEL</font><font class="text">::sqrt( res ) + </font><font class="kw3">PEL</font><font class="text">::sqrt( div ) ) ;
+            </font><font class="comment">//hh en 3d aussi  ???
+</font><font class="text">         }
+         CELL_ERRORS_MAX = CELL_ERRORS( 0 ) ;
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i = 1 ; i &lt; CELL_ERRORS.size() ; ++i)
+         {
+            </font><font class="kw1">if</font><font class="text">( CELL_ERRORS( i ) &gt; CELL_ERRORS_MAX )
+               CELL_ERRORS_MAX = CELL_ERRORS( i ) ;
+         }
+
+         </font><font class="kw1">if</font><font class="text">( !t_it-&gt;is_started() ||
+             !(t_it-&gt;iteration_number() &gt; t_it-&gt;initial_iteration_number()) )
+         {
+            </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="string">&quot; (CH_ResidualCellIndicator not applied) &quot;</font><font class="text"> ;
+            CELL_ERRORS.</font><font class="kw2">set</font><font class="text">( 0.0 ) ;
+            CELL_ERRORS_MAX = 0.0 ;
+         }
+         BUILD_OK = </font><font class="kw1">true</font><font class="text"> ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="text">CH_ResidualNSCellIndicator:: to_be_refined( </font><font class="kw1">double</font><font class="text"> bf_indicator,
+                                       </font><font class="kw3">GE_Mpolyhedron</font><font class="text"> </font><font class="kw1">const</font><font class="text">* poly,
+                                       </font><font class="kw3">PDE_ReferenceElement</font><font class="text"> </font><font class="kw1">const</font><font class="text">* elm,
+                                       </font><font class="kw2">size_t</font><font class="text"> local_node ) </font><font class="kw1">const
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;CH_ResidualNSCellIndicator:: to_be_refined&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( to_be_refined_PRE( bf_indicator, poly, elm, local_node ) ) ;
+
+   </font><font class="kw1">bool</font><font class="text"> result = </font><font class="kw1">false</font><font class="text"> ;
+   </font><font class="kw1">if</font><font class="text">( ICALL &lt;= NB_REFS )
+   {
+      </font><font class="kw1">if</font><font class="text">( bf_indicator/CELL_ERRORS_MAX &gt; MAX_ERR ) result = </font><font class="kw1">true</font><font class="text"> ;
+   }
+
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="text">CH_ResidualNSCellIndicator:: to_be_unrefined( </font><font class="kw1">double</font><font class="text"> bf_indicator,
+                                         </font><font class="kw3">GE_Mpolyhedron</font><font class="text"> </font><font class="kw1">const</font><font class="text">* poly,
+                                         </font><font class="kw3">PDE_ReferenceElement</font><font class="text"> </font><font class="kw1">const</font><font class="text">* elm,
+                                         </font><font class="kw2">size_t</font><font class="text"> local_node ) </font><font class="kw1">const
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;CH_ResidualNSCellIndicator:: to_be_unrefined&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( to_be_unrefined_PRE( bf_indicator, poly, elm, local_node ) );
+
+   </font><font class="kw1">bool</font><font class="text"> result = </font><font class="kw1">false</font><font class="text"> ;
+   </font><font class="kw1">if</font><font class="text">( MIN_ERR &gt; 0.0 )
+   {
+      </font><font class="kw1">if</font><font class="text">( ICALL &lt;= NB_REFS )
+      {
+         </font><font class="kw1">if</font><font class="text">( bf_indicator/CELL_ERRORS_MAX &lt; MIN_ERR ) result = </font><font class="kw1">true</font><font class="text"> ;
+      }
+   }
+
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw1">double
+</font><font class="text">CH_ResidualNSCellIndicator:: cell_indicator( </font><font class="kw2">size_t</font><font class="text"> cell_id ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;CH_ResidualNSCellIndicator:: cell_indicator&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( BUILD_OK ) ;
+   </font><font class="kw1">double</font><font class="text"> result = CELL_ERRORS( cell_id );
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font>
+</pre>
+</body>
+</html>

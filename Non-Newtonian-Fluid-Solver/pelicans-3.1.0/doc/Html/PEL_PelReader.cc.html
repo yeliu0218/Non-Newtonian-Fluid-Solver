@@ -1,0 +1,257 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>PEL_PelReader.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="PEL_PelReader.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="PELpack-tree.html"><span>Tree</span></a>
+    <a href="PEL_PelReader.html"><span>Class</span></a>
+    <a href="PEL_PelReader.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="PELpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_PelReader</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Module</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_assertions</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;sstream&gt;
+
+</font><font class="kw3">PEL_PelReader</font><font class="text"> </font><font class="kw1">const</font><font class="text">* </font><font class="kw3">PEL_PelReader</font><font class="text">::PROTOTYPE = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_PelReader</font><font class="text">() ;
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_PelReader</font><font class="text">:: </font><font class="kw3">PEL_PelReader</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_DataOnMeshingReader</font><font class="text">( </font><font class="string">&quot;PEL_PelReader&quot;</font><font class="text"> )
+   , MESHING_EXP( 0 )
+   , FIELDS_EXP( 0 )
+   , I_DOM_EXP( 0 )
+   , VAR_EXP( 0 )
+{
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_PelReader</font><font class="text">*
+</font><font class="kw3">PEL_PelReader</font><font class="text">:: create_replica( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_PelReader:: create_replica&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_PRE( a_owner, exp ) ) ;
+
+   </font><font class="kw3">PEL_PelReader</font><font class="text">* result = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_PelReader</font><font class="text">( a_owner, exp ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( create_replica_POST( result, a_owner, exp ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_PelReader</font><font class="text">:: </font><font class="kw3">PEL_PelReader</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                               </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_DataOnMeshingReader</font><font class="text">( a_owner )
+   , MESHING_EXP( 0 )
+   , FIELDS_EXP( 0 )
+   , I_DOM_EXP( 0 )
+   , VAR_EXP( 0 )
+{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_PelReader:: PEL_PelReader&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> i_cycle = exp-&gt;int_data( </font><font class="string">&quot;cycle&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> PEL_file = exp-&gt;string_data( </font><font class="string">&quot;files_basename&quot;</font><font class="text"> )+</font><font class="string">&quot;.pel&quot;</font><font class="text"> ;
+
+   </font><font class="kw3">PEL_Module</font><font class="text">* mod = </font><font class="kw3">PEL_Module</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, </font><font class="string">&quot;MAIN&quot;</font><font class="text">, PEL_file ) ;
+
+   MESHING_EXP = restore_cycle( mod, i_cycle, </font><font class="string">&quot;meshing&quot;</font><font class="text"> ) ;
+   </font><font class="kw1">if</font><font class="text">( MESHING_EXP==0 )
+   {
+      MESHING_EXP = restore_cycle( mod, 1, </font><font class="string">&quot;meshing&quot;</font><font class="text"> ) ;
+   }
+   FIELDS_EXP = restore_cycle( mod, i_cycle, </font><font class="string">&quot;fields&quot;</font><font class="text"> ) ;
+   I_DOM_EXP = restore_cycle( mod, i_cycle, </font><font class="string">&quot;integration_domain&quot;</font><font class="text"> ) ;
+   </font><font class="kw1">if</font><font class="text">( I_DOM_EXP==0 )
+   {
+      I_DOM_EXP = restore_cycle( mod, 1, </font><font class="string">&quot;integration_domain&quot;</font><font class="text"> ) ;
+   }
+   VAR_EXP = restore_cycle( mod, 1, </font><font class="string">&quot;variables&quot;</font><font class="text"> ) ;
+      
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_PelReader</font><font class="text">:: ~</font><font class="kw3">PEL_PelReader</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_PelReader:: ~PEL_PelReader&quot;</font><font class="text"> ) ;
+   </font><font class="kw1">if</font><font class="text">( is_a_prototype() )
+   {
+      PROTOTYPE = 0 ;
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">*
+</font><font class="kw3">PEL_PelReader</font><font class="text">:: meshing( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_PelReader:: meshing&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   
+   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* result = MESHING_EXP ;
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( meshing_POST( result ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">*
+</font><font class="kw3">PEL_PelReader</font><font class="text">:: fields( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_PelReader:: fields&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   
+   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* result = FIELDS_EXP ;
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( fields_POST( result ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">*
+</font><font class="kw3">PEL_PelReader</font><font class="text">:: integration_domain( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_PelReader:: integration_domain&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   
+   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* result = I_DOM_EXP ;
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( integration_domain_POST( result ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">*
+</font><font class="kw3">PEL_PelReader</font><font class="text">:: variables( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_PelReader:: variables&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   
+   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* result = VAR_EXP ;
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( variables_POST( result ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">PEL_PelReader</font><font class="text">:: invariant( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( </font><font class="kw3">PEL_DataOnMeshingReader</font><font class="text">::invariant() ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">*
+</font><font class="kw3">PEL_PelReader</font><font class="text">:: restore_cycle( </font><font class="kw3">PEL_Module</font><font class="text"> </font><font class="kw1">const</font><font class="text">* m,
+                               </font><font class="kw2">size_t</font><font class="text"> i_cycle,
+                               </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; name )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_PelReader:: restore_cycle&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( m!=0 ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( !name.empty() ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* result = 0 ;
+
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> os ;
+   os &lt;&lt;  </font><font class="string">&quot;cycle_&quot;</font><font class="text"> &lt;&lt; (</font><font class="kw1">int</font><font class="text">) i_cycle ;
+
+   </font><font class="kw1">if</font><font class="text">( m-&gt;has_module( os.str() ) )
+   {
+      </font><font class="kw3">PEL_Module</font><font class="text"> </font><font class="kw1">const</font><font class="text">* n = m-&gt;module( os.str() ) ;
+      </font><font class="kw1">if</font><font class="text">( n-&gt;has_module( name ) )
+      {
+         result = </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, n-&gt;module( name ) ) ;
+      }
+   }
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( </font><font class="kw3">IMPLIES</font><font class="text">( result!=0, result-&gt;owner()==</font><font class="kw1">this</font><font class="text"> ) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( </font><font class="kw3">IMPLIES</font><font class="text">( result!=0, result-&gt;name()==name ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font>
+</pre>
+</body>
+</html>

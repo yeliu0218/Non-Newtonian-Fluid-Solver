@@ -1,0 +1,402 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>LA_ILUp_PC</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="LA_ILUp_PC_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="LApack-tree.html"><span>Tree</span></a>
+    <span class=selected>Class</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="LApack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<br />
+<div class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></div>
+<br />
+
+
+<!-- ====== START OF CLASS DATA ======== -->
+<div id=classtitle>
+  <span class=classpath>LinearAlgebra / </span><br />
+  <span class=classname>Class  LA_ILUp_PC</span>
+</div>
+
+<br />
+
+<div id=hierarchy>
+<ul class=rootclass><li><a href="PEL_Object.html#" target="classFrame">PEL_Object</a></li>
+  <ul class=parentclass><li><a href="LA_Preconditioner.html#" target="classFrame">LA_Preconditioner</a></li>
+  <ul class=self><li>LA_ILUp_PC</li>
+</ul></ul>
+</div>
+<hr />
+<pre>
+Preconditioner defined as an Incomplete LU factorization that
+keeps the p'th order fill-ins [Saad, 1996, p278] (ILU(p) 
+preconditioner), including a  possible diagonal compensation 
+strategy [Saad, 1996, p286]  (MILU preconditioner).
+
+Algorithm : The ILU factorization is based on the IKJ variant of
+the Gaussian elimination [Saad, 1996, p272], that reads for
+a matrix a_ij (i=1..n , j=1..n) :
+
+   1 For i = 2 -> n
+   2   For k = 1 -> i-1 with (i,k) not in P
+   3     a_ik = a_ik / a_kk
+   4     For j = k+1 -> n with (i,j) not in P
+   5       a_ij = a_ij - a_ik*a_kj
+   6     End
+   7   End
+   8 End
+
+where P is a subset of all possible pairs (i,j), called a 
+zero pattern. The diagonal compensation strategy consist in
+adding up all the elements that have been dropped at the completion
+of the k loop (step 7) and then substracting this sum from the
+diagonal entry in U.
+
+In the particular case of the ILU(p) factorization, 
+the zero pattern P is the set of pairs (i,j) such that 
+                level(i,j) > p
+where level(i,j) is called the level of fill of the (i,j) element
+and is computed prior to the numerical factorization using the
+following method :
+    
+   0  Initially, level(i,j) = 0          if a_ij is no nil or i=j
+                 level(i,j) = +Infinity  otherwise
+   1  For i = 2 -> n
+   2    For k = 1 -> i-1
+   3      level(i,k) = level(i,k)/level(k,k)
+   4      For j = k+1 -> n 
+   5         level(i,j)=min[ level(i,j), level(i,k)+level(k,j)+1 ]
+   6      End
+   7    End
+   8 End  
+
+The case p=0 coincides with the ILU(0) factorization
+
+Reference : [Saad, 1996]
+   Y. Saad, 1996
+   Iterative Methods for Sparse Linear Systems
+   PWS Publishing Company 
+</pre>
+<hr />
+<a name="method_summary"></a>
+
+<!-- ========== NEW CATEGORY ========== -->
+<table class=category cellpadding=2 cellspacing=0 rules=rows>
+  <tr class=heading><th class=name>Instance delivery and initialization</th><th class=protection>public</th></tr>
+  <tr><td colspan="2"><a href="LA_ILUp_PC.html#create" target="classFrame">static LA_ILUp_PC* create( PEL_Object* a_owner, size_t order, bool diagonal_compensation, double smallest_nonzero_pivot, LA_SeqMatrix const* matrix_prototype )</a></td></tr>
+  <tr><td colspan="2"><a href="LA_ILUp_PC.html#create_clone" target="classFrame">virtual LA_ILUp_PC* create_clone( PEL_Object* a_owner ) const</a></td></tr>
+</table>
+
+<!-- ========== NEW CATEGORY ========== -->
+<table class=category cellpadding=2 cellspacing=0 rules=rows>
+  <tr class=heading><th class=name>Status</th><th class=protection>public</th></tr>
+  <tr><td colspan="2"><a href="LA_ILUp_PC.html#is_valid" target="classFrame">virtual bool is_valid( void ) const</a></td></tr>
+  <tr><td colspan="2"><a href="LA_ILUp_PC.html#dimension" target="classFrame">virtual size_t dimension( void ) const</a></td></tr>
+</table>
+
+<!-- ========== NEW CATEGORY ========== -->
+<table class=category cellpadding=2 cellspacing=0 rules=rows>
+  <tr class=heading><th class=name>Building</th><th class=protection>public</th></tr>
+  <tr><td colspan="2"><a href="LA_ILUp_PC.html#build" target="classFrame">virtual void build( LA_Matrix const* mat )</a></td></tr>
+  <tr><td colspan="2"><a href="LA_ILUp_PC.html#unbuild" target="classFrame">virtual void unbuild( void )</a></td></tr>
+</table>
+
+<!-- ========== NEW CATEGORY ========== -->
+<table class=category cellpadding=2 cellspacing=0 rules=rows>
+  <tr class=heading><th class=name>Linear system solution</th><th class=protection>public</th></tr>
+  <tr><td colspan="2"><a href="LA_ILUp_PC.html#solve" target="classFrame">virtual void solve( LA_Vector const* rhs, LA_Vector* sol )</a></td></tr>
+  <tr><td colspan="2"><a href="LA_ILUp_PC.html#successful_solve" target="classFrame">virtual bool successful_solve( void ) const</a></td></tr>
+</table>
+
+<!-- ========== NEW CATEGORY ========== -->
+<table class=category cellpadding=2 cellspacing=0 rules=rows>
+  <tr class=heading><th class=name>Input - Output</th><th class=protection>public</th></tr>
+  <tr><td colspan="2"><a href="LA_ILUp_PC.html#print" target="classFrame">virtual void print( std::ostream& os, size_t indent_width ) const</a></td></tr>
+  <tr><td colspan="2"><a href="LA_ILUp_PC.html#print_more" target="classFrame">virtual void print_more( std::ostream& os, size_t indent_width ) const</a></td></tr>
+</table>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="create"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>static <a href="LA_ILUp_PC.html#" target="classFrame">LA_ILUp_PC</a>* create(</code></td><td><code><a href="PEL_Object.html#PEL_Object" target="classFrame">PEL_Object*</a> <span class="uid1">a_owner</span>,</tr>
+  <tr><td /><td><code> size_t <span class="uid1">order</span>,</tr>
+  <tr><td /><td><code> bool <span class="uid1">diagonal_compensation</span>,</tr>
+  <tr><td /><td><code> double <span class="uid1">smallest_nonzero_pivot</span>,</tr>
+  <tr><td /><td><code> <a href="LA_SeqMatrix.html#" target="classFrame">LA_SeqMatrix</a> const* <span class="uid1">matrix_prototype</span> ) </code></td></tr>
+</table>
+<pre>
+      Create an return an instance.
+      All fill-in elements whose level of fill does not exceed <span class="uid1">order</span> are 
+      kept.
+      The diagonal compensation strategy is adopted (leading to a MILU 
+      preconditioner) if <span class="uid1">diagonal_compensation</span> is true. <span class="uid1">matrix_prototype</span>
+      is used to select the type of an internal matrix that is created 
+      by calling <a href="LA_SeqMatrix.html#create_clone" target="classFrame">LA_SeqMatrix::create_clone</a> with <span class="uid1">matrix_prototype</span>
+      as target object.
+</pre>
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">smallest_nonzero_pivot</span></span> > 0.</code></li>
+    <li><code><span class="uid1"><span class="uid1">matrix_prototype</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">matrix_prototype</span></span>->nb_rows() == 0 && <span class="uid1"><span class="uid1">matrix_prototype</span></span>->nb_cols() == 0</code></li>
+  </ul>
+<br />
+  <span class=postcondition>Postcondition</span>
+  <ul>
+    <li><code>result != 0</code></li>
+    <li><code>result-><a href="PEL_Object.html#owner" target="classFrame">owner</a>() == <span class="uid1"><span class="uid1">a_owner</span></span></code></li>
+    <li><code>!result-><a href="LA_ILUp_PC.html#is_valid" target="classFrame">is_valid</a>()</code></li>
+    <li><code>!result-><a href="LA_ILUp_PC.html#successful_solve" target="classFrame">successful_solve</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="create_clone"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual <a href="LA_ILUp_PC.html#" target="classFrame">LA_ILUp_PC</a>* create_clone(</code></td><td><code><a href="PEL_Object.html#PEL_Object" target="classFrame">PEL_Object*</a> <span class="uid1">a_owner</span> ) const</code></td></tr>
+</table>
+<pre>Create and a clone of <span class="uid1">self</span>.
+
+</pre>
+<br />
+<div class=conditions>
+  <span class=postcondition>Postcondition</span>
+  <ul>
+    <li><code>result != 0</code></li>
+    <li><code>result-><a href="PEL_Object.html#owner" target="classFrame">owner</a>() == <span class="uid1"><span class="uid1">a_owner</span></span></code></li>
+    <li><code>!result-><a href="LA_ILUp_PC.html#is_valid" target="classFrame">is_valid</a>()</code></li>
+    <li><code>!result-><a href="LA_ILUp_PC.html#successful_solve" target="classFrame">successful_solve</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=overrides> Overridden from <a href="PEL_Object.html#" target="classFrame">PEL_Object</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="is_valid"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual bool is_valid(</code></td><td><code>void ) const</code></td></tr>
+</table>
+<br />
+<br />
+<table class=footer>
+<tr>
+  <td class=overrides> Overridden from <a href="LA_Preconditioner.html#" target="classFrame">LA_Preconditioner</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="dimension"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual size_t dimension(</code></td><td><code>void ) const</code></td></tr>
+</table>
+<br />
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><a href="LA_ILUp_PC.html#is_valid" target="classFrame">is_valid</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=overrides> Overridden from <a href="LA_Preconditioner.html#" target="classFrame">LA_Preconditioner</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="build"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual void build(</code></td><td><code><a href="LA_Matrix.html#" target="classFrame">LA_Matrix</a> const* <span class="uid1">mat</span> ) </code></td></tr>
+</table>
+<pre>Build <span class="uid1">self</span> from <span class="uid1">mat</span>.
+</pre>
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">mat</span></span> != 0</code></li>
+    <li><code><span class="uid1"><span class="uid1">mat</span></span>->nb_rows() == <span class="uid1"><span class="uid1">mat</span></span>->nb_cols()</code></li>
+    <li><code><span class="uid1"><span class="uid1">mat</span></span>->nb_rows() > 0</code></li>
+  </ul>
+<br />
+  <span class=postcondition>Postcondition</span>
+  <ul>
+    <li><code><a href="LA_ILUp_PC.html#is_valid" target="classFrame">is_valid</a>() ==&gt; <a href="LA_ILUp_PC.html#dimension" target="classFrame">dimension</a>() == <span class="uid1"><span class="uid1">mat</span></span>->nb_rows()</code></li>
+    <li><code>!<a href="LA_ILUp_PC.html#successful_solve" target="classFrame">successful_solve</a>()</code></li>
+    <li><code><a href="LA_ILUp_PC.html#is_valid" target="classFrame">is_valid</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=overrides> Overridden from <a href="LA_Preconditioner.html#" target="classFrame">LA_Preconditioner</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="unbuild"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual void unbuild(</code></td><td><code>void ) </code></td></tr>
+</table>
+<pre>Release preconditioned matrix.
+</pre>
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><a href="LA_ILUp_PC.html#is_valid" target="classFrame">is_valid</a>()</code></li>
+  </ul>
+<br />
+  <span class=postcondition>Postcondition</span>
+  <ul>
+    <li><code>!<a href="LA_ILUp_PC.html#is_valid" target="classFrame">is_valid</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=overrides> Overridden from <a href="LA_Preconditioner.html#" target="classFrame">LA_Preconditioner</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="solve"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual void solve(</code></td><td><code><a href="LA_Vector.html#" target="classFrame">LA_Vector</a> const* <span class="uid1">rhs</span>,</tr>
+  <tr><td /><td><code><a href="LA_Vector.html#" target="classFrame">LA_Vector</a>* <span class="uid1">sol</span> ) </code></td></tr>
+</table>
+<pre>Solve the system defined by the preconditioner as the LHS matrix
+and by <span class="uid1">rhs</span> as the RHS, and copy the solution into <span class="uid1">sol</span>.
+At completion, the success or failure of this task is given
+by <a href="LA_ILUp_PC.html#successful_solve" target="classFrame">successful_solve</a>.
+</pre>
+<br />
+<div class=conditions>
+  <span class=precondition>Precondition</span>
+  <ul>
+    <li><code><a href="LA_ILUp_PC.html#is_valid" target="classFrame">is_valid</a>()</code></li>
+    <li><code><span class="uid1"><span class="uid1">rhs</span></span>->is_synchronized()</code></li>
+    <li><code><span class="uid1"><span class="uid1">rhs</span></span>->nb_rows() == <a href="LA_ILUp_PC.html#dimension" target="classFrame">dimension</a>()</code></li>
+    <li><code><span class="uid1"><span class="uid1">sol</span></span>->nb_rows() == <a href="LA_ILUp_PC.html#dimension" target="classFrame">dimension</a>()</code></li>
+  </ul>
+<br />
+  <span class=postcondition>Postcondition</span>
+  <ul>
+    <li><code><span class="uid1"><span class="uid1">sol</span></span>->is_synchronized()</code></li>
+    <li><code><a href="LA_ILUp_PC.html#successful_solve" target="classFrame">successful_solve</a>()</code></li>
+  </ul>
+</div>
+<table class=footer>
+<tr>
+  <td class=overrides> Overridden from <a href="LA_Preconditioner.html#" target="classFrame">LA_Preconditioner</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="successful_solve"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual bool successful_solve(</code></td><td><code>void ) const</code></td></tr>
+</table>
+<pre>Did <a href="LA_ILUp_PC.html#solve" target="classFrame">solve</a> managed to solve successfully its linear system
+at completion of its last call ?
+</pre>
+<br />
+<table class=footer>
+<tr>
+  <td class=overrides> Overridden from <a href="LA_Preconditioner.html#" target="classFrame">LA_Preconditioner</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="print"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual void print(</code></td><td><code>std::ostream& <span class="uid1">os</span>,</tr>
+  <tr><td /><td><code>size_t <span class="uid1">indent_width</span> ) const</code></td></tr>
+</table>
+<pre>Write text to <span class="uid1">os</span> with <span class="uid1">indent_width</span> indentation.
+
+</pre>
+<br />
+<table class=footer>
+<tr>
+  <td class=extends> Extension from <a href="LA_Preconditioner.html#" target="classFrame">LA_Preconditioner</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+<!-- ========== NEW METHOD ========== -->
+<hr />
+<a name="print_more"></a>
+<div class=method>
+<table class=prototype>
+  <tr><td><code>virtual void print_more(</code></td><td><code>std::ostream& <span class="uid1">os</span>,</tr>
+  <tr><td /><td><code> size_t <span class="uid1">indent_width</span> ) const</code></td></tr>
+</table>
+<br />
+<br />
+<table class=footer>
+<tr>
+  <td class=overrides> Overridden from <a href="LA_Preconditioner.html#" target="classFrame">LA_Preconditioner</a></td>
+  <td class=link2anchor>SUMMARY :: <a href="#method_summary">METHOD</a></td></tr>
+</table>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,22 @@
+MODULE GE_SplittingStrategy_TEST#1
+   
+   nb_space_dimensions = 2
+   MODULE GE_Meshing
+      concrete_name = "GE_BoxWithBoxes"
+      vertices_coordinate_1 = regular_vector( 0.0, 20, 0.01 )
+      vertices_coordinate_0   = regular_vector( 0.0, 20, 0.01 )
+      mesh_polyhedron = < "GE_Segment" "GE_Rectangle" > 
+   END MODULE GE_Meshing
+
+   if( is_defined( "BS_with_METIS" ) )
+   MODULE splitting_strategy
+      concrete_name = "EXT_METISsplitting"
+   END MODULE splitting_strategy
+   if( ! is_defined( "BS_with_METIS" ) )
+   MODULE splitting_strategy
+      concrete_name = "GE_CoordinateSplitting"
+      coordinate_splitting_formula =
+      unit_sort( component($DV_X,0), 0., 0.01 , nb_ranks() )
+   END MODULE splitting_strategy
+   
+END MODULE GE_SplittingStrategy_TEST#1

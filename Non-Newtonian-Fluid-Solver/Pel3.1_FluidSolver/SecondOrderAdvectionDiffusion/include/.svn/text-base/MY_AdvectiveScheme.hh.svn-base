@@ -1,0 +1,180 @@
+#ifndef MY_ADVECTIVE_SCHEME_HH
+#define MY_ADVECTIVE_SCHEME_HH
+
+#include <PEL_Object.hh>
+
+#include <vector>
+
+class FE_Parameter ;
+class FE_SetOfParameters ;
+class FE_TimeIterator ;
+
+class LA_Vector ;
+
+class PDE_CursorFEside ;
+class PDE_DiscreteField ;
+class PDE_DomainAndFields ;
+class PDE_LocalFEbound ;
+class PDE_LocalFEcell ;
+class PDE_LocalEquation ;
+
+class PEL_ModuleExplorer ;
+class PEL_ObjectRegister ;
+
+/*
+
+Schemes used for the finite volume convective assembling.
+
+FRAMEWORK INSTANTIATION
+   1. Derive a concrete subclass, say MY_MyScheme.
+   2. Choose a name for MY_MyScheme, say "MY_MyScheme".
+   3. Implement a private destructor.
+   4. Declare all constructors private.
+   5. Define the prototype to be registered :
+      5.1 Implement a default constructor that initializes the
+          `::MY_AdvectiveScheme' subobject by calling
+               `MY_AdvectiveScheme( std::string const& )'
+          with "MY_MyScheme" as argument.
+      5.2 Define and initialize a static instance by calling the default
+          constructor.
+             declaration (in the header file, eg MY_MyScheme.hh) :
+             | static MY_MyScheme const* PROTOTYPE ;
+             definition (in the implementation file, eg MY_MyScheme.cc) :
+             | MY_MyScheme const* MY_MyScheme::PROTOTYPE = new MY_MyScheme() ;'
+   6. Implement a private constructor that initializes the 
+      `::MY_AdvectiveScheme' subobject by calling
+                 `MY_AdvectiveScheme( PEL_Object*,
+                                       PDE_DomainAndFields const*
+                                       FE_Parameter* )'
+   7. Implement the `::create_replica' method that allocates an object
+      of type `MY_MyScheme' initialized using the private constructor described
+      above, and subsequently return a pointer to that object.
+   8. Implement the `::initialize_time_step' and `::assemble_convection_on_side' methods.
+PUBLISHED
+*/
+
+class MY_AdvectiveScheme : public PEL_Object
+{
+   public: //-----------------------------------------------------------------
+      
+   //-- Instance delivery and initialization
+
+      // Create and return an instance of `MY_AdvectiveScheme::'
+      // according to the data attainable by `exp'.
+      static MY_AdvectiveScheme* make(
+                           PEL_Object* a_owner,
+                           PDE_DomainAndFields const* dom,
+                           FE_SetOfParameters const* prms, 
+                           PDE_DiscreteField const* field,
+                           PEL_ModuleExplorer const* exp ) ;
+      
+   //-- Pour rate
+
+      // pour rate (density x normal advective velocity) at `t_it'->time()
+      // on the current side `fe', oriented as `fe'->normal() 
+      double pour_rate( FE_TimeIterator const* t_it,
+                        PDE_CursorFEside* fe ) const ;
+      
+      // pour rate (density x normal advective velocity) at `t_it'->time()
+      // on the current bound `fe', oriented as `fe'->outward_normal() 
+      double pour_rate( FE_TimeIterator const* t_it,
+                        PDE_LocalFEbound* fe ) const ;
+      
+      // Assemble in `leq' the local terms linked to the convection on
+      // the current side `fe'
+      virtual void assemble_convection_on_side(
+                           FE_TimeIterator const* t_it,
+                           PDE_CursorFEside* fe,
+                           PDE_LocalEquation* leq ) = 0 ;
+           
+      // Assemble in `leq' the local terms linked to the convection on
+      // the current bound `fe'
+      //     - if `bound_value' is the value of the convected field on `fe'.
+      virtual void assemble_convection_on_bound(
+                           FE_TimeIterator const* t_it,
+                           PDE_LocalFEbound* fe,
+                           double const bound_value,
+                           PDE_LocalEquation* leq ) = 0 ;
+
+      // Computational demands (prerequisites) for fields and parameter
+      void initialize( PDE_LocalFEcell* cfe,
+                       PDE_CursorFEside* sfe, 
+                       PDE_LocalFEbound* bfe ) ; 
+
+   protected: //--------------------------------------------------------------
+      
+   //-- Inner functions
+      
+      PDE_DiscreteField const* discrete_field( void ) const ;
+
+   //-- Plug in
+
+      virtual ~MY_AdvectiveScheme( void ) ;
+
+      // Registration of an instance as `name'.
+      MY_AdvectiveScheme( std::string const& name ) ;
+
+      // In the constructor called by `::create_replica' : initialization
+      // the base class subobject.
+      MY_AdvectiveScheme( PEL_Object* a_owner,
+                           PDE_DomainAndFields const* dom,
+                           FE_SetOfParameters const* prms, 
+                           PDE_DiscreteField const* field,
+                           PEL_ModuleExplorer const* exp ) ;
+
+      virtual MY_AdvectiveScheme* create_replica(
+                           PEL_Object* a_owner,
+                           PDE_DomainAndFields const* dom,
+                           FE_SetOfParameters const* prms, 
+                           PDE_DiscreteField const* field,
+                           PEL_ModuleExplorer const* exp ) const = 0 ;
+
+      bool is_a_prototype( void ) const ;
+
+   //-- Preconditions, Postconditions, Invariant
+      
+      virtual bool invariant( void ) const ;
+      
+      virtual bool create_replica_PRE(
+                           PEL_Object const* a_owner,
+                           PDE_DomainAndFields const* dom,
+                           FE_SetOfParameters const* prms, 
+                           PDE_DiscreteField const* field,
+                           PEL_ModuleExplorer const* exp ) const ;
+      virtual bool create_replica_POST(
+                           MY_AdvectiveScheme const* result,
+                           PEL_Object const* a_owner,
+                           PDE_DomainAndFields const* dom,
+                           FE_SetOfParameters const* prms, 
+                           PDE_DiscreteField const* field,
+                           PEL_ModuleExplorer const* exp ) const ;
+
+      virtual bool assemble_convection_on_side_PRE(
+                           FE_TimeIterator const* t_it,
+                           PDE_CursorFEside const* fe,
+                           PDE_LocalEquation const* leq ) const ;
+      
+      virtual bool assemble_convection_on_bound_PRE(
+                           FE_TimeIterator const* t_it,
+                           PDE_LocalFEbound const* fe,
+                           double const bound_value,
+                           PDE_LocalEquation const* leq ) const ;
+      
+   private: //----------------------------------------------------------------
+
+      MY_AdvectiveScheme( void ) ;
+      MY_AdvectiveScheme( MY_AdvectiveScheme const& other ) ;
+      MY_AdvectiveScheme& operator=( MY_AdvectiveScheme const& other ) ;
+
+      static PEL_ObjectRegister* plugins_map( void ) ;
+
+   //-- Attributes
+      
+      bool const IS_PROTO ;
+
+      PDE_DiscreteField const* const FIELD ;
+      PDE_DiscreteField* UU ;
+      FE_Parameter* DENSITY ;
+} ;
+
+#endif 

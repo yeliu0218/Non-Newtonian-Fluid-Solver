@@ -1,0 +1,42 @@
+BATCH
+FRAME WHITE 24. 24.
+
+FILE 'save.gene' FORM END
+
+CYCL 2
+
+CALL "build_meshing.tic"
+VMIN  0.0 VMAX 0.008 CUTT 2 SCUTT 3 LABEL 'abscissa' AXIS X1
+VMIN -0.1 VMAX 0.3   CUTT 4 SCUTT 9 LABEL 'pressure' AXIS Y1
+
+PHYS 0 p TABL sfield
+
+CREA coorCut 
+   0.0 -0.01 0.0 0.01
+TERM
+CREA epsCut 1.E-5 TERM
+CALL "cut_scalar_field.tic"
+
+ANAL absc
+    absc = -0.01 + absc
+END-ANAL absc
+
+ANAL sfield
+  PMAX = 0.
+  PMIN = 0.
+  DO ('I' 1, (NUMBER sfield) )
+    PP = sfield:I
+    IFTHEN(PP > PMAX)
+      PMAX = PP
+    ENDIF
+    IFTHEN(PP < PMIN)
+      PMIN = PP
+    ENDIF
+  ENDDO
+  PRINT PMIN	
+  PRINT PMAX
+END-ANAL PMIN PMAX
+
+CURV absc fc 'cut at X=0.0'
+
+DRAW CURV

@@ -1,0 +1,782 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>GE_SetOfPoints.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="GE_SetOfPoints.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="GEpack-tree.html"><span>Tree</span></a>
+    <a href="GE_SetOfPoints.html"><span>Class</span></a>
+    <a href="GE_SetOfPoints.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="GEpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">GE_SetOfPoints</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_BalancedBinaryTree</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_DoubleArray2D</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Int</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;PEL_KeyItemPair.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ListIdentity</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ListIterator</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Module</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ObjectReader</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Root</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ObjectWriter</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Vector</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">GE_Color</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">GE_Point</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">GE_Vector</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">doubleArray2D</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;iostream&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;sstream&gt;
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw3">GE_SetOfPoints</font><font class="text">*
+</font><font class="kw3">GE_SetOfPoints</font><font class="text">:: create( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                         </font><font class="kw2">size_t</font><font class="text"> a_dimension )
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_SetOfPoints:: create&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw3">GE_SetOfPoints</font><font class="text">* result =  </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">GE_SetOfPoints</font><font class="text">( a_owner, a_dimension ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;owner() == a_owner ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;dimension() == a_dimension ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;nb_points() == 0 ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw3">GE_SetOfPoints</font><font class="text">:: </font><font class="kw3">GE_SetOfPoints</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                 </font><font class="kw2">size_t</font><font class="text"> a_dimension ) 
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_Object</font><font class="text">( a_owner )
+   , DIM( a_dimension )
+   , NB_PTS( 0 )
+   , PT_VECTOR(  </font><font class="kw3">PEL_Vector</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, 0 ) )
+   , PT_COLOR_VECTOR( </font><font class="kw3">PEL_Vector</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, 0 ) )
+   , PT_TREE( 0 )
+   , PT_TREE_IT( 0 )
+   , OBSERVERS( </font><font class="kw3">PEL_ListIdentity</font><font class="text">::create( </font><font class="kw1">this</font><font class="text"> )  )
+   , OBSERVERS_IT( 0 )
+{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_SetOfPoints:: GE_SetOfPoints&quot;</font><font class="text"> ) ;
+
+   OBSERVERS_IT = OBSERVERS-&gt;create_iterator( </font><font class="kw1">this</font><font class="text"> ) ;
+   
+   rebuild_points_tree() ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw3">GE_SetOfPoints</font><font class="text">:: ~</font><font class="kw3">GE_SetOfPoints</font><font class="text">( </font><font class="kw1">void</font><font class="text"> ) 
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_SetOfPoints:: ~GE_SetOfPoints&quot;</font><font class="text"> ) ;
+
+   reset_points_tree() ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw2">size_t
+</font><font class="kw3">GE_SetOfPoints</font><font class="text">:: nb_points( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">return</font><font class="text">( NB_PTS ) ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw2">size_t
+</font><font class="kw3">GE_SetOfPoints</font><font class="text">:: dimension( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">return</font><font class="text">( DIM ) ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">GE_SetOfPoints</font><font class="text">:: has( </font><font class="kw3">GE_Point</font><font class="text"> </font><font class="kw1">const</font><font class="text">* pt ) </font><font class="kw1">const
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_SetOfPoints:: has&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( pt != 0 &amp;&amp; pt-&gt;nb_coordinates()==dimension() ) ;
+
+   </font><font class="kw1">bool</font><font class="text"> result ;
+   </font><font class="kw1">if</font><font class="text">( !is_ok_points_tree() )
+   {
+      result = PT_VECTOR-&gt;has( pt ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      result = PT_TREE-&gt;has( pt ) ;
+   }
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw2">size_t
+</font><font class="kw3">GE_SetOfPoints</font><font class="text">:: index( </font><font class="kw3">GE_Point</font><font class="text"> </font><font class="kw1">const</font><font class="text">* pt ) </font><font class="kw1">const
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_SetOfPoints:: index&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( pt != 0 &amp;&amp; pt-&gt;nb_coordinates()==dimension() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( has( pt ) ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> result ;
+   
+   </font><font class="kw1">if</font><font class="text">( !is_ok_points_tree() )
+   {
+      result = PT_VECTOR-&gt;index_of( pt ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      PEL_KeyItemPair </font><font class="kw1">const</font><font class="text">* key_val =
+         </font><font class="kw1">static_cast</font><font class="text">&lt;PEL_KeyItemPair </font><font class="kw1">const</font><font class="text">*&gt;( PT_TREE-&gt;item( pt ) ) ;
+      result =
+         (</font><font class="kw2">size_t</font><font class="text">)  </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">PEL_Int</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;( key_val-&gt;item() )-&gt;to_int() ;
+   }
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result &lt; nb_points() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( pt-&gt;is_equal( point( result ) ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw3">GE_Point</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">GE_SetOfPoints</font><font class="text">:: point( </font><font class="kw2">size_t</font><font class="text"> i ) </font><font class="kw1">const</font><font class="text"> 
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_SetOfPoints:: point&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( i &lt; nb_points() ) ;
+   
+   </font><font class="kw3">GE_Point</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">GE_Point</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;( PT_VECTOR-&gt;at(i) ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;owner() == </font><font class="kw1">this</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;nb_coordinates() == dimension() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( index(result) == i ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw3">GE_Color</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">GE_SetOfPoints</font><font class="text">:: color( </font><font class="kw2">size_t</font><font class="text"> i ) </font><font class="kw1">const
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_SetOfPoints:: color&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( i &lt; nb_points() ) ;
+
+   </font><font class="kw3">GE_Color</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result = 
+                   </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">GE_Color</font><font class="text"> </font><font class="kw1">const</font><font class="text">* &gt;( PT_COLOR_VECTOR-&gt;at( i ) ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result != 0 ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">GE_SetOfPoints</font><font class="text">:: start( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_SetOfPoints:: start&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( is_ok_points_tree() ) ;
+
+   PT_TREE_IT-&gt;start() ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">GE_SetOfPoints</font><font class="text">:: is_valid( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_SetOfPoints:: is_valid&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( is_ok_points_tree() ) ;
+
+   </font><font class="kw1">return</font><font class="text"> PT_TREE_IT-&gt;is_valid() ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">GE_SetOfPoints</font><font class="text">:: go_next( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_SetOfPoints:: go_next&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( is_valid() ) ;
+
+   PT_TREE_IT-&gt;go_next() ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw3">GE_Point</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">GE_SetOfPoints</font><font class="text">:: point( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_SetOfPoints:: point&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( is_valid() ) ;
+
+   PEL_KeyItemPair </font><font class="kw1">const</font><font class="text">* key_val =
+                  </font><font class="kw1">static_cast</font><font class="text">&lt;PEL_KeyItemPair </font><font class="kw1">const</font><font class="text">*&gt;( PT_TREE_IT-&gt;item() ) ;
+   </font><font class="kw3">GE_Point</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result =  </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">GE_Point</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;( key_val-&gt;key() ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;owner() == </font><font class="kw1">this</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;nb_coordinates() == dimension() ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw2">size_t
+</font><font class="kw3">GE_SetOfPoints</font><font class="text">:: index( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_SetOfPoints:: index&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( is_valid() ) ;
+
+   PEL_KeyItemPair </font><font class="kw1">const</font><font class="text">* key_val =
+      </font><font class="kw1">static_cast</font><font class="text">&lt;PEL_KeyItemPair </font><font class="kw1">const</font><font class="text">*&gt;( PT_TREE_IT-&gt;item() ) ;
+   </font><font class="kw2">size_t</font><font class="text"> result =
+         (</font><font class="kw2">size_t</font><font class="text">)  </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">PEL_Int</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;( key_val-&gt;item() )-&gt;to_int() ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result &lt; nb_points() ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">GE_SetOfPoints</font><font class="text">:: extend( </font><font class="kw3">GE_Point</font><font class="text"> </font><font class="kw1">const</font><font class="text">* pt )
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_SetOfPoints:: extend&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( pt != 0 &amp;&amp; pt-&gt;nb_coordinates()==dimension() ) ;
+   </font><font class="kw3">PEL_SAVEOLD</font><font class="text">( </font><font class="kw1">bool</font><font class="text">, has, has(pt) ) ;
+   </font><font class="kw3">PEL_SAVEOLD</font><font class="text">( </font><font class="kw2">size_t</font><font class="text">, nb_points, nb_points() ) ;
+
+   </font><font class="kw1">if</font><font class="text">( !has( pt ) )
+   {
+      append( pt, </font><font class="kw3">GE_Color</font><font class="text">::null_color() ) ;
+   }
+   
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( has( pt ) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( </font><font class="kw3">IMPLIES</font><font class="text">(  </font><font class="kw3">OLD</font><font class="text">(has), nb_points()==</font><font class="kw3">OLD</font><font class="text">(nb_points) ) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( </font><font class="kw3">IMPLIES</font><font class="text">( !</font><font class="kw3">OLD</font><font class="text">(has), nb_points()==</font><font class="kw3">OLD</font><font class="text">(nb_points)+1 ) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( </font><font class="kw3">IMPLIES</font><font class="text">( !</font><font class="kw3">OLD</font><font class="text">(has), index(pt)==</font><font class="kw3">OLD</font><font class="text">(nb_points) ) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( point( index(pt) )-&gt;owner()==</font><font class="kw1">this</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( pt-&gt;is_equal( point( index(pt) ) ) ) ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">GE_SetOfPoints</font><font class="text">:: append( </font><font class="kw3">GE_Point</font><font class="text"> </font><font class="kw1">const</font><font class="text">* pt, </font><font class="kw3">GE_Color</font><font class="text"> </font><font class="kw1">const</font><font class="text">* pt_color )
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_SetOfPoints:: append&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( pt != 0  &amp;&amp; pt-&gt;nb_coordinates()==dimension() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( !has( pt ) ) ;
+   </font><font class="kw3">PEL_SAVEOLD</font><font class="text">( </font><font class="kw2">size_t</font><font class="text">, nb_points, nb_points() ) ;
+
+   </font><font class="comment">// Point to append :
+</font><font class="text">   </font><font class="kw3">GE_Point</font><font class="text">* new_pt = pt-&gt;create_clone( </font><font class="kw1">this</font><font class="text"> ) ;
+   </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> new_index = NB_PTS ;
+   NB_PTS++ ;
+
+   </font><font class="comment">// Vector :
+</font><font class="text">   </font><font class="kw1">if</font><font class="text">( new_index &gt;= PT_VECTOR-&gt;index_limit() )
+   {
+      PT_VECTOR-&gt;resize( new_index+1 ) ;
+      PT_COLOR_VECTOR-&gt;resize( new_index+1 ) ;
+   }
+   PT_VECTOR-&gt;set_at( new_index, new_pt ) ;
+   </font><font class="kw1">if</font><font class="text">( pt_color!=0 )
+   {
+      PT_COLOR_VECTOR-&gt;set_at( new_index,
+                          </font><font class="kw1">const_cast</font><font class="text">&lt;</font><font class="kw3">GE_Color</font><font class="text">*&gt;( pt_color ) ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      PT_COLOR_VECTOR-&gt;set_at( new_index,
+                          </font><font class="kw1">const_cast</font><font class="text">&lt;</font><font class="kw3">GE_Color</font><font class="text">*&gt;( </font><font class="kw3">GE_Color</font><font class="text">::null_color() ) ) ;
+   }
+   
+   </font><font class="comment">// Binary tree :
+</font><font class="text">   </font><font class="kw1">if</font><font class="text">( is_ok_points_tree() )
+   {
+      add_vertex_in_points_tree( new_index, new_pt ) ;
+   }
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( has( pt ) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( </font><font class="kw3">IMPLIES</font><font class="text">( ( pt_color == 0 ),
+                      color( index( pt ) ) == </font><font class="kw3">GE_Color</font><font class="text">::null_color() ) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( </font><font class="kw3">IMPLIES</font><font class="text">( ( pt_color != 0 ),
+                      color( index( pt ) ) == pt_color ) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( nb_points() == </font><font class="kw3">OLD</font><font class="text">( nb_points ) + 1 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( index( pt ) == </font><font class="kw3">OLD</font><font class="text">( nb_points ) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( point( index(pt) )-&gt;owner() == </font><font class="kw1">this</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( pt-&gt;is_equal( point( index( pt ) ) ) ) ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">GE_SetOfPoints</font><font class="text">:: insert_at( </font><font class="kw2">size_t</font><font class="text"> i, </font><font class="kw3">GE_Point</font><font class="text"> </font><font class="kw1">const</font><font class="text">* pt, 
+                            </font><font class="kw3">GE_Color</font><font class="text"> </font><font class="kw1">const</font><font class="text">* pt_color )
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_SetOfPoints:: insert_at&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( i &lt;= nb_points() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( pt != 0  &amp;&amp; pt-&gt;nb_coordinates()==dimension() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( !has( pt ) ) ;
+   </font><font class="kw3">PEL_SAVEOLD</font><font class="text">( </font><font class="kw2">size_t</font><font class="text">, nb_points, nb_points() ) ;
+
+   </font><font class="kw1">if</font><font class="text">( i==nb_points() )
+   {
+      append( pt, pt_color ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      </font><font class="comment">// Vector :
+</font><font class="text">      </font><font class="kw1">if</font><font class="text">( NB_PTS &gt;= PT_VECTOR-&gt;index_limit() )
+      {
+	 PT_VECTOR-&gt;resize( NB_PTS+1 ) ;
+	 PT_COLOR_VECTOR-&gt;resize( NB_PTS+1 ) ;
+      }
+
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=NB_PTS; j&gt;i; j-- )
+      {
+	 PT_VECTOR-&gt;set_at( j, PT_VECTOR-&gt;at( j-1 ) ) ; 
+	 PT_COLOR_VECTOR-&gt;set_at( j, PT_COLOR_VECTOR-&gt;at( j-1 ) ) ; 
+      }
+      NB_PTS++ ;
+ 
+      </font><font class="comment">// Point to append :
+</font><font class="text">      </font><font class="kw3">GE_Point</font><font class="text">* new_pt = pt-&gt;create_clone( </font><font class="kw1">this</font><font class="text"> ) ;
+
+      PT_VECTOR-&gt;set_at( i, new_pt ) ;
+
+      </font><font class="kw1">if</font><font class="text">( pt_color!=0 )
+      {
+	 PT_COLOR_VECTOR-&gt;set_at( i,
+			   </font><font class="kw1">const_cast</font><font class="text">&lt;</font><font class="kw3">GE_Color</font><font class="text">*&gt;( pt_color ) ) ;
+      }
+      </font><font class="kw1">else
+</font><font class="text">      {
+	 PT_COLOR_VECTOR-&gt;set_at( i,
+			   </font><font class="kw1">const_cast</font><font class="text">&lt;</font><font class="kw3">GE_Color</font><font class="text">*&gt;( </font><font class="kw3">GE_Color</font><font class="text">::null_color() ) ) ;
+      }
+   
+      </font><font class="comment">// Binary tree :
+</font><font class="text">      </font><font class="kw1">if</font><font class="text">( is_ok_points_tree() )
+      {
+	 reset_points_tree() ;
+      }
+   }
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( has( pt ) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( </font><font class="kw3">IMPLIES</font><font class="text">( ( pt_color == 0 ),
+                      color( index( pt ) ) == </font><font class="kw3">GE_Color</font><font class="text">::null_color() ) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( </font><font class="kw3">IMPLIES</font><font class="text">( ( pt_color != 0 ),
+                      color( index( pt ) ) == pt_color ) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( nb_points() == </font><font class="kw3">OLD</font><font class="text">( nb_points ) + 1 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( index( pt ) == i ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( point( index( pt ) )-&gt;owner() == </font><font class="kw1">this</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( pt-&gt;is_equal( point( index( pt ) ) ) ) ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">GE_SetOfPoints</font><font class="text">:: remove_at( </font><font class="kw2">size_t</font><font class="text"> i )
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_SetOfPoints:: remove_at&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( i &lt; nb_points() ) ;
+   </font><font class="kw3">PEL_SAVEOLD</font><font class="text">( </font><font class="kw2">size_t</font><font class="text">, nb_points, nb_points() ) ;
+
+   </font><font class="kw3">PEL_Object</font><font class="text">* old_pt = PT_VECTOR-&gt;at( i ) ;
+
+   destroy_possession( old_pt) ;
+
+   </font><font class="comment">// Vector :
+</font><font class="text">   PT_VECTOR-&gt;remove_at( i ) ;
+   PT_COLOR_VECTOR-&gt;remove_at( i ) ;
+   NB_PTS-- ;
+
+   </font><font class="comment">// Binary tree :
+</font><font class="text">   </font><font class="kw1">if</font><font class="text">( is_ok_points_tree() )
+   {
+      reset_points_tree() ;
+   }
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( nb_points() == </font><font class="kw3">OLD</font><font class="text">( nb_points ) - 1 ) ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">GE_SetOfPoints</font><font class="text">:: move_and_update( </font><font class="kw3">PEL_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dM_table ) </font><font class="kw1">const
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_SetOfPoints:: move_and_update&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( dM_table!=0 &amp;&amp;
+                  dM_table-&gt;index_limit() == nb_points() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">(
+      </font><font class="kw3">FORALL</font><font class="text">( ( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;nb_points() ; ++i ),
+         </font><font class="kw1">dynamic_cast</font><font class="text">&lt;</font><font class="kw3">GE_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;( dM_table-&gt;at(i) )!=0 &amp;&amp;
+         </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">GE_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;
+                   ( dM_table-&gt;at(i) )-&gt;nb_components()==dimension() ) ) ;
+   
+   </font><font class="comment">// Move :
+</font><font class="text">   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;nb_points() ; ++i )
+   {
+      </font><font class="kw3">GE_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dm = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">GE_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;( dM_table-&gt;at(i) ) ;
+      </font><font class="kw3">PEL_CHECK</font><font class="text">( </font><font class="kw1">dynamic_cast</font><font class="text">&lt;</font><font class="kw3">GE_Point</font><font class="text">*&gt;( PT_VECTOR-&gt;at(i) )!=0 ) ;
+      </font><font class="kw3">GE_Point</font><font class="text">* pt = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">GE_Point</font><font class="text">*&gt;( PT_VECTOR-&gt;at(i) ) ;
+      pt-&gt;translate( 1., dm ) ;
+   }
+   reset_points_tree() ;
+   rebuild_points_tree() ;
+   
+   </font><font class="comment">// And update :
+</font><font class="text">   update_observers() ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">GE_SetOfPoints</font><font class="text">:: take_position_and_update( 
+                                        </font><font class="kw3">PEL_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* new_positions ) </font><font class="kw1">const
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_SetOfPoints:: take_position_and_update&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( new_positions!=0 &amp;&amp;
+                  new_positions-&gt;index_limit() == nb_points() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">(
+      </font><font class="kw3">FORALL</font><font class="text">( ( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;nb_points() ; ++i ),
+         </font><font class="kw1">dynamic_cast</font><font class="text">&lt;</font><font class="kw3">GE_Point</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;( new_positions-&gt;at(i) )!=0 &amp;&amp;
+         </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">GE_Point</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;
+                  ( new_positions-&gt;at(i) )-&gt;nb_coordinates()==dimension() ) ) ;
+   
+   </font><font class="comment">// Move :
+</font><font class="text">   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;nb_points() ; ++i )
+   {
+      </font><font class="kw3">GE_Point</font><font class="text"> </font><font class="kw1">const</font><font class="text">* new_pt = 
+                      </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">GE_Point</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;( new_positions-&gt;at(i) ) ;
+      </font><font class="kw3">PEL_CHECK</font><font class="text">( </font><font class="kw1">dynamic_cast</font><font class="text">&lt;</font><font class="kw3">GE_Point</font><font class="text">*&gt;( PT_VECTOR-&gt;at(i) )!=0 ) ;
+      </font><font class="kw3">GE_Point</font><font class="text">* pt = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">GE_Point</font><font class="text">*&gt;( PT_VECTOR-&gt;at(i) ) ;
+      pt-&gt;</font><font class="kw2">set</font><font class="text">( new_pt ) ;
+   }
+   reset_points_tree() ;
+   rebuild_points_tree() ;
+   
+   </font><font class="comment">// And update :
+</font><font class="text">   update_observers() ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">GE_SetOfPoints</font><font class="text">:: modify_color( </font><font class="kw2">size_t</font><font class="text"> i, </font><font class="kw3">GE_Color</font><font class="text"> </font><font class="kw1">const</font><font class="text">* pt_color )
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_SetOfPoints:: modify_color&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( i&lt;nb_points() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( pt_color!=0 ) ;
+
+   PT_COLOR_VECTOR-&gt;set_at( i, </font><font class="kw1">const_cast</font><font class="text">&lt;</font><font class="kw3">GE_Color</font><font class="text">*&gt;( pt_color ) ) ;
+   
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( color(i)==pt_color ) ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">GE_SetOfPoints</font><font class="text">:: attach_observer( </font><font class="kw3">PEL_Object</font><font class="text">* observer )
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_SetOfPoints:: attach_observer&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( observer!=0 ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( !has_as_observer( observer ) ) ;
+
+   OBSERVERS-&gt;append( observer ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( has_as_observer( observer ) ) ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">GE_SetOfPoints</font><font class="text">:: detach_observer( </font><font class="kw3">PEL_Object</font><font class="text"> </font><font class="kw1">const</font><font class="text">* observer )
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_SetOfPoints:: detach_observer&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( observer!=0 ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( has_as_observer( observer ) ) ;
+   
+   OBSERVERS-&gt;remove( observer ) ;
+  
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( !has_as_observer( observer ) ) ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">GE_SetOfPoints</font><font class="text">:: has_as_observer( </font><font class="kw3">PEL_Object</font><font class="text"> </font><font class="kw1">const</font><font class="text">* observer ) </font><font class="kw1">const
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_SetOfPoints:: has_as_observer&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( observer!=0 ) ;
+
+   </font><font class="kw1">return</font><font class="text">( OBSERVERS-&gt;has( observer ) ) ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">GE_SetOfPoints</font><font class="text">:: save_state( </font><font class="kw3">PEL_ObjectWriter</font><font class="text">* writer ) </font><font class="kw1">const
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_SetOfPoints:: save_state&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( save_state_PRE( writer ) ) ;
+
+   writer-&gt;start_new_object( </font><font class="string">&quot;GE_SetOfPoints&quot;</font><font class="text"> ) ;
+
+   writer-&gt;add_entry( </font><font class="string">&quot;dimension&quot;</font><font class="text">, </font><font class="kw3">PEL_Int</font><font class="text">::create( 0, dimension() ) ) ;
+   writer-&gt;add_entry( </font><font class="string">&quot;nb_points&quot;</font><font class="text">, </font><font class="kw3">PEL_Int</font><font class="text">::create( 0, nb_points() ) ) ;
+   
+   </font><font class="comment">// Coordinates :
+</font><font class="text">   </font><font class="kw3">doubleArray2D</font><font class="text"> coordinates( nb_points(), dimension() ) ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;nb_points() ; ++i )
+   {
+      </font><font class="kw3">GE_Point</font><font class="text"> </font><font class="kw1">const</font><font class="text">* pt = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">GE_Point</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;( PT_VECTOR-&gt;at(i) ) ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> d=0 ; d&lt;dimension() ; ++d )
+      {
+         coordinates( i, d ) = pt-&gt;coordinate(d) ;
+      }
+   }
+   writer-&gt;add_entry( </font><font class="string">&quot;points_coordinates&quot;</font><font class="text">,
+                      </font><font class="kw3">PEL_DoubleArray2D</font><font class="text">:: create( 0, coordinates ) ) ;
+
+   writer-&gt;finalize_object() ;   
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( save_state_POST( writer ) ) ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">GE_SetOfPoints</font><font class="text">:: restore_state( </font><font class="kw3">PEL_ObjectReader</font><font class="text">* reader )
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_SetOfPoints:: restore_state&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( restore_state_PRE( reader ) ) ;
+
+   reader-&gt;start_object_retrieval( </font><font class="string">&quot;GE_SetOfPoints&quot;</font><font class="text"> ) ;
+
+   </font><font class="comment">// Does some checks :
+</font><font class="text">   </font><font class="kw3">PEL_ASSERT</font><font class="text">( reader-&gt;data_of_entry( </font><font class="string">&quot;dimension&quot;</font><font class="text"> )-&gt;to_int() == 
+               (</font><font class="kw1">int</font><font class="text">) dimension() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( reader-&gt;data_of_entry( </font><font class="string">&quot;nb_points&quot;</font><font class="text"> )-&gt;to_int() ==
+               (</font><font class="kw1">int</font><font class="text">) nb_points() ) ;
+
+   </font><font class="comment">// Retrieving coordinates :
+</font><font class="text">   </font><font class="kw3">doubleArray2D</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; coordinates =
+         reader-&gt;data_of_entry( </font><font class="string">&quot;points_coordinates&quot;</font><font class="text"> )-&gt;to_double_array2D() ;
+   
+   reader-&gt;end_object_retrieval() ;
+
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;nb_points() ; ++i )
+   {
+      </font><font class="kw3">GE_Point</font><font class="text">* pt = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">GE_Point</font><font class="text">*&gt;( PT_VECTOR-&gt;at( i ) ) ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> d=0 ; d&lt;dimension() ; ++d )
+      {
+         pt-&gt;set_coordinate( d, coordinates( i, d ) ) ;
+      }
+   }
+   reset_points_tree() ;
+   rebuild_points_tree() ;
+
+   </font><font class="comment">// Update :
+</font><font class="text">   update_observers_for_restore_state() ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( restore_state_POST( reader ) ) ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">GE_SetOfPoints</font><font class="text">:: print( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostream</font><font class="text">&amp; os, </font><font class="kw2">size_t</font><font class="text"> indent_width ) </font><font class="kw1">const</font><font class="text"> 
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_SetOfPoints:: print&quot;</font><font class="text"> ) ;
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> space( indent_width, </font><font class="string">' '</font><font class="text"> ) ;
+   os &lt;&lt; space &lt;&lt; </font><font class="string">&quot;GE_SetOfPoints :&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;nb_points() ; ++i )
+   {
+      os &lt;&lt; space &lt;&lt; </font><font class="string">&quot;   n&#xB0;&quot;</font><font class="text"> &lt;&lt; i &lt;&lt; </font><font class="string">&quot; : &quot;</font><font class="text"> ;
+      point(i)-&gt;print( os, 0 ) ;
+      os &lt;&lt; </font><font class="string">&quot;   &quot;</font><font class="text"> ;
+      color(i)-&gt;print( os, 0 ) ;
+      os &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   }
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">GE_SetOfPoints</font><font class="text">:: update_observers( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_SetOfPoints:: update_observers&quot;</font><font class="text"> ) ;
+
+   OBSERVERS_IT-&gt;start() ;
+   </font><font class="kw1">for</font><font class="text">( ; OBSERVERS_IT-&gt;is_valid() ; OBSERVERS_IT-&gt;go_next() )
+   {
+      </font><font class="kw3">PEL_CHECK</font><font class="text">( OBSERVERS_IT-&gt;item() != 0 ) ;
+      OBSERVERS_IT-&gt;item()-&gt;update() ;
+   }
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">GE_SetOfPoints</font><font class="text">:: update_observers_for_restore_state( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_SetOfPoints:: update_observers_for_restore_state&quot;</font><font class="text"> ) ;
+
+   OBSERVERS_IT-&gt;start() ;
+   </font><font class="kw1">for</font><font class="text">( ; OBSERVERS_IT-&gt;is_valid() ; OBSERVERS_IT-&gt;go_next() )
+   {
+      </font><font class="kw3">PEL_CHECK</font><font class="text">( OBSERVERS_IT-&gt;item() != 0 ) ;
+      OBSERVERS_IT-&gt;item()-&gt;update_for_restore_state() ;
+   }
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">GE_SetOfPoints</font><font class="text">:: reset_points_tree( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_SetOfPoints:: reset_points_tree&quot;</font><font class="text"> ) ;
+   </font><font class="kw1">if</font><font class="text">( is_ok_points_tree() )
+   {
+      PT_TREE-&gt;destroy() ;
+      PT_TREE = 0 ;
+   }
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( !is_ok_points_tree() ) ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">GE_SetOfPoints</font><font class="text">:: rebuild_points_tree( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_SetOfPoints:: rebuild_points_tree&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( !is_ok_points_tree() ) ;
+
+   PT_TREE = </font><font class="kw3">PEL_BalancedBinaryTree</font><font class="text">::create( 0 ) ;
+   PT_TREE_IT = PT_TREE-&gt;create_iterator( PT_TREE ) ;
+   
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;nb_points() ; ++i )
+   {
+      </font><font class="kw3">GE_Point</font><font class="text">* pt = </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">GE_Point</font><font class="text">*&gt;( PT_VECTOR-&gt;at( i ) ) ;
+      add_vertex_in_points_tree( i, pt ) ;
+   }
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( is_ok_points_tree() &amp;&amp; PT_TREE-&gt;count()==nb_points() ) ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">GE_SetOfPoints</font><font class="text">:: add_vertex_in_points_tree( </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> pt_index,
+                                            </font><font class="kw3">GE_Point</font><font class="text">* pt ) </font><font class="kw1">const</font><font class="text"> 
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_SetOfPoints:: add_vertex_in_points_tree&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( is_ok_points_tree() ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( pt_index &lt; nb_points() ) ;
+
+   </font><font class="kw1">if</font><font class="text">( PT_TREE-&gt;has( pt ) )
+   {
+      PEL_KeyItemPair </font><font class="kw1">const</font><font class="text">* key_val =
+         </font><font class="kw1">static_cast</font><font class="text">&lt;PEL_KeyItemPair </font><font class="kw1">const</font><font class="text">*&gt;( PT_TREE-&gt;item( pt ) ) ;
+      </font><font class="kw2">size_t</font><font class="text"> old_index =
+         (</font><font class="kw2">size_t</font><font class="text">)  </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">PEL_Int</font><font class="text"> </font><font class="kw1">const</font><font class="text">*&gt;( key_val-&gt;item() )-&gt;to_int() ;
+
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> message ;
+      message &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+      message &lt;&lt; </font><font class="string">&quot;Invalid set of points : &quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl
+</font><font class="text">              &lt;&lt; </font><font class="string">&quot;                      index : &quot;</font><font class="text"> &lt;&lt; pt_index  &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl
+</font><font class="text">              &lt;&lt; </font><font class="string">&quot;                  and index : &quot;</font><font class="text"> &lt;&lt; old_index &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl
+</font><font class="text">              &lt;&lt; </font><font class="string">&quot;    refer to the same point : &quot;</font><font class="text"> ;
+      pt-&gt;print( message, 0 ) ;
+      message &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+      </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( message.str() ) ;
+   }
+   </font><font class="kw3">PEL_Int</font><font class="text">* i_pt = </font><font class="kw3">PEL_Int</font><font class="text">::create( PT_TREE, (</font><font class="kw1">int</font><font class="text">) pt_index ) ;
+   PEL_KeyItemPair* key_val = PEL_KeyItemPair::create( PT_TREE, pt, i_pt ) ;
+   PT_TREE-&gt;extend( key_val ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( has( pt ) &amp;&amp; index( pt )==pt_index ) ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">GE_SetOfPoints</font><font class="text">:: is_ok_points_tree( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//-----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_SetOfPoints:: is_ok_points_tree&quot;</font><font class="text"> ) ;
+   </font><font class="kw1">return</font><font class="text">( PT_TREE!=0 ) ;
+}
+
+
+
+</font>
+</pre>
+</body>
+</html>

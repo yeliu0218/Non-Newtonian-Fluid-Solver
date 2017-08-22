@@ -1,0 +1,467 @@
+MODULE PEL_Application
+
+concrete_name = "FE_StepByStepProgression"
+
+// Fluid Parameters:
+$DS_Re  = 1.
+$DS_Bn = 5.
+$DS_n = 1.
+$DS_kappa = 1. // viscosity ratio
+
+// Time Stepping
+$DS_DT = 0.1
+$DS_TEND = 5.
+$IS_ORDER = 1
+
+// Field Level for time dependent fields
+$IS_CURRENT = 0 // storage of the current field
+$IS_INITIAL = 1 // storage of the preveous field
+$IS_NONLIN  = 2 // storage of the nonlinear contribution + storage for convergence
+                // between time steps
+
+$IS_SteadyStateAdaptor = 1 // Apply steady state break critereon
+$IS_Advection = 0 // Consider advection term: 0 false, 1 true
+$IS_Nonlinear = 1 // Consider nonlinear viscosity term: 0 false, 1 true
+$IS_Flowrate  = 0 // Consider a prescibed flowrate problem: 0 false, 1 true
+
+$DS_Reg = 0.0001 //pow(10.0, - $DS_T) // Regularistion parameter for homotopy loop
+
+MODULE FE_TimeIterator
+	time_initial = 1.0
+	time_end = $DS_TEND
+	time_step = $DS_DT 
+END MODULE FE_TimeIterator
+
+if( $IS_SteadyStateAdaptor = 1 )
+MODULE FE_TimeIteratorAdapter
+	// Stop when :
+	//   max( u_current-u_initial )/max( u_current, 1. ) < 1.E-5	
+	//   max( p_current-p_initial )/max( p_current, 1. ) < 1.E-5
+	concrete_name = "FE_SteadyStateAdapter"
+	initial_level = $IS_NONLIN
+	current_level = $IS_CURRENT
+	discrete_fields = < "uu" >
+	minimal_error = < 1.E-5 >
+	MODULE post_processing
+		banner = true
+		file_name = "convergence.txt"
+	END MODULE post_processing
+END MODULE FE_TimeIteratorAdapter
+
+graphics_output_times = regular_vector( 1., 10, $DS_TEND )
+
+
+//////////////////////////////////////////////////////////////////
+// PDE_DomainAndFields
+//////////////////////////////////////////////////////////////////
+MODULE PDE_DomainAndFields
+	verbose_level = 1
+	nb_space_dimensions = 2
+	type = "finite_element"
+	
+	//////////////////////////////////////////////////////////////
+	// Define meshing
+	// - no splitting if in sequential mode
+	// - automatic splitting using METIS if in true parallel mode
+	//////////////////////////////////////////////////////////////
+	if( nb_ranks() = 1 )
+	MODULE GE_Meshing
+		concrete_name = "GE_RefinedMeshing"
+		mesh_polyhedron = < "GE_Segment" "GE_Triangle" >
+		MODULE list_of_GE_ReferencePolyhedronRefiner
+			MODULE GE_ReferencePolyhedronRefiner#1
+			concrete_name = "GE_ReferenceSquareWithTriangles"
+			strategy = "X"
+			END MODULE GE_ReferencePolyhedronRefiner#1
+		END MODULE list_of_GE_ReferencePolyhedronRefiner
+		MODULE GE_Meshing
+			concrete_name = "GE_BoxWithBoxes"
+			vertices_coordinate_0 = regular_vector( 0.0, 10, 1.0 )
+			vertices_coordinate_1 = regular_vector( 0.0, 10, 1.0 )
+			mesh_polyhedron = < "GE_Segment" "GE_Rectangle" >
+		END MODULE GE_Meshing
+	END MODULE GE_Meshing
+	
+	if( nb_ranks() > 1 )
+	MODULE GE_Meshing
+		concrete_name = "GE_SplitMeshing"
+		//nb_ranks = 4 // necessary ?
+		//rank = 2     // necessary ?
+		MODULE splitting_strategy
+			concrete_name = "EXT_METISsplitting"
+		END MODULE splitting_strategy
+		security_bandwidth = 1
+		MODULE GE_Meshing
+			concrete_name = "GE_RefinedMeshing"
+			mesh_polyhedron = < "GE_Segment" "GE_Triangle" >
+			MODULE list_of_GE_ReferencePolyhedronRefiner
+				MODULE GE_ReferencePolyhedronRefiner#1
+				concrete_name = "GE_ReferenceSquareWithTriangles"
+				strategy = "X"
+				END MODULE GE_ReferencePolyhedronRefiner#1
+			END MODULE list_of_GE_ReferencePolyhedronRefiner
+			MODULE GE_Meshing
+				concrete_name = "GE_BoxWithBoxes"
+				vertices_coordinate_0 = regular_vector( 0.0, 50, 1.0 )
+				vertices_coordinate_1 = regular_vector( 0.0, 50, 1.0 )
+				mesh_polyhedron = < "GE_Segment" "GE_Rectangle" >
+			END MODULE GE_Meshing
+		END MODULE GE_Meshing
+	END MODULE GE_Meshing
+	///////////////////////////////////////////////////////////////////
+	
+	
+	MODULE macro_colors
+		symmetry_x = < "left" "right" >
+		symmetry_y = < "bottom" >
+		no_slip  = < "top" >
+	END MODULE macro_colors
+	
+	MODULE interior_fields
+	
+		MODULE field#concentration
+			name = "CC"
+			nb_components = 1
+			element_name = "PDE_2D_P1_3nodes"
+			storage_depth = 2
+			$DS_T = 0.
+			MODULE DOFs_values
+			type = "uniformly_defined"
+			value = < 0. >
+			END MODULE DOFs_values
+		END MODULE field#concentration
+	
+		MODULE uu
+			name = "uu"
+			nb_components = 2
+			element_name = "PDE_2D_P2_6nodes"
+			storage_depth = 3
+			MODULE DOFs_values
+			type = "uniformly_defined"
+			value = vector( 0.0, 0.0 )
+			END MODULE DOFs_values
+			MODULE DOFs_imposed_value
+			MODULE Dirichlet
+				location = "on_bounds"
+				type = "uniformly_defined"
+				color = "no_slip"
+				value = vector( 0.0, 0.0 )
+			END MODULE Dirichlet
+			MODULE XSymmetry
+				location = "on_bounds"
+				color = "symmetry_x"
+				component = 1
+				type = "uniformly_defined"
+				value = < 0.0 >
+			END MODULE XSymmetry
+			MODULE YSymmetry
+				location = "on_bounds"
+				color = "symmetry_y"
+				component = 1
+				type = "uniformly_defined"
+				value = < 0.0 >
+			END MODULE YSymmetry
+			END MODULE DOFs_imposed_value
+		END MODULE uu
+		
+		MODULE pp
+			name = "pp"
+			nb_components = 1
+			element_name = "PDE_2D_P1_3nodes"
+			storage_depth = 2
+			MODULE DOFs_values
+			type = "uniformly_defined"
+			value = < 0.0 >
+			END MODULE DOFs_values
+			MODULE DOFs_imposed_value
+			MODULE Dirichlet
+				location = "on_bounds"
+				type = "uniformly_defined"
+				color = "symmetry_x"
+				value = vector( 0.0 )
+			END MODULE Dirichlet
+			END MODULE DOFs_imposed_value
+		END MODULE pp
+		
+	END MODULE interior_fields
+			
+	MODULE PDE_ResultSaver
+		writers = < "PEL_VTKwriter" >
+		writing_mode = "text"
+		files_basename = "save"
+		MODULE uu
+			where_to_save = "at_vertices"
+			entry_name = "UU"
+			field = "uu"
+		END MODULE uu 
+		MODULE pp
+			where_to_save = "at_vertices"
+			entry_name = "PP"
+			field = "pp"
+		END MODULE pp 
+	END MODULE PDE_ResultSaver
+END MODULE PDE_DomainAndFields
+
+
+///////////////////////////////////////////////////////////////////
+// FE_Parameters
+///////////////////////////////////////////////////////////////////
+MODULE FE_SetOfParameters
+	alpha = < 1.0 >
+	Reynolds = vector( $DS_Re )
+	pressuredrop = < 10. 0. >
+	MODULE FE_Parameter#ViscHB
+		concrete_name = "FE_ViscosityHBParameterNew"
+		name = "Viscosity"
+		MODULE list_of_parameters
+			MODULE param#Bn
+				type = "to_be_defined"
+				MODULE FE_Parameter
+					concrete_name = "FE_UniformParameter"
+					name = "Bn"
+					value = vector( $DS_Bn )
+				END MODULE FE_Parameter
+			END MODULE param#Bn
+			MODULE param#kappa
+				type = "to_be_defined"
+				MODULE FE_Parameter
+					concrete_name = "FE_UniformParameter"
+					name = "kappa"
+					value = vector( $DS_kappa )
+				END MODULE FE_Parameter
+			END MODULE param#kappa
+			MODULE param#n
+				type = "to_be_defined"
+				MODULE FE_Parameter
+					concrete_name = "FE_UniformParameter"
+					name = "n"
+					value = vector( $DS_n )
+				END MODULE FE_Parameter
+			END MODULE param#n
+			MODULE param#eps
+				type = "to_be_defined"
+				MODULE FE_Parameter
+					concrete_name = "FE_SpaceTimeParameter"
+					name = "reg"
+					nb_components = 1
+                  value = vector( $DS_Reg )
+				END MODULE FE_Parameter
+			END MODULE param#eps
+		END MODULE list_of_parameters
+		
+		// Link to velocity
+		vel_name = "uu" 	// Link to the velocity field
+		vel_level = 0  	// Level of the velocity field 
+		
+		// Regularisation method:
+		reg = "Simple"
+	END MODULE FE_Parameter#ViscHB
+		
+	MODULE FE_Parameter#secinvgamma
+		concrete_name = "FE_DuDuFieldParameter"
+		name = "secinvgammadot"
+		field_name = "uu"
+				field_level = 0
+				coef = 0.5
+				power = 0.5
+	END MODULE FE_Parameter#secinvgamma
+END MODULE FE_SetOfParameters
+
+///////////////////////////////////////////////////////////////////
+// One Step Iteration Stage
+///////////////////////////////////////////////////////////////////
+MODULE FE_OneStepIteration
+	concrete_name = "FE_SplitSystem"
+	MODULE list_of_FE_OneStepIteration
+		
+///////////////////////////////////////////////////////////////////
+		// FE_OeStepIteration: Navier Stokes Solver
+		// Optional Modules:
+		// - NonlinearTerm -> implement nnlinear viscosity term
+		// - advection     -> construction of the advection term
+///////////////////////////////////////////////////////////////////
+		MODULE FE_OneStepIteration#Navier_Stokes
+			concrete_name = "MI_NavierStokes"         
+			viscosity_term = "div_mu_D_uu"
+			
+			// Nonlinear Term (optional)
+			if( $IS_Nonlinear = 1 )
+			MODULE NonlinearTerm
+				type = "viscosity"
+				residual = 1.E-5
+				maxiter  = 100
+				storage_level = $IS_NONLIN // Make sure that the velocity has enough storage levels
+			END MODULE NonlinearTerm
+				
+			// Flowrate Problem ( optional )
+			if ( $IS_Flowrate = 1)
+			MODULE flowrate
+				target = 1.
+				maxiter = 100
+               residual = 1.e-6
+				component = 0
+				dPdL0 = 0.  		// Pressures
+				dPdL1 = 10.
+				Fl0  = 0. 			// Corresponding initial flowrate
+				method = "secant"	// Method 
+				scale = 0.2 		// correct lengthscale for the flowrate: length of the channel
+			END MODULE flowrate
+			
+			// Discrete Fields
+			velocity = "uu"
+			velocity_level_to_update = $IS_CURRENT
+			level_of_explicit_velocity = $IS_CURRENT          
+			
+			pressure = "pp"
+			pressure_level_to_update = $IS_CURRENT
+			level_of_explicit_pressure = $IS_CURRENT           
+			
+			quadrature_rule_provider = "GE_QRprovider_5"          
+			time_order = 1
+			
+			//Parameters and advection term 
+			param_unsteady = "alpha" 		// Is the equation unsteady 0?1
+			param_Reynolds = "Reynolds"		// Reynolds number
+			param_viscous  = "Viscosity"	// viscoity term
+			param_source   = "pressuredrop"     // Source parameter
+			
+			// Advection term (optional)
+			// - replace this with the advective parameter
+			if ( $IS_Advection = 1 )
+			MODULE advection // -> replace with advective parameter
+			   MODULE advective_field
+			      MODULE xx1
+			         field = "uu"
+			         level = $IS_CURRENT
+			         param_coef = "alpha"
+			      END MODULE xx1 
+			   END MODULE advective_field 
+			END MODULE advection 
+			
+			
+			// Discrete System
+			MODULE MI_NavierStokesSystem
+				verbose_level = 1
+				MODULE method
+					type = "augmented_Lagrangian"
+					augmentation_parameter = 1.0
+					tolerance_on_divergence = 1.e-8
+					tolerance_on_velocity_increment = 1.e-8
+				END MODULE method
+				
+///////////////////////////////////////////////////////////////////               
+				// Block Assembled System
+				// - nb_ranks > 1: PETSC routines
+				// - nb_ranks = 1: PEL internal solver
+///////////////////////////////////////////////////////////////////
+               MODULE LA_Matrix
+						concrete_name = "LA_PelMatrix"
+               END MODULE LA_Matrix
+               
+//               MODULE solver_A
+//                  concrete_name = "LA_PreconditionedSolver"
+//                  MODULE LA_IterativeSolver
+//                     concrete_name = "LA_GMRES_IS"
+//                     nb_iterations_max = 10000
+//                     restart = 50
+//                     MODULE LA_ConvergenceTest
+//                        concrete_name = "LA_DefaultConvergenceTest"
+//                        relative_tolerance = 1.e-08 // 1.e-8 
+//                        absolute_tolerance = 1.E-20
+//                     END MODULE LA_ConvergenceTest
+//                     verbose = false
+//                  END MODULE LA_IterativeSolver
+//                  MODULE LA_Preconditioner
+//                     concrete_name = "LA_Jacobi_PC"
+//                     smallest_inverted_item = 1.e-22
+//                  END MODULE LA_Preconditioner
+//               END MODULE solver_A
+               
+               MODULE solver_A
+                  concrete_name = "LA_PreconditionedSolver"
+							MODULE LA_IterativeSolver
+								concrete_name = "LA_CG_IS"
+								nb_iterations_max = 10000
+                     MODULE LA_ConvergenceTest
+                        concrete_name = "LA_DefaultConvergenceTest"
+                        relative_tolerance = 1.e-8 //1.e-12
+                        absolute_tolerance = 1.E-20
+                     END MODULE LA_ConvergenceTest
+								verbose = false
+							END MODULE LA_IterativeSolver
+							MODULE LA_Preconditioner
+								concrete_name = "LA_Jacobi_PC"
+								smallest_inverted_item = 1.e-40
+							END MODULE LA_Preconditioner
+               END MODULE solver_A
+				
+			END MODULE MI_NavierStokesSystem
+		END MODULE FE_OneStepIteration#Navier_Stokes
+///////////////////////////////////////////////////////////////////
+		
+///////////////////////////////////////////////////////////////////
+         // FE_OneStepIteration: Postprocessing (Parameters)
+///////////////////////////////////////////////////////////////////
+		MODULE FE_OneStepIteration#parameters_postprocessing
+			concrete_name = "FE_ParameterSaver"
+			MODULE parameters
+				MODULE param#1
+					type = "at_cell_centers"
+					parameter_name = "secinvgammadot"
+					entry_name = "SecInvGammadot"
+				END MODULE param#1
+				MODULE param#2
+					type = "at_cell_centers"
+					parameter_name = "Reynolds"
+					entry_name = "Reynolds"
+				END MODULE param#2
+				//MODULE param#3
+					//type = "at_cell_centers"
+					//parameter_name = "Richards"
+					//entry_name = "Richards"
+				//END MODULE param#3
+				MODULE param#4
+					type = "at_cell_centers"
+					parameter_name = "Viscosity"
+					entry_name = "viscosity"
+				END MODULE param#4
+				MODULE param#5
+					type = "at_cell_centers"
+					parameter_name = "pressuredrop"
+					entry_name = "pressuredrop"
+				END MODULE param#5
+			END MODULE parameters
+		END MODULE FE_OneStepIteration#parameters_postprocessing
+///////////////////////////////////////////////////////////////////
+		
+///////////////////////////////////////////////////////////////////
+		// FE_OeStepIteration: FE_DOFsCopy (Setup of the new timestep)
+         // - If another solver needs the correct $IS_INITIAL
+         //   at the new time step during the execution of
+         //   "do_before_inner_iteration_stage", this part has to be
+         //   called after the other one step iterations.
+///////////////////////////////////////////////////////////////////
+		MODULE FE_OneStepIteration#DOF_copy
+			concrete_name = "FE_DOFsCopy"
+			MODULE uu#1
+				field = "uu"
+				source = $IS_INITIAL
+				target = $IS_NONLIN
+			END MODULE uu#1
+			MODULE uu
+				field = "uu"
+				source = $IS_CURRENT
+				target = $IS_INITIAL
+			END MODULE uu
+			MODULE pp
+				field = "pp"
+				source = $IS_CURRENT
+				target = $IS_INITIAL
+			END MODULE pp
+		END MODULE FE_OneStepIteration#DOF_copy
+///////////////////////////////////////////////////////////////////
+		
+	END MODULE list_of_FE_OneStepIteration
+END MODULE FE_OneStepIteration
+
+END MODULE PEL_Application

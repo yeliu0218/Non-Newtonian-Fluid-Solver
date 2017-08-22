@@ -1,0 +1,508 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>PEL_InterpolExp.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="PEL_InterpolExp.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="PELpack-tree.html"><span>Tree</span></a>
+    <a href="PEL_InterpolExp.html"><span>Class</span></a>
+    <a href="PEL_InterpolExp.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="PELpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_InterpolExp</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_assertions</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Sequence</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;iostream&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;fstream&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;sstream&gt;
+
+</font><font class="kw3">PEL_InterpolExp</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">PEL_InterpolExp</font><font class="text">::PROTOTYPE_LIN_1D = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_InterpolExp</font><font class="text">(
+                                                </font><font class="string">&quot;interpol&quot;</font><font class="text">, lin_inter_1D ) ;
+
+</font><font class="kw1">struct</font><font class="text"> PEL_InterpolExp_ERROR
+{
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> n0( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; f_name, </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; op_name ) ;
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> n1( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; f_name,
+                   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; filename,
+                   </font><font class="kw2">size_t</font><font class="text"> line_nb,
+                   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; line ) ;
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> n2( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; f_name, </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; filename ) ;
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> n3( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; f_name,
+                   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; filename,
+                   </font><font class="kw2">size_t</font><font class="text"> line_nb,
+                   </font><font class="kw1">double</font><font class="text"> xn,
+                   </font><font class="kw1">double</font><font class="text"> xn1 ) ;
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> n4( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; f_name,
+                   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; filename ) ;
+} ;
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_InterpolExp</font><font class="text">:: </font><font class="kw3">PEL_InterpolExp</font><font class="text">( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_name,
+                                 PEL_InterpolOp a_op ) 
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_Expression</font><font class="text">( a_name )
+   , OP( a_op )
+   , FROM_FILE( </font><font class="kw1">false</font><font class="text"> )
+   , X1_IS_SET( </font><font class="kw1">false</font><font class="text"> )
+   , X1(0)
+   , F_IS_SET( </font><font class="kw1">false</font><font class="text"> )
+   , FX1(0)
+   , CHECK( </font><font class="kw1">false</font><font class="text"> )
+{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_InterpolExp:: PEL_InterpolExp&quot;</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_Expression</font><font class="text">*
+</font><font class="kw3">PEL_InterpolExp</font><font class="text">:: create_replica( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                 </font><font class="kw3">PEL_Sequence</font><font class="text"> </font><font class="kw1">const</font><font class="text">* argument_list ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_InterpolExp:: create_replica&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_PRE( a_owner, argument_list ) ) ;
+
+   </font><font class="kw3">PEL_InterpolExp</font><font class="text">* result = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_InterpolExp</font><font class="text">( a_owner,
+                                                name(), 
+                                                argument_list,
+                                                OP ) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_POST( result, a_owner, argument_list ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_InterpolExp</font><font class="text">:: </font><font class="kw3">PEL_InterpolExp</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_name,
+                                   </font><font class="kw3">PEL_Sequence</font><font class="text"> </font><font class="kw1">const</font><font class="text">* argument_list,
+                                   PEL_InterpolOp a_op ) 
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_Expression</font><font class="text">( a_owner, a_name, argument_list )
+   , OP( a_op )
+   , FROM_FILE( </font><font class="kw1">false</font><font class="text"> )
+   , X1_IS_SET( </font><font class="kw1">false</font><font class="text"> )
+   , X1(0)
+   , F_IS_SET( </font><font class="kw1">false</font><font class="text"> )
+   , FX1(0)
+   , CHECK( </font><font class="kw1">false</font><font class="text"> )
+{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_InterpolExp:: PEL_InterpolExp&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">switch</font><font class="text">( OP )
+   {
+      </font><font class="kw1">case</font><font class="text"> lin_inter_1D :
+         FROM_FILE = ( arg(0)-&gt;data_type() == String ) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">default</font><font class="text">:
+         PEL_InterpolExp_ERROR::n0( </font><font class="string">&quot;PEL_InterpolExp::&quot;</font><font class="text">, name() ) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+   }
+   
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_InterpolExp</font><font class="text">:: ~</font><font class="kw3">PEL_InterpolExp</font><font class="text">( </font><font class="kw1">void</font><font class="text"> ) 
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_InterpolExp:: ~PEL_InterpolExp&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw1">if</font><font class="text">( PROTOTYPE_LIN_1D == </font><font class="kw1">this</font><font class="text"> )
+   {
+      PROTOTYPE_LIN_1D = 0 ;
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_Data</font><font class="text">::Type
+</font><font class="kw3">PEL_InterpolExp</font><font class="text">:: data_type( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_InterpolExp:: data_type&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw3">PEL_Data</font><font class="text">::Type result = </font><font class="kw3">PEL_Data</font><font class="text">::Undefined ;
+   </font><font class="kw1">switch</font><font class="text">( OP )
+   {
+      </font><font class="kw1">case</font><font class="text"> lin_inter_1D :
+         result = </font><font class="kw3">PEL_Data</font><font class="text">::Double ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">default</font><font class="text">:
+         PEL_InterpolExp_ERROR::n0( </font><font class="string">&quot;data_type&quot;</font><font class="text">, name() ) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+   }     
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; 
+</font><font class="kw3">PEL_InterpolExp</font><font class="text">:: usage( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_InterpolExp:: usage&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> result = </font><font class="string">&quot;undefined&quot;</font><font class="text"> ;
+   </font><font class="kw1">switch</font><font class="text">( OP )
+   {
+      </font><font class="kw1">case</font><font class="text"> lin_inter_1D :
+         result = name() + </font><font class="string">&quot;(DV,DV,DV) or &quot;</font><font class="text">+ name() + </font><font class="string">&quot;(IS,DV) &quot;</font><font class="text"> ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">default</font><font class="text">:
+         PEL_InterpolExp_ERROR::n0( </font><font class="string">&quot;usage&quot;</font><font class="text">, name() ) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+   }
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">PEL_InterpolExp</font><font class="text">:: valid_arguments( </font><font class="kw3">PEL_Sequence</font><font class="text"> </font><font class="kw1">const</font><font class="text">* some_arguments ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_InterpolExp:: valid_arguments&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( valid_arguments_PRE( some_arguments ) ) ;
+
+   </font><font class="kw1">bool</font><font class="text"> result = </font><font class="kw1">false</font><font class="text"> ;
+   </font><font class="kw1">switch</font><font class="text">( OP )
+   {
+      </font><font class="kw1">case</font><font class="text"> lin_inter_1D :
+         result = ( some_arguments-&gt;count() &gt; 0 ) ;
+         </font><font class="kw1">if</font><font class="text">( result )
+         {
+            </font><font class="kw3">PEL_Data</font><font class="text">::Type k0 =
+                             extract_arg( some_arguments, 0 )-&gt;data_type() ;
+            </font><font class="kw1">if</font><font class="text">( k0 == String )
+            {
+               result = ( some_arguments-&gt;count() == 2 ) ;
+               </font><font class="kw1">if</font><font class="text">( result )
+               {
+                  </font><font class="kw3">PEL_Data</font><font class="text">::Type k1 =
+                             extract_arg( some_arguments, 1 )-&gt;data_type() ;
+                  result = ( k1 == Double ) ;
+               }
+            }
+            </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( k0 == DoubleVector )
+            {
+               result = ( some_arguments-&gt;count() == 3 ) ;
+               </font><font class="kw1">if</font><font class="text">( result )
+               {
+                  </font><font class="kw3">PEL_Data</font><font class="text">::Type k1 =
+                             extract_arg( some_arguments, 1 )-&gt;data_type() ;
+                  result = ( k1 == DoubleVector ) ;
+                  </font><font class="kw3">PEL_Data</font><font class="text">::Type k2 =
+                             extract_arg( some_arguments, 2 )-&gt;data_type() ;
+                  result &amp;= ( k2 == Double ) ;
+               }
+            }
+            </font><font class="kw1">else
+</font><font class="text">            {
+               result = </font><font class="kw1">false</font><font class="text"> ;
+            }
+         }
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">default</font><font class="text">:
+         PEL_InterpolExp_ERROR::n0( </font><font class="string">&quot;valid_arguments&quot;</font><font class="text">, name() ) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+   }     
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">double
+</font><font class="kw3">PEL_InterpolExp</font><font class="text">:: to_double( </font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ct ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_InterpolExp:: to_double&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( to_double_PRE(ct) ) ;
+
+   </font><font class="kw1">double</font><font class="text"> result = </font><font class="kw3">PEL</font><font class="text">::bad_double() ;
+
+   </font><font class="kw1">switch</font><font class="text">( OP )
+   {
+      </font><font class="kw1">case</font><font class="text"> lin_inter_1D :
+         {
+            </font><font class="kw1">double</font><font class="text"> x = </font><font class="kw3">PEL</font><font class="text">::bad_double() ;
+            </font><font class="kw1">if</font><font class="text">( FROM_FILE )
+            {
+               </font><font class="kw1">if</font><font class="text">( !X1_IS_SET )
+               {
+                  read_tables_1D( arg(0)-&gt;to_string( ct ), X1, FX1 ) ;
+                  X1_IS_SET = </font><font class="kw1">true</font><font class="text"> ;
+                  F_IS_SET = </font><font class="kw1">true</font><font class="text"> ;
+                  CHECK = </font><font class="kw1">true</font><font class="text"> ;
+               }
+               x = arg(1)-&gt;to_double( ct ) ;
+            }
+            </font><font class="kw1">else
+</font><font class="text">            {
+               </font><font class="kw1">if</font><font class="text">( !X1_IS_SET )
+               {
+                  X1 = arg(0)-&gt;to_double_vector(ct) ;
+               }
+               </font><font class="kw1">if</font><font class="text">( !F_IS_SET )
+               {
+                  FX1 = arg(1)-&gt;to_double_vector(ct) ;
+               }
+               </font><font class="kw1">if</font><font class="text">( !X1_IS_SET || !F_IS_SET )
+               {
+                  check_tables_1D( X1, FX1 ) ;
+               }
+               X1_IS_SET = </font><font class="kw1">true</font><font class="text"> ;
+               F_IS_SET = </font><font class="kw1">true</font><font class="text"> ;
+               CHECK = </font><font class="kw1">true</font><font class="text"> ;
+               x = arg(2)-&gt;to_double( ct ) ;
+            }
+            result = linear_interpol_1D( X1, FX1, x ) ;
+         }
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">default</font><font class="text">:
+         PEL_InterpolExp_ERROR::n0( </font><font class="string">&quot;to_double&quot;</font><font class="text">, name() ) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+   }
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_InterpolExp</font><font class="text">:: read_tables_1D( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; filename,
+                                  </font><font class="kw3">doubleVector</font><font class="text">&amp; X_table,
+                                  </font><font class="kw3">doubleVector</font><font class="text">&amp; FX_table ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_InterpolExp:: read_tables_1D&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw2">std</font><font class="text">::ifstream in( filename.c_str() ) ;
+   </font><font class="kw1">if</font><font class="text">( !in ) PEL_InterpolExp_ERROR::n2( name(), filename ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> n = 0 ;
+   </font><font class="kw1">double</font><font class="text"> x, y ;
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> line ;
+   </font><font class="kw2">size_t</font><font class="text"> nb = 0 ;
+   
+   </font><font class="kw1">while</font><font class="text">( getline( in, line ) )
+   {
+      </font><font class="kw2">std</font><font class="text">::istringstream sin( line ) ;
+      
+      </font><font class="kw1">while</font><font class="text">( sin &gt;&gt; x )
+      {
+         </font><font class="kw1">if</font><font class="text">( ! ( sin &gt;&gt; y ) )
+         {
+            PEL_InterpolExp_ERROR::n1( name(), filename, nb+1, line ) ;
+         }
+         X_table.append( x ) ;
+         FX_table.append( y ) ;
+         </font><font class="kw1">if</font><font class="text">( n!=0 &amp;&amp;  X_table(n)&lt;=X_table(n-1) )
+         {
+            PEL_InterpolExp_ERROR::n3(
+                  name(), filename, nb+1, X_table(n), X_table(n-1) ) ;
+         }
+         n++ ;
+      }
+      </font><font class="kw1">if</font><font class="text">( !sin.eof() )
+      {
+         PEL_InterpolExp_ERROR::n1( name(), filename, nb+1, line ) ;
+      }
+      nb++ ;
+   }
+   </font><font class="kw1">if</font><font class="text">( n == 0 ) PEL_InterpolExp_ERROR::n4( name(), filename ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">double
+</font><font class="kw3">PEL_InterpolExp</font><font class="text">:: linear_interpol_1D( </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; X_table,
+                                      </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; FX_table,
+                                      </font><font class="kw1">double</font><font class="text"> x ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_InterpolExp:: linear_interpol_1D&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( X_table.size() == FX_table.size() ) ;
+
+   </font><font class="kw1">double</font><font class="text"> result = FX_table(0) ;
+   </font><font class="kw1">if</font><font class="text">( x&gt;X_table(0) )
+   {
+      </font><font class="kw2">size_t</font><font class="text"> i=1 ;
+      </font><font class="kw1">for</font><font class="text">( ; i&lt;X_table.size() ; i++ )
+      {
+         </font><font class="kw1">if</font><font class="text">( x&lt;X_table(i) )
+         {
+            </font><font class="kw1">break</font><font class="text"> ;
+         }
+      }
+      </font><font class="kw1">if</font><font class="text">( i&lt;X_table.size() )
+      {
+         </font><font class="kw1">double</font><font class="text"> </font><font class="kw1">const</font><font class="text"> dy = FX_table(i)-FX_table(i-1) ;
+         </font><font class="kw1">double</font><font class="text"> </font><font class="kw1">const</font><font class="text"> dx = X_table(i)-X_table(i-1) ;
+         result = FX_table(i-1) + ( x-X_table(i-1) )*dy/dx ;
+      }
+      </font><font class="kw1">else
+</font><font class="text">      {
+         result = FX_table(i-1) ;
+      }
+   }
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_InterpolExp</font><font class="text">:: check_tables_1D( </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; X_table,
+                                   </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; FX_table ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">if</font><font class="text">( X_table.size() != FX_table.size() )
+   {
+      raise_error( </font><font class="string">&quot;Same size expected for abscissea and ordinates tables&quot;</font><font class="text"> ) ;
+   }
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=1 ; i&lt;X_table.size() ; ++i )
+   {
+      </font><font class="kw1">if</font><font class="text">( X_table(i-1)&gt;=X_table(i) )
+      {
+         raise_error( </font><font class="string">&quot;Increasing first table expected&quot;</font><font class="text"> ) ;
+      }
+   }
+}
+
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="kw1">void</font><font class="text"> 
+PEL_InterpolExp_ERROR:: n0( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; f_name,
+                            </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; op_name )
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> mesg ;
+   mesg += </font><font class="string">&quot;*** PEL_InterpolExp::&quot;</font><font class="text">+f_name+</font><font class="string">&quot;\n&quot;</font><font class="text"> ;
+   mesg += </font><font class="string">&quot;    operation &quot;</font><font class="text">+op_name+</font><font class="string">&quot; not implemented.&quot;</font><font class="text"> ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_internal( mesg ) ;
+}
+
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="kw1">void</font><font class="text"> 
+PEL_InterpolExp_ERROR:: n1( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; f_name,
+                            </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; filename,
+                            </font><font class="kw2">size_t</font><font class="text"> line_nb,
+                            </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; line )
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> mesg ;
+   mesg &lt;&lt; </font><font class="string">&quot;*** PEL_InterpolExp::&quot;</font><font class="text">+f_name+</font><font class="string">&quot; error\n&quot;</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;    Syntax error reading file : \&quot;&quot;+filename+&quot;</font><font class="text">\</font><font class="string">&quot;\n&quot;</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;    Error at line &quot;</font><font class="text"> ;
+   mesg &lt;&lt; line_nb &lt;&lt; </font><font class="string">&quot; : \&quot;&quot; ;
+   mesg &lt;&lt; line &lt;&lt; &quot;</font><font class="text">\</font><font class="string">&quot;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   
+   
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( mesg.str() ) ;
+}
+
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="kw1">void</font><font class="text"> 
+PEL_InterpolExp_ERROR:: n2( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; f_name,
+                            </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; filename )
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> mesg ;
+   mesg += </font><font class="string">&quot;*** PEL_InterpolExp::&quot;</font><font class="text">+f_name+</font><font class="string">&quot; error\n&quot;</font><font class="text"> ;
+   mesg += </font><font class="string">&quot;    Unable to open \&quot;&quot;+filename+&quot;</font><font class="text">\</font><font class="string">&quot;.&quot;</font><font class="text"> ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( mesg ) ;
+}
+
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="kw1">void</font><font class="text"> 
+PEL_InterpolExp_ERROR:: n3( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; f_name,
+                            </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; filename,
+                            </font><font class="kw2">size_t</font><font class="text"> line_nb,
+                            </font><font class="kw1">double</font><font class="text"> xn,
+                            </font><font class="kw1">double</font><font class="text"> xn1 )
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> mesg ;
+   
+   mesg &lt;&lt; </font><font class="string">&quot;*** PEL_InterpolExp::&quot;</font><font class="text">+f_name+</font><font class="string">&quot; error\n&quot;</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;    Bad file \&quot;&quot;+filename+&quot;</font><font class="text">\</font><font class="string">&quot;\n&quot;</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;    At line &quot;</font><font class="text">;
+   mesg &lt;&lt; line_nb ;
+   mesg &lt;&lt; </font><font class="string">&quot; increasing first table expected but: &quot;</font><font class="text">  ;
+   </font><font class="kw3">PEL</font><font class="text">::print_double( mesg, xn ) ;
+   mesg &lt;&lt; </font><font class="string">&quot; &lt; &quot;</font><font class="text"> ;
+   </font><font class="kw3">PEL</font><font class="text">::print_double( mesg, xn1 ) ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( mesg.str() ) ;
+}
+
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="kw1">void</font><font class="text"> 
+PEL_InterpolExp_ERROR:: n4( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; f_name,
+                            </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; filename )
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> mesg ;
+   mesg += </font><font class="string">&quot;*** PEL_InterpolExp::&quot;</font><font class="text">+f_name+</font><font class="string">&quot; error\n&quot;</font><font class="text"> ;
+   mesg += </font><font class="string">&quot;    syntax error reading file \&quot;&quot;+filename+&quot;</font><font class="text">\</font><font class="string">&quot;&quot;</font><font class="text"> ;
+   mesg += </font><font class="string">&quot; : empty file.&quot;</font><font class="text"> ;
+    
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( mesg ) ;
+}
+
+</font>
+</pre>
+</body>
+</html>

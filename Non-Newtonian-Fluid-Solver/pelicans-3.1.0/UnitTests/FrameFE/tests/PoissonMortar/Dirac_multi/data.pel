@@ -1,0 +1,199 @@
+MODULE PEL_Application
+   
+   concrete_name = "FE_StepByStepProgression"
+            
+   MODULE FE_TimeIterator
+      time_initial = 0.0
+      time_end = 1.0
+      time_step = 1.E+10
+   END MODULE FE_TimeIterator
+
+   MODULE PDE_SetOfDomains
+
+      verbose_level = 1
+     
+      MODULE list_of_PDE_DomainAndFields
+         MODULE PDE_DomainAndFields#0
+            verbose_level = 1
+            nb_space_dimensions = 2
+            type  = "finite_element"
+            name = "subdomain0"
+            MODULE GE_Meshing
+               concrete_name = "GE_EMC2Meshing"
+               format = "ftq"
+               filename = join( this_file_dir(), "mesh_dom_ext_12_24.ftq" )
+               cell_polyhedron = < "GE_Rectangle" >              
+               roundoff = default_roundoff( $DS_x, 5, 1.e-6 )
+            END MODULE GE_Meshing
+            
+            MODULE interior_fields
+               MODULE uu
+                  name = "uu"
+                  nb_components = 1
+                  element_name = "PDE_2D_Q1_4nodes"
+                  storage_depth = 1                  
+                  MODULE DOFs_values
+                     type = "uniformly_defined"
+                     value = < 0.0 >                 
+                  END MODULE DOFs_values
+                  MODULE DOFs_imposed_value                     
+                     MODULE xxx
+                        location = "on_bounds"
+                        color = "r1"
+                        type = "uniformly_defined"                       
+                        value = vector( -0.25 / pi()
+                                        *log( sqr( component( $DV_X, 0 ) )
+                                             +sqr( component( $DV_X, 1 ) ) ) )
+                     END MODULE xxx                     
+                  END MODULE DOFs_imposed_value
+               END MODULE uu
+            END MODULE interior_fields
+            
+            MODULE PDE_ResultSaver
+               writers = < "PEL_TICwriter" >              
+               writing_mode = "text"
+               files_basename = "save_0"  
+               MODULE uu
+                  field = "uu"
+                  where_to_save = "at_vertices"
+                  entry_name = "U"
+               END MODULE uu
+            END MODULE PDE_ResultSaver
+         END MODULE PDE_DomainAndFields#0
+        
+         MODULE PDE_DomainAndFields#1
+            verbose_level = 1
+            nb_space_dimensions = 2
+            type = "finite_element"
+            name = "subdomain1"
+            MODULE GE_Meshing               
+               concrete_name = "GE_BoxWithBoxes"
+               vertices_coordinate_0 = regular_vector( -0.5 , 35, 0.5 )
+               vertices_coordinate_1 = regular_vector( -0.5 , 35, 0.5 )
+               mesh_polyhedron = < "GE_Segment" "GE_Rectangle" >
+            END MODULE GE_Meshing
+
+            MODULE interior_fields
+               MODULE uu
+                  name = "uu"
+                  nb_components = 1
+                  element_name = "PDE_2D_Q1_4nodes"
+                  storage_depth = 1
+                  MODULE DOFs_values
+                     type = "uniformly_defined"
+                     value = < 0.0 >
+                  END MODULE DOFs_values
+               END MODULE uu
+            END MODULE interior_fields
+            
+            MODULE PDE_ResultSaver
+               writers = < "PEL_TICwriter" >               
+               writing_mode   = "text"
+               files_basename = "save_1"
+               MODULE uu                  
+                  field = "uu"
+                  where_to_save = "at_vertices"
+                  entry_name = "U"
+               END MODULE uu
+            END MODULE PDE_ResultSaver
+         END MODULE PDE_DomainAndFields#1
+      END MODULE list_of_PDE_DomainAndFields
+      
+      MODULE list_of_PDE_InterfaceAndFields
+         MODULE PDE_InterfaceAndFields#0
+            verbose_level = 1
+            nb_space_dimensions = 2
+            name = "interface"
+            adjacent_domain_0 = "subdomain0"
+            adjacent_domain_1 = "subdomain1"
+            MODULE GE_Meshing
+               concrete_name = "GE_CurveWithSegments"
+               closed_curve = true
+               bends = array( < -0.5 -0.5 >,
+                              <  0.5 -0.5 >,
+                              <  0.5  0.5 >,
+                              < -0.5  0.5 > )
+               subdivisions = ( regular_vector( 0.0, 12, 1.0 ) <<
+                                regular_vector( 0.0, 12, 1.0 ) << 
+                                regular_vector( 0.0, 12, 1.0 ) <<
+                                regular_vector( 0.0, 12, 1.0 ) )
+              mesh_polyhedron = < "GE_Mpoint" "GE_Segment" >
+            END MODULE GE_Meshing
+            MODULE fields               
+               MODULE lambda
+                  name = "lambda"                     
+                  nb_components = 1
+                  element_name = "PDE_1D_P1_2nodes"
+                  storage_depth = 1
+               END MODULE lambda               
+            END MODULE fields
+         END MODULE PDE_InterfaceAndFields#0
+      END MODULE list_of_PDE_InterfaceAndFields
+           
+   END MODULE PDE_SetOfDomains
+   
+   MODULE FE_SetOfParameters
+   END MODULE FE_SetOfParameters
+
+   MODULE FE_OneStepIteration
+      
+      concrete_name = "FE_MultiDomainSystem"
+
+      MODULE domain_discretizers
+         MODULE FE_OneStepIteration#0
+            concrete_name = "FE_PoissonMortar"
+            domain = "subdomain0"
+            current_field = "uu"
+            level_of_current = 0
+            quadrature_rule_provider = "GE_QRprovider_3"
+         END MODULE FE_OneStepIteration#0
+         
+         MODULE FE_OneStepIteration#1
+            concrete_name = "FE_PoissonMortar"
+            domain = "subdomain1"
+            current_field = "uu"
+            level_of_current = 0
+            quadrature_rule_provider = "GE_QRprovider_3"
+         END MODULE FE_OneStepIteration#1
+      END MODULE domain_discretizers
+
+      MODULE interface_discretizers
+         MODULE interf_disc_0
+           interface = "interface"
+           quadrature_rule_provider = "GE_QRprovider_3"
+           MODULE unknowns
+               MODULE xxx
+                  interface_field = "lambda"
+                  field_of_adjacent_domain_0 = "uu"
+                  field_of_adjacent_domain_1 = "uu"
+               END MODULE xxx
+            END MODULE unknowns
+         END MODULE interf_disc_0
+      END MODULE interface_discretizers
+      
+      MODULE LA_Matrix
+         concrete_name = "LA_PelMatrix"
+      END MODULE LA_Matrix
+      
+      MODULE LA_Solver
+         concrete_name = "LA_PreconditionedSolver"
+         MODULE LA_IterativeSolver
+            concrete_name = "LA_GMRES_IS"
+            nb_iterations_max = 1000
+            MODULE LA_ConvergenceTest
+               concrete_name = "LA_DefaultConvergenceTest"
+               relative_tolerance = 1.e-10
+               absolute_tolerance = 1.e-20
+            END MODULE LA_ConvergenceTest
+            restart = 60
+            verbose = false
+         END MODULE LA_IterativeSolver
+         MODULE LA_Preconditioner
+            concrete_name = "LA_Jacobi_PC"
+            smallest_inverted_item = 1.0e-12
+         END MODULE LA_Preconditioner
+      END MODULE LA_Solver
+
+    END MODULE FE_OneStepIteration
+         
+END MODULE PEL_Application

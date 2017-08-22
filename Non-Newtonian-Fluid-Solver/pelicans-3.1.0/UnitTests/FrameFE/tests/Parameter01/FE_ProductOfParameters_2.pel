@@ -1,0 +1,130 @@
+MODULE PEL_ObjectTest#FE_Parameter_TEST
+   
+   MODULE FE_ProductOfParameters#2
+
+      $DS_x = component( $DV_X, 0 )
+      $DS_y = component( $DV_X, 1 )
+      $DS_z = component( $DV_X, 2 )
+
+      $DS_F0 = $DS_x*$DS_y*$DS_z*sqrt( abs( $DS_z ) )
+      $DV_F = vector( $DS_F0 )
+    
+      $DS_G0 = atan( $DS_x )
+      $DS_G1 = atan( $DS_y )
+      $DV_G = vector( $DS_G0, $DS_G1 )
+
+      $DS_H0 = 3.0 + $DS_x + 9.0*$DS_y - $DS_z
+      $DS_coef3 = 3.14
+      
+      $DV_VAL = vector( $DS_F0*$DS_G0*$DS_coef3*$DS_H0,
+                        $DS_F0*$DS_G1*$DS_coef3*$DS_H0 )
+                        
+      $IS_NB_COMPS = 2
+
+      MODULE PDE_DomainAndFields
+         type = "finite_element"
+         verbose_level = 0
+         nb_space_dimensions = 3
+         MODULE GE_Meshing
+            concrete_name = "GE_BoxWithBoxes"
+            vertices_coordinate_0 = < 0. 0.5 1. >
+            vertices_coordinate_1 = regular_vector( -10., 2, 35. )
+            vertices_coordinate_2 = regular_vector( -100., 3, 102.9 )
+            mesh_polyhedron = < "GE_Quadrilateral" "GE_Hexahedron" >
+         END MODULE GE_Meshing
+         MODULE interior_fields
+            MODULE uu
+               name = "uu"
+               nb_components = 1
+               element_name = "PDE_3D_Q1_8nodes"
+               storage_depth = 1
+               MODULE DOFs_values
+                  type = "uniformly_defined"
+                  value = vector( $DS_H0 )
+               END MODULE DOFs_values
+            END MODULE uu
+         END MODULE interior_fields
+      END MODULE PDE_DomainAndFields
+      MODULE FE_TimeIterator
+         time_step = 1.
+         time_end = 2.
+         time_initial = 0.
+      END MODULE FE_TimeIterator
+      MODULE FE_SetOfParameters
+         MODULE FE_Parameter#tata
+            concrete_name = "FE_SpaceTimeParameter"
+            name = "tata"
+            nb_components = 1
+            value = $DV_F
+         END MODULE FE_Parameter#tata
+         MODULE FE_Parameter#tutu
+            concrete_name = "FE_FieldParameter"
+            name = "tutu"
+            field_name  = "uu"
+            field_level = 0
+            coefficient = $DS_coef3
+         END MODULE FE_Parameter#tutu
+         MODULE FE_Parameter#toto
+            concrete_name = "FE_ProductOfParameters"
+            name = "toto"
+            MODULE list_of_parameters
+               MODULE param#1
+                  type = "already_defined"
+                  name = "tata"
+               END MODULE param#1
+               MODULE param#2
+                  type = "to_be_defined"
+                  MODULE FE_Parameter
+                     concrete_name = "FE_SpaceTimeParameter"
+                     name = "titi"
+                     nb_components = 2
+                     value = $DV_G
+                  END MODULE FE_Parameter
+               END MODULE param#2
+               MODULE param#3
+                  type = "already_defined"
+                  name = "tutu"
+               END MODULE param#3
+            END MODULE list_of_parameters
+         END MODULE FE_Parameter#toto
+      END MODULE FE_SetOfParameters
+      MODULE tests
+         MODULE cell_value_at_centers
+            type = "cell_value_at_centers"
+            parameter_name = "toto"
+            parameter_nb_components = $IS_NB_COMPS
+            dbl_epsilon = 1.E-8
+            dbl_minimum = 1.E-8
+            value = $DV_VAL
+         END MODULE cell_value_at_centers
+         MODULE cell_value_at_IPs
+            type = "cell_value_at_IPs"
+            parameter_name = "toto"
+            parameter_nb_components = $IS_NB_COMPS
+            QRprovider_name = "GE_QRprovider_3"
+            dbl_epsilon = 1.E-8
+            dbl_minimum = 1.E-8
+            value = $DV_VAL
+         END MODULE cell_value_at_IPs
+         MODULE bound_value_at_centers
+            type = "bound_value_at_centers"
+            parameter_name = "toto"
+            parameter_nb_components = $IS_NB_COMPS
+            dbl_epsilon = 1.E-8
+            dbl_minimum = 1.E-8
+            value = $DV_VAL
+         END MODULE bound_value_at_centers
+         MODULE bound_value_at_IPs
+            type = "bound_value_at_IPs"
+            parameter_name = "toto"
+            parameter_nb_components = $IS_NB_COMPS
+            QRprovider_name = "GE_QRprovider_3"
+            dbl_epsilon = 1.E-8
+            dbl_minimum = 1.E-8
+            value = $DV_VAL
+         END MODULE bound_value_at_IPs
+      END MODULE tests
+      
+   END MODULE FE_ProductOfParameters#2
+   
+END MODULE PEL_ObjectTest#FE_Parameter_TEST

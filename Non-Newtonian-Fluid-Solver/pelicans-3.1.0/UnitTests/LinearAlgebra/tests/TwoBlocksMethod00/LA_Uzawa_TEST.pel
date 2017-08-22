@@ -1,0 +1,118 @@
+MODULE PEL_ObjectTest#TwoBlocksMethod
+   
+   MODULE TEST1#LA_Uzawa#1
+      test_name = "LA_Uzawa"
+      $DS_R = 1.e6
+      A = join( this_file_dir(), "..", "Data", "uzawa_A.mtx" )
+      B = join( this_file_dir(), "..", "Data", "uzawa_B.mtx" )
+      C = join( this_file_dir(), "..", "Data", "uzawa_C.mtx" )
+      MODULE LA_TwoBlocksMethod
+         concrete_name = "LA_Uzawa"
+         verbose_level = 2
+         augmentation_parameter = $DS_R
+         tolerance_on_divergence = 1.E-4
+         tolerance_on_velocity_increment = 1.E-8
+         nb_iterations_max = 10000
+         MODULE solver_A
+            concrete_name = "LA_PreconditionedSolver"
+            MODULE LA_IterativeSolver
+               concrete_name = "LA_CG_IS"
+               nb_iterations_max = 2000
+               MODULE LA_ConvergenceTest
+                  concrete_name = "LA_DefaultConvergenceTest"
+                  relative_tolerance = 1.e-10
+                  absolute_tolerance = 1.e-50
+               END MODULE LA_ConvergenceTest
+               verbose = false
+            END MODULE LA_IterativeSolver
+            MODULE LA_Preconditioner
+               concrete_name = "LA_Jacobi_PC"
+               smallest_inverted_item = 1.e-300
+            END MODULE LA_Preconditioner
+         END MODULE solver_A
+         MODULE solver_C
+            concrete_name = "LA_PreconditionedSolver"
+            MODULE LA_IterativeSolver
+               concrete_name = "LA_CG_IS"
+               nb_iterations_max = 2000
+               MODULE LA_ConvergenceTest
+                  concrete_name = "LA_DefaultConvergenceTest"
+                  relative_tolerance = 1.e-10
+                  absolute_tolerance = 1.e-50
+               END MODULE LA_ConvergenceTest
+               verbose = false
+            END MODULE LA_IterativeSolver
+            MODULE LA_Preconditioner
+               concrete_name = "LA_Jacobi_PC"
+               smallest_inverted_item = 1.e-300
+            END MODULE LA_Preconditioner
+         END MODULE solver_C
+      END MODULE LA_TwoBlocksMethod
+      MODULE LA_Matrix
+         concrete_name = "LA_PelMatrix"
+      END MODULE LA_Matrix
+   END MODULE TEST1#LA_Uzawa#1
+
+   MODULE TEST1#LA_Uzawa#2
+      test_name = "LA_Uzawa"
+      $DS_R = 1.e6
+      A = join( this_file_dir(), "..", "Data", "uzawa_A.mtx" )
+      B = join( this_file_dir(), "..", "Data", "uzawa_B.mtx" )
+      C = join( this_file_dir(), "..", "Data", "uzawa_C.mtx" )
+      MODULE LA_TwoBlocksMethod
+         concrete_name = "LA_Uzawa"
+         verbose_level = 2
+         augmentation_parameter = $DS_R
+         descent_parameter = $DS_R
+         tolerance_on_divergence = 1.E-4
+         tolerance_on_velocity_increment = 1.E-8
+         nb_iterations_max = 10000
+         MODULE solver_A
+            concrete_name = "LA_PreconditionedSolver"
+            MODULE LA_IterativeSolver
+               concrete_name = "LA_CG_IS"
+               nb_iterations_max = 2000
+               MODULE LA_ConvergenceTest
+                  concrete_name = "LA_DefaultConvergenceTest"
+                  relative_tolerance = 1.e-10
+                  absolute_tolerance = 1.e-50
+               END MODULE LA_ConvergenceTest
+               verbose = false
+            END MODULE LA_IterativeSolver
+            MODULE LA_Preconditioner
+               concrete_name = "LA_Jacobi_PC"
+               smallest_inverted_item = 1.e-300
+            END MODULE LA_Preconditioner
+         END MODULE solver_A
+         MODULE solver_C
+            concrete_name = "LA_PreconditionedSolver"
+            MODULE LA_IterativeSolver
+               concrete_name = "LA_CG_IS"
+               nb_iterations_max = 2000
+               MODULE LA_ConvergenceTest
+                  concrete_name = "LA_DefaultConvergenceTest"
+                  relative_tolerance = 1.e-10
+                  absolute_tolerance = 1.e-50
+               END MODULE LA_ConvergenceTest
+               verbose = false
+            END MODULE LA_IterativeSolver
+            MODULE LA_Preconditioner
+               concrete_name = "LA_Jacobi_PC"
+               smallest_inverted_item = 1.e-300
+            END MODULE LA_Preconditioner
+         END MODULE solver_C
+      END MODULE LA_TwoBlocksMethod
+      MODULE LA_Matrix
+         concrete_name = "LA_DistMatrix"
+         verbose = true
+         MODULE initial_block_prototype
+            concrete_name = "LA_PelMatrix"
+         END MODULE initial_block_prototype
+         MODULE final_block_prototype
+            concrete_name = "LA_CRSmatrix"
+            insertion_mode = false
+         END MODULE final_block_prototype
+      END MODULE LA_Matrix
+   END MODULE TEST1#LA_Uzawa#2
+   
+END MODULE PEL_ObjectTest#TwoBlocksMethod

@@ -1,0 +1,61 @@
+BATCH
+ECHO 0 STAT PS
+
+FRAME WHITE 21. 21.
+
+PALETTE
+  1.0 0.0 0.0   -0.06   40
+  1.0 1.0 0.0    0.15   80 
+  0.0 1.0 0.0    0.3    120
+  0.0 1.0 1.0    0.6    160
+  0.0 0.0 1.0    0.92   200
+TERM
+
+VMIN -1. VMAX 1. CUTT 4 SCUTT 5 AXIS X1
+VMIN -1. VMAX 1. CUTT 4 SCUTT 5 AXIS Y1
+GRID WITHOUT
+
+$ ----------------------------------
+$ outer meshing
+$ ----------------------------------
+FILE 'save_0.gene' FORM END
+
+CYCL 1
+
+CALL "build_meshing.tic"
+
+CYCL 2
+
+PHYS 0 U TABL U
+FIELD NODE U
+DTYP ELEM
+
+IMAGE 1
+PSFN "u.ps"
+DRAW PALETTE 0. 0. 10
+
+$ ---------------------------------
+$ inner meshing
+$ ---------------------------------
+FILE 'save_1.gene' FORM END
+
+CYCL 1
+
+CALL "build_meshing.tic"
+
+CYCL 2
+
+PHYS 0 U  TABL U
+FIELD NODE U
+DTYP ELEM
+
+IMAGE 2
+PSFN "u.ps"
+DRAW PALETTE 0. 0. 10
+
+$ ---------------------------------
+$ both meshings
+$ ---------------------------------
+CREA IM 1 2 TERM
+PSFN "doc/u.ps"
+REDRAW IM

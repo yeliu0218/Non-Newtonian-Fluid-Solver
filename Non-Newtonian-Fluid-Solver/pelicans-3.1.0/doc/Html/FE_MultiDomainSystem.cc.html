@@ -1,0 +1,411 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>FE_MultiDomainSystem.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="FE_MultiDomainSystem.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="FEpack-tree.html"><span>Tree</span></a>
+    <a href="FE_MultiDomainSystem.html"><span>Class</span></a>
+    <a href="FE_MultiDomainSystem.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="FEpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE_MultiDomainSystem</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Vector</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_assertions</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_Matrix</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_Solver</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_Vector</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_InterfaceAndFields</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_DomainAndFields</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_SetOfDomains</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_SystemNumbering</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE_OneStepIterationOpen</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE_TimeIterator</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">FE_MortarInterfaceDiscretizer</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;iostream&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;sstream&gt;
+
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">cout</font><font class="text"> ;
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> ;
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> ;
+
+</font><font class="kw3">FE_MultiDomainSystem</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">FE_MultiDomainSystem</font><font class="text">:: PROTOTYPE = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">FE_MultiDomainSystem</font><font class="text">() ;
+
+</font><font class="kw1">struct</font><font class="text"> FE_MultiDomainSystem_ERROR {
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> n0( </font><font class="kw1">void</font><font class="text"> ) ;
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> n1( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; domain_name ) ;
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> n2( </font><font class="kw1">void</font><font class="text"> ) ;
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> n3( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; interf_name ) ;
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> n4( </font><font class="kw1">void</font><font class="text"> ) ;
+} ;
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw3">FE_MultiDomainSystem</font><font class="text">:: </font><font class="kw3">FE_MultiDomainSystem</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">FE_OneStepIteration</font><font class="text">( </font><font class="string">&quot;FE_MultiDomainSystem&quot;</font><font class="text"> )
+{
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw3">FE_MultiDomainSystem</font><font class="text">*
+</font><font class="kw3">FE_MultiDomainSystem</font><font class="text">:: create_replica( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                       </font><font class="kw3">PDE_DomainAndFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dom,
+                                       </font><font class="kw3">FE_SetOfParameters</font><font class="text"> </font><font class="kw1">const</font><font class="text">* prms,
+                                       </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* exp ) </font><font class="kw1">const
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_MultiDomainSystem:: create_replica&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_PRE( a_owner, dom, prms, exp ) ) ;
+
+   FE_MultiDomainSystem_ERROR::n0() ; 
+   
+   </font><font class="kw3">FE_MultiDomainSystem</font><font class="text">* result = 0 ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_POST( result, a_owner, dom, prms, exp ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw3">FE_MultiDomainSystem</font><font class="text">*
+</font><font class="kw3">FE_MultiDomainSystem</font><font class="text">:: create_replica( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                       </font><font class="kw3">PDE_SetOfDomains</font><font class="text"> </font><font class="kw1">const</font><font class="text">* sdoms,
+                                       </font><font class="kw3">FE_SetOfParameters</font><font class="text"> </font><font class="kw1">const</font><font class="text">* prms,
+                                       </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* exp ) </font><font class="kw1">const
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_MultiDomainSystem:: create_replica&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_PRE( a_owner, sdoms, prms, exp ) ) ;
+
+   </font><font class="kw3">FE_MultiDomainSystem</font><font class="text">* result = 
+      </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">FE_MultiDomainSystem</font><font class="text">( a_owner, sdoms, prms, exp ) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_POST( result, a_owner, sdoms, prms, exp ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw3">FE_MultiDomainSystem</font><font class="text">:: </font><font class="kw3">FE_MultiDomainSystem</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                             </font><font class="kw3">PDE_SetOfDomains</font><font class="text"> </font><font class="kw1">const</font><font class="text">* sdoms,
+                                             </font><font class="kw3">FE_SetOfParameters</font><font class="text"> </font><font class="kw1">const</font><font class="text">* prms,
+                                             </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp )
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">FE_OneStepIteration</font><font class="text">( a_owner, sdoms, exp )
+   , SDOMS( sdoms )
+   , D_PBS( </font><font class="kw3">PEL_Vector</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, sdoms-&gt;nb_domains() ) )
+   , I_PBS( </font><font class="kw3">PEL_Vector</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, sdoms-&gt;nb_interfaces() ) )
+   , NMB( 0 )
+   , LHS( 0 )
+   , RHS( 0 )
+   , UNK( 0 )
+{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_MultiDomainSystem:: FE_MultiDomainSystem&quot;</font><font class="text"> ) ;
+      
+   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* e = exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;domain_discretizers&quot;</font><font class="text"> ) ;
+   e-&gt;start_module_iterator() ;
+   </font><font class="kw1">for</font><font class="text">( ; e-&gt;is_valid_module() ; e-&gt;go_next_module() )
+   {
+      </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* ee = e-&gt;create_subexplorer( 0 ) ; 
+      </font><font class="kw3">FE_OneStepIteration</font><font class="text">* one_it = 
+                           </font><font class="kw3">FE_OneStepIteration</font><font class="text">::make( D_PBS, sdoms, prms, ee ) ;
+      ee-&gt;destroy() ; ee = 0 ;
+   }
+   e-&gt;destroy() ; e = 0 ;
+   
+   </font><font class="kw3">PEL_Vector</font><font class="text">* dof2Unknowns = </font><font class="kw3">PEL_Vector</font><font class="text">::create( 0, 0 ) ;
+   </font><font class="kw2">size_t</font><font class="text"> nb_sol = </font><font class="kw3">FE_OneStepIterationOpen</font><font class="text">::nb_objects() ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;nb_sol ; ++i )
+   {
+      </font><font class="kw3">FE_OneStepIterationOpen</font><font class="text">* one_it = </font><font class="kw3">FE_OneStepIterationOpen</font><font class="text">::object( i ) ;
+      </font><font class="kw3">PDE_DomainAndFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dom = one_it-&gt;domain() ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; j&lt;SDOMS-&gt;nb_domains() ; ++j )
+      {
+         </font><font class="kw1">if</font><font class="text">( dom == SDOMS-&gt;domain( j ) )
+         {
+            </font><font class="kw1">if</font><font class="text">( D_PBS-&gt;at( j ) != 0 ) 
+               FE_MultiDomainSystem_ERROR::n1( dom-&gt;name() ) ;
+            D_PBS-&gt;set_at( j, one_it ) ;            
+            </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i_unk=0 ; i_unk&lt;one_it-&gt;nb_unknowns() ; ++i_unk )
+            {
+               </font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text">* lnk = 
+                       one_it-&gt;link_DOF_2_unknown( i_unk )-&gt;create_clone( 0 ) ;
+               dof2Unknowns-&gt;append( lnk ) ;
+            }
+         }
+      }
+   }
+   </font><font class="kw1">if</font><font class="text">( D_PBS-&gt;count() != D_PBS-&gt;index_limit() )
+      FE_MultiDomainSystem_ERROR::n2() ;
+   
+   e = exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;interface_discretizers&quot;</font><font class="text"> ) ;
+   e-&gt;start_module_iterator() ;
+   </font><font class="kw1">for</font><font class="text">( ; e-&gt;is_valid_module() ; e-&gt;go_next_module() )
+   {
+      </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* ee = e-&gt;create_subexplorer( 0 ) ; 
+      </font><font class="kw3">PDE_InterfaceAndFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* interf = 
+                      SDOMS-&gt;interface( ee-&gt;string_data( </font><font class="string">&quot;interface&quot;</font><font class="text"> ) ) ;
+      </font><font class="kw3">FE_MortarInterfaceDiscretizer</font><font class="text">* ipb = 
+         </font><font class="kw3">FE_MortarInterfaceDiscretizer</font><font class="text">::create( I_PBS, interf, D_PBS, ee ) ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; j&lt;SDOMS-&gt;nb_interfaces() ; ++j )
+      {
+         </font><font class="kw1">if</font><font class="text">( interf == SDOMS-&gt;interface( j ) )
+         {
+            </font><font class="kw1">if</font><font class="text">( I_PBS-&gt;at( j ) != 0 ) 
+               FE_MultiDomainSystem_ERROR::n3( interf-&gt;name() ) ;
+            I_PBS-&gt;set_at( j, ipb ) ;
+            </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i_unk=0 ; i_unk&lt;ipb-&gt;nb_unknowns() ; ++i_unk )
+            {
+               </font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text">* lnk = 
+                       ipb-&gt;create_link_DOF_2_unknown( 0, i_unk ) ;
+               dof2Unknowns-&gt;append( lnk ) ;
+            }
+         }
+      }
+      ee-&gt;destroy() ; ee = 0 ;
+   }
+   </font><font class="kw1">if</font><font class="text">( I_PBS-&gt;count() != I_PBS-&gt;index_limit() ) 
+      FE_MultiDomainSystem_ERROR::n4() ;
+   e-&gt;destroy() ; e = 0 ;
+   
+   NMB = </font><font class="kw3">PDE_SystemNumbering</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, dof2Unknowns, 
+                                      </font><font class="string">&quot;sequence_of_the_discrete_fields&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ee = exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;LA_Matrix&quot;</font><font class="text"> ) ;
+   LHS = </font><font class="kw3">LA_Matrix</font><font class="text">::make( </font><font class="kw1">this</font><font class="text">, ee ) ;
+   ee-&gt;destroy() ; ee = 0 ;
+   
+   RHS = LHS-&gt;create_vector( </font><font class="kw1">this</font><font class="text"> ) ;
+   UNK = LHS-&gt;create_vector( </font><font class="kw1">this</font><font class="text"> ) ;
+   
+   ee = exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;LA_Solver&quot;</font><font class="text"> ) ;
+   SOLVER = </font><font class="kw3">LA_Solver</font><font class="text">::make( </font><font class="kw1">this</font><font class="text">, ee ) ;
+   ee-&gt;destroy() ; ee = 0 ;
+
+   dof2Unknowns-&gt;destroy() ; </font><font class="comment">//???????? changer ce nom
+</font><font class="text">}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw3">FE_MultiDomainSystem</font><font class="text">:: ~</font><font class="kw3">FE_MultiDomainSystem</font><font class="text">( </font><font class="kw1">void</font><font class="text"> ) 
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">FE_MultiDomainSystem</font><font class="text">:: do_one_inner_iteration( </font><font class="kw3">FE_TimeIterator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* t_it )
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;FE_MultiDomainSystem:: do_one_inner_iteration&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( do_one_inner_iteration_PRE( t_it ) ) ;
+   
+   start_total_timer( </font><font class="string">&quot;FE_MultiDomainSystem:: do_one_inner_iteration&quot;</font><font class="text"> ) ;
+   
+   NMB-&gt;reset() ;
+   
+   </font><font class="kw2">size_t</font><font class="text"> dim = NMB-&gt;nb_global_unknowns() ;
+   LHS-&gt;re_initialize( dim, dim ) ;
+   RHS-&gt;re_initialize( dim ) ;
+   UNK-&gt;re_initialize( dim ) ;
+   
+   NMB-&gt;define_scatters( RHS ) ;
+   
+   start_assembling_timer() ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;SDOMS-&gt;nb_domains() ; ++i )
+   {
+      </font><font class="kw3">FE_OneStepIterationOpen</font><font class="text">* sd = subdomain_discretizer( i ) ;
+      </font><font class="kw2">size_t</font><font class="text"> domain_shift = i ;
+      sd-&gt;assemble_contribution( t_it, LHS, RHS, NMB, domain_shift ) ;
+   }
+
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;SDOMS-&gt;nb_interfaces() ; ++i )
+   {
+      </font><font class="kw3">FE_MortarInterfaceDiscretizer</font><font class="text">* sd = interface_discretizer( i ) ;
+
+      </font><font class="kw2">size_t</font><font class="text"> interf_shift = SDOMS-&gt;nb_domains() + i ;
+      </font><font class="kw2">size_t</font><font class="text"> dom_0_shift = SDOMS-&gt;index_of_interface_adjacent_domain( i, 0 ) ;
+      </font><font class="kw2">size_t</font><font class="text"> dom_1_shift = SDOMS-&gt;index_of_interface_adjacent_domain( i, 1 ) ;
+      
+      sd-&gt;assemble_contribution( LHS, RHS, NMB,
+                                 interf_shift, dom_0_shift, dom_1_shift ) ;
+   }
+   stop_assembling_timer() ;
+   
+   start_solving_timer() ;
+   
+   SOLVER-&gt;set_matrix( LHS ) ;
+   SOLVER-&gt;solve( RHS, UNK ) ;
+   SOLVER-&gt;unset_matrix() ;
+   
+   stop_solving_timer() ;
+   
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;SDOMS-&gt;nb_domains() ; ++i )
+   {
+      </font><font class="kw3">FE_OneStepIterationOpen</font><font class="text">* sd = subdomain_discretizer( i ) ;
+      </font><font class="kw2">size_t</font><font class="text"> domain_shift = i ;
+      sd-&gt;update_DOFs( UNK, NMB, domain_shift ) ;
+   }
+   
+   stop_total_timer() ;
+}
+
+</font><font class="comment">//--------------------------------------------------------------------------
+</font><font class="kw3">FE_OneStepIterationOpen</font><font class="text">*
+</font><font class="kw3">FE_MultiDomainSystem</font><font class="text">:: subdomain_discretizer( </font><font class="kw2">size_t</font><font class="text"> i ) </font><font class="kw1">const
+</font><font class="comment">//--------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( i &lt; SDOMS-&gt;nb_domains() ) ;
+
+   </font><font class="kw3">FE_OneStepIterationOpen</font><font class="text">* result = 
+                     </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">FE_OneStepIterationOpen</font><font class="text">*&gt;( D_PBS-&gt;at(i) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//--------------------------------------------------------------------------
+</font><font class="kw3">FE_MortarInterfaceDiscretizer</font><font class="text">*
+</font><font class="kw3">FE_MultiDomainSystem</font><font class="text">:: interface_discretizer( </font><font class="kw2">size_t</font><font class="text"> i ) </font><font class="kw1">const
+</font><font class="comment">//--------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( i &lt; SDOMS-&gt;nb_interfaces() ) ;
+
+   </font><font class="kw3">FE_MortarInterfaceDiscretizer</font><font class="text">* result = 
+                     </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw3">FE_MortarInterfaceDiscretizer</font><font class="text">*&gt;( I_PBS-&gt;at(i) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//internal-------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">FE_MultiDomainSystem_ERROR:: n0( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//internal-------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">ostringstream</font><font class="text"> mesg ;
+   mesg &lt;&lt; </font><font class="string">&quot;FE_MultiDomainSystem:&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;   can only be used if there is more than one domain&quot;</font><font class="text"> ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( mesg.str() ) ;
+}
+
+</font><font class="comment">//internal-------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">FE_MultiDomainSystem_ERROR:: n1( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; domain_name )
+</font><font class="comment">//internal-------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">ostringstream</font><font class="text"> mesg ;
+   mesg &lt;&lt; </font><font class="string">&quot;FE_MultiDomainSystem:&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;   there is more than one submodule of&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ; 
+   mesg &lt;&lt; </font><font class="string">&quot;      MODULE domain_discretizers&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;   associated with the domain of name&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;      \&quot;&quot; &lt;&lt; domain_name &lt;&lt; &quot;</font><font class="text">\</font><font class="string">&quot;&quot;</font><font class="text"> ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( mesg.str() ) ;
+}
+
+</font><font class="comment">//internal-------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">FE_MultiDomainSystem_ERROR:: n2( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//internal-------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">ostringstream</font><font class="text"> mesg ;
+   mesg &lt;&lt; </font><font class="string">&quot;FE_MultiDomainSystem:&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;   it exists at least one domain for which&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;   there is no associated submodule of&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;      MODULE domain_discretizers&quot;</font><font class="text"> ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( mesg.str() ) ;
+}
+
+</font><font class="comment">//internal-------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">FE_MultiDomainSystem_ERROR:: n3( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; interf_name )
+</font><font class="comment">//internal-------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">ostringstream</font><font class="text"> mesg ;
+   mesg &lt;&lt; </font><font class="string">&quot;FE_MultiDomainSystem:&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;   there is more than one submodule of&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;      MODULE interface_discretizers&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;   associated with the interface of name&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;  
+   mesg &lt;&lt; </font><font class="string">&quot;      \&quot;&quot; &lt;&lt; interf_name &lt;&lt; &quot;</font><font class="text">\</font><font class="string">&quot;&quot;</font><font class="text"> ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( mesg.str() ) ;
+}
+
+</font><font class="comment">//internal-------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">FE_MultiDomainSystem_ERROR:: n4( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//internal-------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">ostringstream</font><font class="text"> mesg ;
+   mesg &lt;&lt; </font><font class="string">&quot;FE_MultiDomainSystem:&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;   it exists at least one interface for which&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;   there is no associated submodule of&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;      MODULE interface_discretizers&quot;</font><font class="text"> ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( mesg.str() ) ;
+}
+
+
+</font>
+</pre>
+</body>
+</html>

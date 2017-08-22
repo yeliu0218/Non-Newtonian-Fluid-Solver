@@ -1,0 +1,68 @@
+$ +> Extract the points and the corresponding values of a scalar
+$    field along a line cut of the physical domain.
+$ Input :
+$      coorCut : definition of the cutting line (AB)
+$                A = (coorCut:1,coorCut:2) B = (coorCut:3,coorCut:4)
+$      epsCut  : P is qualified to belongs to the cutting line if its
+$                absolute distance to the segment is lower than epsCut:1
+$      X       : x-coordinates indexed on fields
+$      Z       : z-coordinates indexed on fields
+$      sfield  : scalar field in interest
+$ Output :
+$      absc    : abscissa of the points selected by the cutting on (AB)
+$                real coordinates are given by X(I) = A + ABSC(I)*n
+$                where n is the unit vector AB/||AB|| 
+$      fc      : field values linked with the selected cutting
+$
+$ --> can see an example at the end of the file
+$
+ANAL coorCut epsCut X Z sfield
+$
+$
+$ +> Selection of the vertices
+xa = coorCut:1
+za = coorCut:2
+xb = coorCut:3
+zb = coorCut:4
+dab = SQRT((xa-xb)*(xa-xb)+(za-zb)*(za-zb))
+IFTHEN( dab<20.*epsCut:1)
+   PRINT "Points A and B are identical"
+   EXIT
+ENDIF
+ip = SI1
+ap = SR1
+DO ('i',1,(NUMBER X))
+   dpab = ABS((za-zb)*(X:i-xb)-(xa-xb)*(Z:i-zb))/dab
+   IFTHEN(dpab<(epsCut:1))
+      IFTHEN(ABS(xa-xb)>(10.*epsCut:1))
+         apro=(X:i-xa)*dab/ABS(xb-xa)
+      ELSE
+         apro=(Z:i-za)*dab/ABS(zb-za)
+      ENDIF
+      ip(0)<-i
+      ap(0)<-apro
+   ENDIF
+ENDDO
+$
+$ +> Define the tables of coordinates and field values
+$ linked with the selected cutting
+absc = SR1
+fc   = SR1
+DO ('j',1,(NUMBER ip))
+   apmi = 1.E+04
+   DO ('k',1,(NUMBER ip))
+      IFTHEN(ap:k<apmi)
+         IFTHEN((j==1) OR (ap:k>(absc:(j-1)+epsCut:1)))
+            apmi=ap:k
+            absc(j)<-apmi
+            fc(j)<-sfield:(ip:k)
+         ENDIF
+      ENDIF
+   ENDDO
+ENDDO
+$
+$ +> Delete dummy variables
+SUPPRESS ip
+SUPPRESS ap
+$
+END-ANAL absc fc

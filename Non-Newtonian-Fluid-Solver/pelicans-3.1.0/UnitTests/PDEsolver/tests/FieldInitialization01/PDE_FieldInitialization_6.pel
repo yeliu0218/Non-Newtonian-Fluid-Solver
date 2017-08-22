@@ -1,0 +1,71 @@
+MODULE PEL_ObjectTest#PDE_FieldInitialization_TEST
+   
+      MODULE PDE_FieldInitialization_6
+      
+      $DS_x = component( $DV_X, 0 )
+      $DS_y = component( $DV_X, 1 )
+      
+      MODULE PDE_DomainAndFields
+
+         
+         verbose_level = 1
+         nb_space_dimensions = 2
+         type = "finite_element"
+
+         MODULE GE_Meshing
+            concrete_name = "GE_RefinedMeshing"
+            mesh_polyhedron = < "GE_Segment" "GE_Triangle" >
+            MODULE list_of_GE_ReferencePolyhedronRefiner
+               MODULE GE_ReferencePolyhedronRefiner#1
+                  concrete_name = "GE_ReferenceSquareWithTriangles"
+                  strategy = "/"
+               END MODULE GE_ReferencePolyhedronRefiner#1
+            END MODULE list_of_GE_ReferencePolyhedronRefiner      
+            MODULE GE_Meshing
+               concrete_name = "GE_BoxWithBoxes"
+               vertices_coordinate_0 = regular_vector( 0.0, 1, 3.0 )
+               vertices_coordinate_1 = regular_vector( 0.0, 1, 2.0 )
+               mesh_polyhedron = < "GE_Segment" "GE_Rectangle" >
+            END MODULE GE_Meshing
+            MODULE GE_Colorist
+               MODULE vertices
+                  red  = in_box( $DV_X, < -0.1 1.9 >, < 0.1 2.1 > )
+                  blue = ( ( $DS_y - $DS_x - 1.0 ) < 0.0 )
+               END MODULE vertices
+            END MODULE GE_Colorist
+         END MODULE GE_Meshing
+         
+         MODULE interior_fields
+            
+            MODULE uu_0
+               name = "uu_0"
+               nb_components = 1
+               element_name = "PDE_2D_P2_6nodes"
+               storage_depth = 1
+               MODULE DOFs_values
+                  type = "vertex_defined"
+                  MODULE value
+                     default = vector( $DS_x*$DS_x*$DS_x + $DS_y*$DS_y*$DS_y )
+                     red = < 0.0 >
+                  END MODULE value
+               END MODULE DOFs_values
+            END MODULE uu_0
+            
+         END MODULE interior_fields
+                  
+      END MODULE PDE_DomainAndFields
+      
+      MODULE solution
+         MODULE interior_fields
+            MODULE uu_0
+               name = "uu_0"
+               value =  ( ( ( 3.0*$DS_y - 2.0*$DS_x ) < 0.0001 ) ?
+                    vector( 35.0*($DS_y/2.0)+27.0*($DS_x/3.0-$DS_y/2.0) ) :
+                    vector( 35.0*$DS_x/3.0 ) )
+            END MODULE uu_0
+         END MODULE interior_fields
+      END MODULE solution
+
+   END MODULE PDE_FieldInitialization_6
+
+END MODULE PEL_ObjectTest#PDE_FieldInitialization_TEST

@@ -1,0 +1,65 @@
+MODULE PEL_ObjectTest#PDE_LocalFE_TEST
+      
+   MODULE PDE_LocalFE_TEST_9        
+      
+      $DS_x = component($DV_X,0)
+      $DS_y = component($DV_X,1)
+      $DS_z = component($DV_X,2)
+      
+      $DS_A = 3.0*$DS_x*$DS_x + 8.0* $DS_x + 1.0
+      $DS_B = $DS_y*$DS_y + 2.0*$DS_y + 1.0
+      $DS_C = 5.0*$DS_z*$DS_z + $DS_z + 1.0
+      $DS_D = 6.0*$DS_x +8.0
+      $DS_E = 2.0 * $DS_y +2.0
+      $DS_F = 10.0* $DS_z +1.0
+      
+      verbose_level = 0
+      nb_space_dimensions = 3
+      type = "finite_element"
+      
+      MODULE GE_Meshing               
+         concrete_name = "GE_BoxWithBoxes"
+         
+         vertices_coordinate_0 = regular_vector( 0.0, 2, 1.0 )
+         vertices_coordinate_1 = regular_vector( 0.0, 2, 1.0 )
+         vertices_coordinate_2 = regular_vector( 0.0, 3, 1.0 )
+         mesh_polyhedron = < "GE_Rectangle" "GE_Cuboid" >               
+      END MODULE GE_Meshing
+      
+      MODULE interior_fields               
+         MODULE uu
+            name = "uu"
+            nb_components = 1
+            element_name = "PDE_3D_Q2_27nodes"
+            storage_depth = 1
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = vector( $DS_A * $DS_B * $DS_C )
+            END MODULE DOFs_values
+         END MODULE uu               
+      END MODULE interior_fields      
+      
+      MODULE solution         
+         MODULE uu
+            jacobian = array( vector( $DS_D*$DS_B*$DS_C,
+                                      $DS_A*$DS_E*$DS_C,
+                                      $DS_A*$DS_B*$DS_F ) )
+            hessian = array( array( vector( 6.0*$DS_B*$DS_C,
+                                            $DS_D*$DS_E*$DS_C,
+                                            $DS_D*$DS_B*$DS_F ) ,
+                                    vector( $DS_D*$DS_E*$DS_C,
+                                            $DS_A*2.0*$DS_C,
+                                            $DS_A*$DS_E*$DS_F ) ,
+                                    vector( $DS_D*$DS_B*$DS_F,
+                                            $DS_A*$DS_E*$DS_F,
+                                            $DS_A*$DS_B*10.0) ) )
+         END MODULE uu         
+      END MODULE solution
+      
+      dbl_epsilon = 1.e-12
+      dbl_minimum = 1.e-12 
+      
+   END MODULE PDE_LocalFE_TEST_9             
+   
+END MODULE PEL_ObjectTest#PDE_LocalFE_TEST
+            

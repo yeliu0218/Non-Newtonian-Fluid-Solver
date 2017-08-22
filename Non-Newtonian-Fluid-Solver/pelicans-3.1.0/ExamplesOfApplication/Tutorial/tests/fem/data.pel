@@ -1,0 +1,75 @@
+MODULE PEL_Application   
+   concrete_name = "AP_TutorialG"   
+   MODULE PDE_DomainAndFields      
+      verbose_level = 1
+      nb_space_dimensions = 2
+      type = "finite_element"
+      MODULE GE_Meshing
+         concrete_name = "GE_BoxWithBoxes"         
+         vertices_coordinate_0 = regular_vector( 0.0, 10, 0.3 )
+         vertices_coordinate_1 = regular_vector( 0.0, 10, 0.4 )
+         mesh_polyhedron = < "GE_Segment" "GE_Rectangle" >         
+      END MODULE GE_Meshing
+      MODULE interior_fields
+         MODULE temperature
+            name = "temperature"
+            nb_components = 1
+            element_name = "PDE_2D_Q1_4nodes"
+            storage_depth = 1
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = < 0.0 >
+            END MODULE DOFs_values
+            MODULE DOFs_imposed_value
+               MODULE xxx
+                  location = "on_bounds"
+                  type = "uniformly_defined"
+                  color = "top"
+                  value = < 100.0 >
+               END MODULE xxx
+            END MODULE DOFs_imposed_value
+         END MODULE temperature         
+      END MODULE interior_fields
+      MODULE boundary_conditions
+         MODULE xxx
+            field = "temperature"
+            color = "left"
+            type = "imposed_flux"
+            flux_value = 50.E+3
+         END MODULE xxx
+      END MODULE boundary_conditions
+      MODULE PDE_ResultSaver
+         writers = < "PEL_TICwriter" "PEL_PelWriter" >
+         writing_mode = "text"
+         files_basename = "save"
+         MODULE temperature
+            where_to_save = "at_vertices"
+            entry_name = "T"
+            field = "temperature"
+         END MODULE temperature
+      END MODULE PDE_ResultSaver      
+   END MODULE PDE_DomainAndFields
+   MODULE AP_TutorialG
+      conductivity = 236.
+      MODULE LA_Matrix
+         concrete_name = "LA_PelMatrix"
+      END MODULE LA_Matrix
+      MODULE LA_Solver
+         concrete_name = "LA_PreconditionedSolver"
+         MODULE LA_IterativeSolver
+            concrete_name = "LA_CG_IS"
+            verbose = false
+            nb_iterations_max = 2000
+            MODULE LA_ConvergenceTest
+               concrete_name = "LA_DefaultConvergenceTest"
+               relative_tolerance = 1.e-7
+               absolute_tolerance = 1.e-50
+            END MODULE LA_ConvergenceTest
+         END MODULE LA_IterativeSolver
+         MODULE LA_Preconditioner
+            concrete_name = "LA_Jacobi_PC"
+            smallest_inverted_item = 1.0e-20
+         END MODULE LA_Preconditioner
+      END MODULE LA_Solver
+   END MODULE AP_TutorialG
+END MODULE PEL_Application

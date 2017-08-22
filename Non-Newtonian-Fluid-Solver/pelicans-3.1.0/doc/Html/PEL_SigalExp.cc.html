@@ -1,0 +1,596 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>PEL_SigalExp.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="PEL_SigalExp.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="PELpack-tree.html"><span>Tree</span></a>
+    <a href="PEL_SigalExp.html"><span>Class</span></a>
+    <a href="PEL_SigalExp.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="PELpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_SigalExp</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_assertions</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Sequence</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">doubleVector</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;iostream&gt;
+
+</font><font class="kw3">PEL_SigalExp</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">PEL_SigalExp</font><font class="text">::PROTOTYPE_Regu =
+                          </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_SigalExp</font><font class="text">( Regu, </font><font class="string">&quot;regular_vector&quot;</font><font class="text"> ) ;
+
+</font><font class="kw3">PEL_SigalExp</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">PEL_SigalExp</font><font class="text">::PROTOTYPE_Ratio =
+                       </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_SigalExp</font><font class="text">( Ratio, </font><font class="string">&quot;stretched_vector&quot;</font><font class="text"> ) ;
+
+</font><font class="kw3">PEL_SigalExp</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">PEL_SigalExp</font><font class="text">::PROTOTYPE_Concat = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_SigalExp</font><font class="text">( Concat, </font><font class="string">&quot;&lt;&lt;&quot;</font><font class="text"> ) ;
+
+</font><font class="kw3">PEL_SigalExp</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">PEL_SigalExp</font><font class="text">::PROTOTYPE_GeomSeq = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_SigalExp</font><font class="text">( Geom, 
+                                                    </font><font class="string">&quot;geometric_sequence&quot;</font><font class="text"> ) ;
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_SigalExp</font><font class="text">:: </font><font class="kw3">PEL_SigalExp</font><font class="text">( SigalOperator a_op, </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_name ) 
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_Expression</font><font class="text">( a_name )
+   , OP( a_op )
+   , RESULT_I( 0 )
+   , RESULT_D( 0 )
+   , RESULT_S( 0 )
+{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_SigalExp:: PEL_SigalExp&quot;</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_SigalExp</font><font class="text">*
+</font><font class="kw3">PEL_SigalExp</font><font class="text">:: create_replica( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                               </font><font class="kw3">PEL_Sequence</font><font class="text"> </font><font class="kw1">const</font><font class="text">* argument_list ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_SigalExp:: create_replica&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_PRE( a_owner, argument_list ) ) ;
+
+   </font><font class="kw3">PEL_SigalExp</font><font class="text">* result = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_SigalExp</font><font class="text">( a_owner, OP, name(), argument_list ) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_POST( result, a_owner, argument_list ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_SigalExp</font><font class="text">:: </font><font class="kw3">PEL_SigalExp</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                             SigalOperator a_op,
+                             </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_name,
+                             </font><font class="kw3">PEL_Sequence</font><font class="text"> </font><font class="kw1">const</font><font class="text">* argument_list ) 
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_Expression</font><font class="text">( a_owner, a_name, argument_list )
+   , OP( a_op )
+   , RESULT_I( 0 )
+   , RESULT_D( 0 )
+   , RESULT_S( 0 )
+{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_SigalExp:: PEL_SigalExp&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+}
+
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_SigalExp</font><font class="text">:: ~</font><font class="kw3">PEL_SigalExp</font><font class="text">( </font><font class="kw1">void</font><font class="text"> ) 
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_SigalExp:: ~PEL_SigalExp&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp;
+</font><font class="kw3">PEL_SigalExp</font><font class="text">:: usage( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> result = </font><font class="string">&quot;undefined&quot;</font><font class="text"> ;
+   </font><font class="kw1">switch</font><font class="text">( OP )
+   {
+      </font><font class="kw1">case</font><font class="text"> Regu :
+         result = name() + </font><font class="string">&quot;(DS,IS,DS) or &quot;</font><font class="text"> + name() + </font><font class="string">&quot;(IS,IS,IS)&quot;</font><font class="text"> ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> Ratio :
+         result = name()+</font><font class="string">&quot;(DS,DS,DS,DS)&quot;</font><font class="text"> ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> Geom :
+         result = name()+</font><font class="string">&quot;(DS,DS,IS)&quot;</font><font class="text"> ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> Concat :
+         result = </font><font class="string">&quot;(DV|IV|SV) &quot;</font><font class="text"> + name() + </font><font class="string">&quot; (same type as first arg)&quot;</font><font class="text"> ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">default</font><font class="text"> :
+         result = </font><font class="string">&quot;undefined&quot;</font><font class="text"> ;
+         </font><font class="kw1">break</font><font class="text"> ;
+   }
+   </font><font class="kw1">return</font><font class="text"> result ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">PEL_SigalExp</font><font class="text">:: valid_arguments( </font><font class="kw3">PEL_Sequence</font><font class="text"> </font><font class="kw1">const</font><font class="text">* some_arguments ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_SigalExp:: valid_arguments&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( valid_arguments_PRE( some_arguments ) ) ;
+   
+   </font><font class="kw1">bool</font><font class="text"> result ;
+   </font><font class="kw1">switch</font><font class="text">( OP )
+   {
+      </font><font class="kw1">case</font><font class="text"> Regu :
+         result = some_arguments-&gt;count()==3 &amp;&amp;
+            ( extract_arg( some_arguments, 0 )-&gt;data_type()==Double ||
+              extract_arg( some_arguments, 0 )-&gt;data_type()==Int ) &amp;&amp;
+            extract_arg( some_arguments, 1 )-&gt;data_type()==Int &amp;&amp;
+            extract_arg( some_arguments, 2 )-&gt;data_type()==
+                      extract_arg( some_arguments, 0 )-&gt;data_type() ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> Ratio :
+         result = some_arguments-&gt;count()==4 &amp;&amp;
+            extract_arg( some_arguments, 0 )-&gt;data_type()==Double &amp;&amp;
+            extract_arg( some_arguments, 1 )-&gt;data_type()==Double &amp;&amp;
+            extract_arg( some_arguments, 2 )-&gt;data_type()==Double &amp;&amp;
+            extract_arg( some_arguments, 3 )-&gt;data_type()==Double ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> Geom :
+         result = some_arguments-&gt;count()==3 &amp;&amp;
+            extract_arg( some_arguments, 0 )-&gt;data_type()==Double &amp;&amp;
+            extract_arg( some_arguments, 1 )-&gt;data_type()==Double &amp;&amp;
+            extract_arg( some_arguments, 2 )-&gt;data_type()==Int ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> Concat :
+         result = some_arguments-&gt;count()==2 &amp;&amp;
+            (
+               ( extract_arg( some_arguments, 0 )-&gt;data_type()==DoubleVector ||
+                 extract_arg( some_arguments, 0 )-&gt;data_type()==IntVector ||
+                 extract_arg( some_arguments, 0 )-&gt;data_type()==StringVector )
+               &amp;&amp;
+               ( extract_arg( some_arguments, 1 )-&gt;data_type()==
+                              extract_arg( some_arguments, 0 )-&gt;data_type() ) );
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">default</font><font class="text"> : result = </font><font class="kw1">false</font><font class="text"> ;}
+         
+   </font><font class="kw1">return</font><font class="text"> result ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_Data</font><font class="text">::Type
+</font><font class="kw3">PEL_SigalExp</font><font class="text">:: data_type( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_SigalExp:: data_type&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw3">PEL_Data</font><font class="text">::Type result = Undefined ;
+   </font><font class="kw1">switch</font><font class="text">( OP )
+   {
+      </font><font class="kw1">case</font><font class="text"> Regu :
+         {
+            </font><font class="kw3">PEL_Data</font><font class="text">::Type tt = arg( 0 )-&gt;data_type() ;
+            </font><font class="kw1">if</font><font class="text">( tt == </font><font class="kw3">PEL_Data</font><font class="text">::Double )
+            {
+               result = </font><font class="kw3">PEL_Data</font><font class="text">::DoubleVector ;
+            }
+            </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( tt == </font><font class="kw3">PEL_Data</font><font class="text">::Int )
+            {
+               result = </font><font class="kw3">PEL_Data</font><font class="text">::IntVector ;
+            }
+         }
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> Ratio :
+         result = </font><font class="kw3">PEL_Data</font><font class="text">::DoubleVector ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> Geom :
+         result = </font><font class="kw3">PEL_Data</font><font class="text">::DoubleVector ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> Concat :
+         result = arg( 0 )-&gt;data_type() ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">default</font><font class="text"> :
+         </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_internal( </font><font class="string">&quot;not implemented&quot;</font><font class="text"> ) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+   }
+
+   </font><font class="kw1">return</font><font class="text"> result ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">stringVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp;
+</font><font class="kw3">PEL_SigalExp</font><font class="text">:: to_string_vector( </font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ct ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_SigalExp:: to_string_vector&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( to_string_vector_PRE( ct ) ) ;
+
+   </font><font class="kw3">stringVector</font><font class="text">&amp; result = RESULT_S ;
+
+   </font><font class="kw1">if</font><font class="text">( OP == Concat )
+   {
+      </font><font class="kw3">stringVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; v0 = arg(0)-&gt;to_string_vector(ct) ;
+      </font><font class="kw3">stringVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; v1 = arg(1)-&gt;to_string_vector(ct) ;
+      </font><font class="kw2">size_t</font><font class="text"> n = v0.size() + v1.size() ;
+      RESULT_S.re_initialize( n ) ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;v0.size() ; i++ )
+      {
+         RESULT_S(i) = v0(i) ;
+      }
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;v1.size() ; i++ )
+      {
+         RESULT_S(n-i-1) = v1(v1.size()-i-1) ;
+      }
+   }
+   </font><font class="kw1">return</font><font class="text"> result ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">intVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp;
+</font><font class="kw3">PEL_SigalExp</font><font class="text">:: to_int_vector( </font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ct ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_SigalExp:: to_int_vector&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( to_int_vector_PRE( ct ) ) ;
+
+   </font><font class="kw3">intVector</font><font class="text">&amp; result = RESULT_I ;
+
+   </font><font class="kw1">if</font><font class="text">( OP == Concat )
+   {
+      </font><font class="kw3">intVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; v0 = arg(0)-&gt;to_int_vector(ct) ;
+      </font><font class="kw3">intVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; v1 = arg(1)-&gt;to_int_vector(ct) ;
+      </font><font class="kw2">size_t</font><font class="text"> n = v0.size() + v1.size() ;
+      </font><font class="kw1">if</font><font class="text">( v0.size()&gt;0 &amp;&amp; v1.size() &gt; 0 &amp;&amp; v0(v0.size()-1)==v1(0) )
+      {
+         n-- ;
+      }
+      RESULT_I.re_initialize( n ) ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;v0.size() ; i++ )
+      {
+         RESULT_I(i) = v0(i) ;
+      }
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;v1.size() ; i++ )
+      {
+         RESULT_I(n-i-1) = v1(v1.size()-i-1) ;
+      }
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      </font><font class="kw1">int</font><font class="text"> alpha = arg( 0 )-&gt;to_int( ct ) ;
+      </font><font class="kw1">int</font><font class="text"> beta  = arg( 2 )-&gt;to_int( ct ) ;
+
+      </font><font class="kw1">if</font><font class="text">( alpha==beta )
+      {
+         raise_error( </font><font class="string">&quot;initial and final value should be different&quot;</font><font class="text"> ) ;
+      }
+
+      </font><font class="kw1">int</font><font class="text"> nn = arg( 1 )-&gt;to_int( ct ) ;
+      </font><font class="kw1">if</font><font class="text">( nn&lt;0 )
+      {
+         raise_error( </font><font class="string">&quot;Number of steps should be a positive value&quot;</font><font class="text"> ) ;
+      }
+      result.re_initialize( nn + 1 ) ;
+      </font><font class="kw1">int</font><font class="text"> dx = ( beta - alpha )/nn ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;(</font><font class="kw2">size_t</font><font class="text">)nn+1 ; ++i )
+      {
+         result( i ) = alpha + i*dx ;
+      }
+      </font><font class="kw1">if</font><font class="text">( result( nn ) != beta )
+      {
+         raise_error( </font><font class="string">&quot;Bad definition&quot;</font><font class="text"> ) ;
+      }
+   }
+
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp;
+</font><font class="kw3">PEL_SigalExp</font><font class="text">:: to_double_vector( </font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ct ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_SigalExp:: to_double_vector&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( to_double_vector_PRE( ct ) ) ;
+   realize( ct ) ;
+   </font><font class="kw3">doubleVector</font><font class="text">&amp; result = RESULT_D ;
+   </font><font class="kw1">return</font><font class="text"> result ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_SigalExp</font><font class="text">:: print( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostream</font><font class="text">&amp; os, </font><font class="kw2">size_t</font><font class="text"> indent_width ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text"> space = </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text">( indent_width, </font><font class="string">' '</font><font class="text"> ) ;
+   
+   </font><font class="kw1">switch</font><font class="text">( OP )
+   {
+      </font><font class="kw1">case</font><font class="text"> Regu :
+      </font><font class="kw1">case</font><font class="text"> Ratio :
+         </font><font class="kw3">PEL_Expression</font><font class="text">::print( os, indent_width ) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> Geom :
+         </font><font class="kw3">PEL_Expression</font><font class="text">::print( os, indent_width ) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> Concat :
+         arg(0)-&gt;print( os, indent_width ) ;
+         os &lt;&lt; </font><font class="string">&quot; &quot;</font><font class="text"> &lt;&lt; name() &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+         arg(1)-&gt;print( os, indent_width ) ;
+         </font><font class="kw1">break</font><font class="text"> ;
+   }   
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_SigalExp</font><font class="text">:: realize( </font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ct ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_SigalExp:: realize&quot;</font><font class="text"> ) ;
+   </font><font class="kw1">if</font><font class="text">( OP==Regu )
+   {
+      </font><font class="kw1">double</font><font class="text"> alpha = arg(0)-&gt;to_double(ct) ;
+      </font><font class="kw1">double</font><font class="text"> beta =  arg(2)-&gt;to_double(ct) ;
+      </font><font class="kw1">if</font><font class="text">( alpha==beta )
+      {
+         raise_error( </font><font class="string">&quot;initial and final value should be different&quot;</font><font class="text"> ) ;
+      }
+      </font><font class="kw3">doubleVector</font><font class="text">&amp; v = RESULT_D ;
+      </font><font class="kw1">int</font><font class="text"> in = arg( 1 )-&gt;to_int( ct ) ;
+      </font><font class="kw1">if</font><font class="text">( in&lt;0 )
+      {
+         raise_error( </font><font class="string">&quot;the mumber of steps should be a positive value&quot;</font><font class="text"> ) ;
+      }
+      </font><font class="kw2">size_t</font><font class="text"> n = (</font><font class="kw2">size_t</font><font class="text">) in ;
+      v.re_initialize(n+1) ;
+      </font><font class="kw1">double</font><font class="text"> dx = (beta-alpha)/n ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=1 ; i&lt;n ; i++ )
+      {
+         v(i) = alpha + i*dx ;
+      }
+      v(0) = alpha ;
+      v(v.size()-1) = beta ; 
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( OP==Ratio )
+   {
+      </font><font class="kw1">double</font><font class="text"> </font><font class="kw1">const</font><font class="text"> x0 = arg(0)-&gt;to_double(ct) ;
+      </font><font class="kw1">double</font><font class="text"> </font><font class="kw1">const</font><font class="text"> dx0 = arg( 1 )-&gt;to_double(ct) ;
+      </font><font class="kw1">double</font><font class="text"> </font><font class="kw1">const</font><font class="text"> dx1 = arg( 2 )-&gt;to_double(ct) ;
+      </font><font class="kw1">double</font><font class="text"> </font><font class="kw1">const</font><font class="text"> x1 = arg( 3 )-&gt;to_double(ct) ;
+
+      </font><font class="comment">// Check:
+</font><font class="text">      </font><font class="kw1">if</font><font class="text">( dx0&lt;=0. )
+         raise_error( </font><font class="string">&quot;length of first interval: should be a positive value&quot;</font><font class="text"> ) ;
+      </font><font class="kw1">if</font><font class="text">( dx1&lt;=0. )
+         raise_error( </font><font class="string">&quot;length of last interval: should be a positive value&quot;</font><font class="text"> ) ;
+      </font><font class="kw1">if</font><font class="text">( x0 == x1 )
+         raise_error( </font><font class="string">&quot;initial and final values should be different&quot;</font><font class="text"> ) ;
+
+      </font><font class="kw1">if</font><font class="text">( dx0&lt;dx1 )
+      {
+         build_stretched_vector( x0, dx0, x1, dx1, RESULT_D ) ;
+      }
+      </font><font class="kw1">else
+</font><font class="text">      {
+         </font><font class="kw3">doubleVector</font><font class="text"> dummy(0) ;
+         build_stretched_vector( -x1, dx1, -x0, dx0, dummy ) ;
+         </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> n = dummy.size() ;
+         RESULT_D.re_initialize( n ) ;
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;n ; ++i )
+         {
+            RESULT_D(i) = -dummy( n-i-1 ) ;
+         }
+      }
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( OP==Geom )
+   {
+      </font><font class="kw1">double</font><font class="text"> </font><font class="kw1">const</font><font class="text"> x0 = arg( 0 )-&gt;to_double( ct ) ;
+      </font><font class="kw1">double</font><font class="text"> </font><font class="kw1">const</font><font class="text"> rr = arg( 1 )-&gt;to_double( ct ) ;
+      </font><font class="kw1">if</font><font class="text">( rr == 0.0 )
+      {
+         raise_error( </font><font class="string">&quot;common ratio : should be a non negative value&quot;</font><font class="text"> ) ;
+      }
+      </font><font class="kw1">int</font><font class="text"> in = arg( 2 )-&gt;to_int( ct ) ;
+      </font><font class="kw1">if</font><font class="text">( in &lt; 0 )
+      {
+         raise_error( </font><font class="string">&quot;the number of intervals should be a positive value&quot;</font><font class="text"> ) ;
+      }
+      </font><font class="kw2">size_t</font><font class="text"> n = (</font><font class="kw2">size_t</font><font class="text">) in ;
+
+      RESULT_D.re_initialize( n+1 ) ;
+      RESULT_D( 0 ) = x0 ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;(</font><font class="kw2">size_t</font><font class="text">)n ; ++i )
+      {
+         RESULT_D( i+1 ) = RESULT_D( i ) * rr ;
+      }
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; v0 = arg(0)-&gt;to_double_vector(ct) ;
+      </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; v1 = arg(1)-&gt;to_double_vector(ct) ;
+      </font><font class="kw2">size_t</font><font class="text"> n = v0.size() + v1.size() ;
+      </font><font class="kw1">if</font><font class="text">( v0.size()&gt;0 &amp;&amp; v1.size() &gt; 0 &amp;&amp; v0(v0.size()-1)==v1(0) )
+      {
+         n-- ;
+      }
+      RESULT_D.re_initialize( n ) ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;v0.size() ; i++ )
+      {
+         RESULT_D(i) = v0(i) ;
+      }
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;v1.size() ; i++ )
+      {
+         RESULT_D(n-i-1) = v1(v1.size()-i-1) ;
+      }
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_SigalExp</font><font class="text">:: build_stretched_vector( </font><font class="kw1">double</font><font class="text"> x0, </font><font class="kw1">double</font><font class="text"> dx0,
+                                       </font><font class="kw1">double</font><font class="text"> x1, </font><font class="kw1">double</font><font class="text"> dx1,
+                                       </font><font class="kw3">doubleVector</font><font class="text">&amp; result ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_SigalExp:: build_stretched_vector&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( OP==Ratio ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( dx0&gt;0. ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( dx1&gt;0. ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( dx0&lt;=dx1 ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> n = </font><font class="kw3">PEL</font><font class="text">::bad_index() ;
+   </font><font class="kw1">double</font><font class="text"> pas0 = </font><font class="kw3">PEL</font><font class="text">::bad_double() ;
+   </font><font class="kw1">double</font><font class="text"> r = </font><font class="kw3">PEL</font><font class="text">::bad_double() ;
+      
+   tageom( dx0, dx1, </font><font class="kw3">PEL</font><font class="text">::abs(x1-x0), pas0, n ,r ) ;
+   </font><font class="kw1">if</font><font class="text">( x1&lt;x0 ) pas0 = -pas0 ;
+   result.re_initialize( n+1 ) ;
+   </font><font class="kw1">double</font><font class="text"> pas = pas0 ;
+   </font><font class="kw1">double</font><font class="text"> deb = x0 ;
+   result(0) = deb ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=1 ; i&lt;n+1 ; ++i )
+   {
+      deb = deb+pas ;
+      </font><font class="kw1">if</font><font class="text">( i==n ) deb = x1 ;
+      result(i) = deb ;
+      pas *= r ;
+   }
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result(0) == x0 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result(result.size()-1) == x1 ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_SigalExp</font><font class="text">:: tageom(</font><font class="kw1">double</font><font class="text"> dx1, </font><font class="kw1">double</font><font class="text"> dxn, </font><font class="kw1">double</font><font class="text"> zl,
+                      </font><font class="kw1">double</font><font class="text">&amp; dx, </font><font class="kw2">size_t</font><font class="text">&amp; n, </font><font class="kw1">double</font><font class="text">&amp; r ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_SigalExp:: tageom&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( dx1&gt;0. ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( dxn&gt;0. ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( zl&gt;0. ) ;
+   
+   </font><font class="kw1">double</font><font class="text"> </font><font class="kw1">const</font><font class="text"> EPS = 1.E-6 ;
+
+   </font><font class="kw1">if</font><font class="text">( dx1&gt;=zl || dxn&gt;=zl)
+   {
+      n=1 ;
+      dx=zl ;
+      r=1. ;
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( dx1 == dxn )
+   {
+      </font><font class="comment">// Constant step
+</font><font class="text">      n=</font><font class="kw2">size_t</font><font class="text">( zl/dx1+0.5 ) ;
+      dx=zl/n ;
+      r=1. ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      </font><font class="comment">// Number of intervals
+</font><font class="text">      r=(zl-dx1)/(zl-dxn) ;
+      n=</font><font class="kw2">size_t</font><font class="text">( 1.+</font><font class="kw3">PEL</font><font class="text">::log(dxn/dx1)/</font><font class="kw3">PEL</font><font class="text">::log((zl-dx1)/(zl-dxn))+0.5 ) ;
+      </font><font class="comment">// Final ratio
+</font><font class="text">      </font><font class="kw1">double</font><font class="text"> </font><font class="kw1">const</font><font class="text"> a1=dx1/zl ;
+      </font><font class="kw1">double</font><font class="text"> </font><font class="kw1">const</font><font class="text"> an=dxn/zl ;
+      </font><font class="kw1">bool</font><font class="text"> cont = </font><font class="kw1">true</font><font class="text"> ;
+      </font><font class="kw1">while</font><font class="text">( cont )
+      {
+         </font><font class="kw1">double</font><font class="text"> f = rtaf( a1, an, n, r ) ;
+         </font><font class="kw1">double</font><font class="text"> df = ( rtaf( a1, an, n, r+EPS )-f )/EPS ;
+         </font><font class="kw1">double</font><font class="text"> dr = -f/df ;
+         r += dr ;
+         cont = ( </font><font class="kw3">PEL</font><font class="text">::abs(dr)&gt;EPS ) ;
+      }
+      </font><font class="kw1">double</font><font class="text"> u = 0. ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;n ; ++i )
+      {
+         u = u*r+1. ;
+      }
+      dx = zl/u ;
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">double
+</font><font class="kw3">PEL_SigalExp</font><font class="text">:: rtaf( </font><font class="kw1">double</font><font class="text"> a1, </font><font class="kw1">double</font><font class="text"> an, </font><font class="kw2">size_t</font><font class="text"> n, </font><font class="kw1">double</font><font class="text"> r ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">double</font><font class="text"> du = 0. ;
+   </font><font class="kw1">double</font><font class="text"> u = 0. ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;n ; ++i )
+   {
+      du = u+du*r ;
+      u = u*r+1. ;
+   }
+   </font><font class="kw1">return</font><font class="text">( -2.*a1*(1.-a1*u)*du
+           +2.*(</font><font class="kw3">PEL</font><font class="text">::pow( r, n-1 )-an*u)*((n-1)*</font><font class="kw3">PEL</font><font class="text">::pow( r,n-2 )-an*du) ) ;
+}
+   
+
+</font>
+</pre>
+</body>
+</html>

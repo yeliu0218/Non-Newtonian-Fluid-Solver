@@ -1,0 +1,385 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>RS_AvulaEXP.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="RS_AvulaEXP.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="RSpack-tree.html"><span>Tree</span></a>
+    <a href="RS_AvulaEXP.html"><span>Class</span></a>
+    <a href="RS_AvulaEXP.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="RSpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">RS_AvulaEXP</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_assertions</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Root</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Sequence</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">doubleVector</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;iostream&gt;
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">cout</font><font class="text"> ;
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ; 
+
+</font><font class="kw3">RS_AvulaEXP</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">RS_AvulaEXP</font><font class="text">::PROTOTYPE_U_AXI = 
+             </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">RS_AvulaEXP</font><font class="text">( </font><font class="string">&quot;Avula_velocity_axi&quot;</font><font class="text">, U_AXI ) ;
+</font><font class="kw3">RS_AvulaEXP</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">RS_AvulaEXP</font><font class="text">::PROTOTYPE_P_AXI = 
+             </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">RS_AvulaEXP</font><font class="text">( </font><font class="string">&quot;Avula_pressure_axi&quot;</font><font class="text">, P_AXI ) ;
+</font><font class="kw3">RS_AvulaEXP</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">RS_AvulaEXP</font><font class="text">::PROTOTYPE_U_3D = 
+             </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">RS_AvulaEXP</font><font class="text">( </font><font class="string">&quot;Avula_velocity_3D&quot;</font><font class="text">, U_3D ) ;
+</font><font class="kw3">RS_AvulaEXP</font><font class="text"> </font><font class="kw1">const</font><font class="text">* 
+</font><font class="kw3">RS_AvulaEXP</font><font class="text">::PROTOTYPE_P_3D = 
+             </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">RS_AvulaEXP</font><font class="text">( </font><font class="string">&quot;Avula_pressure_3D&quot;</font><font class="text">, P_3D ) ;
+
+</font><font class="comment">//--------------------------------------------------------------------------
+</font><font class="kw3">RS_AvulaEXP</font><font class="text">:: </font><font class="kw3">RS_AvulaEXP</font><font class="text">( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_name,
+                           Func an_expr) 
+</font><font class="comment">//--------------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_Expression</font><font class="text">( a_name )
+   , EXPR(an_expr)
+   , DV_result_1( 1 )
+   , DV_result_2( 2 )
+   , DV_result_3( 3 )
+{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;RS_AvulaEXP:: RS_AvulaEXP&quot;</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//--------------------------------------------------------------------------
+</font><font class="kw3">RS_AvulaEXP</font><font class="text">*
+</font><font class="kw3">RS_AvulaEXP</font><font class="text">:: create_replica( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                              </font><font class="kw3">PEL_Sequence</font><font class="text"> </font><font class="kw1">const</font><font class="text">* argument_list ) </font><font class="kw1">const
+</font><font class="comment">//--------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;RS_AvulaEXP:: create_replica&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_PRE( a_owner, argument_list ) ) ;
+   
+   </font><font class="kw3">RS_AvulaEXP</font><font class="text">* result = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">RS_AvulaEXP</font><font class="text">( a_owner, 
+                                          name(), 
+                                          argument_list, 
+                                          EXPR ) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_POST( result, a_owner, argument_list ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//--------------------------------------------------------------------------
+</font><font class="kw3">RS_AvulaEXP</font><font class="text">:: </font><font class="kw3">RS_AvulaEXP</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                           </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_name,
+                           </font><font class="kw3">PEL_Sequence</font><font class="text"> </font><font class="kw1">const</font><font class="text">* argument_list,
+                           Func an_expr ) 
+</font><font class="comment">//--------------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_Expression</font><font class="text">( a_owner, a_name, argument_list )
+   , EXPR( an_expr )
+   , DV_result_1( 1 ) 
+   , DV_result_2( 2 )
+   , DV_result_3( 3 )
+{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;RS_AvulaEXP:: RS_AvulaEXP&quot;</font><font class="text"> ) ;
+
+</font><font class="comment">//   compute_more_J0_roots( 2000 ) ;
+</font><font class="text">
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+}
+
+</font><font class="comment">//--------------------------------------------------------------------------
+</font><font class="kw3">RS_AvulaEXP</font><font class="text">:: ~</font><font class="kw3">RS_AvulaEXP</font><font class="text">( </font><font class="kw1">void</font><font class="text"> ) 
+</font><font class="comment">//--------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;RS_AvulaEXP:: ~RS_AvulaEXP&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;   
+}
+
+</font><font class="comment">//--------------------------------------------------------------------------
+</font><font class="kw3">PEL_Data</font><font class="text">::Type
+</font><font class="kw3">RS_AvulaEXP</font><font class="text">:: data_type( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//--------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;RS_AvulaEXP:: data_type&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_Data</font><font class="text">::Type my_type = </font><font class="kw3">PEL_Data</font><font class="text">::Undefined ;
+   </font><font class="kw1">switch</font><font class="text">( EXPR )
+   {
+      </font><font class="kw1">case</font><font class="text"> U_AXI : my_type = DoubleVector ; 
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> P_AXI : my_type = DoubleVector ; 
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> U_3D : my_type = DoubleVector ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> P_3D : my_type = DoubleVector ; 
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">default</font><font class="text"> :
+	 </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( </font><font class="string">&quot;Choose:SolAvula_velocity_axi, SolAvula_pressure_axi, SolAvula_velocity_3D or SolAvula_pressure_3D &quot;</font><font class="text"> ) ;
+   }
+   </font><font class="kw1">return</font><font class="text"> my_type ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp;
+</font><font class="kw3">RS_AvulaEXP</font><font class="text">:: to_double_vector( </font><font class="kw3">PEL_Context</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ct ) </font><font class="kw1">const</font><font class="text"> 
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;RS_AvulaEXP:: to_double_vector&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( to_double_vector_PRE( ct ) ) ;
+
+   </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; xx  = arg( 0 )-&gt;to_double_vector( ct ) ; 
+   </font><font class="kw1">double</font><font class="text"> t                = arg( 1 )-&gt;to_double( ct ) ;
+   </font><font class="kw1">double</font><font class="text"> radius           = arg( 2 )-&gt;to_double( ct ) ; 
+   </font><font class="kw1">double</font><font class="text"> length           = arg( 3 )-&gt;to_double( ct ) ;
+   </font><font class="kw1">double</font><font class="text"> p1               = arg( 4 )-&gt;to_double( ct ) ;
+   </font><font class="kw1">double</font><font class="text"> p0               = arg( 5 )-&gt;to_double( ct ) ; 
+   </font><font class="kw1">double</font><font class="text"> period           = arg( 6 )-&gt;to_double( ct ) ; 
+   </font><font class="kw1">double</font><font class="text"> t_cut            = arg( 7 )-&gt;to_double( ct ) ;
+   </font><font class="kw1">double</font><font class="text"> rho              = arg( 8 )-&gt;to_double( ct ) ; 
+   </font><font class="kw1">double</font><font class="text"> mu               = arg( 9 )-&gt;to_double( ct ) ;  
+   </font><font class="kw1">double</font><font class="text"> tol              = arg( 10 )-&gt;to_double( ct ) ;
+
+   </font><font class="kw1">double</font><font class="text"> tau = 2.0 * </font><font class="kw3">PEL</font><font class="text">::pi() * t / period ;
+   </font><font class="kw1">double</font><font class="text"> tau_cut = 2.0 * </font><font class="kw3">PEL</font><font class="text">::pi() * t_cut / period ;
+   </font><font class="kw1">double</font><font class="text"> u_ref = 2.0 * </font><font class="kw3">PEL</font><font class="text">::pi() * radius / period ;
+   </font><font class="kw1">double</font><font class="text"> reynolds = rho * u_ref * radius / mu ;
+
+   </font><font class="kw1">double</font><font class="text"> yyy = rho * u_ref * u_ref * length / radius ;
+   </font><font class="kw1">double</font><font class="text"> a = p1 / yyy ;
+   </font><font class="kw1">double</font><font class="text"> c = p0 / yyy ;
+
+   </font><font class="kw1">if</font><font class="text">( EXPR==P_AXI || EXPR==P_3D )
+   {
+      </font><font class="kw3">doubleVector</font><font class="text">&amp; result = DV_result_1 ;
+      </font><font class="kw1">double</font><font class="text"> p_in = 0.0 ;
+      </font><font class="kw1">double</font><font class="text"> z = ( EXPR==P_AXI ? xx( 1 ) : xx( 2 ) ) ;
+      z = xx( 1 ) ;
+      </font><font class="kw1">if</font><font class="text">( tau &lt;= tau_cut ) 
+      {
+         p_in = p1 * </font><font class="kw3">PEL</font><font class="text">::sin( tau ) + p0 ;
+      }
+      </font><font class="kw1">else</font><font class="text"> 
+      {
+         p_in = p1 * </font><font class="kw3">PEL</font><font class="text">::sin( tau_cut ) + p0 ;
+      }
+      result( 0 ) = p_in * ( length - z ) / length  ;
+      </font><font class="kw1">return</font><font class="text"> result ;
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( EXPR == U_AXI )
+   { 
+      </font><font class="kw3">doubleVector</font><font class="text">&amp; result = DV_result_2 ;
+      </font><font class="kw1">double</font><font class="text"> eta = xx( 0 ) / radius ;
+      result ( 0 ) = 0 ;
+      result ( 1 ) = u_ref * uz_adim( eta, tau, 
+                                      tau_cut, a, c, reynolds, tol ) ;
+      </font><font class="kw1">return</font><font class="text"> result ;
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( EXPR == U_3D )
+   { 
+      </font><font class="kw3">doubleVector</font><font class="text">&amp; result = DV_result_3 ;
+      </font><font class="kw1">double</font><font class="text"> eta = </font><font class="kw3">PEL</font><font class="text">::sqrt( xx( 0 )*xx( 0 ) + xx( 1 )*xx( 1 ) ) / radius ;
+      result ( 0 ) = 0 ;
+      result ( 1 ) = 0 ;
+      result ( 2 ) = u_ref * uz_adim( eta, tau, 
+                                      tau_cut, a, c, reynolds, tol ) ;
+      </font><font class="kw1">return</font><font class="text"> result ;
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; 
+</font><font class="kw3">RS_AvulaEXP</font><font class="text">:: usage( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;RS_AvulaEXP:: usage&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> result ;
+   </font><font class="kw1">switch</font><font class="text">(EXPR)
+   {
+      </font><font class="kw1">case</font><font class="text"> U_AXI : 
+	 result = </font><font class="string">&quot;Avula_velocity_axi($DV_X,$DS_T,$DS_R,$DS_L,$DS_P1,$DS_P0,$DS_PERIOD,$DS_CUT,$DS_RHO,$DS_MU,$DS_TOL)&quot;</font><font class="text"> ; 
+         </font><font class="kw1">break</font><font class="text"> ; 
+      </font><font class="kw1">case</font><font class="text"> U_3D : 
+	 result = </font><font class="string">&quot;Avula_velocity_3D($DV_X,$DS_T,$DS_R,$DS_L,$DS_P1,$DS_P0,$DS_PERIOD,$DS_CUT,$DS_RHO,$DS_MU,$DS_TOL)&quot;</font><font class="text"> ; 
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> P_AXI : 
+	 result = </font><font class="string">&quot;Avula_pressure_axi($DV_X,$DS_T,$DS_R,$DS_L,$DS_P1,$DS_P0,$DS_PERIOD,$DS_CUT,$DS_RHO,$DS_MU,$DS_TOL)&quot;</font><font class="text"> ; 
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> P_3D : 
+	 result = </font><font class="string">&quot;Avula_pressure_3D($DV_X,$DS_T,$DS_R,$DS_L,$DS_P1,$DS_P0,$DS_PERIOD,$DS_CUT,$DS_RHO,$DS_MU,$DS_TOL)&quot;</font><font class="text"> ; 
+         </font><font class="kw1">break</font><font class="text"> ;
+   }
+   
+   </font><font class="kw1">return</font><font class="text"> result ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">RS_AvulaEXP</font><font class="text">:: valid_arguments( </font><font class="kw3">PEL_Sequence</font><font class="text"> </font><font class="kw1">const</font><font class="text">* some_arguments ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;RS_AvulaEXP:: valid_arguments&quot;</font><font class="text"> ) ;
+   </font><font class="kw1">bool</font><font class="text"> result = ( some_arguments-&gt;count() == 11 ) &amp;&amp;
+ ( extract_arg( some_arguments, 0 )-&gt;data_type() == </font><font class="kw3">PEL_Data</font><font class="text">::DoubleVector ) &amp;&amp;
+ ( extract_arg( some_arguments, 1 )-&gt;data_type() == </font><font class="kw3">PEL_Data</font><font class="text">::Double ) &amp;&amp;
+ ( extract_arg( some_arguments, 2 )-&gt;data_type() == </font><font class="kw3">PEL_Data</font><font class="text">::Double ) &amp;&amp;
+ ( extract_arg( some_arguments, 3 )-&gt;data_type() == </font><font class="kw3">PEL_Data</font><font class="text">::Double ) &amp;&amp;
+ ( extract_arg( some_arguments, 4 )-&gt;data_type() == </font><font class="kw3">PEL_Data</font><font class="text">::Double ) &amp;&amp;
+ ( extract_arg( some_arguments, 5 )-&gt;data_type() == </font><font class="kw3">PEL_Data</font><font class="text">::Double ) &amp;&amp;
+ ( extract_arg( some_arguments, 6 )-&gt;data_type() == </font><font class="kw3">PEL_Data</font><font class="text">::Double ) &amp;&amp;
+ ( extract_arg( some_arguments, 7 )-&gt;data_type() == </font><font class="kw3">PEL_Data</font><font class="text">::Double ) &amp;&amp; 
+ ( extract_arg( some_arguments, 8 )-&gt;data_type() == </font><font class="kw3">PEL_Data</font><font class="text">::Double ) &amp;&amp;
+ ( extract_arg( some_arguments, 9 )-&gt;data_type() == </font><font class="kw3">PEL_Data</font><font class="text">::Double ) &amp;&amp;
+ ( extract_arg( some_arguments, 10 )-&gt;data_type() == </font><font class="kw3">PEL_Data</font><font class="text">::Double ) ;
+
+   </font><font class="kw1">return</font><font class="text"> result ; 
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw1">double
+</font><font class="kw3">RS_AvulaEXP</font><font class="text">:: uz_adim( </font><font class="kw1">double</font><font class="text"> eta, </font><font class="kw1">double</font><font class="text"> tau, </font><font class="kw1">double</font><font class="text"> tau_cut, 
+                       </font><font class="kw1">double</font><font class="text"> a, </font><font class="kw1">double</font><font class="text"> c, </font><font class="kw1">double</font><font class="text"> reynolds, </font><font class="kw1">double</font><font class="text"> tol ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;RS_AvulaEXP:: uz_adim&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">double</font><font class="text"> f_tau_cut, alpha_n, gamma_n, h_n, ee, du ;
+   </font><font class="kw1">double</font><font class="text"> result = 0.0 ;
+
+   </font><font class="kw1">if</font><font class="text">( tau &gt; tau_cut ) f_tau_cut = a * </font><font class="kw3">PEL</font><font class="text">::sin( tau_cut ) + c ;
+
+   </font><font class="kw2">size_t</font><font class="text"> n = 0 ;
+   </font><font class="kw1">do
+</font><font class="text">   {
+      alpha_n = root_of_J0( n ) ;
+      gamma_n = alpha_n * alpha_n / reynolds ;
+      </font><font class="kw1">if</font><font class="text">( tau &lt;= tau_cut )
+      {
+         h_n = hconvol( tau, a, c, gamma_n ) ;
+      }
+      </font><font class="kw1">else
+</font><font class="text">      {
+         h_n = hconvol( tau_cut, a, c, gamma_n ) ;
+         ee = </font><font class="kw3">PEL</font><font class="text">::exp( -gamma_n * ( tau - tau_cut ) ) ;
+         h_n = ( 1.0 - ee ) / gamma_n * f_tau_cut + ee * h_n ;
+      }
+      du = </font><font class="kw3">PEL</font><font class="text">::j0( alpha_n * eta ) / alpha_n / </font><font class="kw3">PEL</font><font class="text">::j1( alpha_n ) * h_n ;
+      result += du ;
+      n++ ;
+   }
+   </font><font class="kw1">while</font><font class="text">( </font><font class="kw3">PEL</font><font class="text">::abs(du) &gt; tol ) ;
+
+   result *= 2.0 ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw1">double
+</font><font class="kw3">RS_AvulaEXP</font><font class="text">:: hconvol( </font><font class="kw1">double</font><font class="text"> tau, </font><font class="kw1">double</font><font class="text"> a, </font><font class="kw1">double</font><font class="text"> c, </font><font class="kw1">double</font><font class="text"> gamma_n ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;RS_AvulaEXP:: hconvol&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">double</font><font class="text"> ee = </font><font class="kw3">PEL</font><font class="text">::exp( - gamma_n * tau ) ;
+   </font><font class="kw1">double</font><font class="text"> result = a/(gamma_n*gamma_n+1.0) * 
+                   ( gamma_n*</font><font class="kw3">PEL</font><font class="text">::sin(tau) - </font><font class="kw3">PEL</font><font class="text">::cos(tau) + ee ) 
+                 + c/gamma_n* (1.0 - ee ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw1">double
+</font><font class="kw3">RS_AvulaEXP</font><font class="text">:: root_of_J0( </font><font class="kw2">size_t</font><font class="text"> n ) </font><font class="kw1">const</font><font class="text"> 
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;RS_AvulaEXP:: root_of_J0&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw3">doubleVector</font><font class="text"> J0_ROOTS( 0 ) ;
+
+   </font><font class="kw1">if</font><font class="text">( n &gt;= J0_ROOTS.size() )
+   {
+      </font><font class="kw3">PEL_ASSERT</font><font class="text">( n == J0_ROOTS.size() ) ;
+      </font><font class="kw1">double</font><font class="text"> x = ( J0_ROOTS.size()==0 ?  
+                      1.0 : 
+                   J0_ROOTS( J0_ROOTS.size()-1 ) + 3.0 ) ;
+      </font><font class="kw1">double</font><font class="text"> tolerance = 1.e-10 ;
+      </font><font class="kw1">double</font><font class="text"> f, df, dx ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;100 ; ++i )
+      {
+         </font><font class="kw1">do
+</font><font class="text">         {
+            f  =  </font><font class="kw3">PEL</font><font class="text">::j0( x ) ;
+            df = -</font><font class="kw3">PEL</font><font class="text">::j1( x ) ;
+            </font><font class="kw3">PEL_CHECK</font><font class="text">( </font><font class="kw3">PEL</font><font class="text">::abs( df ) &gt; tolerance ) ;
+            dx = - f/df ;
+            x += dx ;
+         }
+         </font><font class="kw1">while</font><font class="text">( </font><font class="kw3">PEL</font><font class="text">::abs( dx/x) &gt; tolerance ) ;
+         J0_ROOTS.append( x ) ;
+         x += 3.0 ;
+      }
+   }
+   </font><font class="kw1">double</font><font class="text"> result = J0_ROOTS( n ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font>
+</pre>
+</body>
+</html>

@@ -1,0 +1,997 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>PDE_DomainVisu.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="PDE_DomainVisu.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="PDEpack-tree.html"><span>Tree</span></a>
+    <a href="PDE_DomainVisu.html"><span>Class</span></a>
+    <a href="PDE_DomainVisu.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="PDEpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_DomainVisu</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Communicator</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Exec</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_System</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">boolVector</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">GE_Color</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">GE_Mpolyhedron</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">GE_Point</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">GE_SetOfPoints</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_CursorFEside</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_DiscreteField</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_DomainAndFields</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_LocalFEbound</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_LocalFEcell</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_ResultSaver</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_SetOfDiscreteFields</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;iomanip&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;iostream&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;fstream&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw2">set</font><font class="text">&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;sstream&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw2">string</font><font class="text">&gt;
+
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">cout</font><font class="text"> ; </font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ios_base</font><font class="text"> ; </font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">setprecision</font><font class="text"> ; </font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">setw</font><font class="text"> ;
+
+</font><font class="kw3">PDE_DomainVisu</font><font class="text"> </font><font class="kw1">const</font><font class="text">* </font><font class="kw3">PDE_DomainVisu</font><font class="text">::PROTOTYPE = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PDE_DomainVisu</font><font class="text">() ;
+
+</font><font class="kw1">struct</font><font class="text"> PDE_DomainVisu_ERROR
+{
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> n0( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; file_name ) ;
+} ;
+
+</font><font class="comment">// Real names &quot;halo color&quot; and &quot;null color&quot; with a blank are unreadable by gmv
+</font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text"> HALO_COLOR = </font><font class="string">&quot;halo_color&quot;</font><font class="text"> ;
+</font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text"> NULL_COLOR = </font><font class="string">&quot;null_color&quot;</font><font class="text"> ;
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PDE_DomainVisu</font><font class="text">:: </font><font class="kw3">PDE_DomainVisu</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_Application</font><font class="text">( </font><font class="string">&quot;PDE_DomainVisu&quot;</font><font class="text"> ) 
+   , TRACE_CELLS( </font><font class="kw1">false</font><font class="text"> )
+   , TRACE_SIDES( </font><font class="kw1">false</font><font class="text"> )
+   , TRACE_BOUNDS( </font><font class="kw1">false</font><font class="text"> )
+   , CHECK_CONN(  </font><font class="kw1">false</font><font class="text"> )
+   , NB_DIMS( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+   , VERTICES( 0 )
+   , bFE( 0 )
+   , cFE( 0 )
+   , sFE( 0 )
+   , SAVER( 0 )
+   , NBS( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+   , GMV_FILES( </font><font class="kw1">false</font><font class="text"> )
+{
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PDE_DomainVisu</font><font class="text">*
+</font><font class="kw3">PDE_DomainVisu</font><font class="text">:: create_replica( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                               </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_DomainVisu:: create_replica&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_PRE( a_owner, exp ) ) ;
+
+   </font><font class="kw3">PDE_DomainVisu</font><font class="text">* result = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PDE_DomainVisu</font><font class="text">( a_owner, exp ) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_POST( result, a_owner, exp ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PDE_DomainVisu</font><font class="text">*
+</font><font class="kw3">PDE_DomainVisu</font><font class="text">:: create( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+         	         </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_DomainVisu:: create_replica&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( exp != 0 ) ;
+
+   </font><font class="kw3">PDE_DomainVisu</font><font class="text">* result = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PDE_DomainVisu</font><font class="text">( a_owner, exp ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;owner() == a_owner ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PDE_DomainVisu</font><font class="text">:: </font><font class="kw3">PDE_DomainVisu</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                 </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_Application</font><font class="text">( a_owner, exp )
+   , TRACE_CELLS( </font><font class="kw1">false</font><font class="text"> )
+   , TRACE_SIDES( </font><font class="kw1">false</font><font class="text"> )
+   , TRACE_BOUNDS( </font><font class="kw1">false</font><font class="text"> )
+   , CHECK_CONN( exp-&gt;has_entry( </font><font class="string">&quot;check_meshing_connexity&quot;</font><font class="text"> ) ?
+                   exp-&gt;bool_data( </font><font class="string">&quot;check_meshing_connexity&quot;</font><font class="text"> ) : </font><font class="kw1">false</font><font class="text"> )
+   , NB_DIMS( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+   , VERTICES( 0 )
+   , bFE( 0 )
+   , cFE( 0 )
+   , sFE( 0 )
+   , SAVER( 0 )
+   , NBS( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+   , GMV_FILES( exp-&gt;has_entry( </font><font class="string">&quot;build_GMV_files&quot;</font><font class="text"> ) ?
+                   exp-&gt;bool_data( </font><font class="string">&quot;build_GMV_files&quot;</font><font class="text"> ) : </font><font class="kw1">true</font><font class="text"> )
+{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_DomainVisu:: PDE_DomainVisu&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> before = </font><font class="kw3">PEL_System</font><font class="text">::used_memory() ;
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="string">&quot;Memory before meshing built: &quot;</font><font class="text"> &lt;&lt; before &lt;&lt; </font><font class="kw2">endl</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* e =
+      exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;PDE_DomainAndFields&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PDE_DomainAndFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* dom = </font><font class="kw3">PDE_DomainAndFields</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, e ) ;
+   e-&gt;destroy() ;
+   </font><font class="kw2">size_t</font><font class="text"> after = </font><font class="kw3">PEL_System</font><font class="text">::used_memory() ;
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="string">&quot;Memory after meshing built: &quot;</font><font class="text"> &lt;&lt; after &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="string">&quot;   difference: &quot;</font><font class="text"> &lt;&lt; (after-before)/1024/1024 &lt;&lt; </font><font class="string">&quot; Mo&quot;</font><font class="text"> 
+              &lt;&lt; </font><font class="kw2">endl</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   
+   SAVER = dom-&gt;result_saver() ;
+
+   </font><font class="kw1">if</font><font class="text">( GMV_FILES )
+   {
+      NB_DIMS = dom-&gt;nb_space_dimensions() ;
+      VERTICES = dom-&gt;set_of_vertices() ;
+      bFE = dom-&gt;create_LocalFEbound( </font><font class="kw1">this</font><font class="text"> ) ;
+      bFE-&gt;include_color( </font><font class="kw3">GE_Color</font><font class="text">::halo_color() ) ;
+      cFE = dom-&gt;create_LocalFEcell( </font><font class="kw1">this</font><font class="text"> ) ;
+      cFE-&gt;include_color( </font><font class="kw3">GE_Color</font><font class="text">::halo_color() ) ;
+      sFE = dom-&gt;create_CursorFEside( </font><font class="kw1">this</font><font class="text"> ) ;
+      sFE-&gt;include_color( </font><font class="kw3">GE_Color</font><font class="text">::halo_color() ) ;
+
+      NBS = 0 ;
+      </font><font class="kw1">for</font><font class="text">( sFE-&gt;start() ; sFE-&gt;is_valid() ; sFE-&gt;go_next() )
+      {
+         NBS += ( sFE-&gt;is_periodic() ? 2 : 1 ) ;
+      }
+   
+      </font><font class="kw1">if</font><font class="text">( exp-&gt;has_module( </font><font class="string">&quot;traces&quot;</font><font class="text"> ) )
+      {
+         </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* se = exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;traces&quot;</font><font class="text"> ) ;
+         OFS.open( se-&gt;string_data( </font><font class="string">&quot;output_file&quot;</font><font class="text"> ).c_str() ) ;
+         </font><font class="kw1">if</font><font class="text">( se-&gt;has_entry( </font><font class="string">&quot;trace_cells&quot;</font><font class="text"> ) )
+            TRACE_CELLS = se-&gt;bool_data( </font><font class="string">&quot;trace_cells&quot;</font><font class="text"> ) ;
+         </font><font class="kw1">if</font><font class="text">( se-&gt;has_entry( </font><font class="string">&quot;trace_sides&quot;</font><font class="text"> ) )
+            TRACE_SIDES = se-&gt;bool_data( </font><font class="string">&quot;trace_sides&quot;</font><font class="text"> ) ;
+         </font><font class="kw1">if</font><font class="text">( se-&gt;has_entry( </font><font class="string">&quot;trace_bounds&quot;</font><font class="text"> ) )
+            TRACE_BOUNDS = se-&gt;bool_data( </font><font class="string">&quot;trace_bounds&quot;</font><font class="text"> ) ;
+         se-&gt;destroy() ;
+      
+         </font><font class="kw3">PDE_SetOfDiscreteFields</font><font class="text">* sdf = dom-&gt;set_of_discrete_fields() ;
+         </font><font class="kw1">for</font><font class="text">( sdf-&gt;start() ; sdf-&gt;is_valid() ; sdf-&gt;go_next() )
+         {
+            </font><font class="kw3">PDE_DiscreteField</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ff = sdf-&gt;item() ;
+            </font><font class="kw1">if</font><font class="text">( !dom-&gt;is_defined_on_boundary( ff-&gt;name() ) )
+            {
+               </font><font class="kw1">if</font><font class="text">( TRACE_CELLS ) cFE-&gt;require_field_calculation( ff, </font><font class="kw3">PDE_LocalFE</font><font class="text">::N ) ;
+               </font><font class="kw1">if</font><font class="text">( TRACE_SIDES ) sFE-&gt;require_field_calculation( ff, </font><font class="kw3">PDE_LocalFE</font><font class="text">::N ) ;
+            }
+            </font><font class="kw1">if</font><font class="text">( TRACE_BOUNDS ) bFE-&gt;require_field_calculation( ff, </font><font class="kw3">PDE_LocalFE</font><font class="text">::N ) ;
+         }
+      }
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PDE_DomainVisu</font><font class="text">:: ~</font><font class="kw3">PDE_DomainVisu</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PDE_DomainVisu</font><font class="text">:: run( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_DomainVisu:: run&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">if</font><font class="text">( GMV_FILES )
+   {
+      </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="string">&quot;*** Building gmv files&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      build_file_with_bounds() ;
+      build_file_with_faces() ;
+      build_file_with_cells() ;
+      </font><font class="kw1">if</font><font class="text">( CHECK_CONN ) check_connexity() ;
+   }
+   
+   SAVER-&gt;start_cycle() ;
+   SAVER-&gt;save_grid() ;
+   SAVER-&gt;save_fields( 0 ) ;
+   SAVER-&gt;terminate_cycle() ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PDE_DomainVisu</font><font class="text">:: build_file_with_bounds( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_DomainVisu:: build_file_with_bounds&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> fname = </font><font class="string">&quot;bounds.gmv&quot;</font><font class="text"> ;
+   </font><font class="kw3">PEL_Communicator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* com = </font><font class="kw3">PEL_Exec</font><font class="text">::communicator() ;
+   </font><font class="kw1">if</font><font class="text">( com-&gt;nb_ranks() &gt; 1 )
+   {
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> m ;
+      m &lt;&lt; </font><font class="string">&quot;bounds_&quot;</font><font class="text"> &lt;&lt; com-&gt;rank() &lt;&lt; </font><font class="string">&quot;.gmv&quot;</font><font class="text"> ;
+      fname = m.str() ;
+   }
+   </font><font class="kw2">std</font><font class="text">::ofstream ofile( fname.c_str(),
+                        </font><font class="kw2">std</font><font class="text">::ios::out | </font><font class="kw2">std</font><font class="text">::ios::trunc ) ;
+   </font><font class="kw1">if</font><font class="text">( !ofile )
+   {
+      PDE_DomainVisu_ERROR::n0( fname ) ;
+   }
+   
+   </font><font class="kw3">GE_SetOfPoints</font><font class="text">* skin_vertices = </font><font class="kw3">GE_SetOfPoints</font><font class="text">::create( 0, NB_DIMS ) ;
+   </font><font class="kw3">size_t_vector</font><font class="text"> glob_cell_2_skin_cell( cFE-&gt;nb_meshes() ) ;
+   </font><font class="kw2">size_t</font><font class="text"> nb_skin_cells ;
+   build_skin( skin_vertices, nb_skin_cells, glob_cell_2_skin_cell ) ;
+
+   ofile &lt;&lt; </font><font class="string">&quot;gmvinput ascii&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   write_gmv_nodev( ofile, skin_vertices ) ;
+   write_gmv_faces( ofile, 
+                    skin_vertices, nb_skin_cells, glob_cell_2_skin_cell ) ;
+   write_gmv_surface( ofile, skin_vertices, </font><font class="kw1">false</font><font class="text"> ) ;
+   write_gmv_surfvars( ofile, </font><font class="kw1">false</font><font class="text"> ) ;
+
+   ofile &lt;&lt; </font><font class="string">&quot;endgmv&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   ofile.close() ;
+   skin_vertices-&gt;destroy() ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PDE_DomainVisu</font><font class="text">:: build_skin( </font><font class="kw3">GE_SetOfPoints</font><font class="text">* skin_vertices,
+                             </font><font class="kw2">size_t</font><font class="text">&amp; nb_skin_cells,
+                             </font><font class="kw3">size_t_vector</font><font class="text">&amp; glob_cell_2_skin_cell )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_DomainVisu:: build_skin&quot;</font><font class="text"> ) ;
+   
+   glob_cell_2_skin_cell.</font><font class="kw2">set</font><font class="text">( </font><font class="kw3">PEL</font><font class="text">::bad_index() ) ;
+   
+   nb_skin_cells = 0 ;
+   </font><font class="kw1">for</font><font class="text">( bFE-&gt;start() ; bFE-&gt;is_valid() ; bFE-&gt;go_next() )
+   {
+      </font><font class="kw3">GE_Mpolyhedron</font><font class="text"> </font><font class="kw1">const</font><font class="text">* poly = bFE-&gt;polyhedron() ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;poly-&gt;nb_vertices() ; ++i )
+      {
+         skin_vertices-&gt;extend( poly-&gt;vertex( i ) ) ;
+      }
+      </font><font class="kw2">size_t</font><font class="text"> ii = bFE-&gt;adjacent_cell_id() ;
+      </font><font class="kw1">if</font><font class="text">( glob_cell_2_skin_cell( ii ) == </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+      {
+         glob_cell_2_skin_cell( ii ) = nb_skin_cells ;
+         ++nb_skin_cells ;
+      }
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PDE_DomainVisu</font><font class="text">:: build_file_with_faces( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_DomainVisu:: build_file_with_faces&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> fname = </font><font class="string">&quot;faces.gmv&quot;</font><font class="text"> ;
+   </font><font class="kw3">PEL_Communicator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* com = </font><font class="kw3">PEL_Exec</font><font class="text">::communicator() ;
+   </font><font class="kw1">if</font><font class="text">( com-&gt;nb_ranks() &gt; 1 )
+   {
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> m ;
+      m &lt;&lt; </font><font class="string">&quot;faces_&quot;</font><font class="text"> &lt;&lt; com-&gt;rank() &lt;&lt; </font><font class="string">&quot;.gmv&quot;</font><font class="text"> ;
+      fname = m.str() ;
+   }
+   </font><font class="kw2">std</font><font class="text">::ofstream ofile( fname.c_str(),
+                        </font><font class="kw2">std</font><font class="text">::ios::out | </font><font class="kw2">std</font><font class="text">::ios::trunc ) ;
+   </font><font class="kw1">if</font><font class="text">( !ofile )
+   {
+      PDE_DomainVisu_ERROR::n0( fname ) ;
+   }
+
+   ofile &lt;&lt; </font><font class="string">&quot;gmvinput ascii&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   write_gmv_nodev( ofile, VERTICES ) ;
+   write_gmv_faces( ofile ) ;
+   write_gmv_surface( ofile, VERTICES, </font><font class="kw1">true</font><font class="text"> ) ;
+   write_gmv_surfvars( ofile, </font><font class="kw1">true</font><font class="text"> ) ;
+
+   ofile &lt;&lt; </font><font class="string">&quot;endgmv&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   ofile.close() ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PDE_DomainVisu</font><font class="text">:: build_file_with_cells( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_DomainVisu:: build_file_with_cells&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> fname = </font><font class="string">&quot;cells.gmv&quot;</font><font class="text"> ;
+   </font><font class="kw3">PEL_Communicator</font><font class="text"> </font><font class="kw1">const</font><font class="text">* com = </font><font class="kw3">PEL_Exec</font><font class="text">::communicator() ;
+   </font><font class="kw1">if</font><font class="text">( com-&gt;nb_ranks() &gt; 1 )
+   {
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> m ;
+      m &lt;&lt; </font><font class="string">&quot;cells_&quot;</font><font class="text"> &lt;&lt; com-&gt;rank() &lt;&lt; </font><font class="string">&quot;.gmv&quot;</font><font class="text"> ;
+      fname = m.str() ;
+   }
+   </font><font class="kw2">std</font><font class="text">::ofstream ofile( fname.c_str(),
+                        </font><font class="kw2">std</font><font class="text">::ios::out | </font><font class="kw2">std</font><font class="text">::ios::trunc ) ;
+   </font><font class="kw1">if</font><font class="text">( !ofile )
+   {
+      PDE_DomainVisu_ERROR::n0( fname ) ;
+   }
+
+   ofile &lt;&lt; </font><font class="string">&quot;gmvinput ascii&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   write_gmv_nodev( ofile, VERTICES ) ;
+   write_gmv_cells( ofile ) ;
+   write_gmv_variable( ofile ) ;
+
+   ofile &lt;&lt; </font><font class="string">&quot;endgmv&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   ofile.close() ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PDE_DomainVisu</font><font class="text">:: write_gmv_nodev( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostream</font><font class="text">&amp; ofile,
+                                  </font><font class="kw3">GE_SetOfPoints</font><font class="text"> </font><font class="kw1">const</font><font class="text">* verts) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_DomainVisu:: write_gmv_nodev&quot;</font><font class="text"> ) ;
+
+   ofile &lt;&lt; </font><font class="string">&quot;nodev &quot;</font><font class="text"> &lt;&lt; verts-&gt;nb_points() &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> iv=0 ; iv&lt;verts-&gt;nb_points() ; ++iv )
+   {
+      </font><font class="kw3">GE_Point</font><font class="text"> </font><font class="kw1">const</font><font class="text">* pt = verts-&gt;point( iv ) ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> d=0 ; d&lt;NB_DIMS ; ++d )
+      {
+         ofile &lt;&lt; pt-&gt;coordinate( d ) &lt;&lt; </font><font class="string">&quot; &quot;</font><font class="text"> ;
+      }
+      </font><font class="kw1">if</font><font class="text">( NB_DIMS == 2 ) ofile &lt;&lt; </font><font class="string">&quot;0&quot;</font><font class="text"> ;
+      </font><font class="kw1">if</font><font class="text">( NB_DIMS == 1 ) ofile &lt;&lt; </font><font class="string">&quot;0 0&quot;</font><font class="text"> ;
+      ofile &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PDE_DomainVisu</font><font class="text">:: write_gmv_faces( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostream</font><font class="text">&amp; ofile )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_DomainVisu:: write_gmv_faces&quot;</font><font class="text"> ) ;
+
+   ofile &lt;&lt; </font><font class="string">&quot;faces &quot;</font><font class="text"> &lt;&lt; NBS + bFE-&gt;nb_meshes() &lt;&lt; </font><font class="string">&quot; &quot;
+</font><font class="text">         &lt;&lt; cFE-&gt;nb_meshes() &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw3">PDE_LocalFEcell</font><font class="text"> </font><font class="kw1">const</font><font class="text">* cfe_0 = sFE-&gt;adjacent_localFEcell( 0 ) ;
+   </font><font class="kw3">PDE_LocalFEcell</font><font class="text"> </font><font class="kw1">const</font><font class="text">* cfe_1 = sFE-&gt;adjacent_localFEcell( 1 ) ;
+   </font><font class="kw1">if</font><font class="text">( TRACE_SIDES )
+   {
+      OFS &lt;&lt; </font><font class="string">&quot;***************************************&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      OFS &lt;&lt; </font><font class="string">&quot;PDE_CursorFEside : &quot;</font><font class="text"> &lt;&lt; sFE-&gt;nb_meshes() &lt;&lt; </font><font class="string">&quot; sides&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      OFS &lt;&lt; </font><font class="string">&quot;***************************************&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   }
+   </font><font class="kw1">for</font><font class="text">( sFE-&gt;start() ; sFE-&gt;is_valid() ; sFE-&gt;go_next() )
+   {
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> ipoly=0 ; ipoly&lt;( sFE-&gt;is_periodic() ? 2 : 1 ) ; ipoly++ )
+      {
+         </font><font class="kw3">GE_Mpolyhedron</font><font class="text"> </font><font class="kw1">const</font><font class="text">* poly = ( sFE-&gt;is_periodic() ? sFE-&gt;polyhedron(ipoly) : sFE-&gt;polyhedron() ) ;
+         ofile &lt;&lt; poly-&gt;nb_vertices() &lt;&lt; </font><font class="string">&quot;  &quot;</font><font class="text"> ;
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;poly-&gt;nb_vertices() ; ++i )
+         {
+            </font><font class="kw3">GE_Point</font><font class="text"> </font><font class="kw1">const</font><font class="text">* pt = poly-&gt;vertex( i ) ;
+            ofile &lt;&lt; VERTICES-&gt;index( pt )+1 &lt;&lt; </font><font class="string">&quot;  &quot;</font><font class="text"> ;
+         }
+         ofile &lt;&lt; cfe_0-&gt;mesh_id()+1 &lt;&lt; </font><font class="string">&quot; &quot;</font><font class="text"> &lt;&lt; cfe_1-&gt;mesh_id()+1 &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+         </font><font class="kw1">if</font><font class="text">( TRACE_SIDES )
+         {
+            OFS &lt;&lt; </font><font class="string">&quot;---------------------------------------&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+            OFS &lt;&lt; </font><font class="string">&quot;side&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+            sFE-&gt;print_current_mesh( OFS, 3 ) ;
+         }
+      }
+   }
+   
+   </font><font class="kw1">if</font><font class="text">( TRACE_BOUNDS )
+   {
+      OFS &lt;&lt; </font><font class="string">&quot;***************************************&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      OFS &lt;&lt; </font><font class="string">&quot;PDE_LocalFEbound : &quot;</font><font class="text"> &lt;&lt; bFE-&gt;nb_meshes() &lt;&lt; </font><font class="string">&quot; bounds&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      OFS &lt;&lt; </font><font class="string">&quot;***************************************&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   }
+   </font><font class="kw1">for</font><font class="text">( bFE-&gt;start() ; bFE-&gt;is_valid() ; bFE-&gt;go_next() )
+   {
+      </font><font class="kw3">GE_Mpolyhedron</font><font class="text"> </font><font class="kw1">const</font><font class="text">* poly = bFE-&gt;polyhedron() ;
+      ofile &lt;&lt; poly-&gt;nb_vertices() &lt;&lt; </font><font class="string">&quot;  &quot;</font><font class="text"> ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;poly-&gt;nb_vertices() ; ++i )
+      {
+         </font><font class="kw3">GE_Point</font><font class="text"> </font><font class="kw1">const</font><font class="text">* pt = poly-&gt;vertex( i ) ;
+         ofile &lt;&lt; VERTICES-&gt;index( pt )+1 &lt;&lt; </font><font class="string">&quot;  &quot;</font><font class="text"> ;
+      }
+      ofile &lt;&lt; bFE-&gt;adjacent_cell_id()+1 &lt;&lt; </font><font class="string">&quot; 0&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      </font><font class="kw1">if</font><font class="text">( TRACE_BOUNDS )
+      {
+         OFS &lt;&lt; </font><font class="string">&quot;---------------------------------------&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+         OFS &lt;&lt; </font><font class="string">&quot;bound&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+         bFE-&gt;print_current_mesh( OFS, 3 ) ;
+         OFS &lt;&lt; </font><font class="string">&quot;Local discretization of fields&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+         bFE-&gt;print_local_discretization_of_fields( OFS, 3 ) ;
+      }
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PDE_DomainVisu</font><font class="text">:: write_gmv_faces( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostream</font><font class="text">&amp; ofile,
+                                  </font><font class="kw3">GE_SetOfPoints</font><font class="text"> </font><font class="kw1">const</font><font class="text">* skin_vertices,
+                                  </font><font class="kw2">size_t</font><font class="text"> nb_skin_cells,
+                                  </font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; glob_cell_2_skin_cell )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_DomainVisu:: write_gmv_faces&quot;</font><font class="text"> ) ;
+
+   ofile &lt;&lt; </font><font class="string">&quot;faces &quot;</font><font class="text"> &lt;&lt; bFE-&gt;nb_meshes() &lt;&lt; </font><font class="string">&quot; &quot;</font><font class="text"> &lt;&lt; nb_skin_cells &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+
+   </font><font class="kw1">for</font><font class="text">( bFE-&gt;start() ; bFE-&gt;is_valid() ; bFE-&gt;go_next() )
+   {
+      </font><font class="kw3">GE_Mpolyhedron</font><font class="text"> </font><font class="kw1">const</font><font class="text">* poly = bFE-&gt;polyhedron() ;
+      ofile &lt;&lt; poly-&gt;nb_vertices() &lt;&lt; </font><font class="string">&quot;  &quot;</font><font class="text"> ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;poly-&gt;nb_vertices() ; ++i )
+      {
+         </font><font class="kw3">GE_Point</font><font class="text"> </font><font class="kw1">const</font><font class="text">* pt = poly-&gt;vertex( i ) ;
+         ofile &lt;&lt; skin_vertices-&gt;index( pt )+1 &lt;&lt; </font><font class="string">&quot;  &quot;</font><font class="text"> ;
+      }
+      ofile &lt;&lt; glob_cell_2_skin_cell( bFE-&gt;adjacent_cell_id() )+1 
+            &lt;&lt; </font><font class="string">&quot; 0&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PDE_DomainVisu</font><font class="text">:: write_gmv_cells( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostream</font><font class="text">&amp; ofile )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_DomainVisu:: write_gmv_cells&quot;</font><font class="text"> ) ;
+
+   ofile &lt;&lt; </font><font class="string">&quot;cells &quot;</font><font class="text"> &lt;&lt; cFE-&gt;nb_meshes() &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw1">if</font><font class="text">( TRACE_CELLS )
+   {
+      OFS &lt;&lt; </font><font class="string">&quot;***************************************&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      OFS &lt;&lt; </font><font class="string">&quot;PDE_LocalFEcell : &quot;</font><font class="text"> &lt;&lt; cFE-&gt;nb_meshes() &lt;&lt; </font><font class="string">&quot; cells&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      OFS &lt;&lt; </font><font class="string">&quot;***************************************&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   }
+   </font><font class="kw1">for</font><font class="text">( cFE-&gt;start() ; cFE-&gt;is_valid() ; cFE-&gt;go_next() )
+   {
+      </font><font class="kw3">GE_Mpolyhedron</font><font class="text"> </font><font class="kw1">const</font><font class="text">* poly = cFE-&gt;polyhedron() ;
+      </font><font class="kw2">size_t</font><font class="text"> nb_verts = poly-&gt;nb_vertices() ;
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> cell_type ;
+      </font><font class="kw1">if</font><font class="text">( NB_DIMS==1 &amp;&amp; nb_verts==2 )
+      {
+         cell_type = </font><font class="string">&quot;line &quot;</font><font class="text"> ;
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( NB_DIMS==2 &amp;&amp; nb_verts==3 )
+      {
+         cell_type = </font><font class="string">&quot;tri &quot;</font><font class="text"> ;
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( NB_DIMS==2 &amp;&amp; nb_verts==4 )
+      {
+         cell_type = </font><font class="string">&quot;quad &quot;</font><font class="text"> ;
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( NB_DIMS==3 &amp;&amp; nb_verts==4 )
+      {
+         cell_type = </font><font class="string">&quot;tet &quot;</font><font class="text"> ;
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( NB_DIMS==3 &amp;&amp; nb_verts==8 )
+      {
+         </font><font class="comment">// Instead of standard hex we use the Patran numbered hexahedron 
+</font><font class="text">         cell_type = </font><font class="string">&quot;phex8 &quot;</font><font class="text"> ;
+      }
+      </font><font class="kw1">else</font><font class="text"> 
+      {
+         </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( </font><font class="string">&quot;Invalid polyhedron type for GMV output &quot;</font><font class="text"> ) ;
+      }
+
+      ofile &lt;&lt; cell_type &lt;&lt; </font><font class="string">&quot;  &quot;</font><font class="text"> &lt;&lt; nb_verts &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;nb_verts ; ++i )
+      {
+         </font><font class="kw3">GE_Point</font><font class="text"> </font><font class="kw1">const</font><font class="text">* pt = poly-&gt;vertex( i ) ;
+         ofile &lt;&lt; VERTICES-&gt;index( pt )+1 &lt;&lt; </font><font class="string">&quot;  &quot;</font><font class="text"> ;
+      }
+      ofile &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+
+      </font><font class="kw1">if</font><font class="text">( TRACE_CELLS )
+      {
+         OFS &lt;&lt; </font><font class="string">&quot;---------------------------------------&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+         OFS &lt;&lt; </font><font class="string">&quot;cell&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+         cFE-&gt;print_current_mesh( OFS, 3 ) ;
+         OFS &lt;&lt; </font><font class="string">&quot;Local discretization of fields&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+         cFE-&gt;print_local_discretization_of_fields( OFS, 3 ) ;
+      }
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PDE_DomainVisu</font><font class="text">:: write_gmv_surface( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostream</font><font class="text">&amp; ofile,
+                                    </font><font class="kw3">GE_SetOfPoints</font><font class="text"> </font><font class="kw1">const</font><font class="text">* verts,
+                                    </font><font class="kw1">bool</font><font class="text"> with_sides ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_DomainVisu:: write_gmv_surface&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">if</font><font class="text">( with_sides )
+   {
+      ofile &lt;&lt; </font><font class="string">&quot;surface &quot;</font><font class="text"> &lt;&lt; NBS + bFE-&gt;nb_meshes()&lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      </font><font class="kw1">for</font><font class="text">( sFE-&gt;start() ; sFE-&gt;is_valid() ; sFE-&gt;go_next() )
+      {
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> ipoly=0 ; ipoly&lt;( sFE-&gt;is_periodic() ? 2 : 1 ) ; ipoly++ )
+         {
+         
+            </font><font class="kw3">GE_Mpolyhedron</font><font class="text"> </font><font class="kw1">const</font><font class="text">* poly = ( sFE-&gt;is_periodic() ? sFE-&gt;polyhedron(ipoly) : sFE-&gt;polyhedron() ) ;
+            ofile &lt;&lt; poly-&gt;nb_vertices() &lt;&lt; </font><font class="string">&quot;  &quot;</font><font class="text"> ;
+            </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;poly-&gt;nb_vertices() ; ++i )
+            {
+               </font><font class="kw3">GE_Point</font><font class="text"> </font><font class="kw1">const</font><font class="text">* pt = poly-&gt;vertex( i ) ;
+               ofile &lt;&lt; verts-&gt;index( pt )+1 &lt;&lt; </font><font class="string">&quot;  &quot;</font><font class="text"> ;
+            }
+            ofile &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+         }
+      }
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      ofile &lt;&lt; </font><font class="string">&quot;surface &quot;</font><font class="text"> &lt;&lt; bFE-&gt;nb_meshes() &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;      
+   }
+   </font><font class="kw1">for</font><font class="text">( bFE-&gt;start() ; bFE-&gt;is_valid() ; bFE-&gt;go_next() )
+   {
+      </font><font class="kw3">GE_Mpolyhedron</font><font class="text"> </font><font class="kw1">const</font><font class="text">* poly = bFE-&gt;polyhedron() ;
+      ofile &lt;&lt; poly-&gt;nb_vertices() &lt;&lt; </font><font class="string">&quot;  &quot;</font><font class="text"> ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;poly-&gt;nb_vertices() ; ++i )
+      {
+         </font><font class="kw3">GE_Point</font><font class="text"> </font><font class="kw1">const</font><font class="text">* pt = poly-&gt;vertex( i ) ;
+         ofile &lt;&lt; verts-&gt;index( pt )+1 &lt;&lt; </font><font class="string">&quot;  &quot;</font><font class="text"> ;
+      }
+      ofile &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PDE_DomainVisu</font><font class="text">:: write_gmv_surfvars( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostream</font><font class="text">&amp; ofile,
+                                     </font><font class="kw1">bool</font><font class="text"> with_sides ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_DomainVisu:: write_gmv_surfvars&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">set</font><font class="text">&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> &gt; colors ;
+   append_matching_color_names( bFE, colors ) ;
+   append_matching_color_names( sFE, colors ) ;
+
+   ofile &lt;&lt; </font><font class="string">&quot;surfvars&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> msg ;
+   msg &lt;&lt; </font><font class="string">&quot;all&quot;</font><font class="text"> &lt;&lt; colors.size() &lt;&lt; </font><font class="string">&quot;colors&quot;</font><font class="text"> ;
+   ofile &lt;&lt; msg.str() &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw1">if</font><font class="text">( with_sides )
+   {
+      </font><font class="kw1">for</font><font class="text">( sFE-&gt;start() ; sFE-&gt;is_valid() ; sFE-&gt;go_next() )
+      {
+         </font><font class="kw2">size_t</font><font class="text"> nb_col = ( sFE-&gt;is_periodic() ? 2 : 1 ) ;
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> icol=0 ; icol&lt;nb_col ; icol++ )
+         {
+            </font><font class="kw3">GE_Color</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fecol = ( sFE-&gt;is_periodic() ? 
+                                         sFE-&gt;color( icol ) : sFE-&gt;color() ) ;
+            ofile &lt;&lt; fecol-&gt;identifier() &lt;&lt; </font><font class="string">&quot; &quot;</font><font class="text"> ;
+         }
+      }
+   }
+   </font><font class="kw1">for</font><font class="text">( bFE-&gt;start() ; bFE-&gt;is_valid() ; bFE-&gt;go_next() )
+   {
+      ofile &lt;&lt; bFE-&gt;color()-&gt;identifier() &lt;&lt; </font><font class="string">&quot; &quot;</font><font class="text"> ;
+   }
+   ofile &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">set</font><font class="text">&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> &gt;::const_iterator it = colors.begin() ;
+   </font><font class="kw1">for</font><font class="text">( ; it != colors.end() ; ++it )
+   {
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; nn = *it ;
+      </font><font class="kw3">GE_Color</font><font class="text"> </font><font class="kw1">const</font><font class="text">* col = </font><font class="kw3">GE_Color</font><font class="text">::object( nn ) ;
+      </font><font class="kw1">if</font><font class="text">( col == </font><font class="kw3">GE_Color</font><font class="text">::halo_color() )
+      {
+         ofile &lt;&lt; HALO_COLOR &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( col == </font><font class="kw3">GE_Color</font><font class="text">::null_color() )
+      {
+         ofile &lt;&lt; NULL_COLOR &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;         
+      }
+      </font><font class="kw1">else
+</font><font class="text">      {
+         ofile &lt;&lt; nn &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      }
+      </font><font class="kw2">size_t</font><font class="text"> nb_s = 0 ;
+      </font><font class="kw1">if</font><font class="text">( with_sides )
+      {
+         </font><font class="kw1">for</font><font class="text">( sFE-&gt;start() ; sFE-&gt;is_valid() ; sFE-&gt;go_next() )
+         {
+            </font><font class="kw2">size_t</font><font class="text"> nb_col = ( sFE-&gt;is_periodic() ? 2 : 1 ) ;
+            </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> icol=0 ; icol&lt;nb_col ; icol++ )
+            {
+               </font><font class="kw3">GE_Color</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fecol = ( sFE-&gt;is_periodic() ? 
+                                           sFE-&gt;color( icol ) : sFE-&gt;color() ) ;
+               </font><font class="kw1">if</font><font class="text">( col-&gt;is_matching( fecol ) )
+               {
+                  ++nb_s ;
+                  ofile &lt;&lt; col-&gt;identifier() &lt;&lt; </font><font class="string">&quot; &quot;</font><font class="text"> ;
+               }
+               </font><font class="kw1">else
+</font><font class="text">                  ofile &lt;&lt; </font><font class="string">&quot;-1 &quot;</font><font class="text"> ;
+            }
+         }
+      }
+      </font><font class="kw2">size_t</font><font class="text"> nb_b = 0 ;
+      </font><font class="kw1">for</font><font class="text">( bFE-&gt;start() ; bFE-&gt;is_valid() ; bFE-&gt;go_next() )
+      {
+         </font><font class="kw1">if</font><font class="text">( col-&gt;is_matching( bFE-&gt;color() ) )
+         {
+            ++nb_b ;
+            ofile &lt;&lt; col-&gt;identifier() &lt;&lt; </font><font class="string">&quot; &quot;</font><font class="text"> ;
+         }
+         </font><font class="kw1">else
+</font><font class="text">            ofile &lt;&lt; </font><font class="string">&quot;-1 &quot;</font><font class="text"> ;
+      }
+      ofile &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      </font><font class="kw1">if</font><font class="text">( with_sides ) display_color_info( col-&gt;name(), nb_s, nb_b ) ;
+   }
+   ofile &lt;&lt; </font><font class="string">&quot;endsvars&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PDE_DomainVisu</font><font class="text">:: write_gmv_variable( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostream</font><font class="text">&amp; ofile ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_DomainVisu:: write_gmv_variable&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">set</font><font class="text">&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> &gt; colors ;
+   append_matching_color_names( cFE, colors ) ;
+
+   ofile &lt;&lt; </font><font class="string">&quot;variable&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> msg ;
+   msg &lt;&lt; </font><font class="string">&quot;all&quot;</font><font class="text"> &lt;&lt; colors.size() &lt;&lt; </font><font class="string">&quot;colors&quot;</font><font class="text"> ;
+   ofile &lt;&lt; msg.str() &lt;&lt; </font><font class="string">&quot; 0 &quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw1">for</font><font class="text">( cFE-&gt;start() ; cFE-&gt;is_valid() ; cFE-&gt;go_next() )
+   {
+      ofile &lt;&lt; cFE-&gt;color()-&gt;identifier() &lt;&lt; </font><font class="string">&quot; &quot;</font><font class="text"> ;
+   }
+   ofile &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">set</font><font class="text">&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> &gt;::const_iterator it = colors.begin() ;
+   </font><font class="kw1">for</font><font class="text">( ; it != colors.end() ; ++it )
+   {
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; nn = *it ;
+      </font><font class="kw3">GE_Color</font><font class="text"> </font><font class="kw1">const</font><font class="text">* col = </font><font class="kw3">GE_Color</font><font class="text">::object( nn ) ;
+      </font><font class="kw1">if</font><font class="text">( col == </font><font class="kw3">GE_Color</font><font class="text">::halo_color() )
+      {
+         ofile &lt;&lt; HALO_COLOR &lt;&lt; </font><font class="string">&quot; 0 &quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( col == </font><font class="kw3">GE_Color</font><font class="text">::null_color() )
+      {
+         ofile &lt;&lt; NULL_COLOR &lt;&lt; </font><font class="string">&quot; 0 &quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      }
+      </font><font class="kw1">else
+</font><font class="text">      {
+         ofile &lt;&lt; nn &lt;&lt; </font><font class="string">&quot; 0 &quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      }
+      </font><font class="kw2">size_t</font><font class="text"> nb_c = 0 ;
+      </font><font class="kw1">for</font><font class="text">( cFE-&gt;start() ; cFE-&gt;is_valid() ; cFE-&gt;go_next() )
+      {
+         </font><font class="kw1">if</font><font class="text">( col-&gt;is_matching( cFE-&gt;color() ) )
+         {
+            ++nb_c ;
+            ofile &lt;&lt; col-&gt;identifier() &lt;&lt; </font><font class="string">&quot; &quot;</font><font class="text"> ;
+         }
+         </font><font class="kw1">else
+</font><font class="text">            ofile &lt;&lt; </font><font class="string">&quot;-1 &quot;</font><font class="text"> ;
+      }
+      ofile &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      display_color_info( col-&gt;name(), nb_c ) ;
+   }
+   ofile &lt;&lt; </font><font class="string">&quot;endvars&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PDE_DomainVisu</font><font class="text">:: append_matching_color_names( 
+                                       </font><font class="kw3">PDE_LocalFE</font><font class="text">* fe,
+                                       </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">set</font><font class="text">&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> &gt;&amp; colors ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_DomainVisu:: append_matching_color_names&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw3">stringVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; coltable = </font><font class="kw3">GE_Color</font><font class="text">::color_table() ;
+   
+   </font><font class="kw1">for</font><font class="text">( fe-&gt;start() ; fe-&gt;is_valid() ; fe-&gt;go_next() )
+   {
+      </font><font class="comment">// if( fe-&gt;color() != GE_Color::null_color() )
+</font><font class="text">      colors.insert( fe-&gt;color()-&gt;name() ) ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; j&lt;coltable.size() ; ++j )
+      {
+         </font><font class="kw3">GE_Color</font><font class="text"> </font><font class="kw1">const</font><font class="text">* col = </font><font class="kw3">GE_Color</font><font class="text">::object( coltable( j ) ) ;
+         </font><font class="kw1">if</font><font class="text">( col-&gt;is_composite() &amp;&amp; col-&gt;has( fe-&gt;color()-&gt;name() ) )
+         {
+            colors.insert( coltable( j ) ) ;
+         }
+      }
+   }
+}
+
+</font><font class="comment">// exactly the same as above... 
+// but PDE_CursorFEside is not derived from PDE_LocalFE
+//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PDE_DomainVisu</font><font class="text">:: append_matching_color_names( 
+   </font><font class="kw3">PDE_CursorFEside</font><font class="text">* fe,
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">set</font><font class="text">&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> &gt;&amp; colors ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_DomainVisu:: append_matching_color_names&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw3">stringVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; coltable = </font><font class="kw3">GE_Color</font><font class="text">::color_table() ;
+   
+   </font><font class="kw1">for</font><font class="text">( fe-&gt;start() ; fe-&gt;is_valid() ; fe-&gt;go_next() )
+   {
+      </font><font class="kw2">size_t</font><font class="text"> nb_col = ( fe-&gt;is_periodic() ? 2 : 1 ) ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> icol=0 ; icol&lt;nb_col ; icol++ )
+      {
+         </font><font class="kw3">GE_Color</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fecol = ( fe-&gt;is_periodic() ? fe-&gt;color(icol) : fe-&gt;color() ) ;
+         
+         </font><font class="kw1">if</font><font class="text">( fecol != </font><font class="kw3">GE_Color</font><font class="text">::null_color() )
+         {
+            colors.insert( fecol-&gt;name() ) ;
+         }
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; j&lt;coltable.size() ; ++j )
+         {
+            </font><font class="kw3">GE_Color</font><font class="text"> </font><font class="kw1">const</font><font class="text">* col = </font><font class="kw3">GE_Color</font><font class="text">::object( coltable( j ) ) ;
+            </font><font class="kw1">if</font><font class="text">( col-&gt;is_composite() &amp;&amp; col-&gt;has( fecol-&gt;name() ) )
+            {
+               colors.insert( coltable( j ) ) ;
+            }
+         }
+      }
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PDE_DomainVisu</font><font class="text">:: display_color_info( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; col_name,
+                                     </font><font class="kw2">size_t</font><font class="text"> nb_s, </font><font class="kw2">size_t</font><font class="text"> nb_b ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_DomainVisu:: display_color_info&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">ios_base</font><font class="text">::</font><font class="kw2">fmtflags</font><font class="text"> original_flags = </font><font class="kw3">PEL</font><font class="text">::out().</font><font class="kw2">flags</font><font class="text">() ;
+   </font><font class="kw3">PEL</font><font class="text">::out().setf( </font><font class="kw2">ios_base</font><font class="text">::</font><font class="kw2">uppercase</font><font class="text"> | </font><font class="kw2">ios_base</font><font class="text">::</font><font class="kw2">scientific</font><font class="text"> ) ;
+
+   </font><font class="kw1">if</font><font class="text">( col_name.size() &gt; 32 )
+   {
+      </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="kw2">endl</font><font class="text"> &lt;&lt; </font><font class="string">&quot;*** PDE_DomainVisu: &quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="string">&quot;    the color \&quot;&quot; &lt;&lt; col_name &lt;&lt; &quot;</font><font class="text">\</font><font class="string">&quot; has &quot;</font><font class="text"> 
+                 &lt;&lt; col_name.size() &lt;&lt; </font><font class="string">&quot; characters and&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl
+</font><font class="text">                 &lt;&lt; </font><font class="string">&quot;    gmv limits the number of characters of &quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl
+</font><font class="text">                 &lt;&lt; </font><font class="string">&quot;    surface field names to 32&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   }
+
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw2">size_t</font><font class="text"> nn = 0 ;
+   </font><font class="kw1">if</font><font class="text">( nn == 0 )
+   {
+      </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="kw2">setw</font><font class="text">( 32 ) &lt;&lt; </font><font class="string">&quot;color&quot;
+</font><font class="text">                 &lt;&lt; </font><font class="kw2">setw</font><font class="text">( 16 ) &lt;&lt; </font><font class="string">&quot;nb_sides&quot;
+</font><font class="text">                 &lt;&lt; </font><font class="kw2">setw</font><font class="text">( 16 ) &lt;&lt; </font><font class="string">&quot;nb_bounds&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="kw2">setw</font><font class="text">( 32 ) &lt;&lt; </font><font class="string">&quot;-----&quot;
+</font><font class="text">                 &lt;&lt; </font><font class="kw2">setw</font><font class="text">( 16 ) &lt;&lt; </font><font class="string">&quot;--------&quot;
+</font><font class="text">                 &lt;&lt; </font><font class="kw2">setw</font><font class="text">( 16 ) &lt;&lt; </font><font class="string">&quot;---------&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      nn = 1 ;
+   }
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="kw2">setw</font><font class="text">( 32 ) &lt;&lt; col_name
+              &lt;&lt; </font><font class="kw2">setw</font><font class="text">( 16 ) &lt;&lt; nb_s
+              &lt;&lt; </font><font class="kw2">setw</font><font class="text">( 16 ) &lt;&lt; nb_b &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   
+
+   </font><font class="kw3">PEL</font><font class="text">::out().</font><font class="kw2">flags</font><font class="text">( original_flags ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PDE_DomainVisu</font><font class="text">:: display_color_info( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; col_name,
+                                     </font><font class="kw2">size_t</font><font class="text"> nb_c ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_DomainVisu:: display_color_info&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">ios_base</font><font class="text">::</font><font class="kw2">fmtflags</font><font class="text"> original_flags = </font><font class="kw3">PEL</font><font class="text">::out().</font><font class="kw2">flags</font><font class="text">() ;
+   </font><font class="kw3">PEL</font><font class="text">::out().setf( </font><font class="kw2">ios_base</font><font class="text">::</font><font class="kw2">uppercase</font><font class="text"> | </font><font class="kw2">ios_base</font><font class="text">::</font><font class="kw2">scientific</font><font class="text"> ) ;
+
+   </font><font class="kw1">if</font><font class="text">( col_name.size() &gt; 32 )
+   {
+      </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="kw2">endl</font><font class="text"> &lt;&lt; </font><font class="string">&quot;*** PDE_DomainVisu: &quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="string">&quot;    the color \&quot;&quot; &lt;&lt; col_name &lt;&lt; &quot;</font><font class="text">\</font><font class="string">&quot; has &quot;</font><font class="text"> 
+                 &lt;&lt; col_name.size() &lt;&lt; </font><font class="string">&quot; characters and&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl
+</font><font class="text">                 &lt;&lt; </font><font class="string">&quot;    gmv limits the number of characters of &quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl
+</font><font class="text">                 &lt;&lt; </font><font class="string">&quot;    variable names to 32&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   }
+
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw2">size_t</font><font class="text"> nn = 0 ;
+   </font><font class="kw1">if</font><font class="text">( nn == 0 )
+   {
+      </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="kw2">setw</font><font class="text">( 32 ) &lt;&lt; </font><font class="string">&quot;color&quot;
+</font><font class="text">                 &lt;&lt; </font><font class="kw2">setw</font><font class="text">( 16 ) &lt;&lt; </font><font class="string">&quot;nb_cells&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="kw2">setw</font><font class="text">( 32 ) &lt;&lt; </font><font class="string">&quot;-----&quot;
+</font><font class="text">                 &lt;&lt; </font><font class="kw2">setw</font><font class="text">( 16 ) &lt;&lt; </font><font class="string">&quot;---------&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+      nn = 1 ;
+   }
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="kw2">setw</font><font class="text">( 32 ) &lt;&lt; col_name
+              &lt;&lt; </font><font class="kw2">setw</font><font class="text">( 16 ) &lt;&lt; nb_c &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   
+
+   </font><font class="kw3">PEL</font><font class="text">::out().</font><font class="kw2">flags</font><font class="text">( original_flags ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PDE_DomainVisu</font><font class="text">:: check_connexity( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_DomainVisu:: check_connexity&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="kw2">endl</font><font class="text"> &lt;&lt; </font><font class="string">&quot;*** Checking mesh connexity&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw3">boolVector</font><font class="text"> ok_cell( cFE-&gt;nb_meshes() ) ;
+   ok_cell.</font><font class="kw2">set</font><font class="text">( </font><font class="kw1">false</font><font class="text"> ) ;
+
+   append_neigh( 0, ok_cell ) ;
+
+   </font><font class="kw1">bool</font><font class="text"> ok = </font><font class="kw1">true</font><font class="text"> ;
+   </font><font class="kw2">size_t</font><font class="text"> nb_connected_cells = 0 ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;cFE-&gt;nb_meshes() ; ++i )
+   {
+      </font><font class="kw1">if</font><font class="text">( !ok_cell( i ) )
+      {
+         ok = </font><font class="kw1">false</font><font class="text"> ;
+      }
+      </font><font class="kw1">else
+</font><font class="text">      {
+         ++nb_connected_cells ;
+      }
+   }
+
+   </font><font class="kw1">if</font><font class="text">( ok )
+   {
+      </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="string">&quot;       successful &quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="string">&quot;       FAILED&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   }
+   </font><font class="kw3">PEL</font><font class="text">::out() &lt;&lt; </font><font class="string">&quot;       &quot;</font><font class="text"> &lt;&lt; nb_connected_cells 
+              &lt;&lt; </font><font class="string">&quot; cells traversed starting from cell 0&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;   
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PDE_DomainVisu</font><font class="text">:: append_neigh( </font><font class="kw2">size_t</font><font class="text"> icell, </font><font class="kw3">boolVector</font><font class="text">&amp; ok_cell )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_DomainVisu:: append_neigh&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw3">PDE_LocalFEcell</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fe_1 = sFE-&gt;adjacent_localFEcell( 0 ) ;
+   </font><font class="kw3">PDE_LocalFEcell</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fe_2 = sFE-&gt;adjacent_localFEcell( 1 ) ;
+
+   cFE-&gt;go_i_th( icell ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( cFE-&gt;is_valid() ) ;
+   
+   ok_cell( icell ) = </font><font class="kw1">true</font><font class="text"> ;
+
+   </font><font class="comment">//???? probablement pas efficace pour le temps CPU
+</font><font class="text">   </font><font class="kw3">size_t_vector</font><font class="text"> sides = cFE-&gt;adjacent_side_ids() ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;sides.size() ; ++i )
+   {
+      sFE-&gt;go_i_th( sides( i ) ) ;
+      </font><font class="kw2">size_t</font><font class="text"> icell_1 = fe_1-&gt;mesh_id() ;
+      </font><font class="kw2">size_t</font><font class="text"> icell_2 = fe_2-&gt;mesh_id() ;
+      </font><font class="kw2">size_t</font><font class="text"> icell_other = </font><font class="kw3">PEL</font><font class="text">::bad_index() ;
+      </font><font class="kw1">if</font><font class="text">( icell_1 == icell ) 
+      {
+         icell_other = icell_2 ;
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( icell_2 == icell )
+      {
+         icell_other = icell_1 ;
+      }
+      </font><font class="kw3">PEL_ASSERT</font><font class="text">( icell_other != </font><font class="kw3">PEL</font><font class="text">::bad_index() ) ;
+      </font><font class="kw1">if</font><font class="text">( !ok_cell( icell_other ) )
+         append_neigh( icell_other, ok_cell ) ;
+   }
+}
+
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">PDE_DomainVisu_ERROR:: n0( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; file_name )
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> msg ;
+   msg &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl
+</font><font class="text">       &lt;&lt; </font><font class="string">&quot;*** PDE_DomainVisu: saving failure&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   msg &lt;&lt; </font><font class="string">&quot;    Unable to open file \&quot;&quot;
+       &lt;&lt; file_name &lt;&lt; &quot;</font><font class="text">\</font><font class="string">&quot; for writing&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( msg.str() ) ;
+}
+
+</font>
+</pre>
+</body>
+</html>

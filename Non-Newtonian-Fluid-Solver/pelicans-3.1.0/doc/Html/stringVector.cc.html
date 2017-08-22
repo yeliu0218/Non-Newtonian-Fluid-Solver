@@ -1,0 +1,706 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>stringVector.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="stringVector.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="PELpack-tree.html"><span>Tree</span></a>
+    <a href="stringVector.html"><span>Class</span></a>
+    <a href="stringVector.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <a href="stringVector.icc.html"><span>Inlined</span></a>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="PELpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated
+ *  reusable components, whose purpose is to simplify the task of developing
+ *  softwares of numerical mathematics and scientific computing.
+ *
+ *  This software is governed by the CeCILL-C license under French law and
+ *  abiding by the rules of distribution of free software. You can use, modify
+ *  and/or redistribute the software under the terms of the CeCILL-C license
+ *  as circulated by CEA, CNRS and INRIA at the following URL
+ *  &quot;http://www.cecill.info&quot;.
+ *
+ *  As a counterpart to the access to the source code and rights to copy,
+ *  modify and redistribute granted by the license, users are provided only
+ *  with a limited warranty and the software's author, the holder of the
+ *  economic rights, and the successive licensors have only limited liability.
+ *
+ *  In this respect, the user's attention is drawn to the risks associated
+ *  with loading, using, modifying and/or developing or reproducing the
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also
+ *  therefore means that it is reserved for developers and experienced
+ *  professionals having in-depth computer knowledge. Users are therefore
+ *  encouraged to load and test the software's suitability as regards their
+ *  requirements in conditions enabling the security of their systems and/or
+ *  data to be ensured and, more generally, to use and operate it in the same
+ *  conditions as regards security.
+ *
+ *  The fact that you are presently reading this means that you have had
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">stringVector</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#ifdef</font><font class="text"> OUTLINE
+</font><font class="kw2">#define</font><font class="text"> </font><font class="kw1">inline
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">stringVector</font><font class="text">.icc&gt;
+#undef </font><font class="kw1">inline
+</font><font class="kw2">#endif
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_System</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;iostream&gt;
+
+</font><font class="kw1">struct</font><font class="text"> stringVector_ERROR
+{
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> n0( </font><font class="kw1">void</font><font class="text"> ) ;
+} ;
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">stringVector</font><font class="text">:: </font><font class="kw3">stringVector</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> dim )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : VECTOR( 0 )
+   , LENGTH( dim )
+   , CAPACITY( 0 )
+{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;stringVector:: stringVector( size_t )&quot;</font><font class="text"> ) ;
+
+   allocate( LENGTH ) ;
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( size() == dim ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( capacity() == dim ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( </font><font class="kw3">FORALL</font><font class="text">( ( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;size() ; i++ ),
+			   </font><font class="kw1">operator</font><font class="text">()(i) == </font><font class="string">&quot;&quot;</font><font class="text"> ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">stringVector</font><font class="text">:: </font><font class="kw3">stringVector</font><font class="text">( </font><font class="kw1">int</font><font class="text"> dim )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : VECTOR( 0 )
+   , LENGTH( dim )
+   , CAPACITY( 0 )
+{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;stringVector:: stringVector( int )&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( dim &gt;= 0 ) ;
+
+   allocate( LENGTH ) ;
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( size() == </font><font class="kw1">static_cast</font><font class="text">&lt;</font><font class="kw2">size_t</font><font class="text">&gt;(dim) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( capacity() == size() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( </font><font class="kw3">FORALL</font><font class="text">( ( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;size() ; i++ ),
+			   </font><font class="kw1">operator</font><font class="text">()(i) == </font><font class="string">&quot;&quot;</font><font class="text"> ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">stringVector</font><font class="text">:: </font><font class="kw3">stringVector</font><font class="text">( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; elements,
+                             </font><font class="kw1">char</font><font class="text"> </font><font class="kw1">const</font><font class="text"> separator )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : VECTOR( 0 )
+   , LENGTH( 0 )
+   , CAPACITY( 0 )
+{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;stringVector:: stringVector( string, char )&quot;</font><font class="text"> ) ;
+
+   build_from_string( elements, separator ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">stringVector</font><font class="text">:: </font><font class="kw3">stringVector</font><font class="text">( </font><font class="kw1">char</font><font class="text"> </font><font class="kw1">const</font><font class="text">* elements,
+                             </font><font class="kw1">char</font><font class="text"> </font><font class="kw1">const</font><font class="text"> separator )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : VECTOR( 0 )
+   , LENGTH( 0 )
+   , CAPACITY( 0 )
+{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;stringVector:: stringVector( const char*, char )&quot;</font><font class="text"> ) ;
+
+   build_from_string( elements, separator ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">stringVector</font><font class="text">:: </font><font class="kw3">stringVector</font><font class="text">( </font><font class="kw3">stringVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; other )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : VECTOR( 0 )
+   , LENGTH( other.LENGTH )
+   , CAPACITY( 0 )
+{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;stringVector:: stringVector( stringVector const&amp; )&quot;</font><font class="text"> ) ;
+
+   allocate( other.capacity() ) ;
+   </font><font class="kw1">if</font><font class="text">( LENGTH != 0 )
+   {
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;LENGTH ; ++i )
+      {
+         VECTOR[i] = other(i) ;
+      }
+   }
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( size() == other.size() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( capacity() == other.capacity() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( </font><font class="kw3">FORALL</font><font class="text">( ( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;size() ; ++i ),
+                           </font><font class="kw1">operator</font><font class="text">()(i) == other(i) ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">stringVector</font><font class="text">:: ~</font><font class="kw3">stringVector</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;stringVector:: ~stringVector&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   deallocate() ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">stringVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp;
+</font><font class="kw3">stringVector</font><font class="text">:: </font><font class="kw1">operator</font><font class="text">=( </font><font class="kw3">stringVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; other )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;stringVector:: operator=&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_SAVEOLD</font><font class="text">( </font><font class="kw2">size_t</font><font class="text">, capacity, capacity() ) ;
+
+   </font><font class="kw1">if</font><font class="text">( </font><font class="kw1">this</font><font class="text"> != &amp;other )
+   {
+      LENGTH = other.LENGTH ;
+      </font><font class="kw1">if</font><font class="text">( LENGTH &gt; CAPACITY )
+      {
+         deallocate() ;
+         allocate( LENGTH ) ;
+      }
+      </font><font class="kw1">if</font><font class="text">( LENGTH != 0 )
+      {
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;LENGTH ; ++i )
+         {
+            VECTOR[i] = other(i) ;
+         }
+      }
+   }
+   </font><font class="kw3">stringVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; result = *</font><font class="kw1">this</font><font class="text"> ;
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result.size() == other.size() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( </font><font class="kw3">IMPLIES</font><font class="text">( other.size() &lt;= </font><font class="kw3">OLD</font><font class="text">(capacity),
+                            result.capacity() == </font><font class="kw3">OLD</font><font class="text">(capacity) ) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( </font><font class="kw3">IMPLIES</font><font class="text">( other.size() &gt; </font><font class="kw3">OLD</font><font class="text">(capacity),
+                            result.capacity() == other.size() ) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( </font><font class="kw3">FORALL</font><font class="text">( ( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;size() ; ++i ),
+                           result(i) == other(i) ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">stringVector</font><font class="text">:: re_initialize( </font><font class="kw2">size_t</font><font class="text"> dim )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;stringVector:: re_initialize&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   LENGTH = dim ;
+   </font><font class="kw1">if</font><font class="text">( CAPACITY != dim )
+   {
+      deallocate() ;
+      allocate( LENGTH ) ;
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( LENGTH != 0 )
+   {
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;LENGTH ; ++i )
+      {
+         VECTOR[i] = </font><font class="string">&quot;&quot;</font><font class="text"> ;
+      }
+   }
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( size() == dim ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( capacity() == dim ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( </font><font class="kw3">FORALL</font><font class="text">( ( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;size() ; ++i ),
+			   </font><font class="kw1">operator</font><font class="text">()(i) == </font><font class="string">&quot;&quot;</font><font class="text"> ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">stringVector</font><font class="text">:: </font><font class="kw1">operator</font><font class="text">==( </font><font class="kw3">stringVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; other ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;stringVector:: operator==&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">bool</font><font class="text"> result = ( </font><font class="kw1">this</font><font class="text"> == &amp;other ) ;
+   </font><font class="kw1">if</font><font class="text">( !result )
+   {
+      result = (LENGTH == other.LENGTH) ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; result &amp;&amp; i&lt;size() ; i++ )
+      {
+         result = </font><font class="kw1">operator</font><font class="text">()(i)==other(i) ;
+      }
+   }
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( </font><font class="kw3">IMPLIES</font><font class="text">( result, size()==other.size() ) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( !result || </font><font class="kw3">FORALL</font><font class="text">( ( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;size() ; ++i ),
+                                       </font><font class="kw1">operator</font><font class="text">()(i) == other(i) ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">stringVector</font><font class="text">:: </font><font class="kw1">operator</font><font class="text">!=( </font><font class="kw3">stringVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; other ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;stringVector:: operator!=&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">bool</font><font class="text"> result = !</font><font class="kw1">operator</font><font class="text">==( other ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( </font><font class="kw3">EQUIVALENT</font><font class="text">( result, !</font><font class="kw1">operator</font><font class="text">==(other) ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">int
+</font><font class="kw3">stringVector</font><font class="text">:: three_way_comparison( </font><font class="kw3">stringVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; other ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;stringVector:: three_way_comparison&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> min_size = </font><font class="kw3">PEL</font><font class="text">::min( size(), other.size() ) ;
+   </font><font class="kw1">int</font><font class="text"> result = 0 ;
+
+   </font><font class="kw2">size_t</font><font class="text"> i=0 ;
+   </font><font class="kw1">for</font><font class="text">( ; i &lt; min_size ; ++i )
+   {
+      </font><font class="kw1">int</font><font class="text"> comp = </font><font class="kw1">operator</font><font class="text">()(i).compare( other.</font><font class="kw1">operator</font><font class="text">()(i) ) ;
+      </font><font class="kw1">if</font><font class="text">( comp != 0 )
+      {
+         result = comp ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      }
+   }
+
+   </font><font class="kw1">if</font><font class="text">( result == 0 )
+   {
+      </font><font class="kw1">if</font><font class="text">( i == size() &amp;&amp; i&lt; other.size() )
+      {
+         result = -1 ;
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( i &lt; size() &amp;&amp; i == other.size() )
+      {
+         result = 1 ;
+      }
+   }
+
+  </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">stringVector</font><font class="text">:: </font><font class="kw1">operator</font><font class="text">&gt;( </font><font class="kw3">stringVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; other ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;stringVector:: operator&gt;&quot;</font><font class="text"> ) ;
+
+  </font><font class="kw1">return</font><font class="text">( three_way_comparison( other ) &gt; 0 ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">stringVector</font><font class="text">:: </font><font class="kw1">operator</font><font class="text">&lt;( </font><font class="kw3">stringVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; other ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;stringVector:: operator&lt;&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">return</font><font class="text">( three_way_comparison( other ) &lt; 0 ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void</font><font class="text"> </font><font class="kw3">stringVector</font><font class="text">:: build_from_string( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; elements,
+                                       </font><font class="kw1">char</font><font class="text"> </font><font class="kw1">const</font><font class="text"> separator )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;stringVector:: build_from_string&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">if</font><font class="text">( !elements.empty() )
+   {
+      </font><font class="kw2">size_t</font><font class="text"> start = 0 ;
+      </font><font class="kw2">size_t</font><font class="text"> idx = 0 ;
+      </font><font class="kw2">size_t</font><font class="text"> end = elements.length()  ;
+      
+      </font><font class="kw1">while</font><font class="text">( ( idx = elements.find( separator, start ) ) &lt; end )
+      {
+         </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> a_choice = elements.substr( start, idx-start ) ;
+         </font><font class="kw3">PEL</font><font class="text">::remove_enclosing_characters(a_choice,</font><font class="string">'\&quot;'</font><font class="text">) ;
+         append( a_choice ) ;
+         start = idx+1 ;
+      }
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> a_choice = elements.substr( start, elements.length()-start ) ;
+      </font><font class="kw3">PEL</font><font class="text">::remove_enclosing_characters(a_choice,</font><font class="string">'\&quot;'</font><font class="text">) ;
+      append( a_choice ) ;
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw2">size_t
+</font><font class="kw3">stringVector</font><font class="text">:: capacity( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;stringVector:: capacity&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> result = CAPACITY ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result &gt;= size() ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw2">size_t
+</font><font class="kw3">stringVector</font><font class="text">:: index_of( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; val ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;stringVector:: index_of&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> result = </font><font class="kw3">PEL</font><font class="text">::bad_index() ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;LENGTH ; i++ )
+   {
+      </font><font class="kw1">if</font><font class="text"> ( VECTOR[i] == val )
+      {
+         result = i ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      }
+   }
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result == </font><font class="kw3">PEL</font><font class="text">::bad_index() || </font><font class="kw1">operator</font><font class="text">()(result) == val ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">stringVector</font><font class="text">:: has( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; val ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;stringVector:: has&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> ifound = index_of( val ) ;
+   </font><font class="kw1">bool</font><font class="text"> result = ( ifound != </font><font class="kw3">PEL</font><font class="text">::bad_index() ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( </font><font class="kw3">IMPLIES</font><font class="text">( result, </font><font class="kw1">operator</font><font class="text">()(index_of(val))==val ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">stringVector</font><font class="text">:: resize( </font><font class="kw2">size_t</font><font class="text"> dim, </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; val )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;stringVector:: resize&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_SAVEOLD</font><font class="text">( </font><font class="kw2">size_t</font><font class="text">, size, size() ) ;
+   </font><font class="kw3">PEL_SAVEOLD</font><font class="text">( </font><font class="kw2">size_t</font><font class="text">, capacity, capacity() ) ;
+
+   </font><font class="kw1">if</font><font class="text">( dim &gt; CAPACITY )
+   {
+      </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> newCapacity = </font><font class="kw3">PEL_System</font><font class="text">::new_block_size( CAPACITY, dim ) ;
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">* oldVector = VECTOR ;
+      VECTOR = 0 ;
+      allocate( newCapacity ) ;
+      </font><font class="kw1">if</font><font class="text">( oldVector!=0 )
+      {
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;LENGTH ; ++i )
+         {
+            VECTOR[i] = oldVector[i] ;
+         }
+         </font><font class="kw1">delete</font><font class="text">[] oldVector ;
+      }
+   }
+   </font><font class="kw1">if</font><font class="text">( dim &gt; LENGTH )
+   {
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=LENGTH ; i&lt;dim ; i++ )
+      {
+         VECTOR[i] = val ;
+      }
+   }
+   LENGTH = dim ;
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( </font><font class="kw3">IMPLIES</font><font class="text">( dim &lt;= </font><font class="kw3">OLD</font><font class="text">(capacity) ,
+                            capacity() == </font><font class="kw3">OLD</font><font class="text">(capacity) ) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">(
+      </font><font class="kw3">IMPLIES</font><font class="text">( dim &gt; </font><font class="kw3">OLD</font><font class="text">(capacity) ,
+               capacity() == </font><font class="kw3">PEL_System</font><font class="text">::new_block_size( </font><font class="kw3">OLD</font><font class="text">(capacity),dim ))) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( size() == dim ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( </font><font class="kw3">FORALL</font><font class="text">( ( </font><font class="kw2">size_t</font><font class="text"> i=</font><font class="kw3">OLD</font><font class="text">(size) ; i&lt;size() ; ++i ),
+                           </font><font class="kw1">operator</font><font class="text">()(i) == val ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">stringVector</font><font class="text">:: </font><font class="kw2">set</font><font class="text">( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; val )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;stringVector:: set&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;LENGTH ; i++ )
+   {
+      VECTOR[i] = val ;
+   }
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( </font><font class="kw3">FORALL</font><font class="text">( ( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;size() ; ++i ),
+			   </font><font class="kw1">operator</font><font class="text">()(i) == val ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">stringVector</font><font class="text">:: append( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; val )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;stringVector:: append&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_SAVEOLD</font><font class="text">( </font><font class="kw2">size_t</font><font class="text">, size, size() ) ;
+   </font><font class="kw3">PEL_SAVEOLD</font><font class="text">( </font><font class="kw2">size_t</font><font class="text">, capacity, capacity() ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> n = LENGTH ;
+   resize( n+1 ) ;
+   </font><font class="kw1">operator</font><font class="text">()( n ) = val ;
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">(
+      </font><font class="kw3">IMPLIES</font><font class="text">( </font><font class="kw3">OLD</font><font class="text">(size)+1 &lt;= </font><font class="kw3">OLD</font><font class="text">(capacity),
+               capacity() == </font><font class="kw3">OLD</font><font class="text">( capacity ) ) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">(
+      </font><font class="kw3">IMPLIES</font><font class="text">( </font><font class="kw3">OLD</font><font class="text">(size)+1 &gt; </font><font class="kw3">OLD</font><font class="text">(capacity),
+               capacity() == </font><font class="kw3">PEL_System</font><font class="text">::new_block_size( </font><font class="kw3">OLD</font><font class="text">(capacity),
+                                                         </font><font class="kw3">OLD</font><font class="text">(size)+1 ) ) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( size() == </font><font class="kw3">OLD</font><font class="text">(size)+1 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( </font><font class="kw1">operator</font><font class="text">()(size()-1) == val ) ;
+}
+
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">stringVector</font><font class="text">:: extend( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; val )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;stringVector:: extend&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_SAVEOLD</font><font class="text">( </font><font class="kw1">bool</font><font class="text">, has, has(val) ) ;
+   </font><font class="kw3">PEL_SAVEOLD</font><font class="text">( </font><font class="kw2">size_t</font><font class="text">, size, size() ) ;
+   </font><font class="kw3">PEL_SAVEOLD</font><font class="text">( </font><font class="kw2">size_t</font><font class="text">, capacity, capacity() ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> i = index_of( val ) ;
+   </font><font class="kw1">if</font><font class="text">( i &gt;= LENGTH )
+   {
+      append( val ) ;
+   }
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( has( val ) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( </font><font class="kw3">IMPLIES</font><font class="text">( </font><font class="kw3">OLD</font><font class="text">(has), size()==</font><font class="kw3">OLD</font><font class="text">(size) ) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( </font><font class="kw3">IMPLIES</font><font class="text">( </font><font class="kw3">OLD</font><font class="text">(has), capacity() == </font><font class="kw3">OLD</font><font class="text">(capacity) ) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">(
+         </font><font class="kw3">IMPLIES</font><font class="text">( !</font><font class="kw3">OLD</font><font class="text">(has),
+                   size()==</font><font class="kw3">OLD</font><font class="text">(size)+1 &amp;&amp; </font><font class="kw1">operator</font><font class="text">()(size()-1)==val ) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">(
+      </font><font class="kw3">IMPLIES</font><font class="text">( !</font><font class="kw3">OLD</font><font class="text">(has) &amp;&amp; ( </font><font class="kw3">OLD</font><font class="text">(size)+1 &lt;= </font><font class="kw3">OLD</font><font class="text">(capacity) ),
+               capacity() == </font><font class="kw3">OLD</font><font class="text">( capacity ) ) ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">(
+      </font><font class="kw3">IMPLIES</font><font class="text">( !</font><font class="kw3">OLD</font><font class="text">(has) &amp;&amp; ( </font><font class="kw3">OLD</font><font class="text">(size)+1 &gt; </font><font class="kw3">OLD</font><font class="text">(capacity) ),
+               capacity() == </font><font class="kw3">PEL_System</font><font class="text">::new_block_size( </font><font class="kw3">OLD</font><font class="text">(capacity),
+                                                         </font><font class="kw3">OLD</font><font class="text">(size)+1 ) ) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">stringVector</font><font class="text">:: remove_at( </font><font class="kw2">size_t</font><font class="text"> idx )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;stringVector:: remove_at&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( idx&lt;size() ) ;
+   </font><font class="kw3">PEL_SAVEOLD</font><font class="text">( </font><font class="kw2">size_t</font><font class="text">, size, size() ) ;
+   </font><font class="kw3">PEL_SAVEOLD</font><font class="text">( </font><font class="kw2">size_t</font><font class="text">, capacity, capacity() ) ;
+
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=idx ; j&lt;size()-1 ; j++ )
+      VECTOR[j]=VECTOR[j+1] ;
+   LENGTH-- ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( size()==</font><font class="kw3">OLD</font><font class="text">(size)-1 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( capacity() == </font><font class="kw3">OLD</font><font class="text">(capacity) ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">stringVector</font><font class="text">:: sort( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;stringVector:: sort&quot;</font><font class="text"> ) ;
+
+   </font><font class="comment">// Tri &quot;&#xE0; bulles&quot;
+</font><font class="text">   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;size() ; ++i )
+   {
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=i+1 ; j&lt;size() ; ++j )
+      {
+         </font><font class="kw1">if</font><font class="text">( </font><font class="kw1">operator</font><font class="text">()(i).compare( </font><font class="kw1">operator</font><font class="text">()(j) )&gt;0 )
+         {
+            </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> dummy = </font><font class="kw1">operator</font><font class="text">()(i) ;
+            </font><font class="kw1">operator</font><font class="text">()(i) = </font><font class="kw1">operator</font><font class="text">()(j) ;
+            </font><font class="kw1">operator</font><font class="text">()(j) = dummy ;
+         }
+      }
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">stringVector</font><font class="text"> </font><font class="kw3">stringVector</font><font class="text">:: sorted_copy( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;stringVector:: sorted_copy&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw3">stringVector</font><font class="text"> result( *</font><font class="kw1">this</font><font class="text"> ) ;
+   result.sort() ;
+
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostream</font><font class="text">&amp;
+</font><font class="kw1">operator</font><font class="text">&lt;&lt;( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostream</font><font class="text">&amp; out, </font><font class="kw3">stringVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; vec )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;operator&lt;&lt;( std::ostream&amp;, stringVector const&amp; )&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> j=0 ;
+   out &lt;&lt; </font><font class="string">&quot;&lt; &quot;</font><font class="text"> ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i = 0 ; i&lt;vec.size() ; i++ )
+   {
+      </font><font class="kw1">if</font><font class="text">( ++j&gt;5 )
+      {
+         j = 1 ;
+         out &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> &lt;&lt; </font><font class="string">&quot;  &quot;</font><font class="text"> ;
+      }
+      out &lt;&lt; </font><font class="string">&quot;\&quot;&quot; &lt;&lt; vec( i ) &lt;&lt; &quot;</font><font class="text">\</font><font class="string">&quot; &quot;</font><font class="text"> ;
+   }
+   out &lt;&lt; </font><font class="string">&quot;&gt;&quot;</font><font class="text"> ;
+   </font><font class="kw1">return</font><font class="text">( out ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw2">std</font><font class="text">::istream&amp;
+</font><font class="kw1">operator</font><font class="text">&gt;&gt;( </font><font class="kw2">std</font><font class="text">::istream&amp; in, </font><font class="kw3">stringVector</font><font class="text">&amp; vec )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;operator&gt;&gt;( std::ostream&amp;, stringVector const&amp; )&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw3">stringVector</font><font class="text"> aux( 0 ) ;
+
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> c ;
+
+   </font><font class="kw1">if</font><font class="text">( !( in &gt;&gt; c ) || c != </font><font class="string">&quot;&lt;&quot;</font><font class="text"> )
+   {
+      stringVector_ERROR::n0() ;
+   }
+   </font><font class="kw1">while</font><font class="text">( in &gt;&gt; c &amp;&amp; c != </font><font class="string">&quot;&gt;&quot;</font><font class="text"> )
+   {
+      </font><font class="kw1">if</font><font class="text">( c[0] != </font><font class="string">'\&quot;'</font><font class="text"> || c[c.size()-1] != </font><font class="string">'\&quot;'</font><font class="text"> )
+      {
+         stringVector_ERROR::n0() ;
+      }
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> c2( c, 1, c.size()-2 ) ;
+      aux.append( c2 ) ;
+   }
+   </font><font class="kw1">if</font><font class="text">( c != </font><font class="string">&quot;&gt;&quot;</font><font class="text"> )
+   {
+      stringVector_ERROR::n0() ;
+   }
+   in.clear() ;
+
+   vec = aux ;
+
+   </font><font class="kw1">return</font><font class="text">( in ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">stringVector</font><font class="text">:: allocate( </font><font class="kw2">size_t</font><font class="text"> a_size )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( VECTOR == 0 ) ;
+
+   </font><font class="kw1">if</font><font class="text">( a_size &gt; 0 )
+   {
+      VECTOR = </font><font class="kw1">new</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> [a_size] ;
+      </font><font class="kw3">PEL_CHECK</font><font class="text">( VECTOR != 0 ) ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;a_size ; ++i )
+      {
+         VECTOR[i] = </font><font class="string">&quot;&quot;</font><font class="text"> ;
+      }
+   }
+   CAPACITY = a_size ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">stringVector</font><font class="text">:: deallocate( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">if</font><font class="text">( VECTOR != 0 )
+   {
+      </font><font class="kw1">delete</font><font class="text"> [] VECTOR ;
+      VECTOR = 0 ;
+   }
+   CAPACITY = 0 ;
+}
+
+</font><font class="comment">//-----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">stringVector</font><font class="text">:: invariant( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//-----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( LENGTH==0 || VECTOR != 0 ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( LENGTH&lt;=CAPACITY ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">stringVector_ERROR:: n0( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain(
+      </font><font class="string">&quot;*** Syntax error reading vector of \&quot;</font><font class="kw2">string</font><font class="text">\</font><font class="string">&quot;:\n&quot;
+</font><font class="text">      </font><font class="string">&quot;    &lt; val1 val2 ... &gt; is expected.&quot;</font><font class="text"> ) ;
+}
+
+
+</font>
+</pre>
+</body>
+</html>

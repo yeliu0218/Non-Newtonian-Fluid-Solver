@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 Pelican: a Complex Fluid Solver
 =====
 
@@ -165,3 +166,9 @@ More simulations can be found in my <a href="http://www.math.ubc.ca/~yliu0218/">
 
 
 
+=======
+# Non-Newtonian-Fluid-Solver
+an open source CFD solver used for numerical simulations of non-Newtonian fluid dynamics 
+
+Details are in README.md in the directory. 
+>>>>>>> d4169b528c580401ebc44e7a469f0aa97dc3346a

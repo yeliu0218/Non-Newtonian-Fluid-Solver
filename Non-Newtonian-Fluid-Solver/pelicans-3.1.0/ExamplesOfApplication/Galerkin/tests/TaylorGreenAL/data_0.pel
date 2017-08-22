@@ -1,0 +1,354 @@
+MODULE PEL_Application
+   
+   concrete_name = "FE_StepByStepProgression"
+   
+   $DS_Re = 100.
+   $DS_NU = 1./$DS_Re
+   $DS_TIME_STEP = 0.1
+   $DS_AUG = 10.
+   
+   $DS_T = 0.0
+   
+   $IS_CURRENT = 0
+   
+   // $SS_solver_A = "iterative"
+   // $SS_solver_A = "direct"
+   // $SS_method = "augmented_Lagrangian"
+   // $SS_method = "Yosida"
+   // $SS_method = "penalty_projection"
+   
+   MODULE FE_TimeIterator
+      time_initial = 0.0
+      time_end = 0.9999
+      time_step = 0.1
+   END MODULE FE_TimeIterator
+   
+   graphics_output_times = regular_vector( 0.0, 15, 0.9999 )
+   
+   MODULE PDE_DomainAndFields
+      
+      verbose_level = 1
+      nb_space_dimensions = 2
+      type = "finite_element"
+      
+      MODULE GE_Meshing
+         concrete_name = "GE_RefinedMeshing"
+         mesh_polyhedron = < "GE_Segment" "GE_Triangle" >
+         MODULE list_of_GE_ReferencePolyhedronRefiner
+            MODULE GE_ReferencePolyhedronRefiner#1
+               concrete_name = "GE_ReferenceSquareWithTriangles"
+               strategy = "X"
+            END MODULE GE_ReferencePolyhedronRefiner#1
+         END MODULE list_of_GE_ReferencePolyhedronRefiner
+         MODULE GE_Meshing
+            concrete_name = "GE_BoxWithBoxes"
+            vertices_coordinate_0 = regular_vector( 0., 10, 1. )
+            vertices_coordinate_1 = regular_vector( 0., 10, 1. )
+            mesh_polyhedron = < "GE_Segment" "GE_Rectangle" >
+         END MODULE GE_Meshing
+      END MODULE GE_Meshing
+      
+      MODULE macro_colors
+         ALL = <"left" "right" "top" "bottom" "top_left" "bottom_left"
+         "bottom_right" "top_right" >
+      END MODULE macro_colors
+      
+      MODULE interior_fields
+         
+         MODULE velocity
+            name = "velocity"
+            nb_components = 2
+            element_name = "PDE_2D_P2_6nodes"
+            storage_depth = 1
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = GreenTaylor_velocity( $DV_X, $DS_T, $DS_NU )
+            END MODULE DOFs_values
+            MODULE DOFs_imposed_value
+               MODULE xxx
+                  location = "on_bounds"
+                  type = "uniformly_defined"
+                  value = GreenTaylor_velocity( $DV_X, $DS_T, $DS_NU )
+               END MODULE xxx
+            END MODULE DOFs_imposed_value
+         END MODULE velocity
+         
+         MODULE pressure
+            name = "pressure"
+            nb_components = 1
+            element_name = "PDE_2D_P1_3nodes"
+            storage_depth = 1
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = GreenTaylor_pressure( $DV_X, $DS_T, $DS_NU )
+            END MODULE DOFs_values
+         END MODULE pressure
+         
+         MODULE stream_function
+            name = "stream_function"
+            nb_components = 1
+            element_name = "PDE_2D_P1_3nodes"
+            storage_depth = 1
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = < 0.0 >
+            END MODULE DOFs_values
+         END MODULE stream_function
+         
+      END MODULE interior_fields
+      
+      MODULE boundary_conditions
+         
+         MODULE velocity
+            field = "velocity"
+            type = "Dirichlet_to_update"
+            color = "ALL"
+            value = GreenTaylor_velocity( $DV_X, $DS_T, $DS_NU )
+         END MODULE velocity
+         
+      END MODULE boundary_conditions
+      
+      MODULE PDE_ResultSaver
+         
+         writers = < "PEL_TICwriter" >
+         
+         writing_mode = "text"
+         files_basename = "save"
+         
+         MODULE velocity
+            where_to_save = "at_vertices"
+            entry_name = "UU"
+            field = "velocity"
+         END MODULE velocity
+         
+         MODULE pressure
+            where_to_save = "at_vertices"
+            entry_name = "PP"
+            field = "pressure"
+         END MODULE pressure
+         
+         MODULE stream_function
+            where_to_save = "at_vertices"
+            entry_name = "sf"
+            field = "stream_function"
+         END MODULE stream_function
+         
+      END MODULE PDE_ResultSaver
+      
+   END MODULE PDE_DomainAndFields
+   
+   MODULE FE_SetOfParameters
+      $DS_alpha = 1.0
+      alpha = vector( $DS_alpha )
+      mu = vector( 1.0 / $DS_Re )
+      MODULE FE_Parameter#adv
+         concrete_name = "FE_FieldParameter"
+         name = "advective_velocity"
+         field_name = "velocity"
+         field_level = $IS_CURRENT
+         coefficient = $DS_alpha
+      END MODULE FE_Parameter#adv
+   END MODULE FE_SetOfParameters
+   
+   MODULE FE_OneStepIteration
+      
+      concrete_name = "FE_SplitSystem"
+      
+      MODULE list_of_FE_OneStepIteration
+         
+         MODULE FE_OneStepIteration#1
+            concrete_name = "FE_BCupdate"
+            field = "velocity"
+            levels_of_field = vector( $IS_CURRENT )
+         END MODULE FE_OneStepIteration#1
+         
+         MODULE FE_OneStepIteration#2
+            
+            concrete_name = "AP_NavierStokes1G"
+            
+            velocity = "velocity"
+            level_of_velocity = $IS_CURRENT
+
+            pressure = "pressure"
+            level_of_pressure = $IS_CURRENT
+
+            MODULE time_discretization
+               type = "Euler"
+               velocity_explicit = "velocity"
+               level_of_velocity_explicit = $IS_CURRENT 
+               pressure_explicit = "pressure"
+               level_of_pressure_explicit = $IS_CURRENT
+               param_unsteady = "alpha"
+            END MODULE time_discretization
+                        
+            viscosity_term = "mu_laplacian_uu"
+            
+            param_viscous = "mu"
+
+            MODULE advection
+               param_advective_velocity = "advective_velocity"
+            END MODULE advection
+            
+            quadrature_rule_provider = "GE_QRprovider_5"
+
+            MODULE LA_Matrix
+               concrete_name = "LA_PelMatrix"
+            END MODULE LA_Matrix
+            
+            initialize_discrete_pressure = true
+            initialize_discrete_velocity = true
+
+            if( $SS_method = "augmented_Lagrangian" )
+            MODULE LA_TwoBlocksMethod
+               concrete_name = "LA_Uzawa"
+               verbose_level = 2
+               augmentation_parameter = 1.0
+               tolerance_on_divergence = 5.e-4
+               tolerance_on_velocity_increment = 5.e-4
+            END MODULE LA_TwoBlocksMethod
+
+            if( $SS_method = "penalty_projection" )
+            MODULE LA_TwoBlocksMethod
+               concrete_name = "LA_PenaltyProjection"
+               verbose_level = 2
+               augmentation_parameter = 1.0
+            END MODULE LA_TwoBlocksMethod
+
+            if( $SS_method = "Yosida" )
+            MODULE LA_TwoBlocksMethod
+               concrete_name = "LA_Yosida"
+               verbose_level = 2
+            END MODULE LA_TwoBlocksMethod
+
+            MODULE LA_TwoBlocksMethod
+               if( $SS_solver_A = "iterative" )
+               MODULE solver_A
+                  concrete_name = "LA_PreconditionedSolver"
+                  MODULE LA_IterativeSolver
+                     concrete_name = "LA_GMRES_IS"
+                     nb_iterations_max = 2000
+                     restart = 50
+                     MODULE LA_ConvergenceTest
+                        concrete_name = "LA_DefaultConvergenceTest"
+                        relative_tolerance = 1.e-12
+                        absolute_tolerance = 1.e-20
+                     END MODULE LA_ConvergenceTest
+                     verbose = false
+                  END MODULE LA_IterativeSolver
+                  MODULE LA_Preconditioner
+                     concrete_name = "LA_Jacobi_PC"
+                     smallest_inverted_item = 1.e-12
+                  END MODULE LA_Preconditioner
+               END MODULE solver_A
+        
+               if( $SS_solver_A = "direct" )
+               MODULE solver_A
+                  concrete_name = "EXT_UMFsolver_DS"
+               END MODULE solver_A
+            END MODULE LA_TwoBlocksMethod
+            
+            if( $SS_method = "Yosida" ||
+                $SS_method = "penalty_projection" )
+            MODULE LA_TwoBlocksMethod
+               MODULE solver_L
+                  concrete_name = "LA_PreconditionedSolver"
+                  MODULE LA_IterativeSolver
+                     concrete_name = "LA_CG_IS"
+                     nb_iterations_max = 2000
+                     MODULE LA_ConvergenceTest
+                        concrete_name = "LA_DefaultConvergenceTest"
+                        relative_tolerance = 1.0e-10
+                        absolute_tolerance = 1.0e-50
+                     END MODULE LA_ConvergenceTest
+                     verbose = false
+                  END MODULE LA_IterativeSolver
+                  MODULE LA_Preconditioner
+                     concrete_name = "LA_Jacobi_PC"
+                     smallest_inverted_item = 1.0e-20
+                  END MODULE LA_Preconditioner
+               END MODULE solver_L
+            END MODULE LA_TwoBlocksMethod
+            
+            if( $SS_method = "penalty_projection" )
+            MODULE LA_TwoBlocksMethod
+               MODULE solver_Mv
+                  concrete_name = "LA_PreconditionedSolver"
+                  MODULE LA_IterativeSolver
+                     concrete_name = "LA_CG_IS"
+                     nb_iterations_max = 2000
+                     MODULE LA_ConvergenceTest
+                        concrete_name = "LA_DefaultConvergenceTest"
+                        relative_tolerance = 1.0e-12
+                        absolute_tolerance = 1.0e-50
+                     END MODULE LA_ConvergenceTest
+                     verbose = false
+                  END MODULE LA_IterativeSolver
+                  MODULE LA_Preconditioner
+                     concrete_name = "LA_Jacobi_PC"
+                     smallest_inverted_item = 1.0e-20
+                  END MODULE LA_Preconditioner
+               END MODULE solver_Mv
+            END MODULE LA_TwoBlocksMethod
+            
+         END MODULE FE_OneStepIteration#2
+         
+         MODULE FE_OneStepIteration#SF
+            concrete_name = "FE_StreamFunction"
+            
+            stream_function = "stream_function"
+            level_to_update = $IS_CURRENT
+            
+            velocity = "velocity"
+            level_of_velocity = $IS_CURRENT
+            
+            MODULE LA_Matrix
+               concrete_name = "LA_PelMatrix"
+            END MODULE LA_Matrix
+            
+            MODULE LA_Solver
+               concrete_name = "LA_PreconditionedSolver"
+               MODULE LA_Preconditioner
+                  concrete_name = "LA_Jacobi_PC"
+                  smallest_inverted_item = 1.e-300
+               END MODULE LA_Preconditioner
+               MODULE LA_IterativeSolver
+                  concrete_name = "LA_CG_IS"
+                  verbose = false
+                  nb_iterations_max = 2000
+                  MODULE LA_ConvergenceTest
+                     concrete_name = "LA_DefaultConvergenceTest"
+                     relative_tolerance = 1.0e-12
+                     absolute_tolerance = 1.0e-50
+                  END MODULE LA_ConvergenceTest
+               END MODULE LA_IterativeSolver
+            END MODULE LA_Solver
+         END MODULE FE_OneStepIteration#SF
+         
+         MODULE FE_OneStepIteration#4
+            concrete_name = "FE_ComparatorWithAnalytic"
+            field = "velocity"
+            level = $IS_CURRENT
+            norms = vector( "L2_error_norm", "H1_error_norm",
+            "Infinity_error_norm" )
+            norm_saving_names = vector( "XLDU", "XHUU", "XINU" )
+            solution = GreenTaylor_velocity( $DV_X, $DS_T, $DS_NU )
+            d_solution = GreenTaylor_grad_velocity( $DV_X, $DS_T, $DS_NU )
+            quadrature_rule_provider = "GE_QRprovider_5"
+         END MODULE FE_OneStepIteration#4
+         
+         MODULE FE_OneStepIteration#5
+            concrete_name = "FE_ComparatorWithAnalytic" 
+            field = "pressure"
+            norms = vector( "L2_error_norm", "Infinity_error_norm" )
+            norm_saving_names = vector( "XLDP", "XINP" )
+            level = $IS_CURRENT
+            solution = GreenTaylor_pressure( $DV_X, $DS_T, $DS_NU )
+            quadrature_rule_provider = "GE_QRprovider_5"
+         END MODULE FE_OneStepIteration#5
+         
+      END MODULE list_of_FE_OneStepIteration
+
+   END MODULE FE_OneStepIteration
+   
+END MODULE PEL_Application
+         

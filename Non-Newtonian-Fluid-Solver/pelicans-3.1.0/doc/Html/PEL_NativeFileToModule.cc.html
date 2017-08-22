@@ -1,0 +1,300 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>PEL_NativeFileToModule.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="PEL_NativeFileToModule.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="PELpack-tree.html"><span>Tree</span></a>
+    <a href="PEL_NativeFileToModule.html"><span>Class</span></a>
+    <a href="PEL_NativeFileToModule.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="PELpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_NativeFileToModule</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_DoubleVector</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Exec</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Int</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Module</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_StringVector</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;PEL_TICio.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_assertions</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">stringVector</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;algorithm&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;fstream&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;sstream&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw2">vector</font><font class="text">&gt;
+
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> ;
+
+</font><font class="kw3">PEL_NativeFileToModule</font><font class="text">* 
+</font><font class="kw3">PEL_NativeFileToModule</font><font class="text">:: PEL_OBJ = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_NativeFileToModule</font><font class="text">( </font><font class="string">&quot;PEL&quot;</font><font class="text">, 
+                                                               </font><font class="string">&quot;.pel&quot;</font><font class="text"> ) ;
+
+</font><font class="kw3">PEL_NativeFileToModule</font><font class="text">* 
+</font><font class="kw3">PEL_NativeFileToModule</font><font class="text">:: GENE_OBJ = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_NativeFileToModule</font><font class="text">( </font><font class="string">&quot;GENE&quot;</font><font class="text">, 
+                                                                </font><font class="string">&quot;.gene&quot;</font><font class="text"> ) ;
+
+</font><font class="kw3">PEL_NativeFileToModule</font><font class="text">* 
+</font><font class="kw3">PEL_NativeFileToModule</font><font class="text">:: CSV_OBJ = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_NativeFileToModule</font><font class="text">( </font><font class="string">&quot;CSV&quot;</font><font class="text">, 
+                                                               </font><font class="string">&quot;.csv&quot;</font><font class="text"> ) ;
+
+</font><font class="kw1">struct</font><font class="text"> PEL_NativeFileToModule_ERROR
+{
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> n0( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; file_name ) ;
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw1">void</font><font class="text"> n1( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; file_name, </font><font class="kw2">size_t</font><font class="text"> nb_cols,
+                   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; value, </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; separator ) ;
+} ;
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_NativeFileToModule</font><font class="text">:: </font><font class="kw3">PEL_NativeFileToModule</font><font class="text">( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_format,
+                                           </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; a_default_motif )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_FileToModule</font><font class="text">( a_format, a_default_motif )
+{
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_NativeFileToModule</font><font class="text">:: ~</font><font class="kw3">PEL_NativeFileToModule</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   PEL_OBJ = 0 ;
+   GENE_OBJ = 0 ; 
+   CSV_OBJ = 0 ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PEL_Module</font><font class="text">*
+</font><font class="kw3">PEL_NativeFileToModule</font><font class="text">:: create_from_file( 
+                                 </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                 </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; module_name,
+                                 </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; file_name ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_NativeFileToModule:: create_from_file&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( create_from_file_PRE( a_owner, module_name, file_name ) ) ;
+   
+   </font><font class="kw3">PEL_Module</font><font class="text">* result = 0 ;
+   </font><font class="kw1">if</font><font class="text">( format() == </font><font class="string">&quot;PEL&quot;</font><font class="text"> )
+   {
+      result = </font><font class="kw3">PEL_Module</font><font class="text">::create( a_owner, module_name, file_name, 
+                                   </font><font class="kw3">PEL_Exec</font><font class="text">::execution_context() ) ;
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( format() == </font><font class="string">&quot;GENE&quot;</font><font class="text"> )
+   {
+      result = PEL_TICio::create_from_gene_file( a_owner, 
+                                                 module_name, 
+                                                 file_name ) ;      
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( format() == </font><font class="string">&quot;CSV&quot;</font><font class="text"> )
+   {
+      result = create_from_multicolumns( a_owner, module_name, file_name,
+                                         </font><font class="string">&quot;,&quot;</font><font class="text"> ) ;
+   }
+   
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( create_from_file_POST( result, 
+                                          a_owner, module_name, file_name ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="kw3">PEL_Module</font><font class="text">*
+</font><font class="kw3">PEL_NativeFileToModule</font><font class="text">:: create_from_multicolumns( 
+                                       </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                       </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; name,
+                                       </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; file_name,
+                                       </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; separator ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_NativeFileToModule:: create_from_multicolumns&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">typedef</font><font class="text"> </font><font class="kw2">string</font><font class="text">::const_iterator iter ;
+
+   </font><font class="kw2">std</font><font class="text">::ifstream in( file_name.c_str() ) ;
+   </font><font class="kw1">if</font><font class="text">( !in ) </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( </font><font class="string">&quot;unable to open file \&quot;&quot; + 
+                                               file_name + &quot;</font><font class="text">\</font><font class="string">&quot;&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw3">PEL_Module</font><font class="text">* result = </font><font class="kw3">PEL_Module</font><font class="text">::create( a_owner, name ) ;
+   
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">vector</font><font class="text">&lt; </font><font class="kw3">doubleVector</font><font class="text"> &gt; double_vals ;
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">vector</font><font class="text">&lt; </font><font class="kw3">stringVector</font><font class="text"> &gt; string_vals ;
+
+   </font><font class="kw1">bool</font><font class="text"> first_line = </font><font class="kw1">true</font><font class="text"> ;
+   </font><font class="kw2">size_t</font><font class="text"> nb_columns = 0 ;
+
+   </font><font class="kw2">string</font><font class="text"> line ;
+   </font><font class="kw1">while</font><font class="text">( getline( in, line ) )
+   {
+      </font><font class="kw3">stringVector</font><font class="text"> chaines( 0 ) ;
+
+      </font><font class="kw2">size_t</font><font class="text"> i_col = 0 ;
+
+      iter it_b = line.begin() ;
+      iter it_e = line.end() ;
+      iter it_i = it_b ;
+      </font><font class="kw1">while</font><font class="text">( it_b != it_e )
+      {
+         it_i = </font><font class="kw2">std</font><font class="text">::search( it_i, it_e, separator.begin(), separator.end() ) ;
+         chaines.append( </font><font class="kw2">string</font><font class="text">( it_b, it_i ) ) ;
+
+         </font><font class="kw1">if</font><font class="text">( it_i != it_e ) it_i += separator.size() ;
+         it_b = it_i ;
+
+         i_col++ ;
+      }
+
+      </font><font class="kw1">if</font><font class="text">( first_line )
+      {
+         nb_columns = i_col ;
+         double_vals.resize( nb_columns, </font><font class="kw3">doubleVector</font><font class="text">( 0 ) ) ;
+         string_vals.resize( nb_columns, </font><font class="kw3">stringVector</font><font class="text">( 0 ) ) ;
+         first_line = </font><font class="kw1">false</font><font class="text"> ;
+      }
+      </font><font class="kw1">else
+</font><font class="text">      {
+         </font><font class="kw1">if</font><font class="text">( i_col != nb_columns ) 
+            PEL_NativeFileToModule_ERROR::n0( file_name ) ;
+      }
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; j&lt;nb_columns ; ++j )
+      {
+         </font><font class="kw2">std</font><font class="text">::istringstream is( chaines( j ) ) ;
+         </font><font class="kw1">double</font><font class="text"> val ;
+         is &gt;&gt; val ;
+         </font><font class="kw1">if</font><font class="text">( is )
+         {
+            </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> str ;
+            is &gt;&gt; str ;
+            </font><font class="kw1">if</font><font class="text">( str.empty() ) 
+            {  
+               double_vals[ j ].append( val ) ;
+               string_vals[ j ].append( </font><font class="string">&quot;&quot;</font><font class="text">  ) ;
+            }
+            </font><font class="kw1">else
+</font><font class="text">            {
+               PEL_NativeFileToModule_ERROR::n1( file_name, nb_columns,
+                                                 chaines( j ), separator ) ;
+            }
+            
+         }
+         </font><font class="kw1">else
+</font><font class="text">         {
+            double_vals[ j ].append( 0.0 ) ;
+            string_vals[ j ].append( chaines( j ) ) ;
+         }
+      }
+   }
+
+   result-&gt;add_entry( </font><font class="string">&quot;nb_columns&quot;</font><font class="text">, </font><font class="kw3">PEL_Int</font><font class="text">::create( result, nb_columns ) ) ;
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; j&lt;nb_columns ; j++ )
+   {
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> nn ;
+      nn &lt;&lt; </font><font class="string">&quot;column_&quot;</font><font class="text"> &lt;&lt; j ;
+      </font><font class="kw3">PEL_Module</font><font class="text">* mod = </font><font class="kw3">PEL_Module</font><font class="text">::create( result, nn.str() ) ;
+      mod-&gt;add_entry( </font><font class="string">&quot;double_values&quot;</font><font class="text">, 
+                      </font><font class="kw3">PEL_DoubleVector</font><font class="text">::create( mod, double_vals[ j ] ) ) ;
+      mod-&gt;add_entry( </font><font class="string">&quot;string_values&quot;</font><font class="text">, 
+                      </font><font class="kw3">PEL_StringVector</font><font class="text">::create( mod, string_vals[ j ] ) ) ;
+      result-&gt;add_module( mod ) ;
+   }   
+   
+   </font><font class="kw1">return</font><font class="text"> result ;
+}
+
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="kw1">void</font><font class="text"> 
+PEL_NativeFileToModule_ERROR:: n0( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; file_name )
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> mesg ;
+   mesg &lt;&lt; </font><font class="string">&quot;*** PEL_Comparator error:&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;    error in CSV file \&quot;&quot; &lt;&lt;  file_name &lt;&lt; &quot;</font><font class="text">\</font><font class="string">&quot;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;    each line should contain the same number of fields&quot;</font><font class="text"> ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( mesg.str() ) ;
+}
+
+
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="kw1">void</font><font class="text"> 
+PEL_NativeFileToModule_ERROR:: n1( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; file_name,
+                                   </font><font class="kw2">size_t</font><font class="text"> nbcols,
+                                   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; value,
+                                   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; separator )
+</font><font class="comment">//internal--------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostringstream</font><font class="text"> mesg ;
+   mesg &lt;&lt; </font><font class="string">&quot;*** PEL_Comparator error:&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;    error in CSV file \&quot;&quot; &lt;&lt;  file_name &lt;&lt; &quot;</font><font class="text">\</font><font class="string">&quot;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;    (number of columns found: &quot;</font><font class="text"> &lt;&lt; nbcols &lt;&lt; </font><font class="string">&quot; )&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;    unable to convert the value&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;       \&quot;&quot; &lt;&lt; value &lt;&lt; &quot;</font><font class="text">\</font><font class="string">&quot;&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;    into double or string&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;    hint: the separator may be incorrect&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">endl</font><font class="text"> ;
+   mesg &lt;&lt; </font><font class="string">&quot;          (it is supposed to be \&quot;&quot; &lt;&lt; separator &lt;&lt; &quot;</font><font class="text">\</font><font class="string">&quot;)&quot;</font><font class="text"> ;
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain( mesg.str() ) ;
+}
+
+
+</font>
+</pre>
+</body>
+</html>

@@ -1,0 +1,125 @@
+MODULE PEL_ObjectTest#PDE_Coarsening_TEST
+   
+   MODULE PDE_Coarsening_4
+      
+      $DS_x = component( $DV_X, 0 )
+      $DS_y = component( $DV_X, 1 )
+      $DS_z = component( $DV_X, 2 )
+      $DS_solution_0 = sinh(sqrt(5.0)*pi()/2.0*$DS_x ) *
+                       sin( pi()*$DS_y ) *
+                       cos( pi()/2.0*$DS_z )
+                       
+      $DS_solution_1 = sinh( sqrt(5.0)*pi()/2.0*(1.0-$DS_z) ) *
+                       sin( pi()*$DS_y ) *
+                       cos( pi()/2.0*$DS_x )
+      
+      dbl_epsilon = 1.e-12
+      dbl_minimum = 1.e-14
+      
+      quadrature_rule_provider = "GE_ProductQRprovider_5"
+
+      if( nb_ranks() = 1 )
+      MODULE LA_Matrix
+         concrete_name = "LA_PelMatrix"
+      END MODULE LA_Matrix
+      
+      if( nb_ranks() > 1 )
+      MODULE LA_Matrix
+         concrete_name = "LA_DistMatrix"
+      END MODULE LA_Matrix
+
+      MODULE PDE_DomainAndFields
+         
+         verbose_level = 1
+         nb_space_dimensions = 3
+         type = "finite_element"
+         check_meshing_consistency = false
+         
+         
+         MODULE GE_Meshing
+            
+            concrete_name = "GE_BoxWithBoxes"
+            
+            vertices_coordinate_0 = regular_vector( 0.0, 2, 1.0 )
+            vertices_coordinate_1 = regular_vector( 0.0, 2, 1.0 )
+            vertices_coordinate_2 = regular_vector( 0.0, 2, 1.0 )
+            mesh_polyhedron = < "GE_Rectangle" "GE_Cuboid" >
+            
+         END MODULE GE_Meshing
+         
+         MODULE macro_colors
+            zero0 = < "bottom" "top" "left" "front" >
+            zero1 = < "bottom" "top" "behind" "right" >
+         END MODULE macro_colors
+         
+         MODULE interior_fields
+            
+            MODULE vv
+               name = "vv"
+               nb_components = 1
+               element_name = "PDE_3D_Q2_27nodes"
+               storage_depth = 1
+               MODULE DOFs_values
+                  type = "uniformly_defined"
+                  value = < 0.0 >
+               END MODULE DOFs_values
+            END MODULE vv
+            
+            MODULE uu
+               name = "uu"
+               nb_components = 3
+               element_name = "PDE_3D_Q1_8nodes"
+               storage_depth = 1
+               MODULE DOFs_values
+                  type = "uniformly_defined"
+                  value = < 0.0 0.0 0.0 >
+               END MODULE DOFs_values
+               MODULE DOFs_imposed_value
+                  MODULE zero0
+                     location = "on_bounds"
+                     color = "zero0"
+                     component = 0
+                     type = "uniformly_defined"
+                     value = < 0.0 >
+                  END MODULE zero0
+                  MODULE right
+                     location = "on_bounds"
+                     color = "right"
+                     component = 0
+                     type = "uniformly_defined"
+                     value = vector( $DS_solution_0 )
+                  END MODULE right
+                  MODULE zero1
+                     location = "on_bounds"
+                     color = "zero1"
+                     component = 1
+                     type = "uniformly_defined"
+                     value = < 0.0 >
+                  END MODULE zero1
+                  MODULE front
+                     location = "on_bounds"
+                     color = "front"
+                     component = 1
+                     type = "uniformly_defined"
+                     value = vector( $DS_solution_1 )
+                  END MODULE front
+               END MODULE DOFs_imposed_value
+            END MODULE uu
+            
+         END MODULE interior_fields
+         
+         MODULE PDE_AdapterCHARMS
+            verbose_level = 0
+            type = "quasi_hierarchical_basis"
+            MODULE PDE_AdaptationIndicator
+               concrete_name = "PDE_GeometricIndicator"
+               refinement_indicator = true
+               nb_steps = 2
+            END MODULE PDE_AdaptationIndicator
+         END MODULE PDE_AdapterCHARMS
+         
+      END MODULE PDE_DomainAndFields
+        
+   END MODULE PDE_Coarsening_4
+         
+END MODULE PEL_ObjectTest#PDE_Coarsening_TEST

@@ -1,0 +1,67 @@
+******************************************************************************
+                               27/07/2001
+******************************************************************************
+
+les fichiers de commande suivants sont obsolètes
+------------------------------------------------
+      archiveAll
+      buildOneLib
+      buildOneTool
+      buildPELlibs
+      pInstall
+      setEnvironment
+
+ENVIRONNEMENT PELICANS
+----------------------
+   Exemple de définition des variables d'environnement requises pour 
+   utiliser PELICANS : bin/init.csh (c-shell)
+                       bin/init.sh  (sell)
+   Mettre a jour ces fichiers si nécessaire.
+
+
+CREATION DES ARCHIVES
+---------------------
+
+1. Creer les répertoires $PELICANS/lib
+                         $PELICANS/lib/SUNWspro
+                         $PELICANS/lib/SUNWspro/opt0
+                         $PELICANS/lib/SUNWspro/opt1
+                         $PELICANS/lib/SUNGCC
+                         $PELICANS/lib/SUNGCC/opt0
+                         $PELICANS/lib/SUNGCC/opt1
+
+2. Creer les makefile dans chacun de ces repertoires, puis creer l'archive.
+
+   Par exemple :
+      cd $PELICANS/lib/SUNWspro/opt0
+      pMdependDev . -pSRC PELICANS 
+         ( -> creation d'un fichier Makefile)
+      pBuildDev SUNWspro . opt0 -archiveName libpel0.so -dir .
+         ( -> creation de l'archive libpel0.so a partir de Makefile )
+      mv libpel0.so ..
+         ( -> archive libpel0.so accessible dans $PELICANS/lib )
+
+   Les autres archives sont construites selon le meme schéma
+   (ajuster SUNWspro, SUNGCC, opt0, opt1, libpel0, libpel1, selon... )
+
+   Remarque : le fichier Makefile est indépendant de l'option de compilation ;
+              il suffit donc de le creer une fois, puis de le dupliquer 
+              autant que nécessaire.
+
+
+MISE A JOUR DU REPERTOIRE $PELICANS/include
+-------------------------------------------
+   cd $PELICANS/admin
+   setInclude
+
+
+GENERATION DE LA DOC HTML
+-------------------------
+
+1. cd $PELICANS/admin
+   setDoc
+
+2. cd $PELICANS/doc/Html : 
+   peldoc -html -I include src/*.cc -upper PEL_Object -package description.txt
+      (où Docify est un alias pour  /home/semar/chailan/Pelicans/bin/Docify)
+

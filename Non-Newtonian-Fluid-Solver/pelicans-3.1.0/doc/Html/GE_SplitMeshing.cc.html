@@ -1,0 +1,754 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>GE_SplitMeshing.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="GE_SplitMeshing.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="GEpack-tree.html"><span>Tree</span></a>
+    <a href="GE_SplitMeshing.html"><span>Class</span></a>
+    <a href="GE_SplitMeshing.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="GEpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">GE_SplitMeshing</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Communicator</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Exec</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_GroupExp</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Root</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">GE_Color</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">GE_Mpolyhedron</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;iostream&gt;
+
+</font><font class="kw3">GE_SplitMeshing</font><font class="text"> </font><font class="kw1">const</font><font class="text">* </font><font class="kw3">GE_SplitMeshing</font><font class="text">:: PROTOTYPE = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">GE_SplitMeshing</font><font class="text">() ;
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw3">GE_SplitMeshing</font><font class="text">:: </font><font class="kw3">GE_SplitMeshing</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">GE_Meshing</font><font class="text">( </font><font class="string">&quot;GE_SplitMeshing&quot;</font><font class="text"> )
+   , INITIAL( 0 )
+   , SPLIT_STRAT( 0 )
+   , NB_VERTS( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+   , LOCAL_VERT(0)
+   , IDX_VERT( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+   , NB_FACES( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+   , LOCAL_FACE(0)
+   , HALO_FACE(0)
+   , IDX_FACE( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+   , NB_CELLS( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+   , LOCAL_CELL(0)
+   , IDX_CELL( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+   , ELM_2_VERTS(0)
+   , CELL_2_FACES(0)
+   , BAND( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+   , HALO( 0 )
+{
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw3">GE_SplitMeshing</font><font class="text">*
+</font><font class="kw3">GE_SplitMeshing</font><font class="text">:: create_replica( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                  </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp,
+                                  </font><font class="kw2">size_t</font><font class="text"> dim_space ) </font><font class="kw1">const
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_SplitMeshing:: create_replica&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_PRE( a_owner, exp, dim_space ) ) ;
+
+   </font><font class="kw3">GE_SplitMeshing</font><font class="text">* result = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">GE_SplitMeshing</font><font class="text">(  a_owner, exp, dim_space ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( create_replica_POST( result, a_owner, dim_space ) ) ;
+   </font><font class="kw1">return</font><font class="text"> result ;
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw3">GE_SplitMeshing</font><font class="text">:: </font><font class="kw3">GE_SplitMeshing</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp,
+                                   </font><font class="kw2">size_t</font><font class="text"> dim_space )
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">GE_Meshing</font><font class="text">( a_owner, exp, dim_space )
+   , INITIAL(0 )
+   , SPLIT_STRAT( 0 )
+   , NB_VERTS( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+   , LOCAL_VERT(0)
+   , IDX_VERT( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+   , NB_FACES( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+   , LOCAL_FACE(0)
+   , HALO_FACE(0)
+   , IDX_FACE( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+   , NB_CELLS( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+   , LOCAL_CELL(0)
+   , IDX_CELL( </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+   , ELM_2_VERTS(0)
+   , CELL_2_FACES(0)
+   , BAND( exp-&gt;int_data( </font><font class="string">&quot;security_bandwidth&quot;</font><font class="text"> ) )
+   , HALO( </font><font class="kw3">GE_Color</font><font class="text">::halo_color() )
+
+{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_SplitMeshing:: GE_SplitMeshing&quot;</font><font class="text"> ) ;
+
+   </font><font class="comment">// Test that GE_Colorist is not defined in order to not overload halo colors:
+</font><font class="text">   </font><font class="kw1">if</font><font class="text">( exp-&gt;has_module( </font><font class="string">&quot;GE_Colorist&quot;</font><font class="text"> ) )
+   {
+      </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_module_error(
+         exp,
+         </font><font class="string">&quot;Sub-module \&quot;</font><font class="kw3">GE_Colorist</font><font class="text">\</font><font class="string">&quot; is avoided in \&quot;</font><font class="kw3">GE_SplitMeshing</font><font class="text">\</font><font class="string">&quot; module\n&quot;
+</font><font class="text">         </font><font class="string">&quot;to not overload halo colors&quot;</font><font class="text"> ) ;
+   }
+
+   exp-&gt;test_data( </font><font class="string">&quot;security_bandwidth&quot;</font><font class="text">, </font><font class="string">&quot;security_bandwidth&gt;=0&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* se = exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;GE_Meshing&quot;</font><font class="text"> ) ;
+   INITIAL = </font><font class="kw3">GE_Meshing</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, se, dim_space ) ;
+   se-&gt;destroy() ;
+
+   se = exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;splitting_strategy&quot;</font><font class="text"> ) ;
+   </font><font class="kw1">bool</font><font class="text"> </font><font class="kw1">const</font><font class="text"> has_nb_ranks = exp-&gt;has_entry( </font><font class="string">&quot;nb_ranks&quot;</font><font class="text"> ) ;
+   </font><font class="kw1">bool</font><font class="text"> </font><font class="kw1">const</font><font class="text"> has_rank =  exp-&gt;has_entry( </font><font class="string">&quot;rank&quot;</font><font class="text"> ) ;
+   </font><font class="kw1">if</font><font class="text">( has_nb_ranks || has_rank )
+   {
+      </font><font class="kw1">if</font><font class="text">( !has_nb_ranks || !has_rank )
+      {
+         </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_module_error(
+            exp,
+            </font><font class="string">&quot;Entries \&quot;</font><font class="text">nb_ranks\</font><font class="string">&quot; and \&quot;</font><font class="text">rank\</font><font class="string">&quot; have to be specified both&quot;</font><font class="text"> ) ;
+      }
+      </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> nb_ranks = exp-&gt;int_data( </font><font class="string">&quot;nb_ranks&quot;</font><font class="text"> ) ;
+      </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> rank = exp-&gt;int_data( </font><font class="string">&quot;rank&quot;</font><font class="text"> ) ;
+      exp-&gt;test_data( </font><font class="string">&quot;nb_ranks&quot;</font><font class="text">, </font><font class="string">&quot;nb_ranks&gt;0&quot;</font><font class="text"> ) ;
+      exp-&gt;test_data( </font><font class="string">&quot;rank&quot;</font><font class="text">, </font><font class="string">&quot;rank&gt;=0 &amp;&amp; rank&lt;nb_ranks&quot;</font><font class="text"> ) ;
+      </font><font class="kw1">if</font><font class="text">( rank &gt;= nb_ranks )
+      {
+         </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_bad_data_value( exp, </font><font class="string">&quot;rank&quot;</font><font class="text">,
+                                                    </font><font class="string">&quot;0 to nb_ranks-1&quot;</font><font class="text"> ) ;
+      }
+      SPLIT_STRAT = </font><font class="kw3">GE_SplittingStrategy</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, se, INITIAL, 
+                                                  nb_ranks, rank ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      SPLIT_STRAT = </font><font class="kw3">GE_SplittingStrategy</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, se, INITIAL, 
+                                                  </font><font class="kw3">PEL_Exec</font><font class="text">::communicator() ) ;
+   }
+   se-&gt;destroy() ; se = 0 ;
+   
+   split_meshing() ;
+}
+
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="kw3">GE_SplitMeshing</font><font class="text">:: ~</font><font class="kw3">GE_SplitMeshing</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+}
+
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="kw2">size_t
+</font><font class="kw3">GE_SplitMeshing</font><font class="text">:: nb_vertices( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_SplitMeshing:: nb_vertices&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+  
+   </font><font class="kw1">return</font><font class="text">( NB_VERTS ) ;
+}
+
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="kw2">size_t
+</font><font class="kw3">GE_SplitMeshing</font><font class="text">:: nb_cells( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_SplitMeshing:: nb_cells&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   
+   </font><font class="kw1">return</font><font class="text">( NB_CELLS ) ;
+}
+
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="kw2">size_t
+</font><font class="kw3">GE_SplitMeshing</font><font class="text">:: nb_faces( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_SplitMeshing:: nb_faces&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   
+   </font><font class="kw1">return</font><font class="text">( NB_FACES ) ;
+}
+
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">GE_SplitMeshing</font><font class="text">:: start_vertex_iterator( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_SplitMeshing:: start_vertex_iterator&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   IDX_VERT=0 ;
+   INITIAL-&gt;start_vertex_iterator() ;
+   find_next_vertex() ;
+}
+
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">GE_SplitMeshing</font><font class="text">:: valid_vertex( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_SplitMeshing:: valid_vertex&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw1">return</font><font class="text">( INITIAL-&gt;valid_vertex() ) ;
+}
+
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">GE_SplitMeshing</font><font class="text">:: go_next_vertex( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_SplitMeshing:: go_next_vertex&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( go_next_vertex_PRE() ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   IDX_VERT++ ;
+   INITIAL-&gt;go_next_vertex() ;
+   find_next_vertex() ;
+}
+
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; 
+</font><font class="kw3">GE_SplitMeshing</font><font class="text">:: vertex_coordinates( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_SplitMeshing:: vertex_coordinates&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( vertex_coordinates_PRE() ) ;
+
+   </font><font class="kw3">doubleVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; result = INITIAL-&gt;vertex_coordinates() ;
+   
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( vertex_coordinates_POST( result ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">GE_SplitMeshing</font><font class="text">:: start_cell_iterator( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_SplitMeshing:: start_cell_iterator&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( start_cell_iterator_PRE() ) ;
+
+   IDX_CELL=0 ;
+   INITIAL-&gt;start_cell_iterator() ;
+   find_next_cell() ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( start_cell_iterator_POST() ) ;
+}
+
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">GE_SplitMeshing</font><font class="text">:: go_next_cell( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_SplitMeshing:: go_next_cell&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( go_next_cell_PRE() ) ;
+   
+   IDX_CELL++ ;
+   INITIAL-&gt;go_next_cell() ;
+   find_next_cell() ;
+}
+
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">GE_SplitMeshing</font><font class="text">:: valid_cell( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_SplitMeshing:: valid_cell&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw1">bool</font><font class="text"> result = INITIAL-&gt;valid_cell() ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( valid_cell_POST( result ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp;
+</font><font class="kw3">GE_SplitMeshing</font><font class="text">:: cell_polyhedron_name( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_SplitMeshing:: cell_polyhedron_name&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( cell_polyhedron_name_PRE() ) ;
+
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; result = INITIAL-&gt;cell_polyhedron_name() ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( cell_polyhedron_name_POST( result ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; 
+</font><font class="kw3">GE_SplitMeshing</font><font class="text">:: cell_vertices( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_SplitMeshing:: cell_vertices&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( cell_vertices_PRE() ) ;
+
+   </font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; result = ELM_2_VERTS ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( cell_vertices_POST( result ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; 
+</font><font class="kw3">GE_SplitMeshing</font><font class="text">:: cell_faces( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_SplitMeshing:: cell_faces&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( cell_faces_PRE() ) ;
+
+   </font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; result = CELL_2_FACES ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( cell_faces_POST( result ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result) ;
+}
+
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">GE_SplitMeshing</font><font class="text">:: start_face_iterator( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_SplitMeshing:: start_face_iterator&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( start_face_iterator_PRE() ) ;
+   
+   IDX_FACE = 0 ;
+   INITIAL-&gt;start_face_iterator() ;
+   find_next_face() ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( start_face_iterator_POST() ) ;
+}
+
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">GE_SplitMeshing</font><font class="text">:: go_next_face( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_SplitMeshing:: go_next_face&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( go_next_face_PRE() ) ;
+
+   IDX_FACE++ ;
+   INITIAL-&gt;go_next_face() ;
+   find_next_face() ;
+}
+
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">GE_SplitMeshing</font><font class="text">:: valid_face( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_SplitMeshing:: valid_face&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw1">bool</font><font class="text"> result = INITIAL-&gt;valid_face() ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( valid_face_POST( result ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp;
+</font><font class="kw3">GE_SplitMeshing</font><font class="text">:: face_polyhedron_name( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_SplitMeshing:: face_polyhedron_name&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( face_polyhedron_name_PRE() ) ;
+
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; result = INITIAL-&gt;face_polyhedron_name() ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( face_polyhedron_name_POST( result ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; 
+</font><font class="kw3">GE_SplitMeshing</font><font class="text">:: face_vertices( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_SplitMeshing:: face_vertices&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( face_vertices_PRE() ) ;
+
+   </font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; result = ELM_2_VERTS ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( face_vertices_POST( result ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="kw3">GE_Color</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">GE_SplitMeshing</font><font class="text">:: default_vertex_color( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_SplitMeshing:: default_vertex_color&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( default_vertex_color_PRE() ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw3">GE_Color</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result = INITIAL-&gt;vertex_color() ;
+   
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( default_vertex_color_POST( result ) ) ;
+   </font><font class="kw1">return</font><font class="text"> result ;
+}
+
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="kw3">GE_Color</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">GE_SplitMeshing</font><font class="text">:: default_cell_color( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_SplitMeshing:: default_cell_color&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( default_cell_color_PRE() ) ;
+   
+   </font><font class="kw3">GE_Color</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result = INITIAL-&gt;cell_color() ;
+   </font><font class="kw1">if</font><font class="text">( SPLIT_STRAT-&gt;cell_rank(IDX_CELL) != SPLIT_STRAT-&gt;rank() )
+   {
+      result = HALO ;
+   }
+   
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( default_cell_color_POST( result ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="kw3">GE_Color</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">GE_SplitMeshing</font><font class="text">:: default_face_color( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_SplitMeshing:: default_face_color&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( default_face_color_PRE() ) ;
+
+   </font><font class="kw3">GE_Color</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result = INITIAL-&gt;face_color() ;
+   </font><font class="kw1">if</font><font class="text">( HALO_FACE(IDX_FACE) )
+   {
+      result = HALO ;
+   }   
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( default_face_color_POST( result ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">GE_SplitMeshing</font><font class="text">:: print( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostream</font><font class="text">&amp; os, </font><font class="kw2">size_t</font><font class="text"> indent_width ) </font><font class="kw1">const
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_SplitMeshing:: print&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   
+   </font><font class="kw3">GE_Meshing</font><font class="text">:: print( os, indent_width ) ;
+   
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text"> s( indent_width+3, </font><font class="string">' '</font><font class="text"> ) ;
+   os &lt;&lt; s &lt;&lt; </font><font class="string">&quot;Global meshing:&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   INITIAL-&gt;print( os, indent_width+6 ) ;
+   SPLIT_STRAT-&gt;print( os, indent_width+3 ) ;
+   
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+}
+
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">GE_SplitMeshing</font><font class="text">:: display( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostream</font><font class="text">&amp; os, </font><font class="kw2">size_t</font><font class="text"> indent_width )
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_SplitMeshing:: display&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   
+   os &lt;&lt; </font><font class="string">&quot;Initial mesh:&quot;</font><font class="text"> &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   INITIAL-&gt;display( os, indent_width+2 ) ;
+   os &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   os &lt;&lt; </font><font class="string">&quot;Splitted mesh: rank=&quot;</font><font class="text"> &lt;&lt; SPLIT_STRAT-&gt;rank() &lt;&lt; </font><font class="string">&quot;/&quot;</font><font class="text"> 
+      &lt;&lt; SPLIT_STRAT-&gt;nb_ranks() &lt;&lt; </font><font class="string">&quot; bandwidth=&quot;</font><font class="text"> &lt;&lt; BAND &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   </font><font class="kw3">GE_Meshing</font><font class="text">::display( os, indent_width+2  ) ;
+   os &lt;&lt; </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ;
+   
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+}
+
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">GE_SplitMeshing</font><font class="text">:: find_next_vertex( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_SplitMeshing:: find_next_vertex&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw1">for</font><font class="text">( ; INITIAL-&gt;valid_vertex() ; INITIAL-&gt;go_next_vertex() )
+   {
+      </font><font class="kw1">if</font><font class="text">( LOCAL_VERT( IDX_VERT ) != </font><font class="kw3">PEL</font><font class="text">::bad_index() ) </font><font class="kw1">break</font><font class="text"> ;
+      IDX_VERT++ ;
+   }
+}
+
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">GE_SplitMeshing</font><font class="text">:: find_next_cell( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_SplitMeshing:: find_next_cell&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw1">for</font><font class="text">( ; INITIAL-&gt;valid_cell() ; INITIAL-&gt;go_next_cell() )
+   {
+      </font><font class="kw1">if</font><font class="text">( LOCAL_CELL( IDX_CELL ) != </font><font class="kw3">PEL</font><font class="text">::bad_index() ) </font><font class="kw1">break</font><font class="text"> ;
+      IDX_CELL++ ;
+   }
+   </font><font class="kw1">if</font><font class="text">( INITIAL-&gt;valid_cell() )
+   {
+      </font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; vert = INITIAL-&gt;cell_vertices() ;
+      </font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; conn = INITIAL-&gt;cell_faces() ;
+
+      ELM_2_VERTS.re_initialize( vert.size() ) ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;vert.size() ; i++ )
+      {
+         ELM_2_VERTS( i ) = LOCAL_VERT( vert( i ) ) ;
+      }
+      CELL_2_FACES.re_initialize( conn.size() ) ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;conn.size() ; i++ )
+      {
+         CELL_2_FACES( i ) = LOCAL_FACE( conn( i ) ) ;
+      }
+   }   
+}
+
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">GE_SplitMeshing</font><font class="text">:: find_next_face( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_SplitMeshing:: find_next_face&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw1">for</font><font class="text">( ; INITIAL-&gt;valid_face() ; INITIAL-&gt;go_next_face() )
+   {
+      </font><font class="kw1">if</font><font class="text">( LOCAL_FACE( IDX_FACE ) != </font><font class="kw3">PEL</font><font class="text">::bad_index() ) </font><font class="kw1">break</font><font class="text"> ;
+      IDX_FACE++ ;
+   }
+   </font><font class="kw1">if</font><font class="text">( INITIAL-&gt;valid_face() )
+   {
+      </font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; vert = INITIAL-&gt;face_vertices() ;
+      ELM_2_VERTS.re_initialize( vert.size() ) ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;vert.size() ; i++ )
+      {
+         ELM_2_VERTS( i ) = LOCAL_VERT( vert( i ) ) ;
+      }
+   }   
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">GE_SplitMeshing</font><font class="text">:: split_meshing( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_SplitMeshing:: split_meshing&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> </font><font class="kw1">const</font><font class="text"> rank = SPLIT_STRAT-&gt;rank() ;
+   
+   </font><font class="comment">// Cells and vertices:
+</font><font class="text">   {
+      NB_VERTS=0 ;
+      LOCAL_VERT.resize( INITIAL-&gt;nb_vertices() ) ;
+      LOCAL_VERT.</font><font class="kw2">set</font><font class="text">( </font><font class="kw3">PEL</font><font class="text">::bad_index() ) ;
+      NB_CELLS=0 ;
+      LOCAL_CELL.resize( INITIAL-&gt;nb_cells() ) ;
+      LOCAL_CELL.</font><font class="kw2">set</font><font class="text">( </font><font class="kw3">PEL</font><font class="text">::bad_index() ) ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> b=0 ; b&lt;1+BAND ; b++ )
+      {
+         </font><font class="kw2">size_t</font><font class="text"> m = 0 ;
+         INITIAL-&gt;start_cell_iterator() ;
+         </font><font class="kw1">for</font><font class="text">( ; INITIAL-&gt;valid_cell() ; INITIAL-&gt;go_next_cell() )
+         {
+            </font><font class="kw1">if</font><font class="text">( LOCAL_CELL( m ) == </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+            {
+               </font><font class="kw1">bool</font><font class="text"> append_mesh = </font><font class="kw1">false</font><font class="text"> ;
+               </font><font class="kw1">if</font><font class="text">( b==0 )
+               {
+                  append_mesh = ( SPLIT_STRAT-&gt;cell_rank( m ) == rank ) ;
+               }
+               </font><font class="kw1">else
+</font><font class="text">               {
+                  </font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; verts = INITIAL-&gt;cell_vertices() ;
+                  </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; j&lt;verts.size() &amp;&amp; !append_mesh ; j++ )
+                  {
+                     append_mesh |= ( LOCAL_VERT(verts(j))!=</font><font class="kw3">PEL</font><font class="text">::bad_index()) ;
+                  }
+               }
+               </font><font class="kw1">if</font><font class="text">( append_mesh )
+               {
+                  LOCAL_CELL( m ) = NB_CELLS++ ;
+               }
+            }
+            ++m ;
+         }
+         m = 0 ;
+         INITIAL-&gt;start_cell_iterator() ;
+         </font><font class="kw1">for</font><font class="text">( ; INITIAL-&gt;valid_cell() ; INITIAL-&gt;go_next_cell() )
+         {
+            </font><font class="kw1">if</font><font class="text">( LOCAL_CELL( m ) != </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+            {
+               </font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; verts = INITIAL-&gt;cell_vertices() ;
+               </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> j=0 ; j&lt;verts.size() ; j++ )
+               {
+                  </font><font class="kw1">if</font><font class="text">( LOCAL_VERT( verts(j) ) == </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+                  {
+                     LOCAL_VERT( verts(j) ) = NB_VERTS++ ;
+                  }
+               }
+            }
+            ++m ;
+         }
+      }
+      </font><font class="kw1">if</font><font class="text">( NB_CELLS==0 )
+      {
+         </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain(
+            </font><font class="string">&quot;*** GE_SplitMeshing error\n&quot;
+</font><font class="text">            </font><font class="string">&quot;    Unconsistant splitting : empty submeshing&quot;</font><font class="text"> ) ;
+      }
+   }
+
+   </font><font class="comment">// Face:
+</font><font class="text">   {
+      NB_FACES=0 ;
+      LOCAL_FACE.resize( INITIAL-&gt;nb_faces() ) ;
+      LOCAL_FACE.</font><font class="kw2">set</font><font class="text">( </font><font class="kw3">PEL</font><font class="text">::bad_index() ) ;
+      HALO_FACE.resize( INITIAL-&gt;nb_faces() ) ;
+      HALO_FACE.</font><font class="kw2">set</font><font class="text">( </font><font class="kw1">false</font><font class="text"> ) ;
+      
+      </font><font class="kw3">size_t_vector</font><font class="text"> face_2_cell_ini( INITIAL-&gt;nb_faces() ) ;
+      face_2_cell_ini.</font><font class="kw2">set</font><font class="text">( (</font><font class="kw2">size_t</font><font class="text">) 0 ) ;
+      </font><font class="kw3">size_t_vector</font><font class="text"> face_2_cell( BAND == 0 ? INITIAL-&gt;nb_faces() : 0 ) ;
+      face_2_cell.</font><font class="kw2">set</font><font class="text">( (</font><font class="kw2">size_t</font><font class="text">) 0 ) ;
+      </font><font class="kw2">size_t</font><font class="text"> m = 0 ;
+      INITIAL-&gt;start_cell_iterator() ;
+      </font><font class="kw1">for</font><font class="text">( ; INITIAL-&gt;valid_cell() ; INITIAL-&gt;go_next_cell() )
+      {
+         </font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; connec = INITIAL-&gt;cell_faces() ;
+         </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;connec.size() ; i++ )
+         {
+            </font><font class="kw2">size_t</font><font class="text"> j = connec( i ) ;
+            face_2_cell_ini( j )++ ;
+            </font><font class="kw1">if</font><font class="text">( LOCAL_CELL( m ) != </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+            {
+               </font><font class="kw1">if</font><font class="text">( BAND == 0 ) face_2_cell( j )++ ;
+               </font><font class="kw1">if</font><font class="text">( LOCAL_FACE( j ) == </font><font class="kw3">PEL</font><font class="text">::bad_index() )
+               {
+                  LOCAL_FACE( j ) = NB_FACES++ ;
+                  HALO_FACE( j ) = ( SPLIT_STRAT-&gt;cell_rank( m ) != rank ) ;
+               }
+            }
+         }
+         ++m ;
+      }
+
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;INITIAL-&gt;nb_faces() ; ++i )
+      {
+         </font><font class="kw1">if</font><font class="text">( face_2_cell_ini(i) == 2 )
+         {
+            </font><font class="kw1">if</font><font class="text">( BAND == 0 &amp;&amp; face_2_cell(i) == 1 )
+            {
+               HALO_FACE(i) = </font><font class="kw1">true</font><font class="text"> ; </font><font class="comment">// ???
+</font><font class="text">            }
+         }
+         </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( face_2_cell_ini(i) == 1 )
+         {
+            HALO_FACE(i) = </font><font class="kw1">false</font><font class="text"> ; </font><font class="comment">// bound
+</font><font class="text">         }
+         </font><font class="kw1">else
+</font><font class="text">         {
+            </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_plain(
+                  </font><font class="string">&quot;*** GE_SplitMeshing error\n&quot;
+</font><font class="text">                  </font><font class="string">&quot;    Unconsistant face connectivity\n&quot;
+</font><font class="text">                  </font><font class="string">&quot;    of the initial meshing&quot;</font><font class="text"> ) ;
+         }
+      }
+   }
+
+   </font><font class="comment">// Reorder local vertices:
+</font><font class="text">   {
+      </font><font class="kw2">size_t</font><font class="text"> nbv = 0 ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> idx=0 ; idx&lt;LOCAL_VERT.size() ; ++idx )
+      {
+         </font><font class="kw1">if</font><font class="text">( LOCAL_VERT(idx) != </font><font class="kw3">PEL</font><font class="text">::bad_index()) LOCAL_VERT(idx) = nbv++ ;
+      }
+      </font><font class="kw3">PEL_ASSERT</font><font class="text">( nbv == NB_VERTS ) ;
+   }
+
+   </font><font class="comment">// Reorder local faces:
+</font><font class="text">   {
+      </font><font class="kw2">size_t</font><font class="text"> nbs=0 ;
+      </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> idx=0 ; idx&lt;LOCAL_FACE.size() ; ++idx )
+      {
+         </font><font class="kw1">if</font><font class="text">( LOCAL_FACE(idx) != </font><font class="kw3">PEL</font><font class="text">::bad_index()) LOCAL_FACE(idx) = nbs++ ;
+      }
+      </font><font class="kw3">PEL_ASSERT</font><font class="text">( nbs == NB_FACES ) ;
+   }
+}
+
+</font>
+</pre>
+</body>
+</html>

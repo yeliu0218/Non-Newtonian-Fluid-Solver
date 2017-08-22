@@ -1,0 +1,432 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>GE_ReferenceSquareWithTriangles.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="GE_ReferenceSquareWithTriangles.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="GEpack-tree.html"><span>Tree</span></a>
+    <a href="GE_ReferenceSquareWithTriangles.html"><span>Class</span></a>
+    <a href="GE_ReferenceSquareWithTriangles.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="GEpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">GE_ReferenceSquareWithTriangles</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Vector</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">stringVector</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">GE_Point</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">GE_ReferenceSegment</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">GE_ReferenceSquare</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">GE_ReferenceTriangle</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;iostream&gt;
+
+</font><font class="kw3">GE_ReferenceSquareWithTriangles</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">GE_ReferenceSquareWithTriangles</font><font class="text">:: PROTOTYPE = 
+                                  </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">GE_ReferenceSquareWithTriangles</font><font class="text">() ;
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw3">GE_ReferenceSquareWithTriangles</font><font class="text">:: </font><font class="kw3">GE_ReferenceSquareWithTriangles</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">GE_ReferencePolyhedronRefiner</font><font class="text">( </font><font class="string">&quot;GE_ReferenceSquareWithTriangles&quot;</font><font class="text"> ) 
+{
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw3">GE_ReferenceSquareWithTriangles</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+</font><font class="kw3">GE_ReferenceSquareWithTriangles</font><font class="text">:: create_replica( 
+                                         </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                         </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp ) </font><font class="kw1">const</font><font class="text"> 
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_ReferenceSquareWithTriangles:: create_replica&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_PRE( a_owner, exp ) ) ;
+   
+   </font><font class="kw3">GE_ReferenceSquareWithTriangles</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result = 
+               </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">GE_ReferenceSquareWithTriangles</font><font class="text">( a_owner, exp ) ;
+
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( create_replica_POST( result, a_owner, exp ) ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw3">GE_ReferenceSquareWithTriangles</font><font class="text">:: </font><font class="kw3">GE_ReferenceSquareWithTriangles</font><font class="text">( 
+                                              </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                              </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">GE_ReferencePolyhedronRefiner</font><font class="text">( a_owner, 
+                                    </font><font class="kw3">GE_ReferenceSquare</font><font class="text">::object(),
+                                    </font><font class="kw3">GE_ReferenceTriangle</font><font class="text">::object(),
+                                    </font><font class="kw3">GE_ReferenceSegment</font><font class="text">::object() ) 
+{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( 
+   </font><font class="string">&quot;GE_ReferenceSquareWithTriangles:: GE_ReferenceSquareWithTriangles&quot;</font><font class="text"> ) ;
+   
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; strat = exp-&gt;string_data( </font><font class="string">&quot;strategy&quot;</font><font class="text"> ) ;
+   exp-&gt;test_data_in( </font><font class="string">&quot;strategy&quot;</font><font class="text">,</font><font class="string">&quot;/,\\,X,x,26_acute_triangles&quot;</font><font class="text"> ) ;
+   </font><font class="kw1">if</font><font class="text">( strat == </font><font class="string">&quot;/&quot;</font><font class="text"> )
+   {
+      initialize_right() ;
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( strat == </font><font class="string">&quot;\\&quot;</font><font class="text"> )
+   {
+      initialize_left() ;
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( strat == </font><font class="string">&quot;X&quot;</font><font class="text"> || strat == </font><font class="string">&quot;x&quot;</font><font class="text"> )
+   {
+      initialize_cross() ;
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( strat == </font><font class="string">&quot;26_acute_triangles&quot;</font><font class="text"> )
+   {
+      initialize_26_acute_triangles() ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_data_error( exp, </font><font class="string">&quot;strategy&quot;</font><font class="text">,
+                                             </font><font class="string">&quot;invalid strategy: &quot;</font><font class="text"> + strat ) ;
+   }
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw3">GE_ReferenceSquareWithTriangles</font><font class="text">:: ~</font><font class="kw3">GE_ReferenceSquareWithTriangles</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">GE_ReferenceSquareWithTriangles</font><font class="text">:: compute_location_in_subcell( 
+                                        </font><font class="kw2">size_t</font><font class="text"> ic, 
+                                        </font><font class="kw3">GE_Point</font><font class="text"> </font><font class="kw1">const</font><font class="text">* pt_cell,
+                                        </font><font class="kw3">GE_Point</font><font class="text">* pt_subcell ) </font><font class="kw1">const
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">(</font><font class="string">&quot;GE_ReferenceSquareWithTriangles:: compute_location_in_subcell&quot;</font><font class="text">) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( compute_location_in_subcell_PRE( ic, pt_cell, pt_subcell ) );
+
+   </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_not_implemented( </font><font class="kw1">this</font><font class="text">, 
+                                  </font><font class="string">&quot;compute_location_in_subcell&quot;</font><font class="text"> ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">GE_ReferenceSquareWithTriangles</font><font class="text">:: initialize_right( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_ReferenceSquareWithTriangles:: initialize_right&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> n_vertices = 4 ;
+   </font><font class="kw2">size_t</font><font class="text"> n_subfaces = 5 ;
+   </font><font class="kw2">size_t</font><font class="text"> n_subcells = 2 ;
+   </font><font class="kw2">size_t</font><font class="text"> n_subfaces_per_face = 1 ;
+
+   set_dimensions( n_vertices, n_subfaces, n_subcells, n_subfaces_per_face ) ;
+
+   set_vertex( 0, </font><font class="kw3">GE_Point</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, 0.0, 0.0 ) ) ;
+   set_vertex( 1, </font><font class="kw3">GE_Point</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, 1.0, 0.0 ) ) ;
+   set_vertex( 2, </font><font class="kw3">GE_Point</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, 1.0, 1.0 ) ) ;
+   set_vertex( 3, </font><font class="kw3">GE_Point</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, 0.0, 1.0 ) ) ;
+
+   </font><font class="kw3">size_t_vector</font><font class="text"> vertex_indices( 3 ) ;
+
+   </font><font class="comment">// sub-triangle 0 
+</font><font class="text">   vertex_indices( 0 ) = 0 ;
+   vertex_indices( 1 ) = 1 ;
+   vertex_indices( 2 ) = 2 ;
+   set_subcell( 0, vertex_indices ) ;
+
+   </font><font class="comment">// sub-triangle 1
+</font><font class="text">   vertex_indices( 0 ) = 2 ;
+   vertex_indices( 1 ) = 3 ;
+   vertex_indices( 2 ) = 0 ;
+   set_subcell( 1, vertex_indices ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">GE_ReferenceSquareWithTriangles</font><font class="text">:: initialize_left( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_ReferenceSquareWithTriangles:: initialize_left&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> n_vertices = 4 ;
+   </font><font class="kw2">size_t</font><font class="text"> n_subfaces = 5 ;
+   </font><font class="kw2">size_t</font><font class="text"> n_subcells = 2 ;
+   </font><font class="kw2">size_t</font><font class="text"> n_subfaces_per_face = 1 ;
+
+   set_dimensions( n_vertices, n_subfaces, n_subcells, n_subfaces_per_face ) ;
+
+   set_vertex( 0, </font><font class="kw3">GE_Point</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, 0.0, 0.0 ) ) ;
+   set_vertex( 1, </font><font class="kw3">GE_Point</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, 1.0, 0.0 ) ) ;
+   set_vertex( 2, </font><font class="kw3">GE_Point</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, 1.0, 1.0 ) ) ;
+   set_vertex( 3, </font><font class="kw3">GE_Point</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, 0.0, 1.0 ) ) ;
+
+   </font><font class="kw3">size_t_vector</font><font class="text"> vertex_indices( 3 ) ;
+
+   </font><font class="comment">// sub-triangle 0 
+</font><font class="text">   vertex_indices( 0 ) = 0 ;
+   vertex_indices( 1 ) = 1 ;
+   vertex_indices( 2 ) = 3 ;
+   set_subcell( 0, vertex_indices ) ;
+
+   </font><font class="comment">// sub-triangle 1
+</font><font class="text">   vertex_indices( 0 ) = 1 ;
+   vertex_indices( 1 ) = 2 ;
+   vertex_indices( 2 ) = 3 ;
+   set_subcell( 1, vertex_indices ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">GE_ReferenceSquareWithTriangles</font><font class="text">:: initialize_cross( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;GE_ReferenceSquareWithTriangles:: initialize_cross&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> n_vertices = 5 ;
+   </font><font class="kw2">size_t</font><font class="text"> n_subfaces = 8 ;
+   </font><font class="kw2">size_t</font><font class="text"> n_subcells = 4 ;
+   </font><font class="kw2">size_t</font><font class="text"> n_subfaces_per_face = 1 ;
+
+   set_dimensions( n_vertices, n_subfaces, n_subcells, n_subfaces_per_face ) ;
+
+   set_vertex( 0, </font><font class="kw3">GE_Point</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, 0.0, 0.0 ) ) ;
+   set_vertex( 1, </font><font class="kw3">GE_Point</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, 1.0, 0.0 ) ) ;
+   set_vertex( 2, </font><font class="kw3">GE_Point</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, 1.0, 1.0 ) ) ;
+   set_vertex( 3, </font><font class="kw3">GE_Point</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, 0.0, 1.0 ) ) ;
+   set_vertex( 4, </font><font class="kw3">GE_Point</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, 0.5, 0.5 ) ) ;
+
+   </font><font class="kw3">size_t_vector</font><font class="text"> vertex_indices( 3 ) ;
+
+   </font><font class="comment">// sub-triangle 0 
+</font><font class="text">   vertex_indices( 0 ) = 4 ;
+   vertex_indices( 1 ) = 0 ;
+   vertex_indices( 2 ) = 1 ;
+   set_subcell( 0, vertex_indices ) ;
+
+   </font><font class="comment">// sub-triangle 1
+</font><font class="text">   vertex_indices( 0 ) = 4 ;
+   vertex_indices( 1 ) = 1 ;
+   vertex_indices( 2 ) = 2 ;
+   set_subcell( 1, vertex_indices ) ;
+
+   </font><font class="comment">// sub-triangle 2
+</font><font class="text">   vertex_indices( 0 ) = 4 ;
+   vertex_indices( 1 ) = 2 ;
+   vertex_indices( 2 ) = 3 ;
+   set_subcell( 2, vertex_indices ) ;
+
+   </font><font class="comment">// sub-triangle 3
+</font><font class="text">   vertex_indices( 0 ) = 4 ;
+   vertex_indices( 1 ) = 3 ;
+   vertex_indices( 2 ) = 0 ;
+   set_subcell( 3, vertex_indices ) ;
+}
+
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">GE_ReferenceSquareWithTriangles</font><font class="text">:: initialize_26_acute_triangles( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//---------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( 
+   </font><font class="string">&quot;GE_ReferenceSquareWithTriangles:: initialize_26_acute_triangles&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw2">size_t</font><font class="text"> n_vertices = 20 ;
+   </font><font class="kw2">size_t</font><font class="text"> n_subfaces = 45 ;
+   </font><font class="kw2">size_t</font><font class="text"> n_subcells = 26 ;
+   </font><font class="kw2">size_t</font><font class="text"> n_subfaces_per_face = 3 ;
+
+   set_dimensions( n_vertices, n_subfaces, n_subcells, n_subfaces_per_face ) ;
+
+   set_vertex( 0,  </font><font class="kw3">GE_Point</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, 0.    , 0.    ) ) ;
+   set_vertex( 1,  </font><font class="kw3">GE_Point</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, 1./3. , 0.0   ) ) ;
+   set_vertex( 2,  </font><font class="kw3">GE_Point</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, 1./5. , 1./4. ) ) ;
+   set_vertex( 3,  </font><font class="kw3">GE_Point</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, 0.    , 1./3. ) ) ;
+   set_vertex( 4,  </font><font class="kw3">GE_Point</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, 1./4. , 1./2. ) ) ;
+   set_vertex( 5,  </font><font class="kw3">GE_Point</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, 0.    , 2./3. ) ) ;
+   set_vertex( 6,  </font><font class="kw3">GE_Point</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, 1./5. , 3./4. ) ) ;
+   set_vertex( 7,  </font><font class="kw3">GE_Point</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, 0.    , 1.    ) ) ;
+   set_vertex( 8,  </font><font class="kw3">GE_Point</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, 1./3. , 1.    ) ) ;
+   set_vertex( 9,  </font><font class="kw3">GE_Point</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, 1./2. , 1./3. ) ) ;
+   set_vertex( 10, </font><font class="kw3">GE_Point</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, 1./2. , 2./3. ) ) ;
+   set_vertex( 11, </font><font class="kw3">GE_Point</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, 2./3. , 0.    ) ) ;
+   set_vertex( 12, </font><font class="kw3">GE_Point</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, 3./4. , 1./2. ) ) ;
+   set_vertex( 13, </font><font class="kw3">GE_Point</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, 2./3. , 1.    ) ) ;
+   set_vertex( 14, </font><font class="kw3">GE_Point</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, 4./5. , 1./4. ) ) ;
+   set_vertex( 15, </font><font class="kw3">GE_Point</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, 4./5. , 3./4. ) ) ;
+   set_vertex( 16, </font><font class="kw3">GE_Point</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, 1.    , 0.    ) ) ;
+   set_vertex( 17, </font><font class="kw3">GE_Point</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, 1.    , 1./3. ) ) ;
+   set_vertex( 18, </font><font class="kw3">GE_Point</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, 1.    , 2./3. ) ) ;
+   set_vertex( 19, </font><font class="kw3">GE_Point</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, 1.    , 1.    ) ) ;
+
+   </font><font class="kw3">size_t_vector</font><font class="text"> vert_indices( 3 ) ;
+
+   </font><font class="comment">// sub-triangle 0
+</font><font class="text">   vert_indices( 0 ) = 0 ; vert_indices( 1 ) = 1 ; vert_indices( 2 ) = 2  ; 
+   set_subcell( 0, vert_indices ) ;
+
+   </font><font class="comment">// sub-triangle 1
+</font><font class="text">   vert_indices( 0 ) = 0 ; vert_indices( 1 ) = 2 ; vert_indices( 2 ) = 3  ; 
+   set_subcell( 1, vert_indices ) ;
+
+   </font><font class="comment">// sub-triangle 2
+</font><font class="text">   vert_indices( 0 ) = 3 ; vert_indices( 1 ) = 2 ; vert_indices( 2 ) = 4  ; 
+   set_subcell( 2, vert_indices ) ;
+
+   </font><font class="comment">// sub-triangle 3
+</font><font class="text">   vert_indices( 0 ) = 3 ; vert_indices( 1 ) = 4 ; vert_indices( 2 ) = 5  ; 
+   set_subcell( 3, vert_indices ) ;
+
+   </font><font class="comment">// sub-triangle 4
+</font><font class="text">   vert_indices( 0 ) = 5 ; vert_indices( 1 ) = 4  ; vert_indices( 2 ) = 6  ; 
+   set_subcell( 4, vert_indices ) ;
+
+   </font><font class="comment">// sub-triangle 5
+</font><font class="text">   vert_indices( 0 ) = 5 ; vert_indices( 1 ) = 6  ; vert_indices( 2 ) = 7  ; 
+   set_subcell( 5, vert_indices ) ;
+
+   </font><font class="comment">// sub-triangle 6
+</font><font class="text">   vert_indices( 0 ) = 7 ; vert_indices( 1 ) = 6  ; vert_indices( 2 ) = 8  ; 
+   set_subcell( 6, vert_indices ) ;
+
+   </font><font class="comment">// sub-triangle 7
+</font><font class="text">   vert_indices( 0 ) = 1 ; vert_indices( 1 ) = 9  ; vert_indices( 2 ) = 2  ; 
+   set_subcell( 7, vert_indices ) ;
+
+   </font><font class="comment">// sub-triangle 8
+</font><font class="text">   vert_indices( 0 ) = 2 ; vert_indices( 1 ) = 9  ; vert_indices( 2 ) = 4  ; 
+   set_subcell( 8, vert_indices ) ;
+
+   </font><font class="comment">// sub-triangle 9
+</font><font class="text">   vert_indices( 0 ) = 4 ; vert_indices( 1 ) = 9  ; vert_indices( 2 ) = 10 ; 
+   set_subcell( 9, vert_indices ) ;
+
+   </font><font class="comment">// sub-triangle 10
+</font><font class="text">   vert_indices( 0 ) = 4 ; vert_indices( 1 ) = 10 ; vert_indices( 2 ) = 6  ; 
+   set_subcell( 10, vert_indices ) ;
+
+   </font><font class="comment">// sub-triangle 11
+</font><font class="text">   vert_indices( 0 ) = 6 ; vert_indices( 1 ) = 10 ; vert_indices( 2 ) = 8  ; 
+   set_subcell( 11, vert_indices ) ;
+
+   </font><font class="comment">// sub-triangle 12
+</font><font class="text">   vert_indices( 0 ) = 1 ; vert_indices( 1 ) = 11 ; vert_indices( 2 ) = 9  ; 
+   set_subcell( 12, vert_indices ) ;
+
+   </font><font class="comment">// sub-triangle 13
+</font><font class="text">   vert_indices( 0 ) = 9 ; vert_indices( 1 ) = 12 ; vert_indices( 2 ) = 10 ; 
+   set_subcell( 13, vert_indices ) ;
+
+   </font><font class="comment">// sub-triangle 14
+</font><font class="text">   vert_indices( 0 ) = 10 ; vert_indices( 1 ) = 13 ; vert_indices( 2 ) = 8  ; 
+   set_subcell( 14, vert_indices ) ;
+
+   </font><font class="comment">// sub-triangle 15
+</font><font class="text">   vert_indices( 0 ) = 11 ; vert_indices( 1 ) = 14 ; vert_indices( 2 ) = 9  ; 
+   set_subcell( 15, vert_indices ) ;
+
+   </font><font class="comment">// sub-triangle 16
+</font><font class="text">   vert_indices( 0 ) = 9  ; vert_indices( 1 ) = 14 ; vert_indices( 2 ) = 12 ; 
+   set_subcell( 16, vert_indices ) ;
+
+   </font><font class="comment">// sub-triangle 17
+</font><font class="text">   vert_indices( 0 ) = 10 ; vert_indices( 1 ) = 12 ; vert_indices( 2 ) = 15 ; 
+   set_subcell( 17, vert_indices ) ;
+
+   </font><font class="comment">// sub-triangle 18
+</font><font class="text">   vert_indices( 0 ) = 10 ; vert_indices( 1 ) = 15 ; vert_indices( 2 ) = 13 ; 
+   set_subcell( 18, vert_indices ) ;
+
+   </font><font class="comment">// sub-triangle 18
+</font><font class="text">   vert_indices( 0 ) = 11 ; vert_indices( 1 ) = 16 ; vert_indices( 2 ) = 14 ; 
+   set_subcell( 19, vert_indices ) ;
+
+   </font><font class="comment">// sub-triangle 19
+</font><font class="text">   vert_indices( 0 ) = 14 ; vert_indices( 1 ) = 17 ; vert_indices( 2 ) = 12 ; 
+   set_subcell( 20, vert_indices ) ;
+
+   </font><font class="comment">// sub-triangle 20
+</font><font class="text">   vert_indices( 0 ) = 12 ; vert_indices( 1 ) = 18 ; vert_indices( 2 ) = 15 ; 
+   set_subcell( 21, vert_indices ) ;
+
+   </font><font class="comment">// sub-triangle 21
+</font><font class="text">   vert_indices( 0 ) = 15 ; vert_indices( 1 ) = 19 ; vert_indices( 2 ) = 13 ; 
+   set_subcell( 22, vert_indices ) ;
+
+   </font><font class="comment">// sub-triangle 22
+</font><font class="text">   vert_indices( 0 ) = 14 ; vert_indices( 1 ) = 16 ; vert_indices( 2 ) = 17 ; 
+   set_subcell( 23, vert_indices ) ;
+
+   </font><font class="comment">// sub-triangle 23
+</font><font class="text">   vert_indices( 0 ) = 12 ; vert_indices( 1 ) = 17 ; vert_indices( 2 ) = 18 ; 
+   set_subcell( 24, vert_indices ) ;
+
+   </font><font class="comment">// sub-triangle 24
+</font><font class="text">   vert_indices( 0 ) = 15 ; vert_indices( 1 ) = 18 ; vert_indices( 2 ) = 19 ; 
+   set_subcell( 25, vert_indices ) ;
+}
+
+</font>
+</pre>
+</body>
+</html>

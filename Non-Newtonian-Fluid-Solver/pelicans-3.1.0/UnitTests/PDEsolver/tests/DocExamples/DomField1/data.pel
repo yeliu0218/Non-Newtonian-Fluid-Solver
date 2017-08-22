@@ -1,0 +1,96 @@
+MODULE PEL_Application
+   
+   concrete_name = "PDE_DomainAndFields_DEMO1"
+   
+   trace_file = "domfield1.txt"
+   
+   MODULE PDE_DomainAndFields
+      
+      verbose_level = 1
+      nb_space_dimensions = 2
+      type = "finite_element"
+      
+      MODULE GE_Meshing
+         
+         concrete_name = "GE_BoxWithBoxes"
+         
+         vertices_coordinate_1 = regular_vector( 0.0, 20, 1.0 )
+         vertices_coordinate_0 = regular_vector( 0.0, 20, 1.0 )
+         mesh_polyhedron = < "GE_Segment" "GE_Rectangle" >
+         
+      END MODULE GE_Meshing
+
+      MODULE macro_colors
+         turquoise = < "top" "left" >
+      END MODULE macro_colors
+      
+      MODULE interior_fields
+         
+         MODULE velocity
+            name = "velocity"
+            nb_components = 2
+            element_name = "PDE_2D_Q1_4nodes"
+            storage_depth = 2
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = < 0.0 0.0 >
+            END MODULE DOFs_values
+            MODULE DOFs_imposed_value
+               MODULE xxx
+                  location = "on_bounds"
+                  type = "uniformly_defined"
+                  value = < 0.0 0.0 >
+               END MODULE xxx
+            END MODULE DOFs_imposed_value
+         END MODULE velocity
+         
+         MODULE pressure
+            name = "pressure"
+            nb_components = 1
+            element_name = "PDE_2D_Q0_1node"
+            storage_depth = 1
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = < 0.0 >
+            END MODULE DOFs_values
+         END MODULE pressure
+         
+         MODULE temperature
+            name = "my_nice_field"
+            nb_components = 1
+            element_name = "PDE_2D_Q1_4nodes"
+            storage_depth = 2
+            MODULE DOFs_values
+               type = "uniformly_defined"
+               value = < 0.0 >
+            END MODULE DOFs_values
+            MODULE DOFs_imposed_value
+               MODULE temperature_left
+                  location = "on_bounds"
+                  color = "left"
+                  type = "uniformly_defined"
+                  value = < 1.0 >
+               END MODULE temperature_left
+               MODULE temperature_right
+                  location = "on_bounds"
+                  color = "right"
+                  type = "uniformly_defined"
+                  value = < 0.0 >
+               END MODULE temperature_right
+            END MODULE DOFs_imposed_value
+         END MODULE temperature
+
+      END MODULE interior_fields
+            
+      MODULE boundary_conditions
+         MODULE xxx
+            field = "my_nice_field"
+            color = "turquoise"
+            type = "my_user_bc"
+            the_coef = 12.4
+            the_string = "roll on the end!"
+         END MODULE xxx
+      END MODULE boundary_conditions
+      
+   END MODULE PDE_DomainAndFields
+END MODULE PEL_Application

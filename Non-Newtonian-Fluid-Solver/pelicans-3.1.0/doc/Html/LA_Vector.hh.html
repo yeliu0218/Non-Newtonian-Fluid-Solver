@@ -1,0 +1,377 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>LA_Vector.hh</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="LA_Vector.hh_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="LApack-tree.html"><span>Tree</span></a>
+    <a href="LA_Vector.html"><span>Class</span></a>
+    <span class=selected>Header</span>
+    <a href="LA_Vector.cc.html"><span>Implementation</span></a>
+    <a href="LA_Vector.icc.html"><span>Inlined</span></a>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="LApack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated
+ *  reusable components, whose purpose is to simplify the task of developing
+ *  softwares of numerical mathematics and scientific computing.
+ *
+ *  This software is governed by the CeCILL-C license under French law and
+ *  abiding by the rules of distribution of free software. You can use, modify
+ *  and/or redistribute the software under the terms of the CeCILL-C license
+ *  as circulated by CEA, CNRS and INRIA at the following URL
+ *  &quot;http://www.cecill.info&quot;.
+ *
+ *  As a counterpart to the access to the source code and rights to copy,
+ *  modify and redistribute granted by the license, users are provided only
+ *  with a limited warranty and the software's author, the holder of the
+ *  economic rights, and the successive licensors have only limited liability.
+ *
+ *  In this respect, the user's attention is drawn to the risks associated
+ *  with loading, using, modifying and/or developing or reproducing the
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also
+ *  therefore means that it is reserved for developers and experienced
+ *  professionals having in-depth computer knowledge. Users are therefore
+ *  encouraged to load and test the software's suitability as regards their
+ *  requirements in conditions enabling the security of their systems and/or
+ *  data to be ensured and, more generally, to use and operate it in the same
+ *  conditions as regards security.
+ *
+ *  The fact that you are presently reading this means that you have had
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#ifndef</font><font class="text"> LA_VECTOR_HH
+</font><font class="kw2">#define</font><font class="text"> LA_VECTOR_HH
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Object</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_assertions</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;iosfwd&gt;
+
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">PEL_DistributedPartition</font><font class="text"> ;
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">size_t_vector</font><font class="text"> ;
+
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">LA_SeqVector</font><font class="text"> ;
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">LA_Implementation</font><font class="text"> ;
+</font><font class="kw1">class</font><font class="text"> </font><font class="kw3">LA_Scatter</font><font class="text"> ;
+
+</font><font class="comment">/*
+  Vectors of double, for linear algebra computations.
+</font><font class="text">
+</font><font class="comment">  PUBLISHED
+*/
+</font><font class="text">
+</font><font class="kw1">class</font><font class="text"> PEL_EXPORT </font><font class="kw3">LA_Vector</font><font class="text"> : </font><font class="kw1">public</font><font class="text"> </font><font class="kw3">PEL_Object
+</font><font class="text">{
+   </font><font class="kw1">public</font><font class="text">: </font><font class="comment">//-----------------------------------------------------------
+</font><font class="text">
+   </font><font class="comment">//-- Instance delivery and initialization
+</font><font class="text">
+      </font><font class="comment">// Reinitialize the internal state, as if it was just created.
+</font><font class="text">      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> re_initialize( </font><font class="kw2">size_t</font><font class="text"> a_nb_rows,
+                        </font><font class="kw2">size_t</font><font class="text"> a_nb_local_rows = </font><font class="kw3">PEL</font><font class="text">::bad_index() ) = 0 ;
+
+      </font><font class="comment">// Create a vector with the same implementation as `self'.
+</font><font class="text">      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw3">LA_Vector</font><font class="text">* create_vector( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner ) </font><font class="kw1">const</font><font class="text"> = 0 ;
+
+   </font><font class="comment">//-- Characteristics
+</font><font class="text">
+      </font><font class="comment">// implementation family descriptor
+</font><font class="text">      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw3">LA_Implementation</font><font class="text"> </font><font class="kw1">const</font><font class="text">* implementation( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> = 0 ;
+
+      </font><font class="comment">// Might the number of rows be changed ?
+</font><font class="text">      </font><font class="kw1">bool</font><font class="text"> is_resizable( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+
+   </font><font class="comment">//-- Characteristics setting
+</font><font class="text">
+      </font><font class="comment">// Fixe the number of rows and the number of columns.
+</font><font class="text">      </font><font class="kw1">void</font><font class="text"> make_non_resizable( </font><font class="kw1">void</font><font class="text"> ) ;
+
+   </font><font class="comment">//-- Distributed processing(10.)
+</font><font class="text">
+      </font><font class="comment">// on-process synchronization state
+</font><font class="text">      </font><font class="kw3">LA</font><font class="text">::SyncState state( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw3">LA</font><font class="text">::DistributionStrategy distribution_strategy( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="comment">// Is `self' a distributed vector ?
+</font><font class="text">      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> is_desynchronizable( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> = 0 ;
+
+      </font><font class="comment">// Define environment between call to &quot;start_local_modifs&quot; and
+</font><font class="text">      </font><font class="comment">// &quot;stop_local_modifs&quot; methods
+</font><font class="text">      </font><font class="comment">// in which &quot;set_item&quot;, &quot;add_to_item&quot; or &quot;item&quot; can be used alternatively
+</font><font class="text">      </font><font class="comment">// to modify on-process items without synchronization.
+</font><font class="text">      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> start_local_modifs( </font><font class="kw1">void</font><font class="text"> ) ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> stop_local_modifs( </font><font class="kw1">void</font><font class="text"> ) ;
+
+      </font><font class="comment">// Is in environment defined by start_local_modifs and
+</font><font class="text">      </font><font class="comment">// stop_local_modifs methods ?
+</font><font class="text">      </font><font class="kw1">bool</font><font class="text"> only_local_modifs( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="comment">// In distributed case, are non local items of any process to be copied
+</font><font class="text">      </font><font class="comment">// to other process ?
+</font><font class="text">      </font><font class="kw1">bool</font><font class="text"> is_synchronized( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="comment">// Ensure that no dispersed items are remaining in `self'.
+</font><font class="text">      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> synchronize( </font><font class="kw1">void</font><font class="text"> ) ;
+
+      </font><font class="comment">// distribution of vector rows over the processes
+</font><font class="text">      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw3">PEL_DistributedPartition</font><font class="text"> </font><font class="kw1">const</font><font class="text">* row_distribution( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> = 0 ;
+
+      </font><font class="comment">// Create scatter object compatible with `self'.
+</font><font class="text">      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw3">LA_Scatter</font><font class="text">* create_scatter( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                          </font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; from,
+                                          </font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; to ) </font><font class="kw1">const</font><font class="text"> = 0 ;
+
+   </font><font class="comment">//-- Access(50.)
+</font><font class="text">
+      </font><font class="comment">// number of rows
+</font><font class="text">      </font><font class="kw2">size_t</font><font class="text"> nb_rows( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="comment">// number of rows handled by current process
+</font><font class="text">      </font><font class="kw2">size_t</font><font class="text"> nb_local_rows( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+      
+      </font><font class="comment">// Create and return a COPY of `self' :
+</font><font class="text">      </font><font class="comment">//    - in parallel : current process rows only ;
+</font><font class="text">      </font><font class="comment">//    - to use with care : potentially greedy in time and memory.
+</font><font class="text">      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw3">LA_SeqVector</font><font class="text">* create_local_vector(
+                                           </font><font class="kw3">PEL_Object</font><font class="text">* a_owner ) </font><font class="kw1">const</font><font class="text"> = 0 ;
+
+      </font><font class="comment">// `i'-th coefficient
+</font><font class="text">      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">double</font><font class="text"> item( </font><font class="kw2">size_t</font><font class="text"> i ) </font><font class="kw1">const</font><font class="text"> = 0 ;
+
+   </font><font class="comment">//-- Element change(60.)
+</font><font class="text">
+      </font><font class="comment">// Assign `x' to the `i'-th coefficient.
+</font><font class="text">      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> set_item( </font><font class="kw2">size_t</font><font class="text"> i, </font><font class="kw1">double</font><font class="text"> x ) = 0 ;
+
+      </font><font class="comment">// Add `x' to the `i'-th coefficient.
+</font><font class="text">      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> add_to_item( </font><font class="kw2">size_t</font><font class="text"> i, </font><font class="kw1">double</font><font class="text"> x ) = 0 ;
+
+   </font><font class="comment">//-- BLAS level 1 : vector-vector operators(105.)
+</font><font class="text">
+      </font><font class="comment">// euclidian inner-product with `a'
+</font><font class="text">      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">double</font><font class="text"> dot( </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* a ) </font><font class="kw1">const</font><font class="text"> = 0 ;
+
+      </font><font class="comment">// euclidian norm
+</font><font class="text">      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">double</font><font class="text"> two_norm( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> = 0 ;
+
+      </font><font class="comment">// infinity norm
+</font><font class="text">      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">double</font><font class="text"> max_norm( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> = 0 ;
+
+      </font><font class="comment">// Assign 0.0 to all coefficients.
+</font><font class="text">      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> nullify( </font><font class="kw1">void</font><font class="text"> ) ;
+
+      </font><font class="comment">// Multiply by `alpha' :
+</font><font class="text">      </font><font class="comment">//    `self' &lt;- `alpha'*`self' .
+</font><font class="text">      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> scale( </font><font class="kw1">double</font><font class="text"> alpha ) = 0 ;
+
+      </font><font class="comment">// Reinitialize by copying all coefficients of `a'.
+</font><font class="text">      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> </font><font class="kw2">set</font><font class="text">( </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* a ) = 0 ;
+
+      </font><font class="comment">// Reinitialize by setting all coefficients to `value'.
+</font><font class="text">      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> </font><font class="kw2">set</font><font class="text">( </font><font class="kw1">double</font><font class="text"> value ) = 0 ;
+
+      </font><font class="comment">// Reinitialize by assigning to each coefficient the product
+</font><font class="text">      </font><font class="comment">// of the coefficients of `a' and `b' with the same index :
+</font><font class="text">      </font><font class="comment">//    `self'(i) &lt;- `a'(i) * `b'(i) .
+</font><font class="text">      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> set_as_v_product(
+                             </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* a, </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* b ) = 0 ;
+
+      </font><font class="comment">// Reinitialize by assigning to each coefficient the inverse
+</font><font class="text">      </font><font class="comment">// of the coefficients of `a' with the same index.
+</font><font class="text">      </font><font class="comment">// If such coefficient is such that its magnitude is strictly lower than
+</font><font class="text">      </font><font class="comment">// `smallest_inverted_item' then is't value is set to `default_value'.
+</font><font class="text">      </font><font class="comment">// Rem : `a' can be the same than `self'.
+</font><font class="text">      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> set_as_reciprocal( </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* a,
+                                      </font><font class="kw1">double</font><font class="text"> smallest_inverted_item = 0.,
+                                      </font><font class="kw1">double</font><font class="text"> default_value = 1. ) = 0 ;
+
+      </font><font class="comment">// Add `alpha'*`a' to `self' :
+</font><font class="text">      </font><font class="comment">//    `self' &lt;- ( `alpha'*`a' + `self' ) .
+</font><font class="text">      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> sum( </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* a, </font><font class="kw1">double</font><font class="text"> alpha=1.0 ) = 0 ;
+
+   </font><font class="comment">//-- Input - Output
+</font><font class="text">
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> print( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostream</font><font class="text">&amp; os, </font><font class="kw2">size_t</font><font class="text"> indent_width ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="comment">// Print items of `self'.
+</font><font class="text">      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> print_items(
+                      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostream</font><font class="text">&amp; os, </font><font class="kw2">size_t</font><font class="text"> indent_width ) </font><font class="kw1">const</font><font class="text"> = 0 ;
+
+      </font><font class="comment">// Write in file called `filename'.
+</font><font class="text">      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> write( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; filename ) </font><font class="kw1">const</font><font class="text"> = 0 ;
+
+      </font><font class="comment">// Reinitialize with vector stored in file called `filename'.
+</font><font class="text">      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">void</font><font class="text"> read( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; filename ) ;
+
+   </font><font class="kw1">protected</font><font class="text">: </font><font class="comment">//--------------------------------------------------------
+</font><font class="text">
+      </font><font class="kw1">virtual</font><font class="text"> ~</font><font class="kw3">LA_Vector</font><font class="text">( </font><font class="kw1">void</font><font class="text"> ) ;
+
+      </font><font class="kw3">LA_Vector</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner, </font><font class="kw2">size_t</font><font class="text"> a_nb_rows ) ;
+
+      </font><font class="comment">// To avoid virtuality of method nb_rows.
+</font><font class="text">      </font><font class="kw1">void</font><font class="text"> set_rows_number( </font><font class="kw2">size_t</font><font class="text"> a_nb_rows ) ;
+
+   </font><font class="comment">//-- Distributed processing
+</font><font class="text">
+      </font><font class="kw1">void</font><font class="text"> set_distribution_strategy(
+                                </font><font class="kw3">LA</font><font class="text">::DistributionStrategy dist_strat ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">void</font><font class="text"> set_unsynchronized_state( </font><font class="kw3">LA</font><font class="text">::SyncState new_state ) ;
+
+      </font><font class="kw1">void</font><font class="text"> set_only_local_modifs_state( </font><font class="kw1">bool</font><font class="text"> only_local ) ;
+
+   </font><font class="comment">//-- Preconditions, Postconditions, Invariant
+</font><font class="text">
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> invariant( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> re_initialize_PRE( </font><font class="kw2">size_t</font><font class="text"> a_nb_rows,
+                                      </font><font class="kw2">size_t</font><font class="text"> a_nb_local_rows ) </font><font class="kw1">const</font><font class="text"> ;
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> re_initialize_POST( </font><font class="kw2">size_t</font><font class="text"> a_nb_rows,
+                                       </font><font class="kw2">size_t</font><font class="text"> a_nb_local_rows ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> create_vector_PRE( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner ) </font><font class="kw1">const</font><font class="text"> ;
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> create_vector_POST(
+                   </font><font class="kw3">LA_Vector</font><font class="text">* result, </font><font class="kw3">PEL_Object</font><font class="text">* a_owner ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> item_PRE( </font><font class="kw2">size_t</font><font class="text"> i ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> implementation_POST(
+                                </font><font class="kw3">LA_Implementation</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> start_local_modifs_PRE( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> start_local_modifs_POST( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> stop_local_modifs_PRE( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> stop_local_modifs_POST( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> synchronize_PRE( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> synchronize_POST( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> row_distribution_PRE( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> row_distribution_POST(
+                            </font><font class="kw3">PEL_DistributedPartition</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> create_scatter_PRE( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                       </font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; from,
+                                       </font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; to ) </font><font class="kw1">const</font><font class="text"> ;
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> create_scatter_POST( </font><font class="kw3">LA_Scatter</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result,
+                                        </font><font class="kw3">PEL_Object</font><font class="text"> </font><font class="kw1">const</font><font class="text">* a_owner,
+                                        </font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; from,
+                                        </font><font class="kw3">size_t_vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; to ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> create_local_vector_PRE( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner ) </font><font class="kw1">const</font><font class="text"> ;
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> create_local_vector_POST(
+                      </font><font class="kw3">LA_SeqVector</font><font class="text">* result, </font><font class="kw3">PEL_Object</font><font class="text">* a_owner ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> set_item_PRE( </font><font class="kw2">size_t</font><font class="text"> i ) </font><font class="kw1">const</font><font class="text"> ;
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> set_item_POST( </font><font class="kw2">size_t</font><font class="text"> i, </font><font class="kw3">LA</font><font class="text">::SyncState old_state ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> add_to_item_PRE( </font><font class="kw2">size_t</font><font class="text"> i ) </font><font class="kw1">const</font><font class="text"> ;
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> add_to_item_POST( </font><font class="kw2">size_t</font><font class="text"> i, </font><font class="kw3">LA</font><font class="text">::SyncState old_state ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> dot_PRE( </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* a ) </font><font class="kw1">const</font><font class="text"> ;
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> dot_POST( </font><font class="kw1">double</font><font class="text"> result ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> two_norm_PRE( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> two_norm_POST( </font><font class="kw1">double</font><font class="text"> result ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> max_norm_PRE( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> max_norm_POST( </font><font class="kw1">double</font><font class="text"> result ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> nullify_PRE( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> nullify_POST( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> scale_PRE( </font><font class="kw1">double</font><font class="text"> value ) </font><font class="kw1">const</font><font class="text"> ;
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> scale_POST( </font><font class="kw1">double</font><font class="text"> value ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> set_PRE( </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* a ) </font><font class="kw1">const</font><font class="text"> ;
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> set_POST( </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* a ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> set_PRE( </font><font class="kw1">double</font><font class="text"> value ) </font><font class="kw1">const</font><font class="text"> ;
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> set_POST( </font><font class="kw1">double</font><font class="text"> value ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> set_as_v_product_PRE(
+                      </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* a, </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* b ) </font><font class="kw1">const</font><font class="text"> ;
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> set_as_v_product_POST(
+                      </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* a, </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* b ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> set_as_reciprocal_PRE( </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* a,
+                                          </font><font class="kw1">double</font><font class="text"> smallest_inverted_item,
+                                          </font><font class="kw1">double</font><font class="text"> default_value ) </font><font class="kw1">const</font><font class="text"> ;
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> set_as_reciprocal_POST( </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* a ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> sum_PRE( </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* a, </font><font class="kw1">double</font><font class="text"> alpha ) </font><font class="kw1">const</font><font class="text"> ;
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> sum_POST( </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* a, </font><font class="kw1">double</font><font class="text"> alpha ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> print_items_PRE(
+                          </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostream</font><font class="text">&amp; os, </font><font class="kw2">size_t</font><font class="text"> indent_width ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> write_PRE( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; filename ) </font><font class="kw1">const</font><font class="text"> ;
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> write_POST( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> read_PRE( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; filename ) </font><font class="kw1">const</font><font class="text"> ;
+      </font><font class="kw1">virtual</font><font class="text"> </font><font class="kw1">bool</font><font class="text"> read_POST( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const</font><font class="text"> ;
+
+   </font><font class="kw1">private</font><font class="text">: </font><font class="comment">//----------------------------------------------------------
+</font><font class="text">
+      </font><font class="kw3">LA_Vector</font><font class="text">( </font><font class="kw1">void</font><font class="text"> ) ;
+      </font><font class="kw3">LA_Vector</font><font class="text">( </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; other ) ;
+      </font><font class="kw3">LA_Vector</font><font class="text">&amp; </font><font class="kw1">operator</font><font class="text">=( </font><font class="kw3">LA_Vector</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; other ) ;
+
+   </font><font class="comment">//-- Attributes
+</font><font class="text">
+      </font><font class="kw2">size_t</font><font class="text"> NB_ROWS ;
+      </font><font class="kw3">LA</font><font class="text">::SyncState DIST_STATUS ;
+      </font><font class="kw1">bool</font><font class="text"> RESIZABLE ;
+
+      </font><font class="kw1">bool</font><font class="text"> ONLY_LOCAL_MODIFS ;
+
+      </font><font class="kw1">mutable</font><font class="text"> </font><font class="kw3">LA</font><font class="text">::DistributionStrategy DIST_STRAT ;
+} ;
+
+</font><font class="kw2">#ifndef</font><font class="text"> OUTLINE
+   </font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_Vector</font><font class="text">.icc&gt;
+</font><font class="kw2">#endif
+</font><font class="text">
+</font><font class="kw2">#endif
+</font><font class="text">
+</font>
+</pre>
+</body>
+</html>

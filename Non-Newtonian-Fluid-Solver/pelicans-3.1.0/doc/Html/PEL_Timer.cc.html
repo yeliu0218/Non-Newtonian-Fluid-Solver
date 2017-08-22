@@ -1,0 +1,299 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>PEL_Timer.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="PEL_Timer.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="PELpack-tree.html"><span>Tree</span></a>
+    <a href="PEL_Timer.html"><span>Class</span></a>
+    <a href="PEL_Timer.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="PELpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Timer</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Communicator</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Exec</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_System</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_assertions</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;iostream&gt;
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw3">PEL_Timer</font><font class="text">* </font><font class="kw3">PEL_Timer</font><font class="text">:: create( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner )
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_Timer:: create&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw3">PEL_Timer</font><font class="text">* result = </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PEL_Timer</font><font class="text">( a_owner ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;owner() == a_owner ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw3">PEL_Timer</font><font class="text">:: </font><font class="kw3">PEL_Timer</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner )
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_Object</font><font class="text">( a_owner )
+   , CUMUL_TIME( 0. )
+   , CURRENT_TIME( </font><font class="kw3">PEL</font><font class="text">::bad_double() )
+   , RUNNING( </font><font class="kw1">false</font><font class="text"> )
+   , CUMUL_ELAPSED_TIME( 0. )
+   , CURRENT_ELAPSED_TIME( </font><font class="kw3">PEL</font><font class="text">::bad_double() )
+{
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw3">PEL_Timer</font><font class="text">:: ~</font><font class="kw3">PEL_Timer</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw1">if</font><font class="text">( is_running() )
+   {
+      stop() ;
+   }
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_Timer</font><font class="text">:: start( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_Timer:: start&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( !is_running() ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   
+   CURRENT_TIME = </font><font class="kw3">PEL_System</font><font class="text">::user_time() ;
+   CURRENT_ELAPSED_TIME = </font><font class="kw3">PEL_System</font><font class="text">::epoch_time() ;
+   RUNNING = </font><font class="kw1">true</font><font class="text"> ;
+
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_Timer</font><font class="text">:: stop( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_Timer:: stop&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( is_running() ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   
+   CUMUL_TIME += ( </font><font class="kw3">PEL_System</font><font class="text">::user_time() - CURRENT_TIME ) ;
+   CURRENT_TIME = </font><font class="kw3">PEL</font><font class="text">::bad_double() ;
+   CUMUL_ELAPSED_TIME += ( </font><font class="kw3">PEL_System</font><font class="text">::epoch_time() - CURRENT_ELAPSED_TIME ) ;
+   CURRENT_ELAPSED_TIME = </font><font class="kw3">PEL</font><font class="text">::bad_double() ;
+   RUNNING = </font><font class="kw1">false</font><font class="text"> ;
+   
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( !is_running() ) ;
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_Timer</font><font class="text">:: reset( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_Timer:: reset&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   
+   </font><font class="kw1">if</font><font class="text">( is_running() )
+   {
+      stop() ;
+   }
+   CUMUL_TIME = 0. ;
+   CUMUL_ELAPSED_TIME = 0. ;
+   
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw1">double
+</font><font class="kw3">PEL_Timer</font><font class="text">:: time( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_Timer:: time&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   
+   </font><font class="kw1">double</font><font class="text"> result = CUMUL_TIME ;
+   </font><font class="kw1">if</font><font class="text">( is_running() )
+   {
+      result += ( </font><font class="kw3">PEL_System</font><font class="text">::user_time() - CURRENT_TIME ) ;
+   }
+   
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result&gt;=0.0 ) ;
+   </font><font class="kw1">return</font><font class="text">( result );
+}
+   
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw1">double
+</font><font class="kw3">PEL_Timer</font><font class="text">:: elapsed_time( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_Timer:: elapsed_time&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   
+   </font><font class="kw1">double</font><font class="text"> result = CUMUL_ELAPSED_TIME ;
+   </font><font class="kw1">if</font><font class="text">( is_running() )
+   {
+      result += ( </font><font class="kw3">PEL_System</font><font class="text">::epoch_time() - CURRENT_ELAPSED_TIME ) ;
+   }
+   
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result&gt;=0.0 ) ;
+   </font><font class="kw1">return</font><font class="text">( result );
+}
+   
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">PEL_Timer</font><font class="text">:: is_running( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PEL_Timer:: is_running&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   </font><font class="kw1">return</font><font class="text">( RUNNING ) ;
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_Timer</font><font class="text">:: print( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostream</font><font class="text">&amp; os, </font><font class="kw2">size_t</font><font class="text"> indent_width ) </font><font class="kw1">const
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">static</font><font class="text"> </font><font class="kw2">size_t</font><font class="text"> size = </font><font class="kw3">PEL_Exec</font><font class="text">::communicator()-&gt;nb_ranks() ;
+   
+   print_time( time(), os, indent_width ) ;
+   </font><font class="kw1">if</font><font class="text">( size&gt;1 ) 
+   {
+      os &lt;&lt; </font><font class="string">&quot; (&quot;</font><font class="text"> ;
+      print_time( elapsed_time(), os, 0 ) ;
+      os &lt;&lt; </font><font class="string">&quot;)&quot;</font><font class="text"> ;
+   }
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PEL_Timer</font><font class="text">:: print_time( </font><font class="kw1">double</font><font class="text"> a_time, </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ostream</font><font class="text">&amp; os, </font><font class="kw2">size_t</font><font class="text"> indent_width ) 
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> space( indent_width, </font><font class="string">' '</font><font class="text"> ) ;
+   os &lt;&lt; space ;
+   </font><font class="kw1">double</font><font class="text"> t = a_time ;
+   
+   </font><font class="kw1">int</font><font class="text"> </font><font class="kw1">const</font><font class="text"> hh = (</font><font class="kw1">int</font><font class="text">) ( t/3600. ) ;
+   </font><font class="kw1">int</font><font class="text"> </font><font class="kw1">const</font><font class="text"> mm = (</font><font class="kw1">int</font><font class="text">) ( (t-3600.*hh)/60. ) ;
+   </font><font class="kw1">if</font><font class="text">( hh==0 &amp;&amp; mm==0 )
+   {
+      os &lt;&lt; t &lt;&lt; </font><font class="string">&quot; s&quot;</font><font class="text"> ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      </font><font class="kw1">if</font><font class="text">( hh &gt; 0 )
+      {
+         os &lt;&lt; hh &lt;&lt; </font><font class="string">&quot;:&quot;</font><font class="text"> ;
+      }
+      </font><font class="kw1">if</font><font class="text">( mm==0 )
+      {
+         os &lt;&lt; </font><font class="string">&quot;00:&quot;</font><font class="text"> ;
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( mm&lt;10 )
+      {
+         os &lt;&lt; </font><font class="string">&quot;0&quot;</font><font class="text"> &lt;&lt; mm &lt;&lt; </font><font class="string">&quot;:&quot;</font><font class="text"> ;
+      }
+      </font><font class="kw1">else
+</font><font class="text">      {
+         os &lt;&lt; mm &lt;&lt; </font><font class="string">&quot;:&quot;</font><font class="text"> ;
+      }
+      </font><font class="kw1">double</font><font class="text"> </font><font class="kw1">const</font><font class="text"> ss = ( (</font><font class="kw1">int</font><font class="text">) (10.*(t-3600.*hh-60.*mm)) )/10. ;
+      </font><font class="kw1">if</font><font class="text">( ss==0 )
+      {
+         os &lt;&lt; </font><font class="string">&quot;00&quot;</font><font class="text"> ;
+      }
+      </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( ss&lt;10 )
+      {
+         os &lt;&lt; </font><font class="string">&quot;0&quot;</font><font class="text"> &lt;&lt; ss ;
+      }
+      </font><font class="kw1">else
+</font><font class="text">      {
+         os &lt;&lt; ss ;
+      }
+      os &lt;&lt; </font><font class="string">&quot; h:m:s&quot;</font><font class="text"> ;
+   }
+}
+
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">PEL_Timer</font><font class="text">:: invariant( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//-------------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( </font><font class="kw3">PEL_Object</font><font class="text">::invariant() ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( !( RUNNING &amp;&amp; CURRENT_TIME==</font><font class="kw3">PEL</font><font class="text">::bad_double() ) ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( !( RUNNING &amp;&amp; CURRENT_ELAPSED_TIME==</font><font class="kw3">PEL</font><font class="text">::bad_double() ) ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font>
+</pre>
+</body>
+</html>

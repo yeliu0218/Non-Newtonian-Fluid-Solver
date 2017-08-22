@@ -1,0 +1,680 @@
+<html>
+<head>
+<title>AP_NavierStokes1System.cc</title>
+<link rel=stylesheet type="text/css" href="stylesheet.css">
+</head>
+<body>
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;AP_NavierStokes1System.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Error</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_ModuleExplorer</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Timer</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_Vector</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_Matrix</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_SeqVector</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_Solver</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_TwoBlocksMethod</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">LA_Vector</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_DiscreteField</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_LocalEquation</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_SystemNumbering</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;ios&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;iostream&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;iomanip&gt;
+
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">endl</font><font class="text"> ; 
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">ios_base</font><font class="text"> ;
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">setprecision</font><font class="text"> ; </font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">setw</font><font class="text"> ;
+</font><font class="kw1">using</font><font class="text"> </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> ;
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">AP_NavierStokes1System*
+AP_NavierStokes1System:: create( </font><font class="kw3">PEL_Object</font><font class="text">* a_owner, 
+                                 </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp,
+                                 </font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text">* uu_link,
+                                 </font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text">* pp_link )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;AP_NavierStokes1System:: create&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( exp != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( uu_link != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( uu_link-&gt;components_table().size() &gt; 1 ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( uu_link-&gt;owner() == 0 ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( pp_link != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( pp_link-&gt;components_table().size() == 1 ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( pp_link-&gt;owner() == 0 ) ;
+
+   AP_NavierStokes1System* result = 
+                </font><font class="kw1">new</font><font class="text"> AP_NavierStokes1System( a_owner, exp, uu_link, pp_link ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;owner() == a_owner ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( !result-&gt;is_initialized() ) ; </font><font class="comment">//??? oui ou non
+</font><font class="text">   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;linkDOF2Unknown_U() == uu_link ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;linkDOF2Unknown_P() == pp_link ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">AP_NavierStokes1System:: AP_NavierStokes1System(
+                                         </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                                         </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* exp,
+                                         </font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text">* uu_link,
+                                         </font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text">* pp_link )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PEL_Object</font><font class="text">( a_owner )
+   , METH( invalid )
+   , HAS_INIT_U( </font><font class="kw1">false</font><font class="text"> )
+   , HAS_INIT_P( </font><font class="kw1">false</font><font class="text"> )
+   , BoverDT( </font><font class="kw3">PEL</font><font class="text">::bad_double() )
+   , RR( 0.0 )
+   , CONVERGED( </font><font class="kw1">false</font><font class="text"> )
+   , TOL_VELO( -</font><font class="kw3">PEL</font><font class="text">::max_double() )
+   , TOL_DIV( -</font><font class="kw3">PEL</font><font class="text">::max_double() )
+   , VERBOSE( exp-&gt;has_entry( </font><font class="string">&quot;verbose_level&quot;</font><font class="text"> ) ? 
+                 exp-&gt;int_data( </font><font class="string">&quot;verbose_level&quot;</font><font class="text"> ) : 0 )
+   , INDENT( </font><font class="string">&quot;&quot;</font><font class="text"> )
+   , NMB( 0 )
+   , NMB_U( 0 )
+   , NMB_P( 0 )
+   , idx_U( 0 )
+   , idx_P( 1 )
+   , P( 0 )
+   , A( 0 )
+   , F( 0 )
+   , B( 0 )
+   , G( 0 )
+   , S( 0 )
+   , C( 0 )
+   , U( 0 )
+   , U_LOC( </font><font class="kw3">LA_SeqVector</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, 0 ) )
+   , P_LOC( </font><font class="kw3">LA_SeqVector</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, 0 ) )
+   , SOLVER( 0 )
+{
+   </font><font class="comment">//??? for the sake of clarity, do not use the same A for all cases
+</font><font class="text">   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text"> </font><font class="kw1">const</font><font class="text">* ee = exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;LA_Matrix&quot;</font><font class="text"> ) ;
+   A = </font><font class="kw3">LA_Matrix</font><font class="text">::make( </font><font class="kw1">this</font><font class="text">, ee ) ;
+   ee-&gt;destroy() ; ee = 0 ;
+
+   </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* se = exp-&gt;create_subexplorer( 0, </font><font class="string">&quot;method&quot;</font><font class="text"> ) ;
+   </font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; mtype = se-&gt;string_data( </font><font class="string">&quot;type&quot;</font><font class="text"> ) ;
+   </font><font class="kw1">if</font><font class="text">( mtype == </font><font class="string">&quot;monolithic&quot;</font><font class="text"> )
+   {
+      METH = MONO ;
+      
+      </font><font class="kw3">PEL_Vector</font><font class="text">* vec = </font><font class="kw3">PEL_Vector</font><font class="text">::create( 0, 2 ) ;
+      vec-&gt;set_at( idx_U, uu_link ) ;
+      vec-&gt;set_at( idx_P, pp_link ) ;
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> ordering = </font><font class="string">&quot;sequence_of_the_discrete_fields&quot;</font><font class="text"> ;
+      NMB = </font><font class="kw3">PDE_SystemNumbering</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, vec, ordering ) ;
+      vec-&gt;destroy() ; vec = 0 ;
+
+      F = A-&gt;create_vector( </font><font class="kw1">this</font><font class="text"> ) ;
+      U = P = A-&gt;create_vector( </font><font class="kw1">this</font><font class="text"> ) ;   </font><font class="comment">//???
+</font><font class="text">      
+      ee = se-&gt;create_subexplorer( 0, </font><font class="string">&quot;LA_Solver&quot;</font><font class="text">) ;
+      SOLVER= </font><font class="kw3">LA_Solver</font><font class="text">::make( </font><font class="kw1">this</font><font class="text">, ee ) ;
+      ee-&gt;destroy() ; ee = 0 ;
+   }
+   </font><font class="kw1">else</font><font class="text"> </font><font class="kw1">if</font><font class="text">( mtype == </font><font class="string">&quot;augmented_Lagrangian&quot;</font><font class="text"> )
+   {
+      METH = AL ;
+      </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> ordering = </font><font class="string">&quot;sequence_of_the_discrete_fields&quot;</font><font class="text"> ; </font><font class="comment">//??????
+</font><font class="text">      NMB_U = </font><font class="kw3">PDE_SystemNumbering</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, uu_link ) ;
+      NMB_P = </font><font class="kw3">PDE_SystemNumbering</font><font class="text">::create( </font><font class="kw1">this</font><font class="text">, pp_link ) ;
+
+      U = A-&gt;create_vector( </font><font class="kw1">this</font><font class="text"> ) ;
+      P = A-&gt;create_vector( </font><font class="kw1">this</font><font class="text"> ) ;
+      
+      B = A-&gt;create_matrix( </font><font class="kw1">this</font><font class="text"> ) ; 
+      C = A-&gt;create_matrix( </font><font class="kw1">this</font><font class="text"> ) ; 
+      S = A-&gt;create_vector( </font><font class="kw1">this</font><font class="text"> ) ; 
+      F = A-&gt;create_vector( </font><font class="kw1">this</font><font class="text"> ) ; 
+      G = A-&gt;create_vector( </font><font class="kw1">this</font><font class="text"> ) ; 
+      
+      ee = se-&gt;create_subexplorer( 0, </font><font class="string">&quot;LA_TwoBlocksMethod&quot;</font><font class="text"> ) ;
+      SOLVER_TB = </font><font class="kw3">LA_TwoBlocksMethod</font><font class="text">::make( </font><font class="kw1">this</font><font class="text">, ee ) ;
+      ee-&gt;destroy() ; ee = 0 ;
+      
+      SOLVER_TB-&gt;set_matrix_prototype( A ) ;
+   } 
+   </font><font class="kw1">else
+</font><font class="text">   {
+      </font><font class="kw3">PEL_Error</font><font class="text">::object()-&gt;raise_bad_data_value( se, </font><font class="string">&quot;type&quot;</font><font class="text">, 
+           </font><font class="string">&quot;\&quot;</font><font class="text">augmented_Lagrangian\</font><font class="string">&quot; \&quot;</font><font class="text">monolithic\</font><font class="string">&quot;&quot;</font><font class="text">  ) ;
+   }
+   se-&gt;destroy() ; se = 0 ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">AP_NavierStokes1System:: ~AP_NavierStokes1System( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">AP_NavierStokes1System:: re_initialize( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;AP_NavierStokes1System:: re_initialize&quot;</font><font class="text"> ) ;
+
+   CONVERGED = </font><font class="kw1">false</font><font class="text"> ;
+   HAS_INIT_U = </font><font class="kw1">false</font><font class="text"> ;
+   HAS_INIT_P = </font><font class="kw1">false</font><font class="text"> ;
+   
+   </font><font class="kw1">if</font><font class="text">( METH == MONO )
+   {
+      NMB-&gt;reset() ;
+      
+      </font><font class="kw2">size_t</font><font class="text"> n_glob = NMB_U-&gt;nb_global_unknowns() ;
+      </font><font class="kw2">size_t</font><font class="text"> n_loc  = NMB_U-&gt;nb_unknowns_on_current_process() ;
+      
+      A-&gt;re_initialize( n_glob, n_glob, n_loc, n_loc ) ;
+      F-&gt;re_initialize( n_glob, n_loc ) ;
+      U-&gt;re_initialize( n_glob, n_loc ) ;
+      
+      U_LOC-&gt;re_initialize( NMB-&gt;link( idx_U )-&gt;unknown_vector_size() ) ;
+      P_LOC-&gt;re_initialize( NMB-&gt;link( idx_P )-&gt;unknown_vector_size() ) ;
+      
+      NMB-&gt;define_scatters( U ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      NMB_U-&gt;reset() ;
+      NMB_P-&gt;reset() ;
+      
+      </font><font class="kw2">size_t</font><font class="text"> nv_glob = NMB_U-&gt;nb_global_unknowns() ;
+      </font><font class="kw2">size_t</font><font class="text"> np_glob = NMB_P-&gt;nb_global_unknowns() ;
+
+      </font><font class="kw2">size_t</font><font class="text"> nv_loc = NMB_U-&gt;nb_unknowns_on_current_process() ;
+      </font><font class="kw2">size_t</font><font class="text"> np_loc = NMB_P-&gt;nb_unknowns_on_current_process() ;
+
+      A-&gt;re_initialize( nv_glob, nv_glob, nv_loc, nv_loc ) ;
+      U-&gt;re_initialize( nv_glob, nv_loc ) ;
+      P-&gt;re_initialize( np_glob, np_loc ) ; 
+      
+      B-&gt;re_initialize( np_glob, nv_glob, np_loc, nv_loc ) ;
+      C-&gt;re_initialize( np_glob, np_glob, np_loc, np_loc ) ;
+      S-&gt;re_initialize( np_glob, np_loc ) ;
+      F-&gt;re_initialize( nv_glob, nv_loc ) ;
+      G-&gt;re_initialize( np_glob, np_loc ) ;
+      
+      SOLVER_TB-&gt;re_initialize_internals( nv_glob, np_glob, nv_loc, np_loc ) ;
+      
+      U_LOC-&gt;re_initialize( NMB_U-&gt;link()-&gt;unknown_vector_size() ) ;
+      P_LOC-&gt;re_initialize( NMB_P-&gt;link()-&gt;unknown_vector_size() ) ;
+      
+      NMB_U-&gt;define_scatters( U ) ;
+      NMB_P-&gt;define_scatters( P ) ;
+   }
+   
+   INIT = </font><font class="kw1">true</font><font class="text"> ;
+   
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( unknown_vector_U()-&gt;nb_rows() == 
+                   linkDOF2Unknown_U()-&gt;unknown_vector_size() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( unknown_vector_P()-&gt;nb_rows() == 
+                   linkDOF2Unknown_P()-&gt;unknown_vector_size() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="text">AP_NavierStokes1System:: is_initialized( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">return</font><font class="text">( INIT ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+AP_NavierStokes1System:: linkDOF2Unknown_U( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result = 
+                       ( METH == MONO ?  NMB-&gt;link( idx_U ) : NMB_U-&gt;link() ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+AP_NavierStokes1System:: linkDOF2Unknown_P( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PDE_LinkDOF2Unknown</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result = 
+                       ( METH == MONO ? NMB-&gt;link( idx_P ) :  NMB_P-&gt;link() ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+AP_NavierStokes1System:: unknown_vector_U( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;AP_NavierStokes1System:: unknown_vector_U&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( is_initialized() ) ;
+
+   </font><font class="kw1">if</font><font class="text">( METH == MONO )
+   {
+      NMB-&gt;scatter( idx_U )-&gt;get( U, U_LOC ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      NMB_U-&gt;scatter()-&gt;get( U, U_LOC ) ;
+   }
+   </font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result = U_LOC ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;owner() == </font><font class="kw1">this</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;nb_rows() == 
+                   linkDOF2Unknown_U()-&gt;unknown_vector_size() ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">*
+AP_NavierStokes1System:: unknown_vector_P( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;AP_NavierStokes1System:: unknown_vector_P&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( is_initialized() ) ;
+
+   </font><font class="kw1">if</font><font class="text">( METH == MONO )
+   {
+      NMB-&gt;scatter( idx_P )-&gt;get( P, P_LOC ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      NMB_P-&gt;scatter()-&gt;get( P, P_LOC ) ;
+   }
+   </font><font class="kw3">LA_SeqVector</font><font class="text"> </font><font class="kw1">const</font><font class="text">* result = P_LOC ;
+   
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;owner() == </font><font class="kw1">this</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;nb_rows() == 
+                   linkDOF2Unknown_P()-&gt;unknown_vector_size() ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw2">size_t
+</font><font class="text">AP_NavierStokes1System:: global_unknown_for_DOF_of_U( </font><font class="kw2">size_t</font><font class="text"> n,
+                                                      </font><font class="kw2">size_t</font><font class="text"> ic ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;AP_NavierStokes1System:: global_unknown_for_DOF_of_U&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( is_initialized() ) ;
+   
+   </font><font class="kw2">size_t</font><font class="text"> result = </font><font class="kw3">PEL</font><font class="text">::bad_index() ;
+   </font><font class="kw1">if</font><font class="text">( METH == MONO )
+   {
+      result = NMB-&gt;global_unknown_for_DOF( n, ic, idx_U ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      result = NMB_U-&gt;global_unknown_for_DOF( n, ic ) ;
+   }
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw2">size_t
+</font><font class="text">AP_NavierStokes1System:: global_unknown_for_DOF_of_P( </font><font class="kw2">size_t</font><font class="text"> n ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;AP_NavierStokes1System:: global_unknown_for_DOF_of_P&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( is_initialized() ) ;
+   
+   </font><font class="kw2">size_t</font><font class="text"> result = </font><font class="kw3">PEL</font><font class="text">::bad_index() ;
+   </font><font class="kw1">if</font><font class="text">( METH == MONO )
+   {
+      result = NMB-&gt;global_unknown_for_DOF( n, 0, idx_P ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      result = NMB_P-&gt;global_unknown_for_DOF( n, 0 ) ;
+   }
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">AP_NavierStokes1System:: set_initial_guess_U( 
+                                           </font><font class="kw3">PDE_DiscreteField</font><font class="text"> </font><font class="kw1">const</font><font class="text">* uu,
+                                           </font><font class="kw2">size_t</font><font class="text"> level )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;AP_NavierStokes1System:: set_initial_guess_U&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( is_initialized() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( uu != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( uu == linkDOF2Unknown_U()-&gt;field() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( level &lt; uu-&gt;storage_depth() ) ;
+   
+   </font><font class="kw1">if</font><font class="text">( METH == MONO )
+   {
+      uu-&gt;extract_unknown_DOFs_value( level, U_LOC, NMB-&gt;link( idx_U ) ) ;
+      NMB-&gt;scatter( idx_U )-&gt;</font><font class="kw2">set</font><font class="text">( U_LOC, U ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      uu-&gt;extract_unknown_DOFs_value( level, U_LOC, NMB_U-&gt;link() ) ;
+      NMB_U-&gt;scatter()-&gt;</font><font class="kw2">set</font><font class="text">( U_LOC, U ) ;
+   }
+   HAS_INIT_U = </font><font class="kw1">true</font><font class="text"> ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="text">AP_NavierStokes1System:: initial_guess_U_is_set( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">return</font><font class="text">( HAS_INIT_U ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">AP_NavierStokes1System:: set_initial_guess_P( </font><font class="kw3">PDE_DiscreteField</font><font class="text"> </font><font class="kw1">const</font><font class="text">* pp,
+                                              </font><font class="kw2">size_t</font><font class="text"> level )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;AP_NavierStokes1System:: set_initial_guess_P&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( is_initialized() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( pp != 0 ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( pp == linkDOF2Unknown_P()-&gt;field() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( level &lt; pp-&gt;storage_depth() ) ;
+
+   </font><font class="kw1">if</font><font class="text">( METH == MONO )
+   {
+      pp-&gt;extract_unknown_DOFs_value( level, P_LOC, NMB-&gt;link( idx_P ) ) ;
+      </font><font class="comment">// NMB-&gt;scatter( idx_P )-&gt;set( P_LOC, P0 ) ;
+</font><font class="text">      NMB-&gt;scatter( idx_P )-&gt;</font><font class="kw2">set</font><font class="text">( P_LOC, P ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      pp-&gt;extract_unknown_DOFs_value( level, P_LOC, NMB_P-&gt;link() ) ;
+</font><font class="comment">//      NMB_P-&gt;scatter()-&gt;set( P_LOC, P0 ) ;
+</font><font class="text">      NMB_P-&gt;scatter()-&gt;</font><font class="kw2">set</font><font class="text">( P_LOC, P ) ;
+   }
+   HAS_INIT_P = </font><font class="kw1">true</font><font class="text"> ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="text">AP_NavierStokes1System:: initial_guess_P_is_set( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">return</font><font class="text">( HAS_INIT_P ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">AP_NavierStokes1System:: set_leading_BDF_over_dt( </font><font class="kw1">double</font><font class="text"> value )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   BoverDT = value ; </font><font class="comment">//??? never used 
+</font><font class="text">}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">AP_NavierStokes1System:: add_to_A_item( </font><font class="kw2">size_t</font><font class="text"> i_row, </font><font class="kw2">size_t</font><font class="text"> j_col, </font><font class="kw1">double</font><font class="text"> xx )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;AP_NavierStokes1System:: add_to_A_item&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( is_initialized() ) ;
+   </font><font class="comment">//??? more preconditions
+</font><font class="text">
+   CONVERGED = </font><font class="kw1">false</font><font class="text"> ;
+
+   A-&gt;add_to_item( i_row, j_col, xx ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( !unknowns_are_solution() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">AP_NavierStokes1System:: add_to_F_item( </font><font class="kw2">size_t</font><font class="text"> i_row, </font><font class="kw1">double</font><font class="text"> xx )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;AP_NavierStokes1System:: add_to_F_item&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( is_initialized() ) ;
+   </font><font class="comment">//??? more preconditions
+</font><font class="text">
+   CONVERGED = </font><font class="kw1">false</font><font class="text"> ;
+
+   F-&gt;add_to_item( i_row, xx ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( !unknowns_are_solution() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">AP_NavierStokes1System:: add_to_B_item( </font><font class="kw2">size_t</font><font class="text"> i_row, </font><font class="kw2">size_t</font><font class="text"> j_col, </font><font class="kw1">double</font><font class="text"> xx )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;AP_NavierStokes1System:: add_to_B_item&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( is_initialized() ) ;
+   </font><font class="comment">//??? more preconditions
+</font><font class="text">
+   CONVERGED = </font><font class="kw1">false</font><font class="text"> ;
+
+   </font><font class="kw1">if</font><font class="text">( METH == MONO )
+   {
+      A-&gt;add_to_item( i_row, j_col, xx ) ;
+      A-&gt;add_to_item( j_col, i_row, xx ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      B-&gt;add_to_item( i_row, j_col, xx ) ;
+   }
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( !unknowns_are_solution() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">AP_NavierStokes1System:: add_to_G_item( </font><font class="kw2">size_t</font><font class="text"> i_row, </font><font class="kw1">double</font><font class="text"> xx )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;AP_NavierStokes1System:: add_to_G_item&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( is_initialized() ) ;
+   </font><font class="comment">//??? more preconditions
+</font><font class="text">
+   CONVERGED = </font><font class="kw1">false</font><font class="text"> ;
+
+   </font><font class="kw1">if</font><font class="text">( METH == MONO )
+   {
+      F-&gt;add_to_item( i_row, xx ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      G-&gt;add_to_item( i_row, xx ) ;
+   }
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( !unknowns_are_solution() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="text">AP_NavierStokes1System:: MPl_is_required( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw1">bool</font><font class="text"> result = ( METH == AL ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">AP_NavierStokes1System:: add_to_MPl_item( </font><font class="kw2">size_t</font><font class="text"> i_row, </font><font class="kw1">double</font><font class="text"> xx )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;AP_NavierStokes1System:: add_to_MPl_item&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( is_initialized() ) ;
+   </font><font class="comment">//??? more preconditions
+</font><font class="text">
+   CONVERGED = </font><font class="kw1">false</font><font class="text"> ;
+
+   S-&gt;add_to_item( i_row, xx ) ;
+
+</font><font class="comment">//   MP_INVERTED = false ;
+</font><font class="text">   
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( !unknowns_are_solution() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">AP_NavierStokes1System:: add_to_C_item( </font><font class="kw2">size_t</font><font class="text"> i_row, </font><font class="kw2">size_t</font><font class="text"> j_col, </font><font class="kw1">double</font><font class="text"> xx )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;AP_NavierStokes1System:: add_to_C_item&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( is_initialized() ) ;
+   </font><font class="comment">//??? more preconditions
+</font><font class="text">
+   CONVERGED = </font><font class="kw1">false</font><font class="text"> ;
+
+   </font><font class="kw1">if</font><font class="text">( METH == MONO )
+   {
+      A-&gt;add_to_item( i_row, j_col, xx ) ;
+   }
+   </font><font class="kw1">else
+</font><font class="text">   {
+      C-&gt;add_to_item( i_row, j_col, xx ) ;
+   }
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( !unknowns_are_solution() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">AP_NavierStokes1System:: estimate_unknowns( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;AP_NavierStokes1System:: estimate_unknowns&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( is_initialized() ) ;
+   
+   </font><font class="kw1">switch</font><font class="text">( METH )
+   {
+      </font><font class="kw1">case</font><font class="text"> AL :
+         estimate_unknowns_AL() ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> MONO :
+         estimate_unknowns_MONO() ;
+         </font><font class="kw1">break</font><font class="text"> ;
+      </font><font class="kw1">case</font><font class="text"> invalid :
+         </font><font class="kw1">break</font><font class="text"> ;
+   }
+   HAS_INIT_U = </font><font class="kw1">false</font><font class="text"> ;
+   HAS_INIT_P = </font><font class="kw1">false</font><font class="text"> ;
+   
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( !initial_guess_U_is_set() ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( !initial_guess_P_is_set() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">AP_NavierStokes1System:: estimate_unknowns_AL( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;AP_NavierStokes1System:: estimate_unknowns_AL&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( METH == AL ) ;
+   
+   </font><font class="kw1">if</font><font class="text">( S != 0 )
+   {
+      S-&gt;synchronize() ;
+      S-&gt;set_as_reciprocal( S ) ;
+      SOLVER_TB-&gt;set_S( S ) ;
+   }
+
+   A-&gt;synchronize() ;
+   B-&gt;synchronize() ;
+   C-&gt;synchronize() ;
+   F-&gt;synchronize() ;
+   G-&gt;synchronize() ;
+   
+   SOLVER_TB-&gt;set_system( A, B, F, G, C ) ;
+   SOLVER_TB-&gt;estimate_unknowns( HAS_INIT_U, U, HAS_INIT_P, P ) ;
+   SOLVER_TB-&gt;unset_system() ;
+   
+   CONVERGED = SOLVER_TB-&gt;successful_estimation() ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">AP_NavierStokes1System:: estimate_unknowns_MONO( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;AP_NavierStokes1System:: estimate_unknowns_MONO&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( METH == MONO ) ;
+   
+   SOLVER-&gt;set_initial_guess_nonzero( HAS_INIT_U &amp;&amp; HAS_INIT_P ) ;
+   A-&gt;synchronize() ;
+   F-&gt;synchronize() ;
+   SOLVER-&gt;set_matrix( A ) ;
+   SOLVER-&gt;solve( F, U ) ;
+   SOLVER-&gt;unset_matrix() ;
+
+   CONVERGED = SOLVER-&gt;solution_is_achieved() ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="text">AP_NavierStokes1System:: unknowns_are_solution( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;AP_NavierStokes1System:: unknowns_are_solution&quot;</font><font class="text"> ) ;
+
+   </font><font class="kw1">return</font><font class="text">( CONVERGED ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="text">AP_NavierStokes1System:: set_indent( </font><font class="kw2">std</font><font class="text">::</font><font class="kw2">string</font><font class="text"> </font><font class="kw1">const</font><font class="text">&amp; indent )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;AP_NavierStokes1System:: set_indent&quot;</font><font class="text"> ) ;
+
+   INDENT = indent ;
+   </font><font class="kw1">if</font><font class="text">( SOLVER_TB != 0 ) SOLVER_TB-&gt;set_indent( indent ) ;
+}
+
+</font>
+</pre>
+</body>
+</html>

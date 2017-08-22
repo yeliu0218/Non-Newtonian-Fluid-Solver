@@ -1,0 +1,431 @@
+MODULE PEL_ObjectTest#S
+   
+   MODULE GMRES_Id_Pel
+      tested_matrix = < "gmres_M1.4.mtx"
+                        "gmres_M4.1.mtx"
+                        "gmres_M1.mtx"
+                        "diag5x5.mtx" >
+      error_bound = 1.E-6
+      MODULE LA_Solver
+         concrete_name = "LA_PreconditionedSolver"
+         MODULE LA_IterativeSolver
+            concrete_name = "LA_GMRES_IS"
+            restart = 30
+            nb_iterations_max = 200
+            MODULE LA_ConvergenceTest
+               concrete_name = "LA_DefaultConvergenceTest"
+               absolute_tolerance = 1.0e-10
+               relative_tolerance = 1.e-7
+            END MODULE LA_ConvergenceTest
+            verbose = false           
+         END MODULE LA_IterativeSolver
+         MODULE LA_Preconditioner
+            concrete_name = "LA_Identity_PC"
+         END MODULE LA_Preconditioner
+      END MODULE LA_Solver
+      is_iterative = true
+      MODULE LA_Matrix
+         concrete_name = "LA_PelMatrix"
+      END MODULE LA_Matrix
+   END MODULE GMRES_Id_Pel
+   
+   MODULE GMRES_Jacobi_CRS
+      tested_matrix = < "gmres_M1.4.mtx"
+                        "gmres_M4.1.mtx"
+                        "gmres_M1.mtx"
+                        "diag5x5.mtx" >
+      error_bound = 1.E-6
+      MODULE LA_Solver
+         concrete_name = "LA_PreconditionedSolver"
+         MODULE LA_IterativeSolver
+            concrete_name = "LA_GMRES_IS"
+            restart = 50
+            nb_iterations_max = 200
+            MODULE LA_ConvergenceTest
+               concrete_name = "LA_DefaultConvergenceTest"
+               absolute_tolerance = 1.0e-10
+               relative_tolerance = 1.e-7
+            END MODULE LA_ConvergenceTest
+            verbose = false
+         END MODULE LA_IterativeSolver
+         MODULE LA_Preconditioner
+            concrete_name = "LA_Jacobi_PC"
+            smallest_inverted_item = 1.0e-40
+         END MODULE LA_Preconditioner
+      END MODULE LA_Solver
+      is_iterative = true
+      MODULE LA_Matrix
+         concrete_name = "LA_CRSmatrix"
+      END MODULE LA_Matrix
+   END MODULE GMRES_Jacobi_CRS
+   
+   MODULE GMRES_SSOR_Dense
+      tested_matrix = < "diag5x5.mtx" >
+      error_bound = 1.E-6
+      MODULE LA_Solver
+         concrete_name = "LA_PreconditionedSolver"
+         MODULE LA_IterativeSolver
+            concrete_name = "LA_GMRES_IS"
+            restart = 50
+            nb_iterations_max = 101
+            MODULE LA_ConvergenceTest
+               concrete_name = "LA_DefaultConvergenceTest"
+               absolute_tolerance = 1.0e-10
+               relative_tolerance = 1.e-7
+            END MODULE LA_ConvergenceTest
+            verbose = false
+         END MODULE LA_IterativeSolver
+         MODULE LA_Preconditioner
+            concrete_name = "LA_SSOR_PC"
+            smallest_inverted_item = 1.0e-40
+            omega = 0.5
+            nb_inner_iterations = 1
+         END MODULE LA_Preconditioner
+      END MODULE LA_Solver
+      is_iterative = true
+      MODULE LA_Matrix
+         concrete_name = "LA_DenseMatrix"
+      END MODULE LA_Matrix
+   END MODULE GMRES_SSOR_Dense
+   
+   MODULE GMRES_ILU0
+      tested_matrix = < "gmres_M1.4.mtx"
+                        "gmres_M4.1.mtx"
+                        "gmres_M1.mtx"
+                        "diag5x5.mtx" >
+      error_bound = 1.E-6
+      MODULE LA_Solver
+         concrete_name = "LA_PreconditionedSolver"
+         MODULE LA_IterativeSolver
+            concrete_name = "LA_GMRES_IS"
+            restart = 50
+            nb_iterations_max = 101
+            MODULE LA_ConvergenceTest
+               concrete_name = "LA_DefaultConvergenceTest"
+               absolute_tolerance = 1.0e-10
+               relative_tolerance = 1.e-7
+            END MODULE LA_ConvergenceTest
+            verbose = false
+         END MODULE LA_IterativeSolver
+         MODULE LA_Preconditioner
+            concrete_name = "LA_ILU0_PC"
+            diagonal_compensation = false
+            smallest_nonzero_pivot = 1.e-40
+         END MODULE LA_Preconditioner
+      END MODULE LA_Solver
+      is_iterative = true
+      MODULE LA_Matrix
+         concrete_name = "LA_PelMatrix"
+      END MODULE LA_Matrix
+   END MODULE GMRES_ILU0
+   
+   MODULE GMRES_MILU0
+      tested_matrix = < "gmres_M1.4.mtx"
+                        "gmres_M4.1.mtx"
+                        "gmres_M1.mtx"
+                        "diag5x5.mtx" >
+      error_bound = 1.E-6
+      MODULE LA_Solver
+         concrete_name = "LA_PreconditionedSolver"
+         MODULE LA_IterativeSolver
+            concrete_name = "LA_GMRES_IS"
+            restart = 50
+            nb_iterations_max = 101
+            MODULE LA_ConvergenceTest
+               concrete_name = "LA_DefaultConvergenceTest"
+               absolute_tolerance = 1.0e-10
+               relative_tolerance = 1.e-7
+            END MODULE LA_ConvergenceTest
+            verbose = false
+         END MODULE LA_IterativeSolver
+         MODULE LA_Preconditioner
+            concrete_name = "LA_ILU0_PC"
+            diagonal_compensation = true
+            smallest_nonzero_pivot = 1.e-40
+         END MODULE LA_Preconditioner
+      END MODULE LA_Solver
+      is_iterative = true
+      MODULE LA_Matrix
+         concrete_name = "LA_PelMatrix"
+      END MODULE LA_Matrix
+   END MODULE GMRES_MILU0
+   
+   MODULE GMRES_ILUp_CRS
+      tested_matrix = < "gmres_M1.4.mtx"
+                        "gmres_M4.1.mtx"
+                        "gmres_M1.mtx"
+                        "diag5x5.mtx" >
+      error_bound = 1.E-6
+      MODULE LA_Solver
+         concrete_name = "LA_PreconditionedSolver"
+         MODULE LA_IterativeSolver
+            concrete_name = "LA_GMRES_IS"
+            restart = 50
+            nb_iterations_max = 101
+            MODULE LA_ConvergenceTest
+               concrete_name = "LA_DefaultConvergenceTest"
+               absolute_tolerance = 1.0e-10
+               relative_tolerance = 1.e-7
+            END MODULE LA_ConvergenceTest
+            verbose = false
+         END MODULE LA_IterativeSolver
+         MODULE LA_Preconditioner
+            concrete_name = "LA_ILUp_PC"
+            order = 1
+            diagonal_compensation = false
+            smallest_nonzero_pivot = 1.e-40
+            MODULE LA_SeqMatrix
+               concrete_name = "LA_PelMatrix"
+            END MODULE LA_SeqMatrix
+         END MODULE LA_Preconditioner
+      END MODULE LA_Solver
+      is_iterative = true
+      MODULE LA_Matrix
+         concrete_name = "LA_CRSmatrix"
+      END MODULE LA_Matrix
+   END MODULE GMRES_ILUp_CRS
+   
+   MODULE GMRES_ILUt_Pel
+      tested_matrix = < "gmres_M1.4.mtx"
+                        "gmres_M4.1.mtx"
+                        "gmres_M1.mtx"
+                        "diag5x5.mtx" >
+      error_bound = 1.E-6
+      MODULE LA_Solver
+         concrete_name = "LA_PreconditionedSolver"
+         MODULE LA_IterativeSolver
+            concrete_name = "LA_GMRES_IS"
+            restart = 50
+            nb_iterations_max = 101
+            MODULE LA_ConvergenceTest
+               concrete_name = "LA_DefaultConvergenceTest"
+               absolute_tolerance = 1.0e-10
+               relative_tolerance = 1.e-7
+            END MODULE LA_ConvergenceTest
+            verbose = false
+         END MODULE LA_IterativeSolver
+         MODULE LA_Preconditioner
+            concrete_name = "LA_ILUT_PC"
+            tolerance = 1.0e-4
+            order = 1
+            diagonal_compensation = false
+            smallest_nonzero_pivot = 1.e-40
+            MODULE LA_SeqMatrix
+               concrete_name = "LA_PelMatrix"
+            END MODULE LA_SeqMatrix
+         END MODULE LA_Preconditioner
+      END MODULE LA_Solver
+      is_iterative = true
+      MODULE LA_Matrix
+         concrete_name = "LA_PelMatrix"
+      END MODULE LA_Matrix
+   END MODULE GMRES_ILUt_Pel
+   
+   MODULE GMRES_SOR_Pel
+      tested_matrix = < "gmres_M1.4.mtx"
+                        "gmres_M4.1.mtx"
+                        "gmres_M1.mtx"
+                        "diag5x5.mtx" >
+      error_bound = 1.E-6
+      MODULE LA_Solver
+         concrete_name = "LA_PreconditionedSolver"
+         MODULE LA_IterativeSolver
+            concrete_name = "LA_GMRES_IS"
+            restart = 50
+            nb_iterations_max = 101
+            MODULE LA_ConvergenceTest
+               concrete_name = "LA_DefaultConvergenceTest"
+               absolute_tolerance = 1.0e-10
+               relative_tolerance = 1.e-7
+            END MODULE LA_ConvergenceTest
+            verbose = false
+         END MODULE LA_IterativeSolver
+         MODULE LA_Preconditioner
+            concrete_name = "LA_SOR_PC"
+            omega = 1.
+            sweep = "forward"
+            smallest_inverted_item = 1.e-20
+            nb_inner_iterations = 2
+         END MODULE LA_Preconditioner
+      END MODULE LA_Solver
+      is_iterative = true
+      MODULE LA_Matrix
+         concrete_name = "LA_PelMatrix"
+      END MODULE LA_Matrix
+   END MODULE GMRES_SOR_Pel
+   
+   MODULE GMRES_SOR_CRS
+      tested_matrix = < "gmres_M1.4.mtx"
+                        "gmres_M4.1.mtx"
+                        "gmres_M1.mtx"
+                        "diag5x5.mtx" >
+      error_bound = 1.E-6
+      MODULE LA_Solver
+         concrete_name = "LA_PreconditionedSolver"
+         MODULE LA_IterativeSolver
+            concrete_name = "LA_GMRES_IS"
+            restart = 50
+            nb_iterations_max = 101
+            MODULE LA_ConvergenceTest
+               concrete_name = "LA_DefaultConvergenceTest"
+               absolute_tolerance = 1.0e-10
+               relative_tolerance = 1.e-7
+            END MODULE LA_ConvergenceTest
+            verbose = false
+         END MODULE LA_IterativeSolver
+         MODULE LA_Preconditioner
+            concrete_name = "LA_SOR_PC"
+            omega = 1.
+            sweep = "forward"
+            smallest_inverted_item = 1.e-20
+            nb_inner_iterations = 2
+         END MODULE LA_Preconditioner
+      END MODULE LA_Solver
+      is_iterative = true
+      MODULE LA_Matrix
+         concrete_name = "LA_CRSmatrix"
+      END MODULE LA_Matrix
+   END MODULE GMRES_SOR_CRS
+   
+   MODULE CG_Jacobi_Pel
+      tested_matrix = < "bcsstk14.mtx"
+                        "diag5x5.mtx" >
+      error_bound = 1.E-6
+      MODULE LA_Solver
+         concrete_name = "LA_PreconditionedSolver"
+         MODULE LA_IterativeSolver
+            concrete_name = "LA_CG_IS"
+            nb_iterations_max = 2000
+            MODULE LA_ConvergenceTest
+               concrete_name = "LA_DefaultConvergenceTest"
+               relative_tolerance = 1.0e-7
+               absolute_tolerance = 1.0e-50
+            END MODULE LA_ConvergenceTest
+            verbose = true
+         END MODULE LA_IterativeSolver
+         MODULE LA_Preconditioner
+            concrete_name = "LA_Jacobi_PC"
+            smallest_inverted_item = 1.0e-20
+         END MODULE LA_Preconditioner
+      END MODULE LA_Solver
+      is_iterative = true
+      MODULE LA_Matrix
+         concrete_name = "LA_PelMatrix"
+      END MODULE LA_Matrix
+   END MODULE CG_Jacobi_Pel
+   
+   MODULE CG_Jacobi_Symmetric
+      tested_matrix = < "bcsstk03.mtx"
+                        "diag5x5.mtx" >
+      error_bound = 1.E-6
+      MODULE LA_Solver
+         concrete_name = "LA_PreconditionedSolver"
+         MODULE LA_IterativeSolver
+            concrete_name = "LA_CG_IS"
+            verbose = false
+            nb_iterations_max = 2000
+            MODULE LA_ConvergenceTest
+               concrete_name = "LA_DefaultConvergenceTest"
+               relative_tolerance = 1.0e-7
+               absolute_tolerance = 1.0e-50
+            END MODULE LA_ConvergenceTest
+         END MODULE LA_IterativeSolver
+         MODULE LA_Preconditioner
+            concrete_name = "LA_Jacobi_PC"
+            smallest_inverted_item = 1.0e-20
+         END MODULE LA_Preconditioner
+      END MODULE LA_Solver
+      is_iterative = true
+      MODULE LA_Matrix
+         concrete_name = "LA_SymmetricMatrix"
+      END MODULE LA_Matrix
+   END MODULE CG_Jacobi_Symmetric
+   
+   MODULE CG_SSOR_Pel
+      tested_matrix = < "bcsstk14.mtx"
+                        "diag5x5.mtx" >
+      error_bound = 1.E-6
+      MODULE LA_Solver
+         concrete_name = "LA_PreconditionedSolver"
+         MODULE LA_IterativeSolver
+            concrete_name = "LA_CG_IS"
+            nb_iterations_max = 2000
+            MODULE LA_ConvergenceTest
+               concrete_name = "LA_DefaultConvergenceTest"
+               relative_tolerance = 1.0e-7
+               absolute_tolerance = 1.0e-50
+            END MODULE LA_ConvergenceTest
+            verbose = true
+         END MODULE LA_IterativeSolver
+         MODULE LA_Preconditioner
+            concrete_name = "LA_SSOR_PC"
+            omega = 1.75
+            smallest_inverted_item = 1.e-20
+            nb_inner_iterations = 1
+         END MODULE LA_Preconditioner
+      END MODULE LA_Solver
+      is_iterative = true
+      MODULE LA_Matrix
+         concrete_name = "LA_PelMatrix"
+      END MODULE LA_Matrix
+   END MODULE CG_SSOR_Pel
+   
+   MODULE CG_SSOR_CRS
+      tested_matrix = < "bcsstk14.mtx"
+                        "diag5x5.mtx" >
+      error_bound = 1.E-6
+      MODULE LA_Solver
+         concrete_name = "LA_PreconditionedSolver"
+         MODULE LA_IterativeSolver
+            concrete_name = "LA_CG_IS"
+            nb_iterations_max = 2000
+            MODULE LA_ConvergenceTest
+               concrete_name = "LA_DefaultConvergenceTest"
+               relative_tolerance = 1.0e-7
+               absolute_tolerance = 1.0e-50
+            END MODULE LA_ConvergenceTest
+            verbose = true
+         END MODULE LA_IterativeSolver
+         MODULE LA_Preconditioner
+            concrete_name = "LA_SSOR_PC"
+            omega = 1.75
+            smallest_inverted_item = 1.e-20
+            nb_inner_iterations = 1
+         END MODULE LA_Preconditioner
+      END MODULE LA_Solver
+      is_iterative = true
+      MODULE LA_Matrix
+         concrete_name = "LA_CRSmatrix"
+      END MODULE LA_Matrix
+   END MODULE CG_SSOR_CRS
+   
+   MODULE CG_SSOR_Symmetric
+      tested_matrix = < "bcsstk03.mtx"
+                        "diag5x5.mtx" >
+      error_bound = 1.E-6
+      MODULE LA_Solver
+         concrete_name = "LA_PreconditionedSolver"
+         MODULE LA_IterativeSolver
+            concrete_name = "LA_CG_IS"
+            verbose = false
+            nb_iterations_max = 2000
+            MODULE LA_ConvergenceTest
+               concrete_name = "LA_DefaultConvergenceTest"
+               relative_tolerance = 1.0e-7
+               absolute_tolerance = 1.0e-50
+            END MODULE LA_ConvergenceTest
+         END MODULE LA_IterativeSolver
+         MODULE LA_Preconditioner
+            concrete_name = "LA_SSOR_PC"
+            omega = 1.75
+            smallest_inverted_item = 1.e-20
+            nb_inner_iterations = 1
+         END MODULE LA_Preconditioner
+      END MODULE LA_Solver
+      is_iterative = true
+      MODULE LA_Matrix
+         concrete_name = "LA_SymmetricMatrix"
+      END MODULE LA_Matrix
+   END MODULE CG_SSOR_Symmetric
+   
+END MODULE PEL_ObjectTest#S

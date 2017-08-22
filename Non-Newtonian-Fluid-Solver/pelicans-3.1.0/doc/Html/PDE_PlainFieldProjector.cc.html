@@ -1,0 +1,168 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+  <title>PDE_PlainFieldProjector.cc</title>
+  <link rel ="stylesheet" type="text/css" href="stylesheet.css" title="Style">
+</head>
+<script>
+  function asd()
+  {
+    parent.document.title="PDE_PlainFieldProjector.cc_PELICANS 17_03_2010 ";
+  }
+</script> 
+
+<body onload="asd();">
+
+<!-- ========== START OF NAVBAR ========== -->
+<a name="navbar_top"><!-- --></a>
+<div id=navbar>
+  <a name="navbar_top_firstrow"><!-- --></a>
+  <div id=navbarapp>PELICANS 17_03_2010</div>
+  <div id=navbarmenu>
+    <a href="PDEpack-tree.html"><span>Tree</span></a>
+    <a href="PDE_PlainFieldProjector.html"><span>Class</span></a>
+    <a href="PDE_PlainFieldProjector.hh.html"><span>Header</span></a>
+    <span class=selected>Implementation</span>
+    <div id=navbarsub>
+      <a href="index.html" target="_top">FRAMES :</a>
+      <a href="PDEpack-tree.html" target="_top">: NO FRAMES</a>
+    </div>
+  </div>
+</div>
+<!-- ========== END OF NAVBAR ========== -->
+
+<pre>
+<font class="comment">/*
+ *  Copyright 1995-2010 by IRSN
+ *
+ *  This software is an application framework, with a set of integrated  
+ *  reusable components, whose purpose is to simplify the task of developing 
+ *  softwares of numerical mathematics and scientific computing.
+ * 
+ *  This software is governed by the CeCILL-C license under French law and 
+ *  abiding by the rules of distribution of free software. You can use, modify 
+ *  and/or redistribute the software under the terms of the CeCILL-C license  
+ *  as circulated by CEA, CNRS and INRIA at the following URL 
+ *  &quot;http://www.cecill.info&quot;. 
+ *
+ *  As a counterpart to the access to the source code and rights to copy,  
+ *  modify and redistribute granted by the license, users are provided only 
+ *  with a limited warranty and the software's author, the holder of the  
+ *  economic rights, and the successive licensors have only limited liability. 
+ *
+ *  In this respect, the user's attention is drawn to the risks associated  
+ *  with loading, using, modifying and/or developing or reproducing the  
+ *  software by the user in light of its specific status of free software,
+ *  that may mean that it is complicated to manipulate, and that also  
+ *  therefore means that it is reserved for developers and experienced 
+ *  professionals having in-depth computer knowledge. Users are therefore 
+ *  encouraged to load and test the software's suitability as regards their 
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and, more generally, to use and operate it in the same 
+ *  conditions as regards security. 
+ *
+ *  The fact that you are presently reading this means that you have had 
+ *  knowledge of the CeCILL-C license and that you accept its terms.
+ */
+</font><font class="text">
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_PlainFieldProjector</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PEL_assertions</font><font class="text">.hh&gt;
+
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_DiscreteField</font><font class="text">.hh&gt;
+</font><font class="kw2">#include</font><font class="text"> &lt;</font><font class="kw3">PDE_LocalFEcell</font><font class="text">.hh&gt;
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PDE_PlainFieldProjector</font><font class="text">*
+</font><font class="kw3">PDE_PlainFieldProjector</font><font class="text">:: create(
+                      </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                      </font><font class="kw3">PDE_DiscreteField</font><font class="text">* a_field,
+                      </font><font class="kw2">size_t</font><font class="text"> a_field_level,
+                      </font><font class="kw3">PDE_DiscreteField</font><font class="text"> </font><font class="kw1">const</font><font class="text">* a_source_field,
+                      </font><font class="kw2">size_t</font><font class="text"> a_source_field_level,
+                      </font><font class="kw3">PDE_DomainAndFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* a_dom,
+                      </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* a_exp )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_PlainFieldProjector:: create&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( a_field!=0 ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( a_field_level&lt;a_field-&gt;storage_depth() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( a_source_field!=0 ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( a_field-&gt;nb_components()==a_source_field-&gt;nb_components() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( a_source_field_level&lt;a_source_field-&gt;storage_depth() ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( a_dom!=0 ) ;
+   </font><font class="kw3">PEL_CHECK_PRE</font><font class="text">( a_exp!=0 ) ;
+
+   </font><font class="kw3">PDE_PlainFieldProjector</font><font class="text">* result =
+      </font><font class="kw1">new</font><font class="text"> </font><font class="kw3">PDE_PlainFieldProjector</font><font class="text">( a_owner,
+                                   a_field, a_field_level,
+                                   a_source_field, a_source_field_level,
+                                   a_dom,
+                                   a_exp ) ;
+
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result!=0 &amp;&amp; result-&gt;owner()==a_owner ) ;
+   </font><font class="kw3">PEL_CHECK_POST</font><font class="text">( result-&gt;field()==a_field ) ;
+   </font><font class="kw1">return</font><font class="text">( result ) ;
+}
+
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PDE_PlainFieldProjector</font><font class="text">:: </font><font class="kw3">PDE_PlainFieldProjector</font><font class="text">(
+                      </font><font class="kw3">PEL_Object</font><font class="text">* a_owner,
+                      </font><font class="kw3">PDE_DiscreteField</font><font class="text">* a_field,
+                      </font><font class="kw2">size_t</font><font class="text"> a_field_level,
+                      </font><font class="kw3">PDE_DiscreteField</font><font class="text"> </font><font class="kw1">const</font><font class="text">* a_source_field,
+                      </font><font class="kw2">size_t</font><font class="text"> a_source_field_level,
+                      </font><font class="kw3">PDE_DomainAndFields</font><font class="text"> </font><font class="kw1">const</font><font class="text">* a_dom,
+                      </font><font class="kw3">PEL_ModuleExplorer</font><font class="text">* a_exp )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">   : </font><font class="kw3">PDE_ProjectorForDOFsSetting</font><font class="text">( a_owner, a_field, a_field_level, a_dom, a_exp )
+   , SRC_FIELD( a_source_field )
+   , SRC_LEVEL( a_source_field_level )
+{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_PlainFieldProjector:: PDE_PlainFieldProjector&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+   
+   add_field_requirement_on_cells( SRC_FIELD, </font><font class="kw3">PDE_LocalFE</font><font class="text">::N ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw3">PDE_PlainFieldProjector</font><font class="text">:: ~</font><font class="kw3">PDE_PlainFieldProjector</font><font class="text">( </font><font class="kw1">void</font><font class="text"> )
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">
+{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_PlainFieldProjector:: ~PDE_PlainFieldProjector&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">void
+</font><font class="kw3">PDE_PlainFieldProjector</font><font class="text">:: compute_value_at_IP( </font><font class="kw3">PDE_LocalFEcell</font><font class="text"> </font><font class="kw1">const</font><font class="text">* fe,
+                                               </font><font class="kw3">doubleVector</font><font class="text">&amp; result ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_LABEL</font><font class="text">( </font><font class="string">&quot;PDE_PlainFieldProjector:: compute_value_at_IP&quot;</font><font class="text"> ) ;
+   </font><font class="kw3">PEL_CHECK</font><font class="text">( compute_value_at_IP_PRE( fe, result ) ) ;
+   </font><font class="kw3">PEL_CHECK_INV</font><font class="text">( invariant() ) ;
+
+   </font><font class="kw1">for</font><font class="text">( </font><font class="kw2">size_t</font><font class="text"> i=0 ; i&lt;SRC_FIELD-&gt;nb_components() ; ++i )
+   {
+      result(i) = fe-&gt;value_at_IP( SRC_FIELD, SRC_LEVEL, i ) ;
+   }
+}
+
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="kw1">bool
+</font><font class="kw3">PDE_PlainFieldProjector</font><font class="text">:: invariant( </font><font class="kw1">void</font><font class="text"> ) </font><font class="kw1">const
+</font><font class="comment">//----------------------------------------------------------------------
+</font><font class="text">{
+   </font><font class="kw3">PEL_ASSERT</font><font class="text">( </font><font class="kw3">PDE_ProjectorForDOFsSetting</font><font class="text">::invariant() ) ;
+   </font><font class="kw1">return</font><font class="text">( </font><font class="kw1">true</font><font class="text"> ) ;
+}
+
+</font>
+</pre>
+</body>
+</html>
