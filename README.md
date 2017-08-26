@@ -26,7 +26,7 @@ More details can be found <a href="http://www.irsn.fr/EN/Research/Scientific-too
 Prerequisites: (For Ubuntu 16.04)
 
 gfortran, g++, freeglut3-dev, libblas-dev, liblapack-dev, libumfpack 5.7.1, libsuitesparse-dev, libspooles-dev, libmumps-dev(for parallel),
-mpich(for parallel), graphviz, dot2tex, doxygen
+mpich(for parallel), graphviz, dot2tex, doxygen, zlib1g-dev, libxmu-dev 
 
 All of the packages above can be installed by
  
